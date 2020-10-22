@@ -31,7 +31,7 @@ jobs:
           ndk: 16.1.4479499
           cmake: 3.6.4111459
           profile: Nexus 6
-          script: ./runTestsOnEmulator.sh
+          script: sudo ./runTestsOnEmulator.sh
       - name: Push to SonarQube
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
