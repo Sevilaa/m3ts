@@ -1,6 +1,7 @@
 # PA - Mobile Table Tennis Tracking System (M3TS)
 ![Build](https://github.com/sverbach/m3ts/workflows/Build/badge.svg)
 ![Unit and Instrumentation Tests](https://github.com/sverbach/m3ts/workflows/Unit%20and%20Instrumentation%20Tests/badge.svg)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=sverbach_fmo-android&metric=alert_status)](https://sonarcloud.io/dashboard?id=sverbach_fmo-android)
 
 ## Ziel
 Ziel der Arbeit ist es, ein mobiles App zu entwickeln, welches den Punktestand eines Tischtennis-Spiels tracked und anzeigt / ausgibt. Das Tracking und Anzeigen des Matches soll in Echtzeit durchgeführt werden.
