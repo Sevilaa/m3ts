@@ -1,15 +1,16 @@
 package cz.fmo.events;
 
-import com.android.grafika.Log;
-
 import org.junit.Before;
 import org.junit.Test;
 
 import cz.fmo.Lib;
 import cz.fmo.data.Track;
 import cz.fmo.data.TrackSet;
+import cz.fmo.tabletennis.Side;
+import cz.fmo.tabletennis.Table;
 import cz.fmo.util.Config;
 import helper.DetectionGenerator;
+import helper.TableGenerator;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.atLeastOnce;
@@ -20,6 +21,7 @@ import static org.mockito.Mockito.when;
 
 public class EventDetectorTest {
     private Config mockConfig;
+    private Table table;
     private EventDetectionCallback mockCallback;
     private TrackSet mockTracks;
     private static final TrackSet realTrackSet = TrackSet.getInstance();
@@ -29,6 +31,7 @@ public class EventDetectorTest {
 
     @Before
     public void prepare() {
+        table = TableGenerator.makeTableFromGarageRecording();
         mockConfig = mock(Config.class);
         mockTracks = mock(TrackSet.class);
         mockCallback = mock(EventDetectionCallback.class);
@@ -40,26 +43,27 @@ public class EventDetectorTest {
 
     @Test
     public void testUpdateTrackSetConfigOnConstruction() {
-        EventDetector ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT,mockCallback, mockTracks);
+        EventDetector ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT,mockCallback, mockTracks, table);
         verify(mockTracks, atLeastOnce()).setConfig(mockConfig);
     }
 
     @Test
     public void testUpdateTrackSetOnObjectsDetected() {
-        EventDetector ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT,mockCallback, mockTracks);
+        EventDetector ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT,mockCallback, mockTracks, table);
         Lib.Detection[] someDetections = new Lib.Detection[0];
-        ev.onObjectsDetected(someDetections);
-        verify(mockTracks, times(1)).addDetections(someDetections, SOME_WIDTH, SOME_HEIGHT);
+        long detectionTime = System.nanoTime();
+        ev.onObjectsDetected(someDetections, detectionTime);
+        verify(mockTracks, times(1)).addDetections(someDetections, SOME_WIDTH, SOME_HEIGHT, detectionTime);
     }
 
     @Test
     public void testOnStrikeFound() {
-        EventDetector ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT, mockCallback, realTrackSet);
-        Lib.Detection[] strikeDetections = DetectionGenerator.makeDetectionsInXDirection(true);
-        invokeOnObjectDetectedWithDelay(strikeDetections, ev);
+        EventDetector ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT, mockCallback, realTrackSet, table);
+        Lib.Detection[] strikeDetections = DetectionGenerator.makeDetectionsInXDirectionOnTable(true);
+        invokeOnObjectDetectedWithDelay(strikeDetections, ev, 0);
 
         // assert that we have now one track with all detections in it
-        verify(mockCallback, times(strikeDetections.length)).onStrikeFound(realTrackSet);
+        verify(mockCallback, atLeastOnce()).onStrikeFound(realTrackSet);
         assertEquals(1, realTrackSet.getTracks().size());
         Track track = realTrackSet.getTracks().get(0);
         Lib.Detection detection = track.getLatest();
@@ -73,51 +77,69 @@ public class EventDetectorTest {
 
     @Test
     public void testOnSideChange() {
-        EventDetector ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT, mockCallback, TrackSet.getInstance());
-        Lib.Detection[] strikeDetectionsRight = DetectionGenerator.makeDetectionsInXDirection(true);
-        Lib.Detection[] strikeDetectionsLeft = DetectionGenerator.makeDetectionsInXDirection(false);
+        EventDetector ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT, mockCallback, TrackSet.getInstance(), table);
+        Lib.Detection[] strikeDetectionsRight = DetectionGenerator.makeDetectionsInXDirectionOnTable(true);
+        Lib.Detection[] strikeDetectionsLeft = DetectionGenerator.makeDetectionsInXDirectionOnTable(false);
         // object is getting shot from left to right side
-        invokeOnObjectDetectedWithDelay(strikeDetectionsRight, ev);
-        verify(mockCallback, times(0)).onSideChange(true);
-        verify(mockCallback, times(1)).onSideChange(false);
+        invokeOnObjectDetectedWithDelay(strikeDetectionsRight, ev, 0);
+        verify(mockCallback, times(0)).onSideChange(Side.RIGHT);
+        verify(mockCallback, times(1)).onSideChange(Side.LEFT);
         // object is getting shot from right to left side
-        invokeOnObjectDetectedWithDelay(strikeDetectionsLeft, ev);
-        verify(mockCallback, times(1)).onSideChange(true);
-        verify(mockCallback, times(1)).onSideChange(false);
+        invokeOnObjectDetectedWithDelay(strikeDetectionsLeft, ev, strikeDetectionsRight.length);
+        verify(mockCallback, times(1)).onSideChange(Side.RIGHT);
+        verify(mockCallback, times(1)).onSideChange(Side.LEFT);
         // object again getting shot from right to left side (same direction "edge" case) - no more side change call
-        invokeOnObjectDetectedWithDelay(strikeDetectionsLeft, ev);
-        verify(mockCallback, times(1)).onSideChange(true);
-        verify(mockCallback, times(1)).onSideChange(false);
+        invokeOnObjectDetectedWithDelay(strikeDetectionsLeft, ev, strikeDetectionsLeft.length+strikeDetectionsRight.length);
+        verify(mockCallback, times(1)).onSideChange(Side.RIGHT);
+        verify(mockCallback, times(1)).onSideChange(Side.LEFT);
     }
 
     @Test
     public void testOnNearlyOutOfFrame() {
-        EventDetector ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT, mockCallback, TrackSet.getInstance());
+        TrackSet ts = TrackSet.getInstance();
+        EventDetector ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT, mockCallback, ts, table);
+        Lib.Detection[] nearlyOutOfFrame;
+        Lib.Detection predecessor = new Lib.Detection();
+        predecessor.centerX = SOME_WIDTH / 2;
+        predecessor.centerY = SOME_WIDTH / 2;
+        for(int i = 0; i < 10; i++) {
+            nearlyOutOfFrame = DetectionGenerator.makeNearlyOutOfFrameDetections(ev.getNearlyOutOfFrameThresholds(), SOME_WIDTH, SOME_HEIGHT);
+            for(Lib.Detection detection : nearlyOutOfFrame) {
+                detection.predecessor = predecessor;
+                invokeOnObjectDetectedWithDelay(new Lib.Detection[]{predecessor}, ev, i);
+                invokeOnObjectDetectedWithDelay(new Lib.Detection[]{detection}, ev, i);
+                verify(mockCallback, times(1)).onNearlyOutOfFrame(detection);
+                ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT, mockCallback, ts, table);
+            }
+        }
+        Lib.Detection[] detectionsInFrame = DetectionGenerator.makeDetectionsInXDirectionOnTable(true);
+        invokeOnObjectDetectedWithDelay(detectionsInFrame, ev, 0);
+        for (Lib.Detection detection : detectionsInFrame) {
+            verify(mockCallback, times(0)).onNearlyOutOfFrame(detection);
+        }
+    }
+
+    @Test
+    public void testNearlyOutOfFrameWithoutPredecessor() {
+        TrackSet ts = TrackSet.getInstance();
+        EventDetector ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT, mockCallback, ts, table);
         Lib.Detection[] nearlyOutOfFrame;
         for(int i = 0; i < 10; i++) {
             nearlyOutOfFrame = DetectionGenerator.makeNearlyOutOfFrameDetections(ev.getNearlyOutOfFrameThresholds(), SOME_WIDTH, SOME_HEIGHT);
             for(Lib.Detection detection : nearlyOutOfFrame) {
-                invokeOnObjectDetectedWithDelay(new Lib.Detection[]{detection}, ev);
-                verify(mockCallback, times(1)).onNearlyOutOfFrame(detection);
-                ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT, mockCallback, TrackSet.getInstance());
+                invokeOnObjectDetectedWithDelay(new Lib.Detection[]{detection}, ev, i);
+                verify(mockCallback, times(0)).onNearlyOutOfFrame(detection);
+                ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT, mockCallback, ts, table);
             }
-        }
-        Lib.Detection[] detectionsInFrame = DetectionGenerator.makeDetectionsInXDirection(true);
-        invokeOnObjectDetectedWithDelay(detectionsInFrame, ev);
-        for(int i = 0; i < detectionsInFrame.length; i++) {
-            verify(mockCallback, times(0)).onNearlyOutOfFrame(detectionsInFrame[i]);
         }
     }
 
-    private void invokeOnObjectDetectedWithDelay(Lib.Detection[] allDetections, EventDetector ev) {
-        int delay = 1000/FRAME_RATE;
+    private void invokeOnObjectDetectedWithDelay(Lib.Detection[] allDetections, EventDetector ev, int nStartFramesDelay) {
+        int delay = 1000/FRAME_RATE * 1000 * 1000;
+        long detectionTime = System.nanoTime() + nStartFramesDelay * delay;
         for (Lib.Detection detection : allDetections) {
-            ev.onObjectsDetected(new Lib.Detection[]{detection});
-            try {
-                Thread.sleep(delay);
-            } catch (InterruptedException ie) {
-                Log.e(ie.getMessage(), ie);
-            }
+            detectionTime = detectionTime + delay;
+            ev.onObjectsDetected(new Lib.Detection[]{detection}, detectionTime);
         }
     }
 }

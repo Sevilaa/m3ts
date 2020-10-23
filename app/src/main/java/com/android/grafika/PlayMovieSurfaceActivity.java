@@ -21,6 +21,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
+import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.opengl.GLES20;
 import android.os.Bundle;
@@ -37,7 +38,11 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 import cz.fmo.Lib;
 import cz.fmo.R;
@@ -46,6 +51,11 @@ import cz.fmo.data.TrackSet;
 import cz.fmo.events.EventDetectionCallback;
 import cz.fmo.events.EventDetector;
 import cz.fmo.graphics.EGL;
+import cz.fmo.tabletennis.Match;
+import cz.fmo.tabletennis.MatchType;
+import cz.fmo.tabletennis.Side;
+import cz.fmo.tabletennis.Table;
+import cz.fmo.tabletennis.UICallback;
 import cz.fmo.util.Config;
 import cz.fmo.util.FileManager;
 
@@ -86,8 +96,11 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
     private final FileManager mFileMan = new FileManager(this);
     private SurfaceView mSurfaceView;
     private SurfaceView mSurfaceTrack;
+    private SurfaceView mSurfaceTable;
     private TextView mShotSideText;
     private TextView mBounceCountText;
+    private TextView mScoreLeftText;
+    private TextView mScoreRightText;
     private String[] mMovieFiles;
     private int mSelectedMovie;
     private boolean mShowStopLabel;
@@ -101,13 +114,18 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
         setContentView(R.layout.activity_play_movie_surface);
         mShotSideText = findViewById(R.id.txtSide);
         mBounceCountText = findViewById(R.id.txtBounce);
+        mScoreLeftText = findViewById(R.id.txtPlayMovieScoreLeft);
+        mScoreRightText = findViewById(R.id.txtPlayMovieScoreRight);
         mSurfaceView = findViewById(R.id.playMovie_surface);
         mSurfaceView.getHolder().addCallback(this);
-        mHandler = new Handler(this);
-        mSurfaceTrack = findViewById(R.id.playTracks_surface);
+        mSurfaceTrack = findViewById(R.id.playMovie_surfaceTracks);
         mSurfaceTrack.setZOrderOnTop(true);
         mSurfaceTrack.getHolder().addCallback(this);
         mSurfaceTrack.getHolder().setFormat(PixelFormat.TRANSPARENT);
+        mSurfaceTable = findViewById(R.id.playMovie_surfaceTable);
+        mSurfaceTable.getHolder().addCallback(this);
+        mSurfaceTable.getHolder().setFormat(PixelFormat.TRANSPARENT);
+        mHandler = new Handler(this);
         // Populate file-selection spinner.
         Spinner spinner = findViewById(R.id.playMovieFile_spinner);
         // Need to create one of these fancy ArrayAdapter thingies, and specify the generic layout
@@ -179,6 +197,22 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
         Log.d("onItemSelected: " + mSelectedMovie + " '" + mMovieFiles[mSelectedMovie] + "'");
     }
 
+    /**
+     * Tries to load the table location from an xml file from assets.
+     * @param videoFileName - Full name of video file in phones Camera dir. Example: "bounce_back_1.mp4"
+     */
+    private void trySettingTableLocationFromXML(String videoFileName) {
+        String fileNameWithoutExtension = videoFileName.split("\\.")[0];
+        try (InputStream is = getAssets().open(fileNameWithoutExtension+".xml")) {
+            Properties properties = new Properties();
+            properties.loadFromXML(is);
+            mHandler.setTable(Table.makeTableFromProperties(properties));
+            Log.d("found new table!");
+        } catch (IOException ex) {
+            Log.e(ex.getMessage(), ex);
+        }
+    }
+
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
         // Can ignore this event
@@ -204,11 +238,13 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
             Log.d("starting movie");
             SpeedControlCallback callback = new SpeedControlCallback();
             SurfaceHolder holder = mSurfaceView.getHolder();
+            SurfaceHolder holderTracks = mSurfaceTrack.getHolder();
             Surface surface = holder.getSurface();
 
             // Don't leave the last frame of the previous video hanging on the screen.
             // Looks weird if the aspect ratio changes.
             clearSurface(surface);
+            mHandler.clearCanvas(holderTracks);
 
             MoviePlayer player;
             try {
@@ -216,6 +252,7 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
                         callback, mHandler);
                 Config mConfig = new Config(this);
                 mHandler.init(mConfig, player.getVideoWidth(), player.getVideoHeight());
+                trySettingTableLocationFromXML(mMovieFiles[mSelectedMovie]);
                 mHandler.startDetections();
             } catch (IOException ioe) {
                 Log.e("Unable to play movie", ioe);
@@ -281,7 +318,7 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
         egl.release();
     }
 
-    private static class Handler extends android.os.Handler implements EventDetectionCallback, PlayMovieDetectionCallback {
+    private static class Handler extends android.os.Handler implements EventDetectionCallback, PlayMovieDetectionCallback, UICallback {
         private final WeakReference<PlayMovieSurfaceActivity> mActivity;
         private EventDetector eventDetector;
         private int canvasWidth;
@@ -291,12 +328,17 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
         private int videoHeight;
         private Config config;
         private TrackSet tracks;
+        private Table table;
+        private boolean hasNewTable;
         private Lib.Detection latestNearlyOutOfFrame;
+        private Match match;
 
         Handler(@NonNull PlayMovieSurfaceActivity activity) {
             mActivity = new WeakReference<>(activity);
             tracks = TrackSet.getInstance();
             tracks.clear();
+            hasNewTable = true;
+            match = new Match(MatchType.BO5, "Hans", "Peter", this);
             p = new Paint();
         }
 
@@ -304,7 +346,10 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
             this.videoWidth = srcWidth;
             this.videoHeight = srcHeight;
             this.config = config;
-            eventDetector = new EventDetector(config, srcWidth, srcHeight, this, tracks);
+            List<EventDetectionCallback> callbacks = new ArrayList<>();
+            callbacks.add(this);
+            callbacks.add(this.match.getReferee());
+            eventDetector = new EventDetector(config, srcWidth, srcHeight, callbacks, tracks, this.table);
         }
 
         private void startDetections() {
@@ -313,6 +358,14 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
 
         private void stopDetections() {
             Lib.detectionStop();
+        }
+
+        private void setTable(Table table) {
+            if (table != null) {
+                hasNewTable = true;
+                this.table = table;
+                eventDetector.setTable(table);
+            }
         }
 
         @Override
@@ -341,22 +394,19 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
         }
 
         @Override
-        public void onSideChange(final boolean isRightSide) {
-            // update game logic
-            // then display game state to some views
+        public void onSideChange(final Side side) {
             final PlayMovieSurfaceActivity activity = mActivity.get();
             final TextView mShotSideText = activity.mShotSideText;
             this.post(new Runnable() {
                 @Override
                 public void run() {
                     String txt = "Left Side";
-                    if (isRightSide) {
+                    if (side == Side.RIGHT) {
                         txt = "Right Side";
                     }
                     mShotSideText.setText(txt);
                 }
             });
-
         }
 
         @Override
@@ -376,14 +426,60 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
                 if (canvas == null) {
                     return;
                 }
-                if (canvasWidth == 0 || canvasHeight == 0) {
+                if (this.canvasWidth == 0 || this.canvasHeight == 0) {
                     canvasWidth = canvas.getWidth();
                     canvasHeight = canvas.getHeight();
                 }
                 canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+                if (hasNewTable) {
+                    drawTable(activity);
+                    hasNewTable = false;
+                }
                 drawAllTracks(canvas, tracks);
                 surfaceHolder.unlockCanvasAndPost(canvas);
             }
+        }
+
+        @Override
+        public void onTableSideChange(Side side) {
+
+        }
+
+        private void clearCanvas(SurfaceHolder surfaceHolder) {
+            Canvas canvas = surfaceHolder.lockCanvas();
+            if (canvas == null) {
+                return;
+            }
+            canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+            surfaceHolder.unlockCanvasAndPost(canvas);
+        }
+
+        private void drawTable(PlayMovieSurfaceActivity activity) {
+            SurfaceHolder surfaceHolderTable = activity.mSurfaceTable.getHolder();
+            Canvas canvas = surfaceHolderTable.lockCanvas();
+            if (canvas == null) {
+                return;
+            }
+            canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+            Point[] corners = table.getCorners();
+            for (int i = 0; i<corners.length; i++) {
+                Point c1 = corners[i];
+                Point c2;
+                if (i < corners.length-1) {
+                    c2 = corners[i+1];
+                } else {
+                    c2 = corners[0];
+                }
+                c1 = scalePoint(c1);
+                c2 = scalePoint(c2);
+                p.setColor(Color.CYAN);
+                p.setStrokeWidth(5f);
+                canvas.drawLine(c1.x, c1.y, c2.x, c2.y, p);
+            }
+            Point closeNetEnd = scalePoint(table.getCloseNetEnd());
+            Point farNetEnd = scalePoint(table.getFarNetEnd());
+            canvas.drawLine(closeNetEnd.x, closeNetEnd.y, farNetEnd.x, farNetEnd.y, p);
+            surfaceHolderTable.unlockCanvasAndPost(canvas);
         }
 
         private void drawAllTracks(Canvas canvas, TrackSet set) {
@@ -425,6 +521,50 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
         private int scaleX(int value) {
             float relPercentage = ((float) value) / ((float) this.videoWidth);
             return Math.round(relPercentage * this.canvasWidth);
+        }
+
+        private Point scalePoint(Point p) {
+            return new Point(scaleX(p.x), scaleY(p.y));
+        }
+
+        @Override
+        public void onMatchEnded() {
+            this.match = null;
+            Lib.detectionStop();
+            resetScoreTextViews();
+        }
+
+        @Override
+        public void onScore(Side side, int score) {
+            if (side == Side.LEFT) {
+                setTextInTextView(R.id.txtPlayMovieScoreLeft, String.valueOf(score));
+            } else {
+                setTextInTextView(R.id.txtPlayMovieScoreRight, String.valueOf(score));
+            }
+        }
+
+        @Override
+        public void onWin(Side side, int wins) {
+            resetScoreTextViews();
+        }
+
+        private void resetScoreTextViews() {
+            setTextInTextView(R.id.txtPlayMovieScoreLeft, String.valueOf(0));
+            setTextInTextView(R.id.txtPlayMovieScoreRight, String.valueOf(0));
+        }
+
+        private void setTextInTextView(int id, final String text) {
+            final PlayMovieSurfaceActivity activity = mActivity.get();
+            if (activity == null) {
+                return;
+            }
+            final TextView txtView = activity.findViewById(id);
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    txtView.setText(text);
+                }
+            });
         }
     }
 }

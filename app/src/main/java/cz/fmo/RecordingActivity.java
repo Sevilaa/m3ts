@@ -367,7 +367,7 @@ public final class RecordingActivity extends Activity {
             if (activity == null) return;
             CameraThread cam = activity.mCamera;
             if (cam == null) return;
-            TrackSet.getInstance().addDetections(detections, cam.getWidth(), cam.getHeight());
+            TrackSet.getInstance().addDetections(detections, cam.getWidth(), cam.getHeight(), System.nanoTime());
             sendMessage(obtainMessage(TRIGGER_AUTO_RECORD));
         }
 

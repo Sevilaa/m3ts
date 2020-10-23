@@ -22,6 +22,7 @@ public class Track {
     private long mLastDetectionTime;
     private float mMaxVelocity;
     private int mVelocityNumFrames = 0;
+    private boolean hasCrossedTable = false;
 
     Track(Config config) {
         mConfig = config;
@@ -39,13 +40,21 @@ public class Track {
         return mLastDetectionTime;
     }
 
-    void setLatest(Lib.Detection latest) {
+    public void setTableCrossed() {
+        this.hasCrossedTable = true;
+    }
+
+    public boolean hasCrossedTable() {
+        return this.hasCrossedTable;
+    }
+
+    void setLatest(Lib.Detection latest, long detectionTime) {
         if (mLatest != null) {
             // calculate speed stats for each segment
             mLatestDx = (float) latest.centerX - mLatest.centerX;
             mLatestDy = (float) latest.centerY - mLatest.centerY;
 
-            latest.directionY = mLatestDy / Math.abs(mLatestDy); // -1 => object is going down | 1 => object going up
+            latest.directionY = mLatestDy / Math.abs(mLatestDy); // 1 => object is going down | -1 => object going up
             latest.directionX = mLatestDx / Math.abs(mLatestDx); // -1 => object going left | 1 => object going right
 
             float velocity = latest.velocity;
@@ -72,9 +81,12 @@ public class Track {
             mMaxVelocity = Math.max(velocity, mMaxVelocity);
 
             mVelocityNumFrames++;
+        } else {
+            latest.directionY = latest.directionY / Math.abs(latest.directionY);
+            latest.directionX = latest.directionX / Math.abs(latest.directionX);
         }
 
-        mLastDetectionTime = System.nanoTime();
+        mLastDetectionTime = detectionTime;
         mLatest = latest;
     }
 
