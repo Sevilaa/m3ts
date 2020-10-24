@@ -16,46 +16,24 @@
 
 package com.android.grafika;
 
-import android.app.Activity;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.PixelFormat;
-import android.graphics.Point;
-import android.graphics.PorterDuff;
 import android.opengl.GLES20;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.view.Surface;
 import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
-import android.widget.TextView;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
-import cz.fmo.Lib;
 import cz.fmo.R;
-import cz.fmo.data.Track;
-import cz.fmo.data.TrackSet;
-import cz.fmo.events.EventDetectionCallback;
-import cz.fmo.events.EventDetector;
 import cz.fmo.graphics.EGL;
-import cz.fmo.tabletennis.Match;
-import cz.fmo.tabletennis.MatchType;
-import cz.fmo.tabletennis.Side;
 import cz.fmo.tabletennis.Table;
-import cz.fmo.tabletennis.UICallback;
 import cz.fmo.util.Config;
 import cz.fmo.util.FileManager;
 
@@ -91,41 +69,101 @@ import cz.fmo.util.FileManager;
  * The actual playback of the video -- sending frames to a Surface -- is the same for
  * TextureView and SurfaceView.
  */
-public class PlayMovieSurfaceActivity extends Activity implements OnItemSelectedListener,
-        SurfaceHolder.Callback, MoviePlayer.PlayerFeedback {
+public class PlayMovieSurfaceActivity extends DebugActivity implements OnItemSelectedListener, MoviePlayer.PlayerFeedback {
     private final FileManager mFileMan = new FileManager(this);
-    private SurfaceView mSurfaceView;
-    private SurfaceView mSurfaceTrack;
-    private SurfaceView mSurfaceTable;
-    private TextView mShotSideText;
-    private TextView mBounceCountText;
-    private TextView mScoreLeftText;
-    private TextView mScoreRightText;
     private String[] mMovieFiles;
     private int mSelectedMovie;
     private boolean mShowStopLabel;
     private MoviePlayer.PlayTask mPlayTask;
-    private boolean mSurfaceHolderReady = false;
-    private Handler mHandler;
+    private PlayMovieDebugHandler mHandler;
+
+    /**
+     * onClick handler for "play"/"stop" button.
+     */
+    public void clickPlayStop(@SuppressWarnings("UnusedParameters") View unused) {
+        if (mShowStopLabel) {
+            Log.d("stopping movie");
+            stopPlayback();
+            // Don't update the controls here -- let the task thread do it after the movie has
+            // actually stopped.
+            //mShowStopLabel = false;
+            //updateControls();
+        } else {
+            if (mPlayTask != null) {
+                Log.w("movie already playing");
+                return;
+            }
+
+            Log.d("starting movie");
+            SpeedControlCallback callback = new SpeedControlCallback();
+            SurfaceHolder holder = getmSurfaceView().getHolder();
+            SurfaceHolder holderTracks = getmSurfaceTrack().getHolder();
+            Surface surface = holder.getSurface();
+
+            // Don't leave the last frame of the previous video hanging on the screen.
+            // Looks weird if the aspect ratio changes.
+            clearSurface(surface);
+            mHandler.clearCanvas(holderTracks);
+
+            MoviePlayer player;
+            try {
+                player = new MoviePlayer(mFileMan.open(mMovieFiles[mSelectedMovie]), surface,
+                        callback, mHandler);
+                Config mConfig = new Config(this);
+                mHandler.init(mConfig, player.getVideoWidth(), player.getVideoHeight());
+                trySettingTableLocationFromXML(mMovieFiles[mSelectedMovie]);
+                mHandler.startDetections();
+            } catch (IOException ioe) {
+                Log.e("Unable to play movie", ioe);
+                surface.release();
+                return;
+            }
+
+            mPlayTask = new MoviePlayer.PlayTask(player, this, true);
+            mShowStopLabel = true;
+            updateControls();
+            mPlayTask.execute();
+        }
+    }
+
+    @Override
+    public void init() {
+        updateControls();
+    }
+
+    @Override
+    public void setCurrentContentView() {
+        setContentView(R.layout.activity_play_movie_surface);
+    }
+
+    /**
+     * Called when the movie Spinner gets touched.
+     */
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+        Spinner spinner = (Spinner) parent;
+        mSelectedMovie = spinner.getSelectedItemPosition();
+
+        Log.d("onItemSelected: " + mSelectedMovie + " '" + mMovieFiles[mSelectedMovie] + "'");
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+        // Can ignore this event
+    }
+
+    @Override   // MoviePlayer.PlayerFeedback
+    public void playbackStopped() {
+        Log.d("playback stopped");
+        mShowStopLabel = false;
+        mPlayTask = null;
+        updateControls();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_play_movie_surface);
-        mShotSideText = findViewById(R.id.txtSide);
-        mBounceCountText = findViewById(R.id.txtBounce);
-        mScoreLeftText = findViewById(R.id.txtPlayMovieScoreLeft);
-        mScoreRightText = findViewById(R.id.txtPlayMovieScoreRight);
-        mSurfaceView = findViewById(R.id.playMovie_surface);
-        mSurfaceView.getHolder().addCallback(this);
-        mSurfaceTrack = findViewById(R.id.playMovie_surfaceTracks);
-        mSurfaceTrack.setZOrderOnTop(true);
-        mSurfaceTrack.getHolder().addCallback(this);
-        mSurfaceTrack.getHolder().setFormat(PixelFormat.TRANSPARENT);
-        mSurfaceTable = findViewById(R.id.playMovie_surfaceTable);
-        mSurfaceTable.getHolder().addCallback(this);
-        mSurfaceTable.getHolder().setFormat(PixelFormat.TRANSPARENT);
-        mHandler = new Handler(this);
+        this.mHandler = new PlayMovieDebugHandler(this);
         // Populate file-selection spinner.
         Spinner spinner = findViewById(R.id.playMovieFile_spinner);
         // Need to create one of these fancy ArrayAdapter thingies, and specify the generic layout
@@ -160,111 +198,8 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
             stopPlayback();
             mPlayTask.waitForStop();
         }
+        //here
         mHandler.stopDetections();
-    }
-
-    @Override
-    public void surfaceCreated(SurfaceHolder holder) {
-        // There's a short delay between the start of the activity and the initialization
-        // of the SurfaceHolder that backs the SurfaceView.  We don't want to try to
-        // send a video stream to the SurfaceView before it has initialized, so we disable
-        // the "play" button until this callback fires.
-        Log.d("surfaceCreated");
-        mSurfaceHolderReady = true;
-        updateControls();
-    }
-
-    @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        // ignore
-        Log.d("surfaceChanged fmt=" + format + " size=" + width + "x" + height);
-    }
-
-    @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {
-        // ignore
-        Log.d("Surface destroyed");
-    }
-
-    /*
-     * Called when the movie Spinner gets touched.
-     */
-    @Override
-    public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-        Spinner spinner = (Spinner) parent;
-        mSelectedMovie = spinner.getSelectedItemPosition();
-
-        Log.d("onItemSelected: " + mSelectedMovie + " '" + mMovieFiles[mSelectedMovie] + "'");
-    }
-
-    /**
-     * Tries to load the table location from an xml file from assets.
-     * @param videoFileName - Full name of video file in phones Camera dir. Example: "bounce_back_1.mp4"
-     */
-    private void trySettingTableLocationFromXML(String videoFileName) {
-        String fileNameWithoutExtension = videoFileName.split("\\.")[0];
-        try (InputStream is = getAssets().open(fileNameWithoutExtension+".xml")) {
-            Properties properties = new Properties();
-            properties.loadFromXML(is);
-            mHandler.setTable(Table.makeTableFromProperties(properties));
-            Log.d("found new table!");
-        } catch (IOException ex) {
-            Log.e(ex.getMessage(), ex);
-        }
-    }
-
-    @Override
-    public void onNothingSelected(AdapterView<?> parent) {
-        // Can ignore this event
-    }
-
-    /**
-     * onClick handler for "play"/"stop" button.
-     */
-    public void clickPlayStop(@SuppressWarnings("UnusedParameters") View unused) {
-        if (mShowStopLabel) {
-            Log.d("stopping movie");
-            stopPlayback();
-            // Don't update the controls here -- let the task thread do it after the movie has
-            // actually stopped.
-            //mShowStopLabel = false;
-            //updateControls();
-        } else {
-            if (mPlayTask != null) {
-                Log.w("movie already playing");
-                return;
-            }
-
-            Log.d("starting movie");
-            SpeedControlCallback callback = new SpeedControlCallback();
-            SurfaceHolder holder = mSurfaceView.getHolder();
-            SurfaceHolder holderTracks = mSurfaceTrack.getHolder();
-            Surface surface = holder.getSurface();
-
-            // Don't leave the last frame of the previous video hanging on the screen.
-            // Looks weird if the aspect ratio changes.
-            clearSurface(surface);
-            mHandler.clearCanvas(holderTracks);
-
-            MoviePlayer player;
-            try {
-                player = new MoviePlayer(mFileMan.open(mMovieFiles[mSelectedMovie]), surface,
-                        callback, mHandler);
-                Config mConfig = new Config(this);
-                mHandler.init(mConfig, player.getVideoWidth(), player.getVideoHeight());
-                trySettingTableLocationFromXML(mMovieFiles[mSelectedMovie]);
-                mHandler.startDetections();
-            } catch (IOException ioe) {
-                Log.e("Unable to play movie", ioe);
-                surface.release();
-                return;
-            }
-
-            mPlayTask = new MoviePlayer.PlayTask(player, this, true);
-            mShowStopLabel = true;
-            updateControls();
-            mPlayTask.execute();
-        }
     }
 
     /**
@@ -274,14 +209,6 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
         if (mPlayTask != null) {
             mPlayTask.requestStop();
         }
-    }
-
-    @Override   // MoviePlayer.PlayerFeedback
-    public void playbackStopped() {
-        Log.d("playback stopped");
-        mShowStopLabel = false;
-        mPlayTask = null;
-        updateControls();
     }
 
     /**
@@ -294,7 +221,7 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
         } else {
             play.setText(R.string.play_button_text);
         }
-        play.setEnabled(mSurfaceHolderReady);
+        play.setEnabled(ismSurfaceHolderReady());
     }
 
     /**
@@ -318,253 +245,19 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
         egl.release();
     }
 
-    private static class Handler extends android.os.Handler implements EventDetectionCallback, PlayMovieDetectionCallback, UICallback {
-        private final WeakReference<PlayMovieSurfaceActivity> mActivity;
-        private EventDetector eventDetector;
-        private int canvasWidth;
-        private int canvasHeight;
-        private Paint p;
-        private int videoWidth;
-        private int videoHeight;
-        private Config config;
-        private TrackSet tracks;
-        private Table table;
-        private boolean hasNewTable;
-        private Lib.Detection latestNearlyOutOfFrame;
-        private Match match;
-
-        Handler(@NonNull PlayMovieSurfaceActivity activity) {
-            mActivity = new WeakReference<>(activity);
-            tracks = TrackSet.getInstance();
-            tracks.clear();
-            hasNewTable = true;
-            match = new Match(MatchType.BO5, "Hans", "Peter", this);
-            p = new Paint();
-        }
-
-        private void init(Config config, int srcWidth, int srcHeight) {
-            this.videoWidth = srcWidth;
-            this.videoHeight = srcHeight;
-            this.config = config;
-            List<EventDetectionCallback> callbacks = new ArrayList<>();
-            callbacks.add(this);
-            callbacks.add(this.match.getReferee());
-            eventDetector = new EventDetector(config, srcWidth, srcHeight, callbacks, tracks, this.table);
-        }
-
-        private void startDetections() {
-            Lib.detectionStart(this.videoWidth, this.videoHeight, this.config.getProcRes(), this.config.isGray(), eventDetector);
-        }
-
-        private void stopDetections() {
-            Lib.detectionStop();
-        }
-
-        private void setTable(Table table) {
-            if (table != null) {
-                hasNewTable = true;
-                this.table = table;
-                eventDetector.setTable(table);
-            }
-        }
-
-        @Override
-        public void onEncodedFrame(byte[] dataYUV420SP) {
-            try {
-                Lib.detectionFrame(dataYUV420SP);
-            } catch (Exception ex) {
-                Log.e(ex.getMessage(), ex);
-            }
-        }
-
-        @Override
-        public void onBounce() {
-            // update game logic
-            // then display game state to some views
-            final PlayMovieSurfaceActivity activity = mActivity.get();
-            final TextView mBounceCountText = activity.mBounceCountText;
-            final int newBounceCount = Integer.parseInt(mBounceCountText.getText().toString()) + 1;
-            this.post(new Runnable() {
-                @Override
-                public void run() {
-                    String txt = String.valueOf(newBounceCount);
-                    mBounceCountText.setText(txt);
-                }
-            });
-        }
-
-        @Override
-        public void onSideChange(final Side side) {
-            final PlayMovieSurfaceActivity activity = mActivity.get();
-            final TextView mShotSideText = activity.mShotSideText;
-            this.post(new Runnable() {
-                @Override
-                public void run() {
-                    String txt = "Left Side";
-                    if (side == Side.RIGHT) {
-                        txt = "Right Side";
-                    }
-                    mShotSideText.setText(txt);
-                }
-            });
-        }
-
-        @Override
-        public void onNearlyOutOfFrame(Lib.Detection detection) {
-            latestNearlyOutOfFrame = detection;
-        }
-
-        @Override
-        public void onStrikeFound(TrackSet tracks) {
-            PlayMovieSurfaceActivity activity = mActivity.get();
-            if (activity == null) {
-                return;
-            }
-            if (activity.mSurfaceHolderReady) {
-                SurfaceHolder surfaceHolder = activity.mSurfaceTrack.getHolder();
-                Canvas canvas = surfaceHolder.lockCanvas();
-                if (canvas == null) {
-                    return;
-                }
-                if (this.canvasWidth == 0 || this.canvasHeight == 0) {
-                    canvasWidth = canvas.getWidth();
-                    canvasHeight = canvas.getHeight();
-                }
-                canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-                if (hasNewTable) {
-                    drawTable(activity);
-                    hasNewTable = false;
-                }
-                drawAllTracks(canvas, tracks);
-                surfaceHolder.unlockCanvasAndPost(canvas);
-            }
-        }
-
-        @Override
-        public void onTableSideChange(Side side) {
-
-        }
-
-        private void clearCanvas(SurfaceHolder surfaceHolder) {
-            Canvas canvas = surfaceHolder.lockCanvas();
-            if (canvas == null) {
-                return;
-            }
-            canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-            surfaceHolder.unlockCanvasAndPost(canvas);
-        }
-
-        private void drawTable(PlayMovieSurfaceActivity activity) {
-            SurfaceHolder surfaceHolderTable = activity.mSurfaceTable.getHolder();
-            Canvas canvas = surfaceHolderTable.lockCanvas();
-            if (canvas == null) {
-                return;
-            }
-            canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-            Point[] corners = table.getCorners();
-            for (int i = 0; i<corners.length; i++) {
-                Point c1 = corners[i];
-                Point c2;
-                if (i < corners.length-1) {
-                    c2 = corners[i+1];
-                } else {
-                    c2 = corners[0];
-                }
-                c1 = scalePoint(c1);
-                c2 = scalePoint(c2);
-                p.setColor(Color.CYAN);
-                p.setStrokeWidth(5f);
-                canvas.drawLine(c1.x, c1.y, c2.x, c2.y, p);
-            }
-            Point closeNetEnd = scalePoint(table.getCloseNetEnd());
-            Point farNetEnd = scalePoint(table.getFarNetEnd());
-            canvas.drawLine(closeNetEnd.x, closeNetEnd.y, farNetEnd.x, farNetEnd.y, p);
-            surfaceHolderTable.unlockCanvasAndPost(canvas);
-        }
-
-        private void drawAllTracks(Canvas canvas, TrackSet set) {
-            for (Track t : set.getTracks()) {
-                t.updateColor();
-                Lib.Detection pre = t.getLatest();
-                cz.fmo.util.Color.RGBA r = t.getColor();
-                int c = Color.argb(255, Math.round(r.rgba[0] * 255), Math.round(r.rgba[1] * 255), Math.round(r.rgba[2] * 255));
-                p.setColor(c);
-                p.setStrokeWidth(pre.radius);
-                while (pre != null) {
-                    canvas.drawCircle(scaleX(pre.centerX), scaleY(pre.centerY), pre.radius, p);
-                    if (pre.predecessor != null) {
-                        int x1 = scaleX(pre.centerX);
-                        int x2 = scaleX(pre.predecessor.centerX);
-                        int y1 = scaleY(pre.centerY);
-                        int y2 = scaleY(pre.predecessor.centerY);
-                        canvas.drawLine(x1, y1, x2, y2, p);
-                    }
-                    pre = pre.predecessor;
-                }
-            }
-            drawLatestOutOfFrameDetection(canvas);
-        }
-
-        private void drawLatestOutOfFrameDetection(Canvas canvas) {
-            if(latestNearlyOutOfFrame != null) {
-                p.setColor(Color.rgb(255,165,0));
-                p.setStrokeWidth(latestNearlyOutOfFrame.radius);
-                canvas.drawCircle(scaleX(latestNearlyOutOfFrame.centerX), scaleY(latestNearlyOutOfFrame.centerY), latestNearlyOutOfFrame.radius, p);
-            }
-        }
-
-        private int scaleY(int value) {
-            float relPercentage = ((float) value) / ((float) this.videoHeight);
-            return Math.round(relPercentage * this.canvasHeight);
-        }
-
-        private int scaleX(int value) {
-            float relPercentage = ((float) value) / ((float) this.videoWidth);
-            return Math.round(relPercentage * this.canvasWidth);
-        }
-
-        private Point scalePoint(Point p) {
-            return new Point(scaleX(p.x), scaleY(p.y));
-        }
-
-        @Override
-        public void onMatchEnded() {
-            this.match = null;
-            Lib.detectionStop();
-            resetScoreTextViews();
-        }
-
-        @Override
-        public void onScore(Side side, int score) {
-            if (side == Side.LEFT) {
-                setTextInTextView(R.id.txtPlayMovieScoreLeft, String.valueOf(score));
-            } else {
-                setTextInTextView(R.id.txtPlayMovieScoreRight, String.valueOf(score));
-            }
-        }
-
-        @Override
-        public void onWin(Side side, int wins) {
-            resetScoreTextViews();
-        }
-
-        private void resetScoreTextViews() {
-            setTextInTextView(R.id.txtPlayMovieScoreLeft, String.valueOf(0));
-            setTextInTextView(R.id.txtPlayMovieScoreRight, String.valueOf(0));
-        }
-
-        private void setTextInTextView(int id, final String text) {
-            final PlayMovieSurfaceActivity activity = mActivity.get();
-            if (activity == null) {
-                return;
-            }
-            final TextView txtView = activity.findViewById(id);
-            activity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    txtView.setText(text);
-                }
-            });
+    /**
+     * Tries to load the table location from an xml file from assets.
+     * @param videoFileName - Full name of video file in phones Camera dir. Example: "bounce_back_1.mp4"
+     */
+    private void trySettingTableLocationFromXML(String videoFileName) {
+        String fileNameWithoutExtension = videoFileName.split("\\.")[0];
+        try (InputStream is = getAssets().open(fileNameWithoutExtension+".xml")) {
+            Properties properties = new Properties();
+            properties.loadFromXML(is);
+            mHandler.setTable(Table.makeTableFromProperties(properties));
+            Log.d("found new table!");
+        } catch (IOException ex) {
+            Log.e(ex.getMessage(), ex);
         }
     }
 }

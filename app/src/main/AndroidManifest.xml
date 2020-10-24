@@ -30,7 +30,7 @@
         android:supportsRtl="true"
         android:theme="@style/Main">
         <activity
-            android:name=".RecordingActivity"
+            android:name="com.android.grafika.LiveDebugActivity"
             android:configChanges=""
             android:label="FMO"
             android:screenOrientation="landscape"
@@ -43,11 +43,11 @@
         <activity
             android:name=".SettingsActivity"
             android:label="@string/settings"
-            android:parentActivityName=".RecordingActivity"
+            android:parentActivityName="com.android.grafika.LiveDebugActivity"
             android:screenOrientation="landscape">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="cz.fmo.RecordingActivity"/>
+                android:value="com.android.grafika.LiveDebugActivity"/>
         </activity>
         <activity
             android:name="com.android.grafika.PlayMovieSurfaceActivity"
