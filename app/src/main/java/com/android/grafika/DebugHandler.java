@@ -57,13 +57,9 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
         final DebugActivity activity = mActivity.get();
         final TextView mBounceCountText = activity.getmBounceCountText();
         final int newBounceCount = Integer.parseInt(mBounceCountText.getText().toString()) + 1;
-        this.post(new Runnable() {
-            @Override
-            public void run() {
-                String txt = String.valueOf(newBounceCount);
-                mBounceCountText.setText(txt);
-            }
-        });
+        setTextInTextView(R.id.txtPlayMovieState, match.getReferee().getState().toString());
+        setTextInTextView(R.id.txtPlayMovieServing, match.getReferee().getServer().toString());
+        setTextInTextView(R.id.txtBounce, String.valueOf(newBounceCount));
     }
 
     @Override
@@ -137,6 +133,11 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     @Override
     public void onWin(Side side, int wins) {
         resetScoreTextViews();
+        if(side == Side.LEFT) {
+            setTextInTextView(R.id.txtPlayMovieGameLeft, String.valueOf(wins));
+        } else {
+            setTextInTextView(R.id.txtPlayMovieGameRight, String.valueOf(wins));
+        }
     }
 
     void init(Config config, int srcWidth, int srcHeight) {

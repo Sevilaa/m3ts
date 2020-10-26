@@ -29,6 +29,14 @@ public class Referee implements EventDetectionCallback {
         this.gameCallback = game;
     }
 
+    public Side getServer() {
+        return server;
+    }
+
+    public GameState getState() {
+        return state;
+    }
+
     @Override
     public void onBounce() {
         switch (this.state) {

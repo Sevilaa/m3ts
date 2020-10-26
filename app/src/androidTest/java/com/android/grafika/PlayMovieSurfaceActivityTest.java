@@ -34,6 +34,10 @@ public class PlayMovieSurfaceActivityTest {
     private Button playStopButton;
     private TextView txtSide;
     private TextView txtBounce;
+    private TextView txtScoreLeft;
+    private TextView txtScoreRight;
+    private TextView txtGameLeft;
+    private TextView txtGameRight;
 
     @Rule
     public ActivityTestRule<PlayMovieSurfaceActivity> pmsActivityRule = new ActivityTestRule<PlayMovieSurfaceActivity>(PlayMovieSurfaceActivity.class);
@@ -52,6 +56,10 @@ public class PlayMovieSurfaceActivityTest {
         playStopButton = playMovieSurfaceActivity.findViewById(R.id.play_stop_button);
         txtSide = playMovieSurfaceActivity.findViewById(R.id.txtSide);
         txtBounce = playMovieSurfaceActivity.findViewById(R.id.txtBounce);
+        txtScoreLeft = playMovieSurfaceActivity.findViewById(R.id.txtPlayMovieScoreLeft);
+        txtScoreRight = playMovieSurfaceActivity.findViewById(R.id.txtPlayMovieScoreRight);
+        txtGameLeft = playMovieSurfaceActivity.findViewById(R.id.txtPlayMovieGameLeft);
+        txtGameRight = playMovieSurfaceActivity.findViewById(R.id.txtPlayMovieGameRight);
     }
 
     @After
@@ -69,6 +77,10 @@ public class PlayMovieSurfaceActivityTest {
         assertNotNull(playStopButton);
         assertNotNull(txtSide);
         assertNotNull(txtBounce);
+        assertNotNull(txtGameLeft);
+        assertNotNull(txtGameRight);
+        assertNotNull(txtScoreLeft);
+        assertNotNull(txtScoreRight);
         assertEquals(playMovieSurfaceActivity.getResources().getString(R.string.play_button_text), playStopButton.getText());
         assertEquals("0", txtBounce.getText());
     }
@@ -136,15 +148,15 @@ public class PlayMovieSurfaceActivityTest {
             }
         });
     }
-}
 
-class ClickPlayButton implements Runnable {
-    private Button button;
-    ClickPlayButton(Button button) {
-        this.button = button;
-    }
-    @Override
-    public void run() {
-        button.performClick();
+    private static class ClickPlayButton implements Runnable {
+        private Button button;
+        ClickPlayButton(Button button) {
+            this.button = button;
+        }
+        @Override
+        public void run() {
+            button.performClick();
+        }
     }
 }

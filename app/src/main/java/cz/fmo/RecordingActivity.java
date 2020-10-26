@@ -34,7 +34,7 @@ import cz.fmo.util.FileManager;
 /**
  * The main activity, facilitating video preview, encoding and saving.
  */
-public final class RecordingActivity extends Activity {
+public class RecordingActivity extends Activity {
     private static final String LOG_TAG = "FMO";
     private static final float BUFFER_SECONDS = 8;
     private static final float AUTOMATIC_MARGIN = 2;
