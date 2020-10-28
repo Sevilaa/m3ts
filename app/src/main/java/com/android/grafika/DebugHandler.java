@@ -40,6 +40,7 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     private boolean hasNewTable;
     private Lib.Detection latestNearlyOutOfFrame;
     private Match match;
+    private int newBounceCount;
 
     public DebugHandler(@NonNull DebugActivity activity) {
         mActivity = new WeakReference<>(activity);
@@ -56,10 +57,7 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
         // then display game state to some views
         final DebugActivity activity = mActivity.get();
         final TextView mBounceCountText = activity.getmBounceCountText();
-        final int newBounceCount = Integer.parseInt(mBounceCountText.getText().toString()) + 1;
-        setTextInTextView(R.id.txtPlayMovieState, match.getReferee().getState().toString());
-        setTextInTextView(R.id.txtPlayMovieServing, match.getReferee().getServer().toString());
-        setTextInTextView(R.id.txtBounce, String.valueOf(newBounceCount));
+        newBounceCount = Integer.parseInt(mBounceCountText.getText().toString()) + 1;
     }
 
     @Override
@@ -107,6 +105,9 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
             drawAllTracks(canvas, tracks);
             surfaceHolder.unlockCanvasAndPost(canvas);
         }
+        setTextInTextView(R.id.txtPlayMovieState, match.getReferee().getState().toString());
+        setTextInTextView(R.id.txtPlayMovieServing, match.getReferee().getServer().toString());
+        setTextInTextView(R.id.txtBounce, String.valueOf(newBounceCount));
     }
 
     @Override

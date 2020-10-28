@@ -15,6 +15,7 @@ public class Referee implements EventDetectionCallback {
     private GameState state;
     private int bounces;
     private int serveCounter;
+    private long outOfFrameTimestamp;
 
     public Referee(Side servingSide) {
         this.currentStriker = servingSide;
@@ -68,9 +69,13 @@ public class Referee implements EventDetectionCallback {
 
     @Override
     public void onNearlyOutOfFrame(Lib.Detection detection) {
-        switch (this.state) {
-            default:
-                break;
+        if(this.state == GameState.PLAY) {
+            if(this.bounces == 0) {
+                faultBySide(currentStriker);
+            } else {
+                this.state = GameState.OUT_OF_FRAME;
+                this.outOfFrameTimestamp = System.currentTimeMillis();
+            }
         }
     }
 
@@ -84,10 +89,16 @@ public class Referee implements EventDetectionCallback {
                     currentBallSide = server;
                 }
                 break;
-            case SERVING:
-                if ((server == Side.LEFT && tracks.getTracks().get(0).getLatest().directionX == DirectionX.LEFT) ||
-                        (server == Side.RIGHT && tracks.getTracks().get(0).getLatest().directionX == DirectionX.RIGHT)) {
-                    this.state = GameState.WAIT_FOR_SERVE;
+            case OUT_OF_FRAME:
+                if(isOutOfFrameForTooLong()) {
+                    if(this.bounces == 1) {
+                        pointBySide(currentStriker);
+                    } else {
+                        faultBySide(currentStriker);
+                    }
+
+                } else {
+                    this.state = GameState.PLAY;
                 }
                 break;
             default:
@@ -99,6 +110,10 @@ public class Referee implements EventDetectionCallback {
     public void onTableSideChange(Side side) {
         switch (this.state) {
             case SERVING:
+                if(bounces == 0) {
+                    faultBySide(server);
+                    break;
+                }
             case PLAY:
                 this.state = GameState.PLAY;
                 currentBallSide = side;
@@ -124,12 +139,15 @@ public class Referee implements EventDetectionCallback {
     }
 
     private void changeServer() {
+        this.bounces = 0;
         this.state = GameState.WAIT_FOR_SERVE;
         if (server == Side.LEFT) {
             server = Side.RIGHT;
         } else {
             server = Side.LEFT;
         }
+        currentBallSide = server;
+        currentStriker = server;
     }
 
     private void applyRuleSet() {
@@ -151,5 +169,9 @@ public class Referee implements EventDetectionCallback {
             Log.d("Server Fault: Multiple Bounces on same Side");
             faultBySide(this.server);
         }
+    }
+
+    private boolean isOutOfFrameForTooLong() {
+        return System.currentTimeMillis() - this.outOfFrameTimestamp > 1500;
     }
 }

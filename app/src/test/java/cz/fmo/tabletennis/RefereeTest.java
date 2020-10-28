@@ -3,6 +3,7 @@ package cz.fmo.tabletennis;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 import cz.fmo.Lib;
 import cz.fmo.data.TrackSet;
@@ -23,9 +24,10 @@ public class RefereeTest {
     private TrackSet realTrackSet = TrackSet.getInstance();
     private Config mockConfig;
     private static final Side STARTING_SIDE = Side.LEFT;
+    private Lib.Detection detection;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp(){
         mockConfig = mock(Config.class);
         when(mockConfig.isDisableDetection()).thenReturn(false);
         when(mockConfig.getFrameRate()).thenReturn(30f);
@@ -35,38 +37,97 @@ public class RefereeTest {
         referee = new Referee(STARTING_SIDE);
         gameCallback = mock(GameCallback.class);
         referee.setGame(gameCallback);
+        detection = new Lib.Detection();
     }
-
-    @After
-    public void tearDown() throws Exception {
-        referee = null;
-        gameCallback = null;
-    }
-
 
     @Test
-    // left side is serving, ball then bounces twice on the right table side -> point for left
-    public void testDoubleBounce() {
+    public void onServingAceDoubleBounce() {
+        assertEquals(referee.getState(), GameState.WAIT_FOR_SERVE);
+        simulateServe();
+        assertEquals(referee.getState(), GameState.SERVING);
+        referee.onBounce();
+        referee.onTableSideChange(Side.RIGHT);
+        assertEquals(referee.getState(), GameState.PLAY);
+        referee.onBounce();
+        referee.onBounce();
+        verify(gameCallback, times(1)).onPoint(STARTING_SIDE);
+        verify(gameCallback, times(0)).onPoint(Side.RIGHT);
+        assertEquals(referee.getState(), GameState.WAIT_FOR_SERVE);
+    }
+
+    @Test
+    public void onServingAceOutOfFrame() {
         simulateServe();
         referee.onBounce();
         referee.onTableSideChange(Side.RIGHT);
         referee.onBounce();
-        referee.onBounce();
+        referee.onNearlyOutOfFrame(detection);
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        referee.onStrikeFound(realTrackSet);
         verify(gameCallback, times(1)).onPoint(STARTING_SIDE);
+        verify(gameCallback, times(0)).onPoint(Side.RIGHT);
+        assertEquals(referee.getState(), GameState.WAIT_FOR_SERVE);
     }
 
     @Test
-    // left side is serving, ball bounces twice on his/her side -> fault by left
-    public void onServingFault() {
+    public void onServingValidOutOfFrame() {
+        simulateServe();
+        referee.onBounce();
+        referee.onTableSideChange(Side.RIGHT);
+        referee.onBounce();
+        referee.onNearlyOutOfFrame(detection);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        referee.onStrikeFound(realTrackSet);
+        referee.onSideChange(Side.RIGHT);
+        referee.onTableSideChange(Side.LEFT);
+        referee.onBounce();
+        verify(gameCallback, times(0)).onPoint(STARTING_SIDE);
+        verify(gameCallback, times(0)).onPoint(Side.RIGHT);
+        assertEquals(referee.getState(), GameState.PLAY);
+    }
+
+    @Test
+    public void onServingDoubleBounceOnOwnSideFault() {
         simulateServe();
         referee.onBounce();
         referee.onBounce();
         verify(gameCallback, times(1)).onPoint(Side.RIGHT);
+        verify(gameCallback, times(0)).onPoint(Side.LEFT);
+        assertEquals(referee.getState(), GameState.WAIT_FOR_SERVE);
     }
 
     @Test
-    // the returnee hits the ball on his/her table side -> fault by right
-    public void onReturnFault() {
+    public void onServingWithoutBounceFault() {
+        simulateServe();
+        referee.onTableSideChange(Side.RIGHT);
+        referee.onBounce();
+        verify(gameCallback, times(1)).onPoint(Side.RIGHT);
+        verify(gameCallback, times(0)).onPoint(Side.LEFT);
+        assertEquals(referee.getState(), GameState.WAIT_FOR_SERVE);
+    }
+
+    @Test
+    public void onServingValid() {
+        simulateServe();
+        referee.onBounce();
+        referee.onTableSideChange(Side.RIGHT);
+        referee.onBounce();
+        referee.onSideChange(Side.RIGHT);
+        verify(gameCallback, times(0)).onPoint(Side.RIGHT);
+        verify(gameCallback, times(0)).onPoint(Side.LEFT);
+        assertEquals(referee.getState(), GameState.PLAY);
+    }
+
+    @Test
+    public void onReturnFaultBounceOnOwnSide() {
         simulateServe();
         referee.onBounce();
         referee.onTableSideChange(Side.RIGHT);
@@ -74,6 +135,45 @@ public class RefereeTest {
         referee.onBounce();
         verify(gameCallback, times(1)).onPoint(Side.LEFT);
         verify(gameCallback, times(0)).onPoint(Side.RIGHT);
+    }
+
+    @Test
+    public void onReturnFaultNoBounceAndTooLongOutOfFrame() {
+        simulateServe();
+        referee.onBounce();
+        referee.onTableSideChange(Side.RIGHT);
+        referee.onBounce();
+        referee.onSideChange(Side.RIGHT);
+        referee.onTableSideChange(Side.LEFT);
+        referee.onNearlyOutOfFrame(detection);
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        referee.onStrikeFound(realTrackSet);
+        verify(gameCallback, times(1)).onPoint(Side.LEFT);
+        verify(gameCallback, times(0)).onPoint(Side.RIGHT);
+    }
+
+    @Test
+    public void onReturnFaultNoBounceAndOutOfFrameButInstantBack() {
+        simulateServe();
+        referee.onBounce();
+        referee.onTableSideChange(Side.RIGHT);
+        referee.onBounce();
+        referee.onSideChange(Side.RIGHT);
+        referee.onTableSideChange(Side.LEFT);
+        referee.onNearlyOutOfFrame(detection);
+        referee.onStrikeFound(realTrackSet);
+        verify(gameCallback, times(1)).onPoint(Side.LEFT);
+        verify(gameCallback, times(0)).onPoint(Side.RIGHT);
+    }
+
+    @After
+    public void tearDown() {
+        referee = null;
+        gameCallback = null;
     }
 
     private void simulateServe() {
