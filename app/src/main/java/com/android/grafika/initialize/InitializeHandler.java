@@ -14,7 +14,7 @@ import java.lang.ref.WeakReference;
 
 import cz.fmo.camera.CameraThread;
 
-public class InitializeHandler extends android.os.Handler  implements CameraThread.Callback {
+public class InitializeHandler extends android.os.Handler implements CameraThread.Callback {
     private static final int CAMERA_ERROR = 2;
     final WeakReference<CameraPreviewActivity> mActivity;
 

@@ -14,10 +14,7 @@ public class LiveDebugHandler extends DebugHandler implements CameraThread.Callb
 
     @Override
     public void onCameraRender() {
-        LiveDebugActivity activity = (LiveDebugActivity) mActivity.get();
-        if (activity == null) return;
-        if (activity.getmEncode() == null) return;
-        activity.getmEncode().getHandler().sendFlush();
+        // no implementation
     }
 
     @Override
