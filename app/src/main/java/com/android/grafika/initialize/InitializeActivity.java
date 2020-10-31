@@ -15,7 +15,6 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import com.android.grafika.CameraPreviewActivity;
-import com.android.grafika.Log;
 import com.otaliastudios.zoom.ZoomLayout;
 
 import cz.fmo.R;
@@ -108,7 +107,6 @@ public final class InitializeActivity extends CameraPreviewActivity {
                 String.valueOf(this.tableCorners.length));
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
         transaction.replace(R.id.init_fragmentPlaceholder, this.initSelectCornerFragment);
-        transaction.addToBackStack(null);
         transaction.commit();
     }
 
@@ -117,7 +115,6 @@ public final class InitializeActivity extends CameraPreviewActivity {
                 String.valueOf(this.tableCorners.length), this.tableCorners);
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
         transaction.replace(R.id.init_fragmentPlaceholder, this.initSelectCornerFragment);
-        transaction.addToBackStack(null);
         transaction.commit();
     }
 
@@ -134,8 +131,6 @@ public final class InitializeActivity extends CameraPreviewActivity {
                 Point absPoint = makeAbsPoint(x,y,zoom,panX,panY);
                 tableCorners[currentCornerIndex] = absPoint;
                 initSelectCornerFragment.setSelectedCornersText(currentCornerIndex+1);
-                Log.d("x:"+absPoint.x+" y:"+absPoint.y);
-                Log.d("Longpress detected");
                 currentCornerIndex++;
                 if (currentCornerIndex == tableCorners.length) {
                     setDoneFragment();

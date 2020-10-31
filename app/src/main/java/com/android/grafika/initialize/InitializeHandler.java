@@ -32,14 +32,35 @@ public class InitializeHandler extends android.os.Handler implements CameraThrea
             canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
             Paint paint = new Paint();
             paint.setColor(Color.CYAN);
-            paint.setStrokeWidth(15f);
-            for (Point p : activity.getTableCorners()) {
+
+            Point[] corners = activity.getTableCorners();
+            for (int i = 0; i<corners.length; i++) {
+                Point p = corners[i];
                 if(p != null) {
+                    paint.setStrokeWidth(15f);
                     Point relP = makeRelPoint(p.x, p.y, zoomLayout.getZoom(), zoomLayout.getPanX(), zoomLayout.getPanY());
                     canvas.drawCircle(relP.x, relP.y, 20f, paint);
+                    drawLineIfPossible(i, paint, canvas, corners, relP, zoomLayout);
                 }
             }
             activity.getTableSurface().getHolder().unlockCanvasAndPost(canvas);
+        }
+    }
+
+    /**
+     * Draws lines from one corner to the other.
+     * Dependent on how many corner points have been set (!= null).
+     */
+    private void drawLineIfPossible(int i, Paint paint, Canvas canvas, Point[] corners, Point relP, ZoomLayout zoomLayout) {
+        Point relPOther = null;
+        if (i < corners.length-1 && corners[i+1] != null) {
+            relPOther = makeRelPoint(corners[i+1].x, corners[i+1].y, zoomLayout.getZoom(), zoomLayout.getPanX(), zoomLayout.getPanY());
+        } else if (i == corners.length-1 && corners[0] != null) {
+            relPOther = makeRelPoint(corners[0].x, corners[0].y, zoomLayout.getZoom(), zoomLayout.getPanX(), zoomLayout.getPanY());
+        }
+        if (relPOther != null) {
+            paint.setStrokeWidth(5f);
+            canvas.drawLine(relP.x, relP.y, relPOther.x, relPOther.y, paint);
         }
     }
 
