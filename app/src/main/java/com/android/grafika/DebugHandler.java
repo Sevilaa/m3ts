@@ -27,6 +27,7 @@ import cz.fmo.tabletennis.UICallback;
 import cz.fmo.util.Config;
 
 public class DebugHandler extends android.os.Handler implements EventDetectionCallback, UICallback {
+
     final WeakReference<DebugActivity> mActivity;
     private EventDetector eventDetector;
     private int canvasWidth;

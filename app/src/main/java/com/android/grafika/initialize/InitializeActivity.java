@@ -1,19 +1,26 @@
-package com.android.grafika;
+package com.android.grafika.initialize;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.PixelFormat;
 import android.graphics.Point;
-import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.view.Display;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.TextView;
+
+import com.android.grafika.CameraPreviewActivity;
+import com.android.grafika.Log;
+import com.otaliastudios.zoom.ZoomLayout;
 
 import cz.fmo.R;
 import cz.fmo.SettingsActivity;
@@ -21,24 +28,21 @@ import cz.fmo.camera.CameraThread;
 import cz.fmo.camera.PreviewCameraTarget;
 import cz.fmo.data.Assets;
 import cz.fmo.data.TrackSet;
-import cz.fmo.recording.EncodeThread;
-import cz.fmo.tabletennis.Table;
 import cz.fmo.util.Config;
 
 /**
- * The main activity, facilitating video preview, encoding and saving.
+ * Activity to initialize a table tennis game
+ * I.e. Select Table corners, settings, ...
  */
-public final class LiveDebugActivity extends DebugActivity {
-    private static final String CORNERS_PARAM = "CORNERS_UNSORTED";
+public final class InitializeActivity extends CameraPreviewActivity {
     private static final int PREVIEW_SLOWDOWN_FRAMES = 59;
-    private Config mConfig;
     private Status mStatus = Status.STOPPED;
     private CameraThread mCamera;
-    private EncodeThread mEncode;
-    private PreviewCameraTarget mPreviewTarget;
-    private LiveDebugHandler mHandler;
-    private TextView mStatusText;
-    private String mStatusTextLast;
+    private SurfaceView tableSurface;
+    private ZoomLayout zoomLayout;
+    private InitializeSelectingCornersFragment initSelectCornerFragment;
+    private final Point[] tableCorners = new Point[4];
+    private int currentCornerIndex;
 
     /**
      * The main initialization step. There are multiple callers of this method, but mechanisms are
@@ -52,6 +56,7 @@ public final class LiveDebugActivity extends DebugActivity {
      */
     @Override
     public void init() {
+
         // reality check: don't initialize twice
         if (mStatus == Status.RUNNING) return;
 
@@ -60,25 +65,21 @@ public final class LiveDebugActivity extends DebugActivity {
         // stop if permissions haven't been granted
         if (isCameraPermissionDenied()) {
             mStatus = Status.CAMERA_PERMISSION_ERROR;
-            updateStatusString();
             return;
         }
 
         // get configuration settings
-        mConfig = new Config(this);
+        Config mConfig = new Config(this);
 
         // set up assets
         Assets.getInstance().load(this);
 
-        // set up track set
-        TrackSet.getInstance().setConfig(mConfig);
-
         // create a dedicated camera input thread
-        mCamera = new CameraThread(mHandler, mConfig);
+        mCamera = new CameraThread(new InitializeHandler(this), mConfig);
 
         // add preview as camera target
         SurfaceView cameraView = getmSurfaceView();
-        mPreviewTarget = new PreviewCameraTarget(cameraView.getHolder().getSurface(),
+        PreviewCameraTarget mPreviewTarget = new PreviewCameraTarget(cameraView.getHolder().getSurface(),
                 cameraView.getWidth(), cameraView.getHeight());
         mCamera.addTarget(mPreviewTarget);
 
@@ -86,26 +87,16 @@ public final class LiveDebugActivity extends DebugActivity {
             mPreviewTarget.setSlowdown(PREVIEW_SLOWDOWN_FRAMES);
         }
 
-        if (!mConfig.isDisableDetection()) {
-            // C++ initialization
-            Config mConfig = new Config(this);
-            mHandler.init(mConfig, mCamera.getWidth(), mCamera.getHeight());
-            trySettingTableLocationFromIntent();
-            mHandler.startDetections();
-        }
-
         // refresh GUI
         mStatus = Status.RUNNING;
-        updateStatusString();
 
-        // start threads
-        if (mEncode != null) mEncode.start();
+        // start thread
         mCamera.start();
     }
 
     @Override
     public void setCurrentContentView() {
-        setContentView(R.layout.activity_live_debug);
+        setContentView(R.layout.activity_initialize);
     }
 
     /**
@@ -124,17 +115,100 @@ public final class LiveDebugActivity extends DebugActivity {
         startActivity(new Intent(this, SettingsActivity.class));
     }
 
+    public ZoomLayout getZoomLayout() {
+        return zoomLayout;
+    }
 
-    public EncodeThread getmEncode() {
-        return mEncode;
+    public Point[] getTableCorners() {
+        return tableCorners;
+    }
+
+    public SurfaceView getTableSurface() {
+        return tableSurface;
     }
 
     @Override
     protected void onCreate(android.os.Bundle savedBundle) {
         super.onCreate(savedBundle);
-        mStatusText = findViewById(R.id.camera_status);
-        mStatusTextLast = null;
-        this.mHandler = new LiveDebugHandler(this);
+        this.tableSurface = findViewById(R.id.init_tableSurface);
+        this.tableSurface.getHolder().setFormat(PixelFormat.TRANSPARENT);
+        this.zoomLayout = findViewById(R.id.init_zoomLayout);
+        this.currentCornerIndex = 0;
+        setInitializeSelectingFragment();
+        setupOnLongTouchListener();
+        setupOnRevertClickListener();
+    }
+
+    private void setInitializeSelectingFragment() {
+        this.initSelectCornerFragment = InitializeSelectingCornersFragment.newInstance(String.valueOf(this.currentCornerIndex),
+                String.valueOf(this.tableCorners.length));
+        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+        transaction.replace(R.id.init_fragmentPlaceholder, this.initSelectCornerFragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
+    }
+
+    private void setDoneFragment() {
+        this.initSelectCornerFragment = InitializeDoneSelectingCornersFragment.newInstance(String.valueOf(this.currentCornerIndex),
+                String.valueOf(this.tableCorners.length), this.tableCorners);
+        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+        transaction.replace(R.id.init_fragmentPlaceholder, this.initSelectCornerFragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private void setupOnLongTouchListener() {
+        final GestureDetector gestureDetector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
+            public void onLongPress(MotionEvent e) {
+                if (currentCornerIndex >= tableCorners.length) return;
+                float x = e.getX();
+                float y = e.getY();
+                float zoom = zoomLayout.getZoom();
+                float panX = zoomLayout.getPanX();
+                float panY = zoomLayout.getPanY();
+                Point absPoint = makeAbsPoint(x,y,zoom,panX,panY);
+                tableCorners[currentCornerIndex] = absPoint;
+                initSelectCornerFragment.setSelectedCornersText(currentCornerIndex+1);
+                Log.d("x:"+absPoint.x+" y:"+absPoint.y);
+                Log.d("Longpress detected");
+                currentCornerIndex++;
+                if (currentCornerIndex == tableCorners.length) {
+                    setDoneFragment();
+                }
+            }
+        });
+
+        this.zoomLayout.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                return gestureDetector.onTouchEvent(motionEvent);
+            }
+        });
+    }
+
+    private void setupOnRevertClickListener() {
+        findViewById(R.id.init_revertButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (currentCornerIndex <= 0) return;
+                currentCornerIndex--;
+                tableCorners[currentCornerIndex] = null;
+                if (currentCornerIndex == tableCorners.length-1) {
+                    setInitializeSelectingFragment();
+                    return;
+                }
+                initSelectCornerFragment.setSelectedCornersText(currentCornerIndex);
+            }
+        });
+    }
+
+
+
+    private Point makeAbsPoint(float x, float y, float zoom, float panX, float panY) {
+        float absX = x/zoom + Math.abs(panX);
+        float absY = y/zoom + Math.abs(panY);
+        return new Point(Math.round(absX), Math.round(absY));
     }
 
     /**
@@ -174,83 +248,20 @@ public final class LiveDebugActivity extends DebugActivity {
     protected void onPause() {
         super.onPause();
 
-        mHandler.stopDetections();
-
         if (mCamera != null) {
             mCamera.getHandler().sendKill();
             try {
                 mCamera.join();
             } catch (InterruptedException ie) {
                 Thread.currentThread().interrupt();
-                com.android.grafika.Log.e("Interrupted when closing CameraThread", ie);
+                Log.e("Interrupted when closing CameraThread", ie);
             }
             mCamera = null;
-        }
-
-        if (mEncode != null) {
-            mEncode.getHandler().sendKill();
-            try {
-                mEncode.join();
-            } catch (InterruptedException ie) {
-                Thread.currentThread().interrupt();
-                com.android.grafika.Log.e("Interrupted when closing EncodeThread", ie);
-            }
-            mEncode = null;
         }
 
         TrackSet.getInstance().clear();
 
         mStatus = Status.STOPPED;
-    }
-
-    private void updateStatusString() {
-        if(mStatus != Status.STOPPED) {
-            String text;
-            if (mStatus == Status.CAMERA_ERROR) {
-                text = getString(R.string.errorCamera);
-            } else if (mStatus == Status.CAMERA_PERMISSION_ERROR) {
-                text = getString(R.string.errorPermissionCamera);
-            } else {
-                text = "";
-            }
-
-            if (mStatusTextLast != null && !mStatusTextLast.equals(text)) {
-                mStatusText.setText(text);
-                mStatusTextLast = text;
-            }
-        }
-    }
-    private void trySettingTableLocationFromIntent() {
-        int[] cornerInts = getCornerIntArrayFromIntent();
-        scaleCornerIntsToSelectedCamera(cornerInts);
-        mHandler.setTable(Table.makeTableFromIntArray(cornerInts));
-    }
-
-    private int[] getCornerIntArrayFromIntent() {
-        Bundle bundle = getIntent().getExtras();
-        if (bundle == null) {
-            throw new UnableToGetBundleException();
-        }
-        int[] cornerIntArray = bundle.getIntArray(CORNERS_PARAM);
-        if (cornerIntArray == null) {
-            throw new NoCornersInIntendFoundException();
-        }
-        return cornerIntArray;
-    }
-
-    private void scaleCornerIntsToSelectedCamera(int[] cornerInts) {
-        Display display = getWindowManager().getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        float xScale = (float) mCamera.getWidth() / size.x;
-        float yScale = (float) mCamera.getHeight() / size.y;
-        for(int i = 0; i<cornerInts.length; i++) {
-            if(i%2 == 0) {
-                cornerInts[i] = Math.round(cornerInts[i] * xScale);
-            } else {
-                cornerInts[i] = Math.round(cornerInts[i] * yScale);
-            }
-        }
     }
 
     /**
@@ -263,19 +274,5 @@ public final class LiveDebugActivity extends DebugActivity {
 
     private enum Status {
         STOPPED, RUNNING, CAMERA_ERROR, CAMERA_PERMISSION_ERROR
-    }
-
-    static class NoCornersInIntendFoundException extends RuntimeException {
-        private static final String MESSAGE = "No corners have been found in the intent's bundle!";
-        NoCornersInIntendFoundException() {
-            super(MESSAGE);
-        }
-    }
-
-    static class UnableToGetBundleException extends RuntimeException {
-        private static final String MESSAGE = "Unable to get the bundle from Intent!";
-        UnableToGetBundleException() {
-            super(MESSAGE);
-        }
     }
 }

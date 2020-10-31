@@ -58,7 +58,7 @@ public class Table {
         int y;
         Point[] corners = new Point[4];
         Point[] net = new Point[2];
-        for(int i = 1; i<5; i++) {
+        for (int i = 1; i<5; i++) {
             if(i <= 2) {
                 x = Integer.parseInt(properties.getProperty("n"+i+"_x"));
                 y = Integer.parseInt(properties.getProperty("n"+i+"_y"));
@@ -69,6 +69,30 @@ public class Table {
             corners[i-1] = new Point(x,y);
         }
         return new Table(corners, net);
+    }
+
+    public static Table makeTableFromIntArray(int[] cornerInts) {
+        if (cornerInts.length < 8) throw new NotFourCornersException(cornerInts.length/2);
+        Point[] points = intToPointArray(cornerInts);
+        Point[] netPoints = new Point[2];
+        netPoints[0] = calcNetPoint(points[0], points[1]);
+        netPoints[1] = calcNetPoint(points[2], points[3]);
+        return new Table(points, netPoints);
+    }
+
+    private static Point calcNetPoint(Point oneCorner, Point oppositeCornerHorizontally) {
+        return new Point(Math.abs((oneCorner.x+oppositeCornerHorizontally.x)/2), Math.abs((oneCorner.y+oppositeCornerHorizontally.y)/2));
+    }
+
+    private static Point[] intToPointArray(int[] ints) {
+        Point[] points = new Point[ints.length/2];
+        for (int i = 0; i<points.length; i++) {
+            Point point = new Point();
+            point.x = ints[i*2];
+            point.y = ints[i*2+1];
+            points[i] = point;
+        }
+        return points;
     }
 
     public boolean isOn(int x) {

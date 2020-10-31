@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <include layout="@layout/corner_selection_views" />
+
+    <GridLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/radius_background"
+        android:padding="16dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:columnCount="1"
+        android:rowCount="2">
+
+        <TextView
+            android:id="@+id/init_txtMarkTableLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/initMarkTableLabel"
+            android:textColor="@android:color/secondary_text_light"
+            android:textSize="24sp"/>
+
+        <TextView
+            android:id="@+id/init_txtMarkTableLabelExplanation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/initMarkTableLabelExplanation"
+            android:textAlignment="center"
+            android:textColor="@android:color/secondary_text_light"
+            android:textSize="12sp" />
+    </GridLayout>
+
+
+
+
+
+
+</RelativeLayout>

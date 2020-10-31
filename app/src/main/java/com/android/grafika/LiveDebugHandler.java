@@ -7,6 +7,7 @@ import cz.fmo.camera.CameraThread;
 
 public class LiveDebugHandler extends DebugHandler implements CameraThread.Callback {
     private static final int CAMERA_ERROR = 2;
+
     public LiveDebugHandler(@NonNull DebugActivity activity) {
         super(activity);
     }
