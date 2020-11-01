@@ -9,6 +9,7 @@ import android.support.annotation.NonNull;
 import android.view.Display;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
+import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +27,7 @@ import cz.fmo.SettingsActivity;
  */
 public final class InitializeActivity extends CameraPreviewActivity {
     private SurfaceView tableSurface;
+    private SurfaceHolder.Callback tableSurfaceCallback;
     private ZoomLayout zoomLayout;
     private InitializeSelectingCornersFragment initSelectCornerFragment;
     private final Point[] tableCorners = new Point[4];
@@ -35,13 +37,19 @@ public final class InitializeActivity extends CameraPreviewActivity {
     protected void onCreate(android.os.Bundle savedBundle) {
         super.onCreate(savedBundle);
         cameraCallback = new InitializeHandler(this);
+        this.tableSurfaceCallback = new TableSurfaceCallback();
         this.tableSurface = findViewById(R.id.init_tableSurface);
         this.tableSurface.getHolder().setFormat(PixelFormat.TRANSPARENT);
+        this.tableSurface.getHolder().addCallback(this.tableSurfaceCallback);
         this.zoomLayout = findViewById(R.id.init_zoomLayout);
         this.currentCornerIndex = 0;
         setInitializeSelectingFragment();
         setupOnLongTouchListener();
         setupOnRevertClickListener();
+    }
+
+    public boolean isTableDrawReady() {
+        return ((TableSurfaceCallback) this.tableSurfaceCallback).isReady();
     }
 
     /**
@@ -166,5 +174,32 @@ public final class InitializeActivity extends CameraPreviewActivity {
         float absX = x/zoom + Math.abs(panX);
         float absY = y/zoom + Math.abs(panY);
         return new Point(Math.round(absX), Math.round(absY));
+    }
+
+    private static class TableSurfaceCallback implements SurfaceHolder.Callback {
+        private boolean isReady;
+
+        TableSurfaceCallback() {
+            this.isReady = false;
+        }
+
+        @Override
+        public void surfaceCreated(SurfaceHolder surfaceHolder) {
+            this.isReady = true;
+        }
+
+        @Override
+        public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
+            // no implementation needed
+        }
+
+        @Override
+        public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
+            // no implementation needed
+        }
+
+        public boolean isReady() {
+            return isReady;
+        }
     }
 }

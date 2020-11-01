@@ -26,7 +26,7 @@ public class InitializeHandler extends android.os.Handler implements CameraThrea
     public void onCameraRender() {
         // draw table corners
         InitializeActivity activity = (InitializeActivity) mActivity.get();
-        if (activity.ismSurfaceHolderReady()) {
+        if (activity.isTableDrawReady()) {
             Canvas canvas = activity.getTableSurface().getHolder().lockCanvas();
             ZoomLayout zoomLayout = activity.getZoomLayout();
             canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
