@@ -108,14 +108,14 @@ public class EventDetectorTest {
                 detection.predecessor = predecessor;
                 invokeOnObjectDetectedWithDelay(new Lib.Detection[]{predecessor}, ev, i);
                 invokeOnObjectDetectedWithDelay(new Lib.Detection[]{detection}, ev, i);
-                verify(mockCallback, times(1)).onNearlyOutOfFrame(detection);
+                verify(mockCallback, times(1)).onNearlyOutOfFrame(detection, DetectionGenerator.getNearlyOutOfFrameSide(ev.getNearlyOutOfFrameThresholds(), detection));
                 ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT, mockCallback, ts, table);
             }
         }
         Lib.Detection[] detectionsInFrame = DetectionGenerator.makeDetectionsInXDirectionOnTable(true);
         invokeOnObjectDetectedWithDelay(detectionsInFrame, ev, 0);
         for (Lib.Detection detection : detectionsInFrame) {
-            verify(mockCallback, times(0)).onNearlyOutOfFrame(detection);
+            verify(mockCallback, times(0)).onNearlyOutOfFrame(detection, DetectionGenerator.getNearlyOutOfFrameSide(ev.getNearlyOutOfFrameThresholds(), detection));
         }
     }
 
@@ -128,7 +128,7 @@ public class EventDetectorTest {
             nearlyOutOfFrame = DetectionGenerator.makeNearlyOutOfFrameDetections(ev.getNearlyOutOfFrameThresholds(), SOME_WIDTH, SOME_HEIGHT);
             for(Lib.Detection detection : nearlyOutOfFrame) {
                 invokeOnObjectDetectedWithDelay(new Lib.Detection[]{detection}, ev, i);
-                verify(mockCallback, times(0)).onNearlyOutOfFrame(detection);
+                verify(mockCallback, times(0)).onNearlyOutOfFrame(detection, DetectionGenerator.getNearlyOutOfFrameSide(ev.getNearlyOutOfFrameThresholds(), detection));
                 ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT, mockCallback, ts, table);
             }
         }

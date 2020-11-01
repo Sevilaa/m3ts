@@ -61,7 +61,7 @@ public class RefereeTest {
         referee.onBounce();
         referee.onTableSideChange(Side.RIGHT);
         referee.onBounce();
-        referee.onNearlyOutOfFrame(detection);
+        referee.onNearlyOutOfFrame(detection, Side.RIGHT);
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
@@ -79,7 +79,7 @@ public class RefereeTest {
         referee.onBounce();
         referee.onTableSideChange(Side.RIGHT);
         referee.onBounce();
-        referee.onNearlyOutOfFrame(detection);
+        referee.onNearlyOutOfFrame(detection, Side.RIGHT);
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
@@ -145,7 +145,7 @@ public class RefereeTest {
         referee.onBounce();
         referee.onSideChange(Side.RIGHT);
         referee.onTableSideChange(Side.LEFT);
-        referee.onNearlyOutOfFrame(detection);
+        referee.onNearlyOutOfFrame(detection, Side.LEFT);
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
@@ -164,7 +164,7 @@ public class RefereeTest {
         referee.onBounce();
         referee.onSideChange(Side.RIGHT);
         referee.onTableSideChange(Side.LEFT);
-        referee.onNearlyOutOfFrame(detection);
+        referee.onNearlyOutOfFrame(detection, Side.LEFT);
         referee.onStrikeFound(realTrackSet);
         verify(gameCallback, times(1)).onPoint(Side.LEFT);
         verify(gameCallback, times(0)).onPoint(Side.RIGHT);

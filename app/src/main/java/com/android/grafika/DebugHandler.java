@@ -78,7 +78,7 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     }
 
     @Override
-    public void onNearlyOutOfFrame(Lib.Detection detection) {
+    public void onNearlyOutOfFrame(Lib.Detection detection, Side side) {
         latestNearlyOutOfFrame = detection;
     }
 

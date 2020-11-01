@@ -68,7 +68,7 @@ public class Referee implements EventDetectionCallback {
     }
 
     @Override
-    public void onNearlyOutOfFrame(Lib.Detection detection) {
+    public void onNearlyOutOfFrame(Lib.Detection detection, Side side) {
         if(this.state == GameState.PLAY) {
             if(this.bounces == 0) {
                 faultBySide(currentStriker);
