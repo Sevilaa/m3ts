@@ -11,11 +11,14 @@ public class Match implements MatchCallback {
     private Map<Side, Integer> wins;
     private UICallback uiCallback;
     private Referee referee;
+    private ServeRules serveRules;
+    private GameType gameType;
     // TODO change to dynamic implementation
     private final Side STARTING_SIDE = Side.LEFT;
 
-    public Match(MatchType type, String playerLeftName, String playerRightName, UICallback uiCallback) {
+    public Match(MatchType type, GameType gameType, ServeRules serveRules, String playerLeftName, String playerRightName, UICallback uiCallback) {
         this.type = type;
+        this.gameType = gameType;
         this.wins = new HashMap<>();
         this.wins.put(Side.LEFT, 0);
         this.wins.put(Side.RIGHT,0);
@@ -24,11 +27,12 @@ public class Match implements MatchCallback {
         this.playerRight = new Player(playerRightName);
         this.uiCallback = uiCallback;
         this.referee = new Referee(STARTING_SIDE);
+        this.serveRules = serveRules;
         startNewGame();
     }
 
     void startNewGame() {
-        Game game = new Game(this, uiCallback, STARTING_SIDE);
+        Game game = new Game(this, uiCallback, gameType, serveRules, STARTING_SIDE);
         this.games[this.wins.get(Side.RIGHT) + this.wins.get(Side.LEFT)] = game;
         this.referee.setGame(game);
     }
