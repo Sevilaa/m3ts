@@ -48,6 +48,7 @@
             android:theme="@style/Recording">
             <intent-filter>
                 <action android:name="com.android.grafika.LiveDebugActivity"/>
+                <action android:name="android.intent.action.TTS_SERVICE" />
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
@@ -68,6 +69,7 @@
             android:theme="@style/PlayMovieSurfaceActivity">
             <intent-filter>
                 <action android:name="com.android.grafika.PlayMovieSurfaceActivity"/>
+                <action android:name="android.intent.action.TTS_SERVICE" />
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>

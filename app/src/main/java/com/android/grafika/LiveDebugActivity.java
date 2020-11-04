@@ -99,8 +99,8 @@ public final class LiveDebugActivity extends DebugActivity {
         display.getSize(size);
         float xScale = (float) this.getCameraWidth() / size.x;
         float yScale = (float) this.getCameraHeight() / size.y;
-        for(int i = 0; i<cornerInts.length; i++) {
-            if(i%2 == 0) {
+        for (int i = 0; i < cornerInts.length; i++) {
+            if (i % 2 == 0) {
                 cornerInts[i] = Math.round(cornerInts[i] * xScale);
             } else {
                 cornerInts[i] = Math.round(cornerInts[i] * yScale);
