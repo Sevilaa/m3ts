@@ -1,5 +1,6 @@
 package com.android.grafika;
 
+import android.annotation.SuppressLint;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -21,10 +22,12 @@ import cz.fmo.events.EventDetectionCallback;
 import cz.fmo.events.EventDetector;
 import cz.fmo.tabletennis.Match;
 import cz.fmo.tabletennis.MatchType;
+import cz.fmo.tabletennis.ScoreManipulationCallback;
 import cz.fmo.tabletennis.Side;
 import cz.fmo.tabletennis.Table;
 import cz.fmo.tabletennis.UICallback;
 import cz.fmo.util.Config;
+import helper.OnSwipeListener;
 
 public class DebugHandler extends android.os.Handler implements EventDetectionCallback, UICallback {
 
@@ -42,14 +45,15 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     private Lib.Detection latestNearlyOutOfFrame;
     private Match match;
     private int newBounceCount;
+    private ScoreManipulationCallback smc;
 
     public DebugHandler(@NonNull DebugActivity activity) {
         mActivity = new WeakReference<>(activity);
         tracks = TrackSet.getInstance();
         tracks.clear();
         hasNewTable = true;
-        match = new Match(MatchType.BO5, "Hans", "Peter", this);
         p = new Paint();
+        startMatch();
     }
 
     @Override
@@ -116,11 +120,14 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
 
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public void onMatchEnded() {
         this.match = null;
         Lib.detectionStop();
+        mActivity.get().getmSurfaceView().setOnTouchListener(null);
         resetScoreTextViews();
+        resetGamesTextViews();
     }
 
     @Override
@@ -140,6 +147,7 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
         } else {
             setTextInTextView(R.id.txtPlayMovieGameRight, String.valueOf(wins));
         }
+        setCallbackForNewGame();
     }
 
     void init(Config config, int srcWidth, int srcHeight) {
@@ -205,6 +213,11 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
         surfaceHolderTable.unlockCanvasAndPost(canvas);
     }
 
+    private void startMatch() {
+        match = new Match(MatchType.BO3, "Hans", "Peter", this);
+        setOnSwipeListener();
+    }
+
     private void drawAllTracks(Canvas canvas, TrackSet set) {
         for (Track t : set.getTracks()) {
             t.updateColor();
@@ -255,6 +268,11 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
         setTextInTextView(R.id.txtPlayMovieScoreRight, String.valueOf(0));
     }
 
+    private void resetGamesTextViews() {
+        setTextInTextView(R.id.txtPlayMovieGameLeft, String.valueOf(0));
+        setTextInTextView(R.id.txtPlayMovieGameRight, String.valueOf(0));
+    }
+
     private void setTextInTextView(int id, final String text) {
         final DebugActivity activity = mActivity.get();
         if (activity == null) {
@@ -267,5 +285,33 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
                 txtView.setText(text);
             }
         });
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private void setOnSwipeListener() {
+        if(match != null) {
+            setCallbackForNewGame();
+            mActivity.get().getmSurfaceView().setOnTouchListener(new OnSwipeListener(mActivity.get()) {
+                @Override
+                public void onSwipeDown(Side swipeSide) {
+                    if(smc != null) {
+                        smc.onPointDeduction(swipeSide);
+                    }
+                }
+
+                @Override
+                public void onSwipeUp(Side swipeSide) {
+                    if(smc != null) {
+                        smc.onPointAddition(swipeSide);
+                    }
+                }
+            });
+        }
+    }
+
+    private void setCallbackForNewGame() {
+        if(match != null) {
+            this.smc = match.getReferee();
+        }
     }
 }

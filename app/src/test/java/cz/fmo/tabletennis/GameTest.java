@@ -12,16 +12,18 @@ public class GameTest {
     private MatchCallback matchCallback;
     private UICallback uiCallback;
     private Game game;
+    // TODO change to dynamic implementation
+    private final Side STARTING_SIDE = Side.LEFT;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         matchCallback = mock(MatchCallback.class);
         uiCallback = mock(UICallback.class);
-        game = new Game(matchCallback, uiCallback);
+        game = new Game(matchCallback, uiCallback, STARTING_SIDE);
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         game = null;
         matchCallback = null;
         uiCallback = null;
@@ -37,7 +39,7 @@ public class GameTest {
         verify(matchCallback, times(1)).onWin(Side.LEFT);
 
         // let the right side win 11:0
-        game = new Game(matchCallback, uiCallback);
+        game = new Game(matchCallback, uiCallback, STARTING_SIDE);
         for (int i = 0; i<11; i++) {
             game.onPoint(Side.RIGHT);
             verify(uiCallback, times(1)).onScore(Side.RIGHT, i+1);
@@ -58,7 +60,7 @@ public class GameTest {
         verify(matchCallback, times(0)).onWin(Side.RIGHT);
         verify(matchCallback, times(0)).onWin(Side.LEFT);
 
-        game = new Game(matchCallback, uiCallback);
+        game = new Game(matchCallback, uiCallback, STARTING_SIDE);
         for (int i = 0; i<20; i++) {
             if (i<10) {
                 game.onPoint(Side.RIGHT);

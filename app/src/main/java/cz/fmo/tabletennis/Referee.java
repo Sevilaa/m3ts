@@ -7,11 +7,11 @@ import cz.fmo.data.TrackSet;
 import cz.fmo.events.EventDetectionCallback;
 import helper.DirectionX;
 
-public class Referee implements EventDetectionCallback {
+public class Referee implements EventDetectionCallback, ScoreManipulationCallback {
     private GameCallback gameCallback;
+    private Game currentGame;
     private Side currentStriker;
     private Side currentBallSide;
-    private Side server;
     private GameState state;
     private int bounces;
     private int serveCounter;
@@ -20,23 +20,21 @@ public class Referee implements EventDetectionCallback {
     public Referee(Side servingSide) {
         this.currentStriker = servingSide;
         this.currentBallSide = null;
-        this.server = servingSide;
         this.serveCounter = 0;
         this.bounces = 0;
         this.state = GameState.WAIT_FOR_SERVE;
     }
 
-    public void setGame(GameCallback game) {
+    public void setGame(Game game) {
         this.gameCallback = game;
-    }
-
-    public Side getServer() {
-        return server;
+        this.currentGame = game;
     }
 
     public GameState getState() {
         return state;
     }
+
+    public Side getServer() { return currentGame.getServer(); }
 
     @Override
     public void onBounce() {
@@ -83,10 +81,10 @@ public class Referee implements EventDetectionCallback {
     public void onStrikeFound(TrackSet tracks) {
         switch (this.state) {
             case WAIT_FOR_SERVE:
-                if ((server == Side.LEFT && tracks.getTracks().get(0).getLatest().directionX == DirectionX.RIGHT) ||
-                        (server == Side.RIGHT && tracks.getTracks().get(0).getLatest().directionX == DirectionX.LEFT)) {
+                if ((getServer() == Side.LEFT && tracks.getTracks().get(0).getLatest().directionX == DirectionX.RIGHT) ||
+                        (getServer()  == Side.RIGHT && tracks.getTracks().get(0).getLatest().directionX == DirectionX.LEFT)) {
                     this.state = GameState.SERVING;
-                    currentBallSide = server;
+                    currentBallSide = getServer();
                 }
                 break;
             case OUT_OF_FRAME:
@@ -111,7 +109,7 @@ public class Referee implements EventDetectionCallback {
         switch (this.state) {
             case SERVING:
                 if(bounces == 0) {
-                    faultBySide(server);
+                    faultBySide(getServer());
                     break;
                 }
             case PLAY:
@@ -124,30 +122,36 @@ public class Referee implements EventDetectionCallback {
         }
     }
 
+    @Override
+    public void onPointDeduction(Side side) {
+        gameCallback.onPointDeduction(side);
+        initPoint();
+    }
+
+    @Override
+    public void onPointAddition(Side side) {
+        pointBySide(side);
+    }
+
     private void pointBySide(Side side) {
-        changeServer();
         gameCallback.onPoint(side);
+        initPoint();
     }
 
     private void faultBySide(Side side) {
-        changeServer();
         if (side == Side.RIGHT) {
             gameCallback.onPoint(Side.LEFT);
         } else {
             gameCallback.onPoint(Side.RIGHT);
         }
+        initPoint();
     }
 
-    private void changeServer() {
+    private void initPoint() {
         this.bounces = 0;
         this.state = GameState.WAIT_FOR_SERVE;
-        if (server == Side.LEFT) {
-            server = Side.RIGHT;
-        } else {
-            server = Side.LEFT;
-        }
-        currentBallSide = server;
-        currentStriker = server;
+        currentBallSide = getServer();
+        currentStriker = getServer();
     }
 
     private void applyRuleSet() {
@@ -165,9 +169,9 @@ public class Referee implements EventDetectionCallback {
     }
 
     private void applyRuleSetServing() {
-        if (bounces > 1 && currentBallSide == server) {
+        if (bounces > 1 && currentBallSide == getServer()) {
             Log.d("Server Fault: Multiple Bounces on same Side");
-            faultBySide(this.server);
+            faultBySide(getServer());
         }
     }
 

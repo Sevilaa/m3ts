@@ -17,7 +17,7 @@ import static org.mockito.Mockito.when;
 
 public class RefereeTest {
     private Referee referee;
-    private GameCallback gameCallback;
+    private Game gameMock;
     private static final int FRAME_RATE = 30;
     private static final int SOME_WIDTH = 1920;
     private static final int SOME_HEIGHT = 1080;
@@ -35,8 +35,9 @@ public class RefereeTest {
         when(mockConfig.getObjectRadius()).thenReturn(10f);
         realTrackSet.setConfig(mockConfig);
         referee = new Referee(STARTING_SIDE);
-        gameCallback = mock(GameCallback.class);
-        referee.setGame(gameCallback);
+        gameMock = mock(Game.class);
+        when(gameMock.getServer()).thenReturn(Side.LEFT);
+        referee.setGame(gameMock);
         detection = new Lib.Detection();
     }
 
@@ -50,8 +51,8 @@ public class RefereeTest {
         assertEquals(referee.getState(), GameState.PLAY);
         referee.onBounce();
         referee.onBounce();
-        verify(gameCallback, times(1)).onPoint(STARTING_SIDE);
-        verify(gameCallback, times(0)).onPoint(Side.RIGHT);
+        verify(gameMock, times(1)).onPoint(STARTING_SIDE);
+        verify(gameMock, times(0)).onPoint(Side.RIGHT);
         assertEquals(referee.getState(), GameState.WAIT_FOR_SERVE);
     }
 
@@ -68,8 +69,8 @@ public class RefereeTest {
             e.printStackTrace();
         }
         referee.onStrikeFound(realTrackSet);
-        verify(gameCallback, times(1)).onPoint(STARTING_SIDE);
-        verify(gameCallback, times(0)).onPoint(Side.RIGHT);
+        verify(gameMock, times(1)).onPoint(STARTING_SIDE);
+        verify(gameMock, times(0)).onPoint(Side.RIGHT);
         assertEquals(referee.getState(), GameState.WAIT_FOR_SERVE);
     }
 
@@ -89,8 +90,8 @@ public class RefereeTest {
         referee.onSideChange(Side.RIGHT);
         referee.onTableSideChange(Side.LEFT);
         referee.onBounce();
-        verify(gameCallback, times(0)).onPoint(STARTING_SIDE);
-        verify(gameCallback, times(0)).onPoint(Side.RIGHT);
+        verify(gameMock, times(0)).onPoint(STARTING_SIDE);
+        verify(gameMock, times(0)).onPoint(Side.RIGHT);
         assertEquals(referee.getState(), GameState.PLAY);
     }
 
@@ -99,8 +100,8 @@ public class RefereeTest {
         simulateServe();
         referee.onBounce();
         referee.onBounce();
-        verify(gameCallback, times(1)).onPoint(Side.RIGHT);
-        verify(gameCallback, times(0)).onPoint(Side.LEFT);
+        verify(gameMock, times(1)).onPoint(Side.RIGHT);
+        verify(gameMock, times(0)).onPoint(Side.LEFT);
         assertEquals(referee.getState(), GameState.WAIT_FOR_SERVE);
     }
 
@@ -109,8 +110,8 @@ public class RefereeTest {
         simulateServe();
         referee.onTableSideChange(Side.RIGHT);
         referee.onBounce();
-        verify(gameCallback, times(1)).onPoint(Side.RIGHT);
-        verify(gameCallback, times(0)).onPoint(Side.LEFT);
+        verify(gameMock, times(1)).onPoint(Side.RIGHT);
+        verify(gameMock, times(0)).onPoint(Side.LEFT);
         assertEquals(referee.getState(), GameState.WAIT_FOR_SERVE);
     }
 
@@ -121,8 +122,8 @@ public class RefereeTest {
         referee.onTableSideChange(Side.RIGHT);
         referee.onBounce();
         referee.onSideChange(Side.RIGHT);
-        verify(gameCallback, times(0)).onPoint(Side.RIGHT);
-        verify(gameCallback, times(0)).onPoint(Side.LEFT);
+        verify(gameMock, times(0)).onPoint(Side.RIGHT);
+        verify(gameMock, times(0)).onPoint(Side.LEFT);
         assertEquals(referee.getState(), GameState.PLAY);
     }
 
@@ -133,8 +134,8 @@ public class RefereeTest {
         referee.onTableSideChange(Side.RIGHT);
         referee.onSideChange(Side.RIGHT);
         referee.onBounce();
-        verify(gameCallback, times(1)).onPoint(Side.LEFT);
-        verify(gameCallback, times(0)).onPoint(Side.RIGHT);
+        verify(gameMock, times(1)).onPoint(Side.LEFT);
+        verify(gameMock, times(0)).onPoint(Side.RIGHT);
     }
 
     @Test
@@ -152,8 +153,8 @@ public class RefereeTest {
             e.printStackTrace();
         }
         referee.onStrikeFound(realTrackSet);
-        verify(gameCallback, times(1)).onPoint(Side.LEFT);
-        verify(gameCallback, times(0)).onPoint(Side.RIGHT);
+        verify(gameMock, times(1)).onPoint(Side.LEFT);
+        verify(gameMock, times(0)).onPoint(Side.RIGHT);
     }
 
     @Test
@@ -166,14 +167,14 @@ public class RefereeTest {
         referee.onTableSideChange(Side.LEFT);
         referee.onNearlyOutOfFrame(detection, Side.LEFT);
         referee.onStrikeFound(realTrackSet);
-        verify(gameCallback, times(1)).onPoint(Side.LEFT);
-        verify(gameCallback, times(0)).onPoint(Side.RIGHT);
+        verify(gameMock, times(1)).onPoint(Side.LEFT);
+        verify(gameMock, times(0)).onPoint(Side.RIGHT);
     }
 
     @After
     public void tearDown() {
         referee = null;
-        gameCallback = null;
+        gameMock = null;
     }
 
     private void simulateServe() {
