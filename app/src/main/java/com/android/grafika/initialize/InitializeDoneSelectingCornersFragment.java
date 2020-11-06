@@ -7,12 +7,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.android.grafika.LiveDebugActivity;
 
 import java.lang.ref.WeakReference;
 
 import cz.fmo.R;
+import cz.fmo.tabletennis.MatchType;
+import cz.fmo.tabletennis.Side;
 
 /**
  * Use the {@link InitializeDoneSelectingCornersFragment#newInstance} factory method to
@@ -22,9 +25,11 @@ public class InitializeDoneSelectingCornersFragment extends InitializeSelectingC
     private static final String CORNERS_PARAM = "CORNERS_UNSORTED";
     private static final String MATCH_TYPE_PARAM = "MATCH_TYPE";
     private static final String SERVING_SIDE_PARAM = "SERVING_SIDE";
-
-    private Button btnStart;
+    private TextView txtMatchType;
+    private TextView txtServerSide;
     private Point[] corners;
+    private MatchType selectedMatchType;
+    private Side selectedServerSide;
 
     public InitializeDoneSelectingCornersFragment() {
         // Required empty public constructor
@@ -49,7 +54,16 @@ public class InitializeDoneSelectingCornersFragment extends InitializeSelectingC
         InitializeActivity activity = this.activityWeakReference.get();
         if (activity != null) {
             this.corners = activity.getTableCorners();
+            this.selectedMatchType = MatchType.values()[activity.getSelectedMatchType()];
+            this.selectedServerSide = Side.values()[activity.getSelectedServingSide()];
         }
+    }
+
+    @Override
+    public void updateViews() {
+        super.updateViews();
+        this.txtMatchType.setText(this.selectedMatchType.toString());
+        this.txtServerSide.setText(this.selectedServerSide.toString());
     }
 
     @Override
@@ -57,8 +71,11 @@ public class InitializeDoneSelectingCornersFragment extends InitializeSelectingC
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = super.onCreateView(inflater, container, savedInstanceState);
-        this.btnStart = view.findViewById(R.id.init_startGameBtn);
-        this.btnStart.setOnClickListener(this);
+        Button btnStart = view.findViewById(R.id.init_startGameBtn);
+        btnStart.setOnClickListener(this);
+        this.txtMatchType = view.findViewById(R.id.init_selectedMatchType);
+        this.txtServerSide = view.findViewById(R.id.init_selectedServerSide);
+        updateViews();
         return view;
     }
 

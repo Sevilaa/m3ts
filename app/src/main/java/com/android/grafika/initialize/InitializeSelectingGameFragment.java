@@ -76,7 +76,7 @@ public class InitializeSelectingGameFragment extends android.app.Fragment implem
     }
 
     private void setArrayAdapter(String[] items, Spinner spinner) {
-        ArrayAdapter<CharSequence> aaMatchType = new ArrayAdapter(this.getContext(), android.R.layout.simple_spinner_item, items);
+        ArrayAdapter<CharSequence> aaMatchType = new ArrayAdapter(this.getContext(), R.layout.spinner_item, items);
         aaMatchType.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(aaMatchType);
     }

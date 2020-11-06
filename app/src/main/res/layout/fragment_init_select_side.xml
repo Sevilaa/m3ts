@@ -29,7 +29,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
-            android:backgroundTint="#1A237E"
+            android:backgroundTint="@android:color/secondary_text_light"
             android:spinnerMode="dialog"
             android:textColor="@android:color/secondary_text_light" />
 
@@ -48,6 +48,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:spinnerMode="dialog"
+            android:backgroundTint="@android:color/secondary_text_light"
             android:layout_marginBottom="20dp"
             android:textColor="@android:color/secondary_text_light" />
 

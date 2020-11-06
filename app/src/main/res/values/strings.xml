@@ -74,10 +74,12 @@
     <string name="contentDescRevert">reverts last selected corner</string>
     <string name="initMarkTableLabel">Mark all four table corners</string>
 
-    <!-- Advanced settings -->
+    <!-- Init Activity -->
     <string name="initMarkTableLabelExplanation">Long Press to select a corner</string>
     <string name="initCornersSelectedLabel">Corners selected: </string>
     <string name="initStartGameButtonLabel">Start Game</string>
+    <string name="initMatchTypeLabel">Match Type:</string>
+    <string name="initServerSideLabel">Server starting on:</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
     <!-- TTS -->
@@ -121,7 +123,7 @@
         <item>yuv</item>
     </string-array>
 
-    <!-- Initialize Activity -->
+    <!-- Settings -->
     <string-array name="prefProcResNames">
         <item>Low (for nearby objects)</item>
         <item>Default</item>
