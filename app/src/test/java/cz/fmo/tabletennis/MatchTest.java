@@ -15,13 +15,13 @@ public class MatchTest {
     private UICallback uiCallback;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         uiCallback = mock(UICallback.class);
-        match = new Match(MatchType.BO1, "Player 1", "Player 2", uiCallback);
+        match = new Match(MatchType.BO1, GameType.G11, ServeRules.S2, "Player 1", "Player 2", uiCallback);
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         match = null;
         uiCallback = null;
     }
@@ -47,7 +47,7 @@ public class MatchTest {
     }
 
     private void testWithMatchType(MatchType type) {
-        match = new Match(type, "Player 1", "Player 2", uiCallback);
+        match = new Match(type, GameType.G11, ServeRules.S2, "Player 1", "Player 2", uiCallback);
         int winsToEnd = type.gamesNeededToWin;
         for(int i = 0; i<winsToEnd-1; i++) {
             match.onWin(Side.LEFT);

@@ -22,9 +22,11 @@ import cz.fmo.data.Track;
 import cz.fmo.data.TrackSet;
 import cz.fmo.events.EventDetectionCallback;
 import cz.fmo.events.EventDetector;
+import cz.fmo.tabletennis.GameType;
 import cz.fmo.tabletennis.Match;
 import cz.fmo.tabletennis.MatchType;
 import cz.fmo.tabletennis.ScoreManipulationCallback;
+import cz.fmo.tabletennis.ServeRules;
 import cz.fmo.tabletennis.Side;
 import cz.fmo.tabletennis.Table;
 import cz.fmo.tabletennis.UICallback;
@@ -227,6 +229,7 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     }
 
     private void startMatch() {
+        match = new Match(MatchType.BO3, GameType.G11, ServeRules.S2,"Hans", "Peter", this);
         match = new Match(this.matchType, "Hans", "Peter", this, this.servingSide);
         setOnSwipeListener();
     }

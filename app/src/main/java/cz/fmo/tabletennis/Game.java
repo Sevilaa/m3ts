@@ -4,19 +4,24 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Game implements GameCallback {
-    private int maxScore = 11;
+    private int maxScore;
     private Map<Side, Integer> scores;
     private MatchCallback matchCallback;
     private UICallback uiCallback;
     private Side server;
+    private GameType type;
+    private ServeRules serveRules;
 
-    public Game (MatchCallback matchCallback, UICallback uiCallback, Side server) {
+    public Game (MatchCallback matchCallback, UICallback uiCallback, GameType type, ServeRules serveRules, Side server) {
         scores = new HashMap<>();
         scores.put(Side.LEFT, 0);
         scores.put(Side.RIGHT, 0);
         this.server = server;
         this.matchCallback = matchCallback;
         this.uiCallback = uiCallback;
+        this.type = type;
+        this.maxScore = type.amountOfPoints;
+        this.serveRules = serveRules;
     }
 
     @Override
@@ -58,11 +63,23 @@ public class Game implements GameCallback {
         maxScore++;
     }
 
+    private int getSumOfScores() {
+        return this.scores.get(Side.LEFT) + this.scores.get(Side.RIGHT);
+    }
+
+    private boolean isOneServeRuleActive() {
+        return getSumOfScores() >= 2 * this.type.amountOfPoints - 2;
+    }
+
     private void changeServer() {
-        if (server == Side.LEFT) {
-            server = Side.RIGHT;
-        } else {
-            server = Side.LEFT;
+        int sumOfScores = getSumOfScores();
+        if(sumOfScores % this.serveRules.amountOfServes == 0 ||
+            isOneServeRuleActive()) {
+            if (server == Side.LEFT) {
+                server = Side.RIGHT;
+            } else {
+                server = Side.LEFT;
+            }
         }
     }
 }
