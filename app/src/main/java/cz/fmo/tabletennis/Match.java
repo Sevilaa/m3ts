@@ -15,8 +15,7 @@ public class Match implements MatchCallback {
     private ServeRules serveRules;
     private GameType gameType;
 
-    public Match(MatchType type, GameType gameType, ServeRules serveRules, String playerLeftName, String playerRightName, UICallback uiCallback) {
-    public Match(MatchType type, String playerLeftName, String playerRightName, UICallback uiCallback, Side startingServer) {
+    public Match(MatchType type, GameType gameType, ServeRules serveRules, String playerLeftName, String playerRightName, UICallback uiCallback, Side startingServer) {
         this.type = type;
         this.gameType = gameType;
         this.wins = new HashMap<>();
@@ -34,7 +33,7 @@ public class Match implements MatchCallback {
 
     void startNewGame() {
         switchServers();
-        Game game = new Game(this, uiCallback, gameType, serveRules, STARTING_SIDE);
+        Game game = new Game(this, uiCallback, gameType, serveRules, this.serverSide);
         this.games[this.wins.get(Side.RIGHT) + this.wins.get(Side.LEFT)] = game;
         this.referee.setGame(game);
     }

@@ -229,8 +229,7 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     }
 
     private void startMatch() {
-        match = new Match(MatchType.BO3, GameType.G11, ServeRules.S2,"Hans", "Peter", this);
-        match = new Match(this.matchType, "Hans", "Peter", this, this.servingSide);
+        match = new Match(MatchType.BO3, GameType.G11, ServeRules.S2,"Hans", "Peter", this, this.servingSide);
         setOnSwipeListener();
     }
 
