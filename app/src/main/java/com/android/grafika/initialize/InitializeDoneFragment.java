@@ -11,17 +11,15 @@ import android.widget.TextView;
 
 import com.android.grafika.LiveDebugActivity;
 
-import java.lang.ref.WeakReference;
-
 import cz.fmo.R;
 import cz.fmo.tabletennis.MatchType;
 import cz.fmo.tabletennis.Side;
 
 /**
- * Use the {@link InitializeDoneSelectingCornersFragment#newInstance} factory method to
+ * Use the {@link InitializeDoneFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class InitializeDoneSelectingCornersFragment extends InitializeSelectingCornersFragment implements Button.OnClickListener {
+public class InitializeDoneFragment extends InitializeSelectingCornersFragment implements Button.OnClickListener {
     private static final String CORNERS_PARAM = "CORNERS_UNSORTED";
     private static final String MATCH_TYPE_PARAM = "MATCH_TYPE";
     private static final String SERVING_SIDE_PARAM = "SERVING_SIDE";
@@ -31,22 +29,12 @@ public class InitializeDoneSelectingCornersFragment extends InitializeSelectingC
     private MatchType selectedMatchType;
     private Side selectedServerSide;
 
-    public InitializeDoneSelectingCornersFragment() {
+    public InitializeDoneFragment() {
         // Required empty public constructor
         this.layout = R.layout.fragment_init_done;
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @return A new instance of fragment InitializeSelectingCornersFragment.
-     */
-    public static InitializeDoneSelectingCornersFragment newInstance(InitializeActivity activity) {
-        InitializeDoneSelectingCornersFragment fragment = new InitializeDoneSelectingCornersFragment();
-        fragment.setActivityWeakReference(new WeakReference<>(activity));
-        return fragment;
-    }
+
 
     @Override
     public void onStateChanged() {

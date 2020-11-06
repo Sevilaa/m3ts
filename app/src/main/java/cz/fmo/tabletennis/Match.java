@@ -28,11 +28,11 @@ public class Match implements MatchCallback {
         this.serveRules = serveRules;
         this.referee = new Referee(startingServer);
         this.serverSide = startingServer;
-        startNewGame();
+        startNewGame(true);
     }
 
-    void startNewGame() {
-        switchServers();
+    void startNewGame(boolean firstInit) {
+        if(!firstInit) switchServers();
         Game game = new Game(this, uiCallback, gameType, serveRules, this.serverSide);
         this.games[this.wins.get(Side.RIGHT) + this.wins.get(Side.LEFT)] = game;
         this.referee.setGame(game);
@@ -50,7 +50,7 @@ public class Match implements MatchCallback {
         if (isMatchOver(win)) {
             end();
         } else {
-            startNewGame();
+            startNewGame(false);
         }
     }
 

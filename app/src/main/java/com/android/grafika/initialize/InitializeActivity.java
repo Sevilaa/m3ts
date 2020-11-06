@@ -46,7 +46,6 @@ public final class InitializeActivity extends CameraPreviewActivity {
         this.tableSurface.getHolder().addCallback(this.tableSurfaceCallback);
         this.zoomLayout = findViewById(R.id.init_zoomLayout);
         this.currentCornerIndex = 0;
-        setInitializeSelectingFragment();
         setupOnLongTouchListener();
         setupOnRevertClickListener();
     }
@@ -64,6 +63,7 @@ public final class InitializeActivity extends CameraPreviewActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        setInitializeSelectingCornersFragment();
         FrameLayout layout = findViewById(R.id.frameLayout);
         ViewGroup.LayoutParams params = layout.getLayoutParams();
         Display display = getWindowManager().getDefaultDisplay();
@@ -134,27 +134,28 @@ public final class InitializeActivity extends CameraPreviewActivity {
     }
 
     void onSideAndMatchSelectDone() {
-        setDoneFragment();
+        setInitializeDoneFragment();
     }
 
-    private void switchFragment(Fragment fragment) {
+    private void switchFragment(Fragment fragment, boolean addToBackStack) {
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
         transaction.replace(R.id.init_fragmentPlaceholder, fragment);
+        if(addToBackStack) transaction.addToBackStack(null);
         transaction.commit();
     }
 
-    private void setInitializeSelectingFragment() {
-        this.initSelectCornerFragment = InitializeSelectingCornersFragment.newInstance(this);
-        switchFragment(this.initSelectCornerFragment);
+    private void setInitializeSelectingCornersFragment() {
+        this.initSelectCornerFragment = InitializeFragmentFactory.newSelectingCornersInstance(this);
+        switchFragment(this.initSelectCornerFragment, false);
     }
 
-    private void setInitializeMatchTypeAndServerFragment() {
-        switchFragment(InitializeSelectingGameFragment.newInstance(this));
+    private void setInitializeSpecifyMatchFragment() {
+        switchFragment(InitializeFragmentFactory.newSpecifyMatchInstance(this), true);
     }
 
-    private void setDoneFragment() {
-        this.initSelectCornerFragment = InitializeDoneSelectingCornersFragment.newInstance(this);
-        switchFragment(this.initSelectCornerFragment);
+    private void setInitializeDoneFragment() {
+        this.initSelectCornerFragment = InitializeFragmentFactory.newDoneInstance(this);
+        switchFragment(this.initSelectCornerFragment, true);
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -173,7 +174,7 @@ public final class InitializeActivity extends CameraPreviewActivity {
                 initSelectCornerFragment.onStateChanged();
                 initSelectCornerFragment.updateViews();
                 if (currentCornerIndex == tableCorners.length) {
-                    setInitializeMatchTypeAndServerFragment();
+                    setInitializeSpecifyMatchFragment();
                 }
             }
         });
@@ -194,7 +195,7 @@ public final class InitializeActivity extends CameraPreviewActivity {
                 currentCornerIndex--;
                 tableCorners[currentCornerIndex] = null;
                 if (currentCornerIndex == tableCorners.length-1) {
-                    setInitializeSelectingFragment();
+                    setInitializeSelectingCornersFragment();
                     return;
                 }
                 initSelectCornerFragment.onStateChanged();

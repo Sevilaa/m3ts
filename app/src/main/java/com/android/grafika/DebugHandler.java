@@ -80,18 +80,7 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
 
     @Override
     public void onSideChange(final Side side) {
-        final DebugActivity activity = mActivity.get();
-        final TextView mShotSideText = activity.getmShotSideText();
-        this.post(new Runnable() {
-            @Override
-            public void run() {
-                String txt = "Left Side";
-                if (side == Side.RIGHT) {
-                    txt = "Right Side";
-                }
-                mShotSideText.setText(txt);
-            }
-        });
+        setTextInTextView(R.id.txtSide, side.toString());
     }
 
     @Override
@@ -231,6 +220,10 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     private void startMatch() {
         match = new Match(MatchType.BO3, GameType.G11, ServeRules.S2,"Hans", "Peter", this, this.servingSide);
         setOnSwipeListener();
+        setTextInTextView(R.id.txtPlayMovieState, match.getReferee().getState().toString());
+        setTextInTextView(R.id.txtPlayMovieServing, match.getReferee().getServer().toString());
+        setTextInTextView(R.id.txtBounce, String.valueOf(newBounceCount));
+        drawTable(this.mActivity.get());
     }
 
     private void drawAllTracks(Canvas canvas, TrackSet set) {

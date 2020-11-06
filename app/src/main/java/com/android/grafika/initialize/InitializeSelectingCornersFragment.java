@@ -10,10 +10,6 @@ import java.lang.ref.WeakReference;
 
 import cz.fmo.R;
 
-/**
- * Use the {@link InitializeSelectingCornersFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class InitializeSelectingCornersFragment extends android.app.Fragment {
 
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -29,18 +25,6 @@ public class InitializeSelectingCornersFragment extends android.app.Fragment {
         this.layout = R.layout.fragment_init_selecting_corners;
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @return A new instance of fragment InitializeSelectingCornersFragment.
-     */
-    public static InitializeSelectingCornersFragment newInstance(InitializeActivity activity) {
-        InitializeSelectingCornersFragment fragment = new InitializeSelectingCornersFragment();
-        fragment.setActivityWeakReference(new WeakReference<>(activity));
-        return fragment;
-    }
-
     void setActivityWeakReference(WeakReference<InitializeActivity> activityWeakReference) {
         this.activityWeakReference = activityWeakReference;
     }
@@ -48,7 +32,7 @@ public class InitializeSelectingCornersFragment extends android.app.Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        onStateChanged();
+        if (this.activityWeakReference!= null) onStateChanged();
     }
 
     @Override

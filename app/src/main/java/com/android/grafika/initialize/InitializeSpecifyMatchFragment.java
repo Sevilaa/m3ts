@@ -16,22 +16,16 @@ import cz.fmo.tabletennis.MatchType;
 import cz.fmo.tabletennis.Side;
 
 /**
- * Use the {@link InitializeSelectingGameFragment#newInstance} factory method to
+ * Use the {@link InitializeSpecifyMatchFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class InitializeSelectingGameFragment extends android.app.Fragment implements AdapterView.OnItemSelectedListener, Button.OnClickListener {
+public class InitializeSpecifyMatchFragment extends android.app.Fragment implements AdapterView.OnItemSelectedListener, Button.OnClickListener {
     private static final String[] MATCH_TYPE = {MatchType.BO1.toString(), MatchType.BO3.toString(), MatchType.BO5.toString()};
     private static final String[] SERVING_SIDES = {Side.LEFT.toString(), Side.RIGHT.toString()};
     private WeakReference<InitializeActivity> activityWeakReference;
 
-    public InitializeSelectingGameFragment() {
+    public InitializeSpecifyMatchFragment() {
         // Required empty public constructor
-    }
-
-    public static InitializeSelectingGameFragment newInstance(InitializeActivity activity) {
-        InitializeSelectingGameFragment fragment = new InitializeSelectingGameFragment();
-        fragment.setActivityWeakReference(new WeakReference<>(activity));
-        return fragment;
     }
 
     @Override
@@ -55,7 +49,7 @@ public class InitializeSelectingGameFragment extends android.app.Fragment implem
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_init_select_side, container, false);
+        View view = inflater.inflate(R.layout.fragment_init_specify_match, container, false);
         Button doneButton = view.findViewById(R.id.init_sideAndMatchTypeDoneBtn);
         doneButton.setOnClickListener(this);
         fillSpinners(view);

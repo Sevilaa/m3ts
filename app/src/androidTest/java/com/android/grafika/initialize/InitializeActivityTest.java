@@ -22,14 +22,20 @@ import androidx.test.rule.ActivityTestRule;
 import androidx.test.rule.GrantPermissionRule;
 import androidx.test.runner.AndroidJUnit4;
 import cz.fmo.R;
+import cz.fmo.tabletennis.Side;
 import helper.GrantPermission;
 
+import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
@@ -58,8 +64,8 @@ public class InitializeActivityTest extends InstrumentationTestCase {
 
     @After
     public void tearDown() throws Exception {
-        initializeActivity.finish();
-        initializeActivity = null;
+        //initializeActivity.finish();
+        //initializeActivity = null;
     }
 
     @Test
@@ -90,8 +96,17 @@ public class InitializeActivityTest extends InstrumentationTestCase {
         // long click some more
         testLongClickingScreenTooManyTimes(xLocations, yLocations);
 
-        // fragment should have changed, startGame button should be there
-        assertNotNull(initializeActivity.findViewById(R.id.init_startGameBtn));
+        // fragment should have changed, we should now be able to specify the match
+        assertNotNull(initializeActivity.findViewById(R.id.init_spinnerSelectMatchType));
+        assertNotNull(initializeActivity.findViewById(R.id.init_spinnerSelectServingSide));
+        assertNotNull(initializeActivity.findViewById(R.id.init_sideAndMatchTypeDoneBtn));
+
+        // select right side
+        onView(withId(R.id.init_spinnerSelectServingSide))
+                .perform(click());
+        onData(allOf(is(instanceOf(String.class)))).atPosition(1).perform(click());
+        onView(withId(R.id.init_sideAndMatchTypeDoneBtn))
+                .perform(click());
 
         // now de-select all corners by hitting the revert button 4 times
         for (int i=3; i>=0; i--) {
@@ -113,6 +128,21 @@ public class InitializeActivityTest extends InstrumentationTestCase {
             onView(withId(R.id.init_zoomLayout))
                     .perform(longClickXY(x,y));
         }
+        // select right side
+        onView(withId(R.id.init_spinnerSelectServingSide))
+                .perform(click());
+        onData(allOf(is(instanceOf(String.class)))).atPosition(1).perform(click());
+
+
+        // select BO5
+        onView(withId(R.id.init_spinnerSelectMatchType))
+                .perform(click());
+        onData(allOf(is(instanceOf(String.class)))).atPosition(2).perform(click());
+
+        // hit done
+        onView(withId(R.id.init_sideAndMatchTypeDoneBtn))
+                .perform(click());
+
         onView(withId(R.id.init_startGameBtn))
                 .perform(click());
 
@@ -121,6 +151,9 @@ public class InitializeActivityTest extends InstrumentationTestCase {
                 .check(matches(isDisplayed()));
         onView(withId(R.id.playMovie_debugGrid))
                 .check(matches(isDisplayed()));
+
+        // check if correct match type and side are there
+        onView(allOf(withId(R.id.txtPlayMovieServing), withText(Side.RIGHT.toString())));
     }
 
     private void testClickingRevertTooManyTimes() {
