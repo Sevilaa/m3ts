@@ -10,40 +10,45 @@ import android.widget.Button;
 
 import com.android.grafika.LiveDebugActivity;
 
+import java.lang.ref.WeakReference;
+
 import cz.fmo.R;
 
 /**
  * Use the {@link InitializeDoneSelectingCornersFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class InitializeDoneSelectingCornersFragment extends InitializeSelectingCornersFragment {
-    private static final String MAX_CORNER_PARAM = "MAX_CORNERS";
-    private static final String SELECTED_CORNERS_PARAM = "SELECTED_CORNERS";
+public class InitializeDoneSelectingCornersFragment extends InitializeSelectingCornersFragment implements Button.OnClickListener {
     private static final String CORNERS_PARAM = "CORNERS_UNSORTED";
+    private static final String MATCH_TYPE_PARAM = "MATCH_TYPE";
+    private static final String SERVING_SIDE_PARAM = "SERVING_SIDE";
 
     private Button btnStart;
-    private int[] corners;
+    private Point[] corners;
 
     public InitializeDoneSelectingCornersFragment() {
         // Required empty public constructor
         this.layout = R.layout.fragment_init_done;
     }
 
-    public static InitializeSelectingCornersFragment newInstance(String amountOfSelectedCorners, String maxCorners, Point[] corners) {
-        InitializeSelectingCornersFragment fragment = new InitializeDoneSelectingCornersFragment();
-        Bundle args = new Bundle();
-        args.putString(MAX_CORNER_PARAM, maxCorners);
-        args.putString(SELECTED_CORNERS_PARAM, amountOfSelectedCorners);
-        args.putIntArray(CORNERS_PARAM, InitializeDoneSelectingCornersFragment.pointsToIntArray(corners));
-        fragment.setArguments(args);
+    /**
+     * Use this factory method to create a new instance of
+     * this fragment using the provided parameters.
+     *
+     * @return A new instance of fragment InitializeSelectingCornersFragment.
+     */
+    public static InitializeDoneSelectingCornersFragment newInstance(InitializeActivity activity) {
+        InitializeDoneSelectingCornersFragment fragment = new InitializeDoneSelectingCornersFragment();
+        fragment.setActivityWeakReference(new WeakReference<>(activity));
         return fragment;
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            this.corners = getArguments().getIntArray(CORNERS_PARAM);
+    public void onStateChanged() {
+        super.onStateChanged();
+        InitializeActivity activity = this.activityWeakReference.get();
+        if (activity != null) {
+            this.corners = activity.getTableCorners();
         }
     }
 
@@ -53,18 +58,23 @@ public class InitializeDoneSelectingCornersFragment extends InitializeSelectingC
         // Inflate the layout for this fragment
         View view = super.onCreateView(inflater, container, savedInstanceState);
         this.btnStart = view.findViewById(R.id.init_startGameBtn);
-        this.btnStart.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(getContext(), LiveDebugActivity.class);
-                Bundle bundle = new Bundle();
-                bundle.putIntArray(CORNERS_PARAM, corners);
-                intent.putExtras(bundle);
-                startActivity(intent);
-                getActivity().finish();
-            }
-        });
+        this.btnStart.setOnClickListener(this);
         return view;
+    }
+
+    @Override
+    public void onClick(View view) {
+        InitializeActivity activity = activityWeakReference.get();
+        if (activity != null) {
+            Intent intent = new Intent(getContext(), LiveDebugActivity.class);
+            Bundle bundle = new Bundle();
+            bundle.putIntArray(CORNERS_PARAM, pointsToIntArray(corners));
+            bundle.putInt(MATCH_TYPE_PARAM, activity.getSelectedMatchType());
+            bundle.putInt(SERVING_SIDE_PARAM, activity.getSelectedServingSide());
+            intent.putExtras(bundle);
+            startActivity(intent);
+            getActivity().finish();
+        }
     }
 
     private static int[] pointsToIntArray(Point[] points) {

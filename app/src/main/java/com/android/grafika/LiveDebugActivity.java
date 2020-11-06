@@ -9,6 +9,8 @@ import android.view.View;
 
 import cz.fmo.R;
 import cz.fmo.SettingsActivity;
+import cz.fmo.tabletennis.MatchType;
+import cz.fmo.tabletennis.Side;
 import cz.fmo.tabletennis.Table;
 import cz.fmo.util.Config;
 
@@ -17,13 +19,19 @@ import cz.fmo.util.Config;
  */
 public final class LiveDebugActivity extends DebugActivity {
     private static final String CORNERS_PARAM = "CORNERS_UNSORTED";
+    private static final String MATCH_TYPE_PARAM = "MATCH_TYPE";
+    private static final String SERVING_SIDE_PARAM = "SERVING_SIDE";
     private Config mConfig;
     private LiveDebugHandler mHandler;
+    private int[] tableCorners;
+    private MatchType matchType;
+    private Side servingSide;
 
     @Override
     protected void onCreate(android.os.Bundle savedBundle) {
         super.onCreate(savedBundle);
-        this.mHandler = new LiveDebugHandler(this);
+        getDataFromIntent();
+        this.mHandler = new LiveDebugHandler(this, this.servingSide, this.matchType);
         cameraCallback = this.mHandler;
         this.mConfig = new Config(this);
     }
@@ -76,34 +84,34 @@ public final class LiveDebugActivity extends DebugActivity {
     }
 
     private void trySettingTableLocationFromIntent() {
-        int[] cornerInts = getCornerIntArrayFromIntent();
-        scaleCornerIntsToSelectedCamera(cornerInts);
-        mHandler.setTable(Table.makeTableFromIntArray(cornerInts));
+        scaleCornerIntsToSelectedCamera();
+        mHandler.setTable(Table.makeTableFromIntArray(tableCorners));
     }
 
-    private int[] getCornerIntArrayFromIntent() {
+    private void getDataFromIntent() {
         Bundle bundle = getIntent().getExtras();
         if (bundle == null) {
             throw new UnableToGetBundleException();
         }
-        int[] cornerIntArray = bundle.getIntArray(CORNERS_PARAM);
-        if (cornerIntArray == null) {
+        tableCorners = bundle.getIntArray(CORNERS_PARAM);
+        servingSide = Side.values()[bundle.getInt(SERVING_SIDE_PARAM)];
+        matchType = MatchType.values()[bundle.getInt(MATCH_TYPE_PARAM)];
+        if (tableCorners == null) {
             throw new NoCornersInIntendFoundException();
         }
-        return cornerIntArray;
     }
 
-    private void scaleCornerIntsToSelectedCamera(int[] cornerInts) {
+    private void scaleCornerIntsToSelectedCamera() {
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
         float xScale = (float) this.getCameraWidth() / size.x;
         float yScale = (float) this.getCameraHeight() / size.y;
-        for (int i = 0; i < cornerInts.length; i++) {
+        for (int i = 0; i < tableCorners.length; i++) {
             if (i % 2 == 0) {
-                cornerInts[i] = Math.round(cornerInts[i] * xScale);
+                tableCorners[i] = Math.round(tableCorners[i] * xScale);
             } else {
-                cornerInts[i] = Math.round(cornerInts[i] * yScale);
+                tableCorners[i] = Math.round(tableCorners[i] * yScale);
             }
         }
     }

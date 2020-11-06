@@ -32,7 +32,6 @@ import cz.fmo.util.Config;
 import helper.OnSwipeListener;
 
 public class DebugHandler extends android.os.Handler implements EventDetectionCallback, UICallback {
-
     final WeakReference<DebugActivity> mActivity;
     private final String TTS_WIN;
     private final String TTS_SCORE;
@@ -46,19 +45,23 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     private Config config;
     private TrackSet tracks;
     private Table table;
+    private Side servingSide;
+    private MatchType matchType;
     private boolean hasNewTable;
     private Lib.Detection latestNearlyOutOfFrame;
     private Match match;
     private int newBounceCount;
     private ScoreManipulationCallback smc;
 
-    public DebugHandler(@NonNull DebugActivity activity) {
+    public DebugHandler(@NonNull DebugActivity activity, Side servingSide, MatchType matchType) {
         mActivity = new WeakReference<>(activity);
         initTTS(activity);
         TTS_WIN = activity.getResources().getString(R.string.ttsWin);
         TTS_SCORE = activity.getResources().getString(R.string.ttsScore);
         tracks = TrackSet.getInstance();
         tracks.clear();
+        this.servingSide = servingSide;
+        this.matchType = matchType;
         hasNewTable = true;
         p = new Paint();
         startMatch();
@@ -224,7 +227,7 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     }
 
     private void startMatch() {
-        match = new Match(MatchType.BO3, "Hans", "Peter", this);
+        match = new Match(this.matchType, "Hans", "Peter", this, this.servingSide);
         setOnSwipeListener();
     }
 

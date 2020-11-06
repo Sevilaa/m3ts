@@ -1,6 +1,7 @@
 package com.android.grafika.initialize;
 
 import android.annotation.SuppressLint;
+import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.graphics.PixelFormat;
@@ -32,6 +33,8 @@ public final class InitializeActivity extends CameraPreviewActivity {
     private InitializeSelectingCornersFragment initSelectCornerFragment;
     private final Point[] tableCorners = new Point[4];
     private int currentCornerIndex;
+    private int selectedMatchType;
+    private int selectedServingSide;
 
     @Override
     protected void onCreate(android.os.Bundle savedBundle) {
@@ -98,32 +101,60 @@ public final class InitializeActivity extends CameraPreviewActivity {
         startActivity(new Intent(this, SettingsActivity.class));
     }
 
-    public ZoomLayout getZoomLayout() {
+    ZoomLayout getZoomLayout() {
         return zoomLayout;
     }
 
-    public Point[] getTableCorners() {
+    int getCurrentCornerIndex() {
+        return currentCornerIndex;
+    }
+
+    Point[] getTableCorners() {
         return tableCorners;
     }
 
-    public SurfaceView getTableSurface() {
+    SurfaceView getTableSurface() {
         return tableSurface;
     }
 
-    private void setInitializeSelectingFragment() {
-        this.initSelectCornerFragment = InitializeSelectingCornersFragment.newInstance(String.valueOf(this.currentCornerIndex),
-                String.valueOf(this.tableCorners.length));
+    int getSelectedServingSide() {
+        return selectedServingSide;
+    }
+
+    void setSelectedServingSide(int selectedServingSide) {
+        this.selectedServingSide = selectedServingSide;
+    }
+
+    int getSelectedMatchType() {
+        return selectedMatchType;
+    }
+
+    void setSelectedMatchType(int selectedMatchType) {
+        this.selectedMatchType = selectedMatchType;
+    }
+
+    void onSideAndMatchSelectDone() {
+        setDoneFragment();
+    }
+
+    private void switchFragment(Fragment fragment) {
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
-        transaction.replace(R.id.init_fragmentPlaceholder, this.initSelectCornerFragment);
+        transaction.replace(R.id.init_fragmentPlaceholder, fragment);
         transaction.commit();
     }
 
+    private void setInitializeSelectingFragment() {
+        this.initSelectCornerFragment = InitializeSelectingCornersFragment.newInstance(this);
+        switchFragment(this.initSelectCornerFragment);
+    }
+
+    private void setInitializeMatchTypeAndServerFragment() {
+        switchFragment(InitializeSelectingGameFragment.newInstance(this));
+    }
+
     private void setDoneFragment() {
-        this.initSelectCornerFragment = InitializeDoneSelectingCornersFragment.newInstance(String.valueOf(this.currentCornerIndex),
-                String.valueOf(this.tableCorners.length), this.tableCorners);
-        FragmentTransaction transaction = getFragmentManager().beginTransaction();
-        transaction.replace(R.id.init_fragmentPlaceholder, this.initSelectCornerFragment);
-        transaction.commit();
+        this.initSelectCornerFragment = InitializeDoneSelectingCornersFragment.newInstance(this);
+        switchFragment(this.initSelectCornerFragment);
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -138,10 +169,11 @@ public final class InitializeActivity extends CameraPreviewActivity {
                 float panY = zoomLayout.getPanY();
                 Point absPoint = makeAbsPoint(x,y,zoom,panX,panY);
                 tableCorners[currentCornerIndex] = absPoint;
-                initSelectCornerFragment.setSelectedCornersText(currentCornerIndex+1);
                 currentCornerIndex++;
+                initSelectCornerFragment.onStateChanged();
+                initSelectCornerFragment.updateViews();
                 if (currentCornerIndex == tableCorners.length) {
-                    setDoneFragment();
+                    setInitializeMatchTypeAndServerFragment();
                 }
             }
         });
@@ -165,7 +197,8 @@ public final class InitializeActivity extends CameraPreviewActivity {
                     setInitializeSelectingFragment();
                     return;
                 }
-                initSelectCornerFragment.setSelectedCornersText(currentCornerIndex);
+                initSelectCornerFragment.onStateChanged();
+                initSelectCornerFragment.updateViews();
             }
         });
     }

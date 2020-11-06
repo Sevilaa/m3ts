@@ -11,10 +11,9 @@ public class Match implements MatchCallback {
     private Map<Side, Integer> wins;
     private UICallback uiCallback;
     private Referee referee;
-    // TODO change to dynamic implementation
-    private final Side STARTING_SIDE = Side.LEFT;
+    private Side serverSide;
 
-    public Match(MatchType type, String playerLeftName, String playerRightName, UICallback uiCallback) {
+    public Match(MatchType type, String playerLeftName, String playerRightName, UICallback uiCallback, Side startingServer) {
         this.type = type;
         this.wins = new HashMap<>();
         this.wins.put(Side.LEFT, 0);
@@ -23,12 +22,14 @@ public class Match implements MatchCallback {
         this.playerLeft = new Player(playerLeftName);
         this.playerRight = new Player(playerRightName);
         this.uiCallback = uiCallback;
-        this.referee = new Referee(STARTING_SIDE);
+        this.referee = new Referee(startingServer);
+        this.serverSide = startingServer;
         startNewGame();
     }
 
     void startNewGame() {
-        Game game = new Game(this, uiCallback, STARTING_SIDE);
+        switchServers();
+        Game game = new Game(this, uiCallback, this.serverSide);
         this.games[this.wins.get(Side.RIGHT) + this.wins.get(Side.LEFT)] = game;
         this.referee.setGame(game);
     }
@@ -55,5 +56,13 @@ public class Match implements MatchCallback {
 
     private boolean isMatchOver(int wins) {
         return (wins >= this.type.gamesNeededToWin);
+    }
+
+    private void switchServers() {
+        if (this.serverSide == Side.LEFT) {
+            this.serverSide = Side.RIGHT;
+        } else {
+            this.serverSide = Side.LEFT;
+        }
     }
 }

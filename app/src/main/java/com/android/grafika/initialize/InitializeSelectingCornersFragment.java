@@ -6,6 +6,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.lang.ref.WeakReference;
+
 import cz.fmo.R;
 
 /**
@@ -15,12 +17,11 @@ import cz.fmo.R;
 public class InitializeSelectingCornersFragment extends android.app.Fragment {
 
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String MAX_CORNER_PARAM = "MAX_CORNERS";
-    private static final String SELECTED_CORNERS_PARAM = "SELECTED_CORNERS";
     private TextView txtMaxCorners;
     private TextView txtSelectedCorners;
     private String maxCorners;
     private String selectedCorners;
+    protected WeakReference<InitializeActivity> activityWeakReference;
     protected int layout;
 
     public InitializeSelectingCornersFragment() {
@@ -34,22 +35,20 @@ public class InitializeSelectingCornersFragment extends android.app.Fragment {
      *
      * @return A new instance of fragment InitializeSelectingCornersFragment.
      */
-    public static InitializeSelectingCornersFragment newInstance(String amountOfSelectedCorners, String maxCorners) {
+    public static InitializeSelectingCornersFragment newInstance(InitializeActivity activity) {
         InitializeSelectingCornersFragment fragment = new InitializeSelectingCornersFragment();
-        Bundle args = new Bundle();
-        args.putString(MAX_CORNER_PARAM, maxCorners);
-        args.putString(SELECTED_CORNERS_PARAM, amountOfSelectedCorners);
-        fragment.setArguments(args);
+        fragment.setActivityWeakReference(new WeakReference<>(activity));
         return fragment;
+    }
+
+    void setActivityWeakReference(WeakReference<InitializeActivity> activityWeakReference) {
+        this.activityWeakReference = activityWeakReference;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            maxCorners = getArguments().getString(MAX_CORNER_PARAM);
-            selectedCorners = getArguments().getString(SELECTED_CORNERS_PARAM);
-        }
+        onStateChanged();
     }
 
     @Override
@@ -64,11 +63,16 @@ public class InitializeSelectingCornersFragment extends android.app.Fragment {
         return view;
     }
 
-    public void setSelectedCornersText(int selectedCorners) {
-        this.txtSelectedCorners.setText(String.valueOf(selectedCorners));
+    public void onStateChanged() {
+        InitializeActivity activity = this.activityWeakReference.get();
+        if (activity != null) {
+            maxCorners = String.valueOf(activity.getTableCorners().length);
+            selectedCorners = String.valueOf(activity.getCurrentCornerIndex());
+        }
     }
 
-    public void setMaxCornersText(int maxCorners) {
-        this.txtMaxCorners.setText(String.valueOf(maxCorners));
+    public void updateViews() {
+        this.txtSelectedCorners.setText(selectedCorners);
+        this.txtMaxCorners.setText(maxCorners);
     }
 }
