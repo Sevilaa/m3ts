@@ -1,5 +1,6 @@
 package cz.fmo.events;
 
+import android.graphics.Path;
 import android.support.annotation.NonNull;
 
 import java.util.Collections;
@@ -16,17 +17,15 @@ import helper.DirectionY;
 
 public class EventDetector implements Lib.Callback {
     private static final int SIDE_CHANGE_DETECTION_SPEED = 2;
-    private static final int BOUNCE_DETECTION_SPEED = 1;
     private static final double PERCENTAGE_OF_NEARLY_OUT_OF_FRAME = 0.1;
     private final TrackSet tracks;
     private final List<EventDetectionCallback> callbacks;
     private final int[] nearlyOutOfFrameThresholds;
     private int srcWidth;
     private int srcHeight;
-    private int lastXPosition;
-    private float lastXDirection;
-    private float lastYDirection;
     private long detectionCount;
+    private Lib.Detection previousDetection;
+    private Lib.Detection previousPreviousDetection;
     private Table table;
 
     public EventDetector(Config config, int srcWidth, int srcHeight, EventDetectionCallback callback, TrackSet tracks, @NonNull Table table) {
@@ -66,28 +65,26 @@ public class EventDetector implements Lib.Callback {
             Track track = tracks.getTracks().get(0);
             Lib.Detection latestDetection = track.getLatest();
 
-            if (table.isOn(latestDetection.centerX)) {
+            if (table.isOn(latestDetection)) {
                 track.setTableCrossed();
             }
 
             if (isOnTable(track)) {
-                callAllOnStrikeFound(tracks);
-                if (isOnSideChange(latestDetection.directionX)) {
-                    Side side = Side.LEFT;
-                    if (latestDetection.directionX == DirectionX.LEFT) {
-                       side = Side.RIGHT;
+                if (detectionCount % SIDE_CHANGE_DETECTION_SPEED == 0) {
+                    if (previousPreviousDetection != null) {
+                        hasSideChanged(latestDetection.directionX);
                     }
-                    callAllOnSideChange(side);
-                } else if (isBounce(latestDetection.directionY)) {
-                    callAllOnBounce();
+                    previousPreviousDetection = latestDetection;
                 }
-                hasTableSideChanged(latestDetection.centerX);
-                lastYDirection = latestDetection.directionY;
+                if (previousDetection != null) {
+                    callAllOnStrikeFound(tracks);
+                    hasBouncedOnTable(latestDetection);
+                    hasTableSideChanged(latestDetection.centerX);
+                }
+                previousDetection = latestDetection;
             }
 
-            if (isNearlyOutOfFrame(latestDetection)) {
-                callAllOnNearlyOutOfFrame(latestDetection);
-            }
+            isNearlyOutOfFrame(latestDetection);
         }
     }
 
@@ -105,9 +102,9 @@ public class EventDetector implements Lib.Callback {
         }
     }
 
-    private void callAllOnBounce() {
+    private void callAllOnBounce(Lib.Detection latestDetection) {
         for (EventDetectionCallback callback : callbacks) {
-            callback.onBounce();
+            callback.onBounce(latestDetection);
         }
     }
 
@@ -129,38 +126,33 @@ public class EventDetector implements Lib.Callback {
         }
     }
 
-    private boolean isOnSideChange(float directionX) {
-        boolean isOnSideChange = false;
-        if (detectionCount % SIDE_CHANGE_DETECTION_SPEED == 0) {
-            if (lastXDirection != directionX) {
-                isOnSideChange = true;
+    private void hasSideChanged(float directionX) {
+        if (previousPreviousDetection.directionX != directionX) {
+            Side side = Side.LEFT;
+            if (directionX == DirectionX.LEFT) {
+                side = Side.RIGHT;
             }
-            lastXDirection = directionX;
+            callAllOnSideChange(side);
         }
-        return isOnSideChange;
     }
 
-    private boolean isBounce(float directionY) {
-        boolean isBounce = false;
-        if (detectionCount % BOUNCE_DETECTION_SPEED == 0) {
-            if (lastYDirection > 0 && directionY < 0) {
-                isBounce = true;
-            }
+    private void hasBouncedOnTable(Lib.Detection detection) {
+        float maxBounceHeight = table.getFarTopNetEnd().y - 15 * (table.getCloseBottomNetEnd().y - table.getFarTopNetEnd().y);
+        if (previousDetection.directionY > detection.directionY && previousDetection.directionX == detection.directionX
+                && table.isOn(detection) && detection.directionY >= maxBounceHeight) {
+            callAllOnBounce(detection);
         }
-        return isBounce;
     }
 
-    private boolean isNearlyOutOfFrame(Lib.Detection detection) {
-        boolean isNearlyOutOfFrame = false;
+    private void isNearlyOutOfFrame(Lib.Detection detection) {
         if (detection.predecessor != null) {
             if (detection.centerX < nearlyOutOfFrameThresholds[0] && detection.directionX == DirectionX.LEFT ||
                     detection.centerX > nearlyOutOfFrameThresholds[1] && detection.directionX == DirectionX.RIGHT ||
                     detection.centerY < nearlyOutOfFrameThresholds[2] && detection.directionY == DirectionY.UP ||
                     detection.centerY > nearlyOutOfFrameThresholds[3] && detection.directionY == DirectionY.DOWN) {
-                isNearlyOutOfFrame = true;
+                callAllOnNearlyOutOfFrame(detection);
             }
         }
-        return isNearlyOutOfFrame;
     }
 
     private boolean isOnTable(Track track) {
@@ -168,11 +160,10 @@ public class EventDetector implements Lib.Callback {
     }
 
     private void hasTableSideChanged(int currentXPosition) {
-        if (currentXPosition > table.getCloseNetEnd().x && lastXPosition < table.getCloseNetEnd().x) {
+        if (currentXPosition > table.getCloseBottomNetEnd().x && previousDetection.centerX < table.getCloseBottomNetEnd().x) {
             callAllOnTableSideChange(Side.RIGHT);
-        } else if (currentXPosition < table.getCloseNetEnd().x && lastXPosition > table.getCloseNetEnd().x) {
+        } else if (currentXPosition < table.getCloseBottomNetEnd().x && previousDetection.centerX > table.getCloseBottomNetEnd().x) {
             callAllOnTableSideChange(Side.LEFT);
         }
-        this.lastXPosition = currentXPosition;
     }
 }
