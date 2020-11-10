@@ -30,7 +30,7 @@ public class Referee implements EventDetectionCallback {
     }
 
     @Override
-    public void onBounce() {
+    public void onBounce(Lib.Detection detection) {
         switch (this.state) {
             case SERVING:
                 bounces++;
