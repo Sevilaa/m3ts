@@ -84,7 +84,10 @@ public class EventDetector implements Lib.Callback {
                 previousDetection = latestDetection;
             }
 
-            isNearlyOutOfFrame(latestDetection);
+            Side nearlyOutOfFrameSide = getNearlyOutOfFrameSide(latestDetection);
+            if (nearlyOutOfFrameSide != null) {
+                callAllOnNearlyOutOfFrame(latestDetection, nearlyOutOfFrameSide);
+            }
         }
     }
 
@@ -114,9 +117,9 @@ public class EventDetector implements Lib.Callback {
         }
     }
 
-    private void callAllOnNearlyOutOfFrame(Lib.Detection latestDetection) {
+    private void callAllOnNearlyOutOfFrame(Lib.Detection latestDetection, Side side) {
         for (EventDetectionCallback callback : callbacks) {
-            callback.onNearlyOutOfFrame(latestDetection);
+            callback.onNearlyOutOfFrame(latestDetection, side);
         }
     }
 
@@ -144,15 +147,20 @@ public class EventDetector implements Lib.Callback {
         }
     }
 
-    private void isNearlyOutOfFrame(Lib.Detection detection) {
+    private Side getNearlyOutOfFrameSide(Lib.Detection detection) {
+        Side side = null;
         if (detection.predecessor != null) {
-            if (detection.centerX < nearlyOutOfFrameThresholds[0] && detection.directionX == DirectionX.LEFT ||
-                    detection.centerX > nearlyOutOfFrameThresholds[1] && detection.directionX == DirectionX.RIGHT ||
-                    detection.centerY < nearlyOutOfFrameThresholds[2] && detection.directionY == DirectionY.UP ||
-                    detection.centerY > nearlyOutOfFrameThresholds[3] && detection.directionY == DirectionY.DOWN) {
-                callAllOnNearlyOutOfFrame(detection);
+            if (detection.centerX < nearlyOutOfFrameThresholds[0] && detection.directionX == DirectionX.LEFT) {
+                side = Side.LEFT;
+            } else if(detection.centerX > nearlyOutOfFrameThresholds[1] && detection.directionX == DirectionX.RIGHT) {
+                side = Side.RIGHT;
+            } else if(detection.centerY < nearlyOutOfFrameThresholds[2] && detection.directionY == DirectionY.UP) {
+                side = Side.TOP;
+            } else if(detection.centerY > nearlyOutOfFrameThresholds[3] && detection.directionY == DirectionY.DOWN) {
+                side = Side.BOTTOM;
             }
         }
+        return side;
     }
 
     private boolean isOnTable(Track track) {

@@ -8,7 +8,7 @@ public enum MatchType {
     public final int amountOfGames;
     public final int gamesNeededToWin;
 
-    private MatchType(int amountOfGames, int gamesNeededToWin) {
+    MatchType(int amountOfGames, int gamesNeededToWin) {
         this.amountOfGames = amountOfGames;
         this.gamesNeededToWin = gamesNeededToWin;
     }

@@ -7,7 +7,7 @@ import cz.fmo.tabletennis.Side;
 public interface EventDetectionCallback {
     void onBounce(Lib.Detection detection);
     void onSideChange(Side side);
-    void onNearlyOutOfFrame(Lib.Detection detection);
+    void onNearlyOutOfFrame(Lib.Detection detection, Side side);
     void onStrikeFound(TrackSet tracks);
     void onTableSideChange(Side side);
 }

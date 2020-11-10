@@ -37,6 +37,57 @@
     <!-- Capture settings -->
     <string name="prefHeaderCapture">Video capture</string>
     <string name="prefCameraFacing">Camera direction</string>
+    <string name="prefCameraFacingDefault">rear</string>
+    <string name="prefResolution">Resolution</string>
+    <string name="prefRecordMode">Recording</string>
+    <string name="prefSlowPreview">Slow preview</string>
+    <string name="prefSlowPreviewSummary">Update only once in 2 seconds</string>
+    <string name="prefHeaderDetection">Detection</string>
+    <string name="prefColorSpace">Color space</string>
+    <string name="prefColorSpaceDefault">yuv</string>
+    <string name="prefProcRes">Processing resolution</string>
+    <string name="prefProcResDefault">300</string>
+    <string name="prefHeaderVelocity">Velocity estimation</string>
+
+    <!-- Detection settings -->
+    <string name="prefVelocityEstimationMode">Velocity estimation mode</string>
+    <string name="prefVelocityEstimationModeDefault">pxfr</string>
+    <string name="prefObjectDiameterPicker">Object size based on sport</string>
+    <string name="prefObjectDiameterCustom">Custom object diameter [m]</string>
+    <string name="prefObjectDiameterCustomDefault">1.00</string>
+    <string name="prefFrameRate">Precise frame rate [Hz]</string>
+    <string name="prefFrameRateDefault">30.00</string>
+    <string name="prefHeaderAdvanced">Advanced</string>
+    <string name="runBenchmark">Run benchmark</string>
+
+    <!-- Velocity estimation settings -->
+    <string name="runVideoPlayer">Run video player</string>
+    <string name="prefDisableDetection">Disable FMO detection</string>
+    <string name="playerLeftDefaultName">Player 1</string>
+    <string name="playerRightDefaultName">Player 2</string>
+    <string name="gameScoreStart">0</string>
+    <string name="gameScoreDivider">:</string>
+    <string name="debugBallShotLabel">Ball shot from:</string>
+    <string name="debugBallBounceLabel">Bounce count:</string>
+    <string name="debugBallShotStart">None</string>
+    <string name="debugBallCountStart">0</string>
+    <string name="contentDescRevert">reverts last selected corner</string>
+    <string name="initMarkTableLabel">Mark all four table corners</string>
+
+    <!-- Init Activity -->
+    <string name="initMarkTableLabelExplanation">Long Press to select a corner</string>
+    <string name="initCornersSelectedLabel">Corners selected: </string>
+    <string name="initStartGameButtonLabel">Start Game</string>
+    <string name="initMatchTypeLabel">Match Type:</string>
+    <string name="initServerSideLabel">Server starting on:</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <!-- TTS -->
+    <string name="ttsScore">Point </string>
+    <string name="ttsWin">Game Win </string>
+    <string name="ttsServe">Serve </string>
+
+    <!-- Movie Player Activity -->
     <string-array name="prefCameraFacingNames">
         <item>Front-facing</item>
         <item>Rear-facing</item>
@@ -45,8 +96,6 @@
         <item>front</item>
         <item>rear</item>
     </string-array>
-    <string name="prefCameraFacingDefault">rear</string>
-    <string name="prefResolution">Resolution</string>
     <string-array name="prefResolutionNames">
         <item>720p</item>
         <item>1080p</item>
@@ -55,7 +104,6 @@
         <item>1</item>
         <item>2</item>
     </string-array>
-    <string name="prefRecordMode">Recording</string>
     <string-array name="prefRecordModeNames">
         <item>Off</item>
         <item>Manually controlled</item>
@@ -66,12 +114,6 @@
         <item>1</item>
         <item>2</item>
     </string-array>
-    <string name="prefSlowPreview">Slow preview</string>
-    <string name="prefSlowPreviewSummary">Update only once in 2 seconds</string>
-
-    <!-- Detection settings -->
-    <string name="prefHeaderDetection">Detection</string>
-    <string name="prefColorSpace">Color space</string>
     <string-array name="prefColorSpaceNames">
         <item>Gray</item>
         <item>Color (YCbCr)</item>
@@ -80,8 +122,8 @@
         <item>gray</item>
         <item>yuv</item>
     </string-array>
-    <string name="prefColorSpaceDefault">yuv</string>
-    <string name="prefProcRes">Processing resolution</string>
+
+    <!-- Settings -->
     <string-array name="prefProcResNames">
         <item>Low (for nearby objects)</item>
         <item>Default</item>
@@ -92,11 +134,6 @@
         <item>300</item>
         <item>600</item>
     </string-array>
-    <string name="prefProcResDefault">300</string>
-
-    <!-- Velocity estimation settings -->
-    <string name="prefHeaderVelocity">Velocity estimation</string>
-    <string name="prefVelocityEstimationMode">Velocity estimation mode</string>
     <string-array name="prefVelocityEstimationModeNames">
         <item>Image plane [px/fr]</item>
         <item>Real-world [m/s]</item>
@@ -109,8 +146,6 @@
         <item>kmh</item>
         <item>mph</item>
     </string-array>
-    <string name="prefVelocityEstimationModeDefault">pxfr</string>
-    <string name="prefObjectDiameterPicker">Object size based on sport</string>
     <string-array name="prefObjectDiameterPickerNames">
         <item>Ping pong</item>
         <item>Tennis</item>
@@ -119,6 +154,7 @@
         <item>Floorball</item>
         <item>Custom object size</item>
     </string-array>
+    <!-- TODO: Remove or change this placeholder text -->
     <string-array name="prefObjectDiameterPickerValues">
         <item>0.040</item>
         <item>0.067</item>
@@ -127,25 +163,5 @@
         <item>0.072</item>
         <item>0</item>
     </string-array>
-    <string name="prefObjectDiameterCustom">Custom object diameter [m]</string>
-    <string name="prefObjectDiameterCustomDefault">1.00</string>
-    <string name="prefFrameRate">Precise frame rate [Hz]</string>
-    <string name="prefFrameRateDefault">30.00</string>
 
-    <!-- Advanced settings -->
-    <string name="prefHeaderAdvanced">Advanced</string>
-    <string name="runBenchmark">Run benchmark</string>
-    <string name="runVideoPlayer">Run video player</string>
-    <string name="prefDisableDetection">Disable FMO detection</string>
-
-    <!-- Movie Player Activity -->
-    <string name="playerLeftDefaultName">Player 1</string>
-    <string name="playerRightDefaultName">Player 2</string>
-    <string name="gameScoreStart">0</string>
-    <string name="gameScoreDivider">:</string>
-    <string name="debugBallShotLabel">Ball shot from:</string>
-    <string name="debugBallBounceLabel">Bounce count:</string>
-    <string name="debugBallShotStart">None</string>
-    <string name="debugBallCountStart">0</string>
-    
 </resources>

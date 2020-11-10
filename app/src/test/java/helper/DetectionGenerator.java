@@ -3,6 +3,7 @@ package helper;
 import java.util.Random;
 
 import cz.fmo.Lib;
+import cz.fmo.tabletennis.Side;
 
 /**
  * Helper class which generates some Detections in various directions.
@@ -43,28 +44,42 @@ public class DetectionGenerator {
 
     /**
      * Generates Detections at the top, right, bottom and left side nearly out of frame.
-     * @param nearlyOutOfFrameTresholds specifies the threshold if an object is nearly out of frame.
+     * @param nearlyOutOfFrameThresholds specifies the threshold if an object is nearly out of frame.
      * @param sourceWidth specifies the width of the frame.
      * @param sourceHeight specifies the height of the frame.
      * @return detections which are nearly out of frame
      */
-    public static Lib.Detection[] makeNearlyOutOfFrameDetections(int[] nearlyOutOfFrameTresholds, int sourceWidth, int sourceHeight) {
+    public static Lib.Detection[] makeNearlyOutOfFrameDetections(int[] nearlyOutOfFrameThresholds, int sourceWidth, int sourceHeight) {
         Lib.Detection[] detections = new Lib.Detection[4];
         for(int i = 0; i < 4; i++) {
             detections[i] = new Lib.Detection();
         }
-        detections[0].centerX = new Random().nextInt(nearlyOutOfFrameTresholds[0]);
+        detections[0].centerX = new Random().nextInt(nearlyOutOfFrameThresholds[0]);
         detections[0].centerY = new Random().nextInt(sourceHeight);
         detections[0].directionX = DirectionX.LEFT;
-        detections[1].centerX = nearlyOutOfFrameTresholds[1]+1 + new Random().nextInt(nearlyOutOfFrameTresholds[0]);
+        detections[1].centerX = nearlyOutOfFrameThresholds[1]+1 + new Random().nextInt(nearlyOutOfFrameThresholds[0]);
         detections[1].centerY = new Random().nextInt(sourceHeight);
         detections[1].directionX = DirectionX.RIGHT;
         detections[2].centerX = new Random().nextInt(sourceWidth);
-        detections[2].centerY = new Random().nextInt(nearlyOutOfFrameTresholds[2]);
+        detections[2].centerY = new Random().nextInt(nearlyOutOfFrameThresholds[2]);
         detections[2].directionY = DirectionY.UP;
         detections[3].centerX = new Random().nextInt(sourceWidth);
-        detections[3].centerY = nearlyOutOfFrameTresholds[3]+1 + new Random().nextInt(nearlyOutOfFrameTresholds[2]);
+        detections[3].centerY = nearlyOutOfFrameThresholds[3]+1 + new Random().nextInt(nearlyOutOfFrameThresholds[2]);
         detections[3].directionY = DirectionY.DOWN;
         return detections;
+    }
+
+    public static Side getNearlyOutOfFrameSide(int[] nearlyOutOfFrameThresholds, Lib.Detection detection) {
+        Side side = null;
+        if (detection.centerX < nearlyOutOfFrameThresholds[0] && detection.directionX == DirectionX.LEFT) {
+            side = Side.LEFT;
+        } else if(detection.centerX > nearlyOutOfFrameThresholds[1] && detection.directionX == DirectionX.RIGHT) {
+            side = Side.RIGHT;
+        } else if(detection.centerY < nearlyOutOfFrameThresholds[2] && detection.directionY == DirectionY.UP) {
+            side = Side.TOP;
+        } else if(detection.centerY > nearlyOutOfFrameThresholds[3] && detection.directionY == DirectionY.DOWN) {
+            side = Side.BOTTOM;
+        }
+        return side;
     }
 }

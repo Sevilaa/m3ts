@@ -11,9 +11,13 @@ public class Match implements MatchCallback {
     private Map<Side, Integer> wins;
     private UICallback uiCallback;
     private Referee referee;
+    private Side serverSide;
+    private ServeRules serveRules;
+    private GameType gameType;
 
-    public Match(MatchType type, String playerLeftName, String playerRightName, UICallback uiCallback) {
+    public Match(MatchType type, GameType gameType, ServeRules serveRules, String playerLeftName, String playerRightName, UICallback uiCallback, Side startingServer) {
         this.type = type;
+        this.gameType = gameType;
         this.wins = new HashMap<>();
         this.wins.put(Side.LEFT, 0);
         this.wins.put(Side.RIGHT,0);
@@ -21,12 +25,15 @@ public class Match implements MatchCallback {
         this.playerLeft = new Player(playerLeftName);
         this.playerRight = new Player(playerRightName);
         this.uiCallback = uiCallback;
-        this.referee = new Referee(Side.LEFT);
-        startNewGame();
+        this.serveRules = serveRules;
+        this.referee = new Referee(startingServer);
+        this.serverSide = startingServer;
+        startNewGame(true);
     }
 
-    void startNewGame() {
-        Game game = new Game(this, uiCallback);
+    void startNewGame(boolean firstInit) {
+        if(!firstInit) switchServers();
+        Game game = new Game(this, uiCallback, gameType, serveRules, this.serverSide);
         this.games[this.wins.get(Side.RIGHT) + this.wins.get(Side.LEFT)] = game;
         this.referee.setGame(game);
     }
@@ -43,7 +50,7 @@ public class Match implements MatchCallback {
         if (isMatchOver(win)) {
             end();
         } else {
-            startNewGame();
+            startNewGame(false);
         }
     }
 
@@ -53,5 +60,13 @@ public class Match implements MatchCallback {
 
     private boolean isMatchOver(int wins) {
         return (wins >= this.type.gamesNeededToWin);
+    }
+
+    private void switchServers() {
+        if (this.serverSide == Side.LEFT) {
+            this.serverSide = Side.RIGHT;
+        } else {
+            this.serverSide = Side.LEFT;
+        }
     }
 }

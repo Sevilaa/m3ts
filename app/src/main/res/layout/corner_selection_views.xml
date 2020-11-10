@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/radius_background"
+        android:padding="8dp"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true" >
+
+        <TextView
+            android:id="@+id/init_cornersSelectedLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/initCornersSelectedLabel"
+            android:textColor="@android:color/secondary_text_light"
+            android:layout_alignParentStart="true"/>
+
+        <TextView
+            android:id="@+id/init_cornersSelectedTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="0"
+            android:textColor="@android:color/secondary_text_light"
+            android:textStyle="bold"
+            android:layout_toEndOf="@id/init_cornersSelectedLabel" />
+
+        <TextView
+            android:id="@+id/init_cornersSelectedDivider"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:text="/"
+            android:textColor="@android:color/secondary_text_light"
+            android:textStyle="bold"
+            android:layout_toEndOf="@id/init_cornersSelectedTxt" />
+
+        <TextView
+            android:id="@+id/init_cornersSelectedMaxTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:text="4"
+            android:textColor="@android:color/secondary_text_light"
+            android:textStyle="bold"
+            android:layout_toEndOf="@id/init_cornersSelectedDivider" />
+
+    </RelativeLayout>
+
+</RelativeLayout>
