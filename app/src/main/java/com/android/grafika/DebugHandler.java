@@ -51,6 +51,7 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     private MatchType matchType;
     private boolean hasNewTable;
     private Lib.Detection latestNearlyOutOfFrame;
+    private Lib.Detection latestBounce;
     private Match match;
     private int newBounceCount;
     private ScoreManipulationCallback smc;
@@ -73,6 +74,7 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     public void onBounce(Lib.Detection detection) {
         // update game logic
         // then display game state to some views
+        latestBounce = detection;
         final DebugActivity activity = mActivity.get();
         final TextView mBounceCountText = activity.getmBounceCountText();
         newBounceCount = Integer.parseInt(mBounceCountText.getText().toString()) + 1;
@@ -248,6 +250,7 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
                 pre = pre.predecessor;
             }
         }
+        drawLatestBounce(canvas);
         drawLatestOutOfFrameDetection(canvas);
     }
 
@@ -256,6 +259,14 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
             p.setColor(Color.rgb(255, 165, 0));
             p.setStrokeWidth(latestNearlyOutOfFrame.radius);
             canvas.drawCircle(scaleX(latestNearlyOutOfFrame.centerX), scaleY(latestNearlyOutOfFrame.centerY), latestNearlyOutOfFrame.radius, p);
+        }
+    }
+
+    private void drawLatestBounce(Canvas canvas) {
+        if(latestBounce != null) {
+            p.setColor(Color.rgb(255,0,0));
+            p.setStrokeWidth(latestBounce.radius * 2);
+            canvas.drawCircle(scaleX(latestBounce.centerX), scaleY(latestBounce.centerY), latestBounce.radius * 2, p);
         }
     }
 
