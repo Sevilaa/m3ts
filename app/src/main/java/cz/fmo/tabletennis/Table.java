@@ -5,8 +5,6 @@ import android.support.annotation.NonNull;
 
 import java.util.Properties;
 
-import cz.fmo.Lib;
-
 public class Table {
     private Point[] corners;
     private Point[] net;
@@ -16,27 +14,19 @@ public class Table {
            throw new NotFourCornersException(corners.length);
         }
 
-        if (net.length != 4) {
-            throw new NotFourNetCornersException(net.length);
+        if (net.length != 2) {
+            throw new NotTwoNetEndsException(net.length);
         }
         this.corners = corners;
         this.net = net;
     }
 
-    public Point getFarBottomNetEnd() {
+    public Point getFarNetEnd() {
         return net[1];
     }
 
-    public Point getFarTopNetEnd() {
-        return net[3];
-    }
-
-    public Point getCloseBottomNetEnd() {
+    public Point getCloseNetEnd() {
         return net[0];
-    }
-
-    public Point getCloseTopNetEnd() {
-        return net[2];
     }
 
     public Point[] getNet() {
@@ -67,11 +57,13 @@ public class Table {
         int x;
         int y;
         Point[] corners = new Point[4];
-        Point[] net = new Point[4];
+        Point[] net = new Point[2];
         for (int i = 1; i<5; i++) {
-            x = Integer.parseInt(properties.getProperty("n"+i+"_x"));
-            y = Integer.parseInt(properties.getProperty("n"+i+"_y"));
-            net[i-1] = new Point(x,y);
+            if(i <= 2) {
+                x = Integer.parseInt(properties.getProperty("n"+i+"_x"));
+                y = Integer.parseInt(properties.getProperty("n"+i+"_y"));
+                net[i-1] = new Point(x,y);
+            }
             x = Integer.parseInt(properties.getProperty("c"+i+"_x"));
             y = Integer.parseInt(properties.getProperty("c"+i+"_y"));
             corners[i-1] = new Point(x,y);
@@ -103,11 +95,15 @@ public class Table {
         return points;
     }
 
-    public boolean isOn(int x) {
+    public boolean isOnOrAbove(int x, int y) {
         double leftThreshold = this.getCornerTopLeft().x * 1.05;
         double rightThreshold = this.getCornerTopRight().x / 1.05;
-        double bottomThreshold = this.getCornerDownLeft().y;
-        return (detection.centerX >= leftThreshold && detection.centerX <= rightThreshold && detection.centerY <= bottomThreshold);
+        double bottomThreshold = this.getCloseNetEnd().y;
+        return (x >= leftThreshold && x <= rightThreshold && y <= bottomThreshold);
+    }
+
+    public int getWidth() {
+        return getCornerDownRight().x - getCornerDownLeft().x;
     }
 
     static class NotFourCornersException extends RuntimeException {
@@ -117,9 +113,9 @@ public class Table {
         }
     }
 
-    static class NotFourNetCornersException extends RuntimeException {
-        private static final String MESSAGE = "Net needs 4 points which mark the 4 corners of the net, you provided: ";
-        NotFourNetCornersException(int amountOfPoints) {
+    static class NotTwoNetEndsException extends RuntimeException {
+        private static final String MESSAGE = "Net needs 2 points which mark the end and start of the net, you provided: ";
+        NotTwoNetEndsException(int amountOfPoints) {
             super(MESSAGE + amountOfPoints);
         }
     }
