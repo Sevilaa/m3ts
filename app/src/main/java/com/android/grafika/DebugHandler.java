@@ -139,6 +139,8 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
         } else {
             setTextInTextView(R.id.txtPlayMovieScoreRight, String.valueOf(score));
         }
+        setTextInTextView(R.id.txtPlayMovieState, match.getReferee().getState().toString());
+        setTextInTextView(R.id.txtPlayMovieServing, match.getReferee().getServer().toString());
         tts.speak(TTS_SCORE+side, TextToSpeech.QUEUE_FLUSH, null, null);
     }
 
