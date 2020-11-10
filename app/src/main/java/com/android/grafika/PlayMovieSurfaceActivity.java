@@ -331,6 +331,7 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
         private Table table;
         private boolean hasNewTable;
         private Lib.Detection latestNearlyOutOfFrame;
+        private Lib.Detection latestBounce;
         private Match match;
 
         Handler(@NonNull PlayMovieSurfaceActivity activity) {
@@ -378,9 +379,10 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
         }
 
         @Override
-        public void onBounce() {
+        public void onBounce(Lib.Detection detection) {
             // update game logic
             // then display game state to some views
+            latestBounce = detection;
             final PlayMovieSurfaceActivity activity = mActivity.get();
             final TextView mBounceCountText = activity.mBounceCountText;
             final int newBounceCount = Integer.parseInt(mBounceCountText.getText().toString()) + 1;
@@ -476,9 +478,14 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
                 p.setStrokeWidth(5f);
                 canvas.drawLine(c1.x, c1.y, c2.x, c2.y, p);
             }
-            Point closeNetEnd = scalePoint(table.getCloseNetEnd());
-            Point farNetEnd = scalePoint(table.getFarNetEnd());
-            canvas.drawLine(closeNetEnd.x, closeNetEnd.y, farNetEnd.x, farNetEnd.y, p);
+            Point closeBottomNetEnd = scalePoint(table.getCloseBottomNetEnd());
+            Point farBottomNetEnd = scalePoint(table.getFarBottomNetEnd());
+            Point closeTopNetEnd = scalePoint(table.getCloseTopNetEnd());
+            Point farTopNetEnd = scalePoint(table.getFarTopNetEnd());
+            canvas.drawLine(closeBottomNetEnd.x, closeBottomNetEnd.y, farBottomNetEnd.x, farBottomNetEnd.y, p);
+            canvas.drawLine(closeTopNetEnd.x, closeTopNetEnd.y, farTopNetEnd.x, farTopNetEnd.y, p);
+            canvas.drawLine(closeBottomNetEnd.x, closeBottomNetEnd.y, closeTopNetEnd.x, closeTopNetEnd.y, p);
+            canvas.drawLine(farTopNetEnd.x, farTopNetEnd.y, farBottomNetEnd.x, farBottomNetEnd.y, p);
             surfaceHolderTable.unlockCanvasAndPost(canvas);
         }
 
@@ -502,6 +509,7 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
                     pre = pre.predecessor;
                 }
             }
+            drawLatestBounce(canvas);
             drawLatestOutOfFrameDetection(canvas);
         }
 
@@ -510,6 +518,14 @@ public class PlayMovieSurfaceActivity extends Activity implements OnItemSelected
                 p.setColor(Color.rgb(255,165,0));
                 p.setStrokeWidth(latestNearlyOutOfFrame.radius);
                 canvas.drawCircle(scaleX(latestNearlyOutOfFrame.centerX), scaleY(latestNearlyOutOfFrame.centerY), latestNearlyOutOfFrame.radius, p);
+            }
+        }
+
+        private void drawLatestBounce(Canvas canvas) {
+            if(latestBounce != null) {
+                p.setColor(Color.rgb(255,0,0));
+                p.setStrokeWidth(latestBounce.radius * 2);
+                canvas.drawCircle(scaleX(latestBounce.centerX), scaleY(latestBounce.centerY), latestBounce.radius * 2, p);
             }
         }
 

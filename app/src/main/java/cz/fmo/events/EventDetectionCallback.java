@@ -5,7 +5,7 @@ import cz.fmo.data.TrackSet;
 import cz.fmo.tabletennis.Side;
 
 public interface EventDetectionCallback {
-    void onBounce();
+    void onBounce(Lib.Detection detection);
     void onSideChange(Side side);
     void onNearlyOutOfFrame(Lib.Detection detection);
     void onStrikeFound(TrackSet tracks);
