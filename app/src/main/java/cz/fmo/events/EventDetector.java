@@ -1,6 +1,5 @@
 package cz.fmo.events;
 
-import android.graphics.Path;
 import android.support.annotation.NonNull;
 
 import java.util.Collections;
@@ -25,7 +24,7 @@ public class EventDetector implements Lib.Callback {
     private int srcHeight;
     private long detectionCount;
     private Lib.Detection previousDetection;
-    private Lib.Detection previousPreviousDetection;
+    private Lib.Detection beforePreviousDetection;
     private Table table;
 
     public EventDetector(Config config, int srcWidth, int srcHeight, EventDetectionCallback callback, TrackSet tracks, @NonNull Table table) {
@@ -65,22 +64,22 @@ public class EventDetector implements Lib.Callback {
             Track track = tracks.getTracks().get(0);
             Lib.Detection latestDetection = track.getLatest();
 
-            if (table.isOn(latestDetection)) {
+            if (table.isOnOrAbove(latestDetection.centerX, latestDetection.centerY)) {
                 track.setTableCrossed();
             }
 
             if (isOnTable(track)) {
+                callAllOnStrikeFound(tracks);
+                boolean sideChanged = false;
+                if (beforePreviousDetection == null)
+                    beforePreviousDetection = latestDetection;
                 if (detectionCount % SIDE_CHANGE_DETECTION_SPEED == 0) {
-                    if (previousPreviousDetection != null) {
-                        hasSideChanged(latestDetection.directionX);
-                    }
-                    previousPreviousDetection = latestDetection;
+                    sideChanged = hasSideChanged(latestDetection.directionX);
+                    beforePreviousDetection = latestDetection;
                 }
-                if (previousDetection != null) {
-                    callAllOnStrikeFound(tracks);
+                if (!sideChanged)
                     hasBouncedOnTable(latestDetection);
-                    hasTableSideChanged(latestDetection.centerX);
-                }
+                hasTableSideChanged(latestDetection.centerX);
                 previousDetection = latestDetection;
             }
 
@@ -129,20 +128,23 @@ public class EventDetector implements Lib.Callback {
         }
     }
 
-    private void hasSideChanged(float directionX) {
-        if (previousPreviousDetection.directionX != directionX) {
+    private boolean hasSideChanged(float directionX) {
+        boolean hasSideChanged = false;
+        if (beforePreviousDetection != null && beforePreviousDetection.directionX != directionX) {
             Side side = Side.LEFT;
             if (directionX == DirectionX.LEFT) {
                 side = Side.RIGHT;
             }
             callAllOnSideChange(side);
+            hasSideChanged = true;
         }
+        return hasSideChanged;
     }
 
     private void hasBouncedOnTable(Lib.Detection detection) {
-        float maxBounceHeight = table.getFarTopNetEnd().y - 15 * (table.getCloseBottomNetEnd().y - table.getFarTopNetEnd().y);
-        if (previousDetection.directionY > detection.directionY && previousDetection.directionX == detection.directionX
-                && table.isOn(detection) && detection.directionY >= maxBounceHeight) {
+        float maxBounceHeight = table.getCornerDownLeft().y - ((float) table.getWidth());
+        if (previousDetection != null && previousDetection.directionY > detection.directionY && previousDetection.directionX == detection.directionX
+                && table.isOnOrAbove(detection.centerX, detection.centerY) && detection.centerY >= maxBounceHeight) {
             callAllOnBounce(detection);
         }
     }
@@ -168,10 +170,12 @@ public class EventDetector implements Lib.Callback {
     }
 
     private void hasTableSideChanged(int currentXPosition) {
-        if (currentXPosition > table.getCloseBottomNetEnd().x && previousDetection.centerX < table.getCloseBottomNetEnd().x) {
-            callAllOnTableSideChange(Side.RIGHT);
-        } else if (currentXPosition < table.getCloseBottomNetEnd().x && previousDetection.centerX > table.getCloseBottomNetEnd().x) {
-            callAllOnTableSideChange(Side.LEFT);
+        if (previousDetection != null) {
+            if (currentXPosition > table.getCloseNetEnd().x && previousDetection.centerX < table.getCloseNetEnd().x) {
+                callAllOnTableSideChange(Side.RIGHT);
+            } else if (currentXPosition < table.getCloseNetEnd().x && previousDetection.centerX > table.getCloseNetEnd().x) {
+                callAllOnTableSideChange(Side.LEFT);
+            }
         }
     }
 }
