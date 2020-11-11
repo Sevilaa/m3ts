@@ -80,7 +80,9 @@ public class EventDetector implements Lib.Callback {
                 if (!sideChanged)
                     hasBouncedOnTable(latestDetection);
                 hasTableSideChanged(latestDetection.centerX);
-                previousDetection = latestDetection;
+                if (latestDetection.predecessor != null) {
+                    previousDetection = latestDetection;
+                }
             }
 
             Side nearlyOutOfFrameSide = getNearlyOutOfFrameSide(latestDetection);
@@ -142,9 +144,8 @@ public class EventDetector implements Lib.Callback {
     }
 
     private void hasBouncedOnTable(Lib.Detection detection) {
-        float maxBounceHeight = table.getCornerDownLeft().y - ((float) table.getWidth());
         if (previousDetection != null && previousDetection.directionY > detection.directionY && previousDetection.directionX == detection.directionX
-                && table.isOnOrAbove(detection.centerX, detection.centerY) && detection.centerY >= maxBounceHeight) {
+                && table.isOnOrAbove(detection.centerX, detection.centerY)) {
             callAllOnBounce(detection);
         }
     }
