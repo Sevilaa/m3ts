@@ -143,8 +143,6 @@ public class PlayMovieSurfaceActivity extends DebugActivity implements OnItemSel
     public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
         Spinner spinner = (Spinner) parent;
         mSelectedMovie = spinner.getSelectedItemPosition();
-
-        Log.d("onItemSelected: " + mSelectedMovie + " '" + mMovieFiles[mSelectedMovie] + "'");
     }
 
     @Override

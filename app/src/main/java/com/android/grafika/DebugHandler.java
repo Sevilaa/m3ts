@@ -222,7 +222,7 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     }
 
     private void startMatch() {
-        match = new Match(MatchType.BO3, GameType.G11, ServeRules.S2,"Hans", "Peter", this, this.servingSide);
+        match = new Match(this.matchType, GameType.G11, ServeRules.S2,"Hans", "Peter", this, this.servingSide);
         setOnSwipeListener();
         setTextInTextView(R.id.txtPlayMovieState, match.getReferee().getState().toString());
         setTextInTextView(R.id.txtPlayMovieServing, match.getReferee().getServer().toString());
