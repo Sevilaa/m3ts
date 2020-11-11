@@ -29,21 +29,23 @@ public class InitializeHandler extends android.os.Handler implements CameraThrea
         if (activity.isTableDrawReady()) {
             Canvas canvas = activity.getTableSurface().getHolder().lockCanvas();
             ZoomLayout zoomLayout = activity.getZoomLayout();
-            canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-            Paint paint = new Paint();
-            paint.setColor(Color.CYAN);
+            if (canvas != null) {
+                canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+                Paint paint = new Paint();
+                paint.setColor(Color.CYAN);
 
-            Point[] corners = activity.getTableCorners();
-            for (int i = 0; i<corners.length; i++) {
-                Point p = corners[i];
-                if(p != null) {
-                    paint.setStrokeWidth(15f);
-                    Point relP = makeRelPoint(p.x, p.y, zoomLayout.getZoom(), zoomLayout.getPanX(), zoomLayout.getPanY());
-                    canvas.drawCircle(relP.x, relP.y, 20f, paint);
-                    drawLineIfPossible(i, paint, canvas, corners, relP, zoomLayout);
+                Point[] corners = activity.getTableCorners();
+                for (int i = 0; i<corners.length; i++) {
+                    Point p = corners[i];
+                    if(p != null) {
+                        paint.setStrokeWidth(15f);
+                        Point relP = makeRelPoint(p.x, p.y, zoomLayout.getZoom(), zoomLayout.getPanX(), zoomLayout.getPanY());
+                        canvas.drawCircle(relP.x, relP.y, 20f, paint);
+                        drawLineIfPossible(i, paint, canvas, corners, relP, zoomLayout);
+                    }
                 }
+                activity.getTableSurface().getHolder().unlockCanvasAndPost(canvas);
             }
-            activity.getTableSurface().getHolder().unlockCanvasAndPost(canvas);
         }
     }
 
