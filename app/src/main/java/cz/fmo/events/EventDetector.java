@@ -141,16 +141,12 @@ public class EventDetector implements Lib.Callback {
     }
 
     private void hasBouncedOnTable(TrackSet tracks) {
-        // TODO detect bounces which are close to the close edges
         for(Track t : tracks.getTracks()) {
             Lib.Detection detection = t.getLatest();
-            if (table.isOn(detection.centerX, detection.centerY)) {
+            if (table.isBounceOn(detection.centerX, detection.centerY)) {
                 callAllOnBounce(detection);
             }
         }
-        /*if (detection.predecessor == null && table.isOn(detection.centerX, detection.centerY)) {
-            callAllOnBounce(detection);
-        } else */
     }
 
     private Side getNearlyOutOfFrameSide(Lib.Detection detection) {
