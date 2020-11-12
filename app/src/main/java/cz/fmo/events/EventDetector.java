@@ -17,6 +17,8 @@ import helper.DirectionY;
 public class EventDetector implements Lib.Callback {
     private static final int SIDE_CHANGE_DETECTION_SPEED = 2;
     private static final double PERCENTAGE_OF_NEARLY_OUT_OF_FRAME = 0.1;
+    private boolean isGray;
+    private int procRes;
     private final TrackSet tracks;
     private final List<EventDetectionCallback> callbacks;
     private final int[] nearlyOutOfFrameThresholds;
@@ -58,9 +60,8 @@ public class EventDetector implements Lib.Callback {
 
     public void onObjectsDetected(Lib.Detection[] detections, long detectionTime) {
         detectionCount++;
-        tracks.addDetections(detections, this.srcWidth, this.srcHeight, detectionTime); // after this, object direction is updated
-
-        if (tracks.getTracks().size() == 1) {
+        tracks.addDetections(detections, this.srcWidth, this.srcHeight, detectionTime); // after this, object direction is update
+        if (tracks.getTracks().size() >= 1) {
             Track track = tracks.getTracks().get(0);
             Lib.Detection latestDetection = track.getLatest();
 
@@ -68,17 +69,16 @@ public class EventDetector implements Lib.Callback {
                 track.setTableCrossed();
             }
 
+            hasBouncedOnTable(tracks);
+
             if (isOnTable(track)) {
                 callAllOnStrikeFound(tracks);
-                boolean sideChanged = false;
                 if (beforePreviousDetection == null)
                     beforePreviousDetection = latestDetection;
                 if (detectionCount % SIDE_CHANGE_DETECTION_SPEED == 0) {
-                    sideChanged = hasSideChanged(latestDetection.directionX);
+                    hasSideChanged(latestDetection.directionX);
                     beforePreviousDetection = latestDetection;
                 }
-                if (!sideChanged)
-                    hasBouncedOnTable(latestDetection);
                 hasTableSideChanged(latestDetection.centerX);
                 if (latestDetection.predecessor != null) {
                     previousDetection = latestDetection;
@@ -143,11 +143,17 @@ public class EventDetector implements Lib.Callback {
         return hasSideChanged;
     }
 
-    private void hasBouncedOnTable(Lib.Detection detection) {
-        if (previousDetection != null && previousDetection.directionY > detection.directionY && previousDetection.directionX == detection.directionX
-                && table.isOnOrAbove(detection.centerX, detection.centerY)) {
-            callAllOnBounce(detection);
+    private void hasBouncedOnTable(TrackSet tracks) {
+        // TODO detect bounces which are close to the close edges
+        for(Track t : tracks.getTracks()) {
+            Lib.Detection detection = t.getLatest();
+            if (table.isOn(detection.centerX, detection.centerY)) {
+                callAllOnBounce(detection);
+            }
         }
+        /*if (detection.predecessor == null && table.isOn(detection.centerX, detection.centerY)) {
+            callAllOnBounce(detection);
+        } else */
     }
 
     private Side getNearlyOutOfFrameSide(Lib.Detection detection) {
@@ -168,6 +174,15 @@ public class EventDetector implements Lib.Callback {
 
     private boolean isOnTable(Track track) {
         return track.hasCrossedTable();
+    }
+
+    private void calcDirectionY(Lib.Detection detection) {
+        if (previousDetection != null) {
+            if (previousDetection.centerY >= detection.centerY)
+                detection.directionY = DirectionY.UP;
+            else
+                detection.directionY = DirectionY.DOWN;
+        }
     }
 
     private void hasTableSideChanged(int currentXPosition) {

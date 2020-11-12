@@ -35,6 +35,7 @@ import helper.OnSwipeListener;
 
 public class DebugHandler extends android.os.Handler implements EventDetectionCallback, UICallback {
     final WeakReference<DebugActivity> mActivity;
+    private int strikeCount = 0;
     private final String TTS_WIN;
     private final String TTS_SCORE;
     private TextToSpeech tts;
@@ -92,31 +93,38 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
 
     @Override
     public void onStrikeFound(TrackSet tracks) {
-        DebugActivity activity = mActivity.get();
-        if (activity == null) {
-            return;
-        }
-        if (activity.ismSurfaceHolderReady()) {
-            SurfaceHolder surfaceHolder = activity.getmSurfaceTrack().getHolder();
-            Canvas canvas = surfaceHolder.lockCanvas();
-            if (canvas == null) {
+        strikeCount++;
+        if(strikeCount % 5 == 0) {
+            DebugActivity activity = mActivity.get();
+            if (activity == null) {
                 return;
             }
-            if (this.canvasWidth == 0 || this.canvasHeight == 0) {
-                canvasWidth = canvas.getWidth();
-                canvasHeight = canvas.getHeight();
+            if (activity.ismSurfaceHolderReady()) {
+                SurfaceHolder surfaceHolder = activity.getmSurfaceTrack().getHolder();
+                Canvas canvas = surfaceHolder.lockCanvas();
+                if (canvas == null) {
+                    return;
+                }
+                if (this.canvasWidth == 0 || this.canvasHeight == 0) {
+                    canvasWidth = canvas.getWidth();
+                    canvasHeight = canvas.getHeight();
+                }
+                canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+                if (hasNewTable) {
+                    drawTable(activity);
+                    hasNewTable = false;
+                }
+                drawAllTracks(canvas, tracks);
+                drawLatestBounce(canvas);
+                drawLatestOutOfFrameDetection(canvas);
+                surfaceHolder.unlockCanvasAndPost(canvas);
             }
-            canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-            if (hasNewTable) {
-                drawTable(activity);
-                hasNewTable = false;
-            }
-            drawAllTracks(canvas, tracks);
-            surfaceHolder.unlockCanvasAndPost(canvas);
         }
         setTextInTextView(R.id.txtPlayMovieState, match.getReferee().getState().toString());
         setTextInTextView(R.id.txtPlayMovieServing, match.getReferee().getServer().toString());
-        setTextInTextView(R.id.txtBounce, String.valueOf(newBounceCount));
+        if(match.getReferee().getCurrentBallSide() != null) {
+            setTextInTextView(R.id.txtBounce, String.valueOf(this.newBounceCount));
+        }
     }
 
     @Override
@@ -226,7 +234,10 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
         setOnSwipeListener();
         setTextInTextView(R.id.txtPlayMovieState, match.getReferee().getState().toString());
         setTextInTextView(R.id.txtPlayMovieServing, match.getReferee().getServer().toString());
-        setTextInTextView(R.id.txtBounce, String.valueOf(newBounceCount));
+        if(match.getReferee().getCurrentBallSide() != null) {
+            setTextInTextView(R.id.txtBounce, String.valueOf(this.newBounceCount));
+        }
+
         drawTable(this.mActivity.get());
     }
 
@@ -250,8 +261,6 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
                 pre = pre.predecessor;
             }
         }
-        drawLatestBounce(canvas);
-        drawLatestOutOfFrameDetection(canvas);
     }
 
     private void drawLatestOutOfFrameDetection(Canvas canvas) {

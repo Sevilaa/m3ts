@@ -8,17 +8,13 @@ import java.util.Iterator;
 import java.util.List;
 
 import cz.fmo.Lib;
-import cz.fmo.graphics.FontRenderer;
-import cz.fmo.graphics.GL;
-import cz.fmo.graphics.TriangleStripRenderer;
-import cz.fmo.util.Color;
 import cz.fmo.util.Config;
 
 /**
  * Latest detected tracks that are meant to be kept on screen to allow inspection by the user.
  */
 public class TrackSet {
-    private static final int FRAMES_UNTIL_OLD_TRACK_REMOVAL = 2;
+    private static final int FRAMES_UNTIL_OLD_TRACK_REMOVAL = 7;
     private static final int NUM_TRACKS = 2;
     private final Object mLock = new Object();
     private final ArrayList<Track> mTracks = new ArrayList<>();
@@ -86,6 +82,19 @@ public class TrackSet {
 
     public List<Track> getTracks() {return Collections.unmodifiableList(mTracks);}
 
+    public Track getTrackWithLatestDetection() {
+        int index = 0;
+        long latestDetectionTime = Long.MAX_VALUE;
+        for (int i = 0; i<this.getTracks().size(); i++) {
+            Track t = this.getTracks().get(i);
+            if(t.getLastDetectionTime() < latestDetectionTime) {
+                latestDetectionTime = t.getLastDetectionTime();
+                index = i;
+            }
+        }
+        return this.getTracks().get(index);
+    }
+
     public void clear() {
         synchronized (mLock) {
             mTracks.clear();
@@ -96,15 +105,17 @@ public class TrackSet {
 
     private void filterOutOldTracks(long currentTime) {
         // filter out tracks which were not updated after n Frames (n=FRAMES_UNTIL_OLD_TRACK_REMOVAL)
-        long maxTimeDeltaForOldestTrack = (long)(FRAMES_UNTIL_OLD_TRACK_REMOVAL/ mConfig.getFrameRate() * Math.pow(1000,3));
-        Iterator<Track> it = mTracks.iterator();
-        while(it.hasNext()) {
-            Track t = it.next();
-            // if a track hasn't been updated in n Frames ...
-            if (t.getLastDetectionTime()<=currentTime-maxTimeDeltaForOldestTrack) {
-                // delete it
-                it.remove();
-                break;
+        if(this.getTracks().size()>1) {
+            long maxTimeDeltaForOldestTrack = (long)(FRAMES_UNTIL_OLD_TRACK_REMOVAL/ mConfig.getFrameRate() * Math.pow(1000,3));
+            Iterator<Track> it = mTracks.iterator();
+            while(it.hasNext()) {
+                Track t = it.next();
+                // if a track hasn't been updated in n Frames ...
+                if (t.getLastDetectionTime()<=currentTime-maxTimeDeltaForOldestTrack) {
+                    // delete it
+                    it.remove();
+                    break;
+                }
             }
         }
     }

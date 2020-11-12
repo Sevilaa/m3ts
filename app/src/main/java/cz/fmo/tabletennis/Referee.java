@@ -39,12 +39,23 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     @Override
     public void onBounce(Lib.Detection detection) {
         switch (this.state) {
+            case WAIT_FOR_SERVE:
+                if ((getServer() == Side.LEFT && detection.directionX == DirectionX.RIGHT) ||
+                        (getServer()  == Side.RIGHT && detection.directionX == DirectionX.LEFT)) {
+                    this.state = GameState.SERVING;
+                    currentBallSide = getServer();
+                }
             case SERVING:
-                bounces++;
+                if (bounces == 0) {
+                    bounces++;
+                    Log.d("onBounce: " +bounces);
+                }
                 applyRuleSetServing();
                 break;
             case PLAY:
-                bounces++;
+                if (bounces == 0) {
+                    bounces++;
+                }
                 applyRuleSet();
                 break;
             default:
@@ -56,8 +67,14 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     public void onSideChange(Side side) {
         switch (this.state) {
             case PLAY:
-            case SERVING:
                 bounces = 0;
+                currentStriker = side;
+                break;
+            case SERVING:
+                Log.d("Side change, reset bounces");
+                if (side != getServer()) {
+                    bounces = 0;
+                }
                 currentStriker = side;
                 break;
             default:
@@ -67,8 +84,9 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
 
     @Override
     public void onNearlyOutOfFrame(Lib.Detection detection, Side side) {
-        if(this.state == GameState.PLAY) {
+        if(this.state == GameState.PLAY && side != Side.TOP && side != Side.BOTTOM) {
             if(this.bounces == 0) {
+                Log.d("No bounce and went out of frame");
                 faultBySide(currentStriker);
             } else {
                 this.state = GameState.OUT_OF_FRAME;
@@ -90,8 +108,10 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
             case OUT_OF_FRAME:
                 if(isOutOfFrameForTooLong()) {
                     if(this.bounces == 1) {
+                        Log.d("Out of Frame for too long - Strike received no return");
                         pointBySide(currentStriker);
                     } else {
+                        Log.d("Out of Frame for too long - Striker did not bounce");
                         faultBySide(currentStriker);
                     }
 
@@ -106,16 +126,19 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
 
     @Override
     public void onTableSideChange(Side side) {
+        Log.d("Table side change: " +side);
+        Log.d("bounces: " +bounces);
         switch (this.state) {
             case SERVING:
                 if(bounces == 0) {
+                    Log.d("Server fault: No Bounce on own Side");
                     faultBySide(getServer());
                     break;
                 }
             case PLAY:
                 this.state = GameState.PLAY;
-                currentBallSide = side;
-                bounces = 0;
+                this.currentBallSide = side;
+                this.bounces = 0;
                 break;
             default:
                 break;
@@ -131,6 +154,10 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     @Override
     public void onPointAddition(Side side) {
         pointBySide(side);
+    }
+
+    public Side getCurrentBallSide() {
+        return currentBallSide;
     }
 
     private void pointBySide(Side side) {
@@ -150,13 +177,15 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     private void initPoint() {
         this.bounces = 0;
         this.state = GameState.WAIT_FOR_SERVE;
-        currentBallSide = getServer();
-        currentStriker = getServer();
+        this.currentBallSide = getServer();
+        this.currentStriker = getServer();
     }
 
     private void applyRuleSet() {
         if (bounces == 1) {
             if (this.currentStriker == this.currentBallSide) {
+                Log.d("currentStriker: "+this.currentStriker);
+                Log.d("currentBallSide: "+this.currentBallSide);
                 Log.d("Bounce on same Side");
                 faultBySide(this.currentStriker);
             }

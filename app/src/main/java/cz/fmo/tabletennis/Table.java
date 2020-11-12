@@ -96,10 +96,15 @@ public class Table {
     }
 
     public boolean isOnOrAbove(int x, int y) {
-        double leftThreshold = this.getCornerTopLeft().x * 1.05;
-        double rightThreshold = this.getCornerTopRight().x / 1.05;
+        double leftThreshold = this.getCornerTopLeft().x * 0.95;
+        double rightThreshold = this.getCornerTopRight().x * 1.05;
         double bottomThreshold = this.getCloseNetEnd().y;
         return (x >= leftThreshold && x <= rightThreshold && y <= bottomThreshold);
+    }
+
+    public boolean isOn(int x, int y) {
+        double topThreshold = this.getFarNetEnd().y * 0.97;
+        return isOnOrAbove(x, y) && y >= topThreshold;
     }
 
     public int getWidth() {
