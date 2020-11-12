@@ -17,8 +17,6 @@ import helper.DirectionY;
 public class EventDetector implements Lib.Callback {
     private static final int SIDE_CHANGE_DETECTION_SPEED = 2;
     private static final double PERCENTAGE_OF_NEARLY_OUT_OF_FRAME = 0.1;
-    private boolean isGray;
-    private int procRes;
     private final TrackSet tracks;
     private final List<EventDetectionCallback> callbacks;
     private final int[] nearlyOutOfFrameThresholds;
@@ -61,15 +59,14 @@ public class EventDetector implements Lib.Callback {
     public void onObjectsDetected(Lib.Detection[] detections, long detectionTime) {
         detectionCount++;
         tracks.addDetections(detections, this.srcWidth, this.srcHeight, detectionTime); // after this, object direction is update
-        if (tracks.getTracks().size() >= 1) {
+        hasBouncedOnTable(tracks);
+        if (tracks.getTracks().size() == 1) {
             Track track = tracks.getTracks().get(0);
             Lib.Detection latestDetection = track.getLatest();
 
             if (table.isOnOrAbove(latestDetection.centerX, latestDetection.centerY)) {
                 track.setTableCrossed();
             }
-
-            hasBouncedOnTable(tracks);
 
             if (isOnTable(track)) {
                 callAllOnStrikeFound(tracks);

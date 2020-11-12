@@ -93,32 +93,29 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
 
     @Override
     public void onStrikeFound(TrackSet tracks) {
-        strikeCount++;
-        if(strikeCount % 5 == 0) {
-            DebugActivity activity = mActivity.get();
-            if (activity == null) {
+        DebugActivity activity = mActivity.get();
+        if (activity == null) {
+            return;
+        }
+        if (activity.ismSurfaceHolderReady()) {
+            SurfaceHolder surfaceHolder = activity.getmSurfaceTrack().getHolder();
+            Canvas canvas = surfaceHolder.lockCanvas();
+            if (canvas == null) {
                 return;
             }
-            if (activity.ismSurfaceHolderReady()) {
-                SurfaceHolder surfaceHolder = activity.getmSurfaceTrack().getHolder();
-                Canvas canvas = surfaceHolder.lockCanvas();
-                if (canvas == null) {
-                    return;
-                }
-                if (this.canvasWidth == 0 || this.canvasHeight == 0) {
-                    canvasWidth = canvas.getWidth();
-                    canvasHeight = canvas.getHeight();
-                }
-                canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-                if (hasNewTable) {
-                    drawTable(activity);
-                    hasNewTable = false;
-                }
-                drawAllTracks(canvas, tracks);
-                drawLatestBounce(canvas);
-                drawLatestOutOfFrameDetection(canvas);
-                surfaceHolder.unlockCanvasAndPost(canvas);
+            if (this.canvasWidth == 0 || this.canvasHeight == 0) {
+                canvasWidth = canvas.getWidth();
+                canvasHeight = canvas.getHeight();
             }
+            canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+            if (hasNewTable) {
+                drawTable(activity);
+                hasNewTable = false;
+            }
+            drawAllTracks(canvas, tracks);
+            drawLatestBounce(canvas);
+            drawLatestOutOfFrameDetection(canvas);
+            surfaceHolder.unlockCanvasAndPost(canvas);
         }
         setTextInTextView(R.id.txtPlayMovieState, match.getReferee().getState().toString());
         setTextInTextView(R.id.txtPlayMovieServing, match.getReferee().getServer().toString());
@@ -249,7 +246,8 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
             int c = Color.argb(255, Math.round(r.rgba[0] * 255), Math.round(r.rgba[1] * 255), Math.round(r.rgba[2] * 255));
             p.setColor(c);
             p.setStrokeWidth(pre.radius);
-            while (pre != null) {
+            int count = 0;
+            while (pre != null && count < 4) {
                 canvas.drawCircle(scaleX(pre.centerX), scaleY(pre.centerY), pre.radius, p);
                 if (pre.predecessor != null) {
                     int x1 = scaleX(pre.centerX);
@@ -259,6 +257,7 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
                     canvas.drawLine(x1, y1, x2, y2, p);
                 }
                 pre = pre.predecessor;
+                count++;
             }
         }
     }
