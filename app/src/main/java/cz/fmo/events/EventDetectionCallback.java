@@ -10,4 +10,5 @@ public interface EventDetectionCallback {
     void onNearlyOutOfFrame(Lib.Detection detection, Side side);
     void onStrikeFound(TrackSet tracks);
     void onTableSideChange(Side side);
+    void onBallDroppedSideWays();
 }

@@ -2,12 +2,20 @@ package cz.fmo.tabletennis;
 
 import com.android.grafika.Log;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import cz.fmo.Lib;
 import cz.fmo.data.TrackSet;
 import cz.fmo.events.EventDetectionCallback;
+import cz.fmo.tabletennis.timeouts.OutOfFrameTimerTask;
+import cz.fmo.tabletennis.timeouts.PauseTimerTask;
 import helper.DirectionX;
 
 public class Referee implements EventDetectionCallback, ScoreManipulationCallback {
+    private static final int OUT_OF_FRAME_MAX_DELAY = 1500;
+    private Timer outOfFrameTimer;
+    private Timer timeOutNextServeTimer;
     private GameCallback gameCallback;
     private Game currentGame;
     private Side currentStriker;
@@ -15,7 +23,6 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     private GameState state;
     private int bounces;
     private int serveCounter;
-    private long outOfFrameTimestamp;
 
     public Referee(Side servingSide) {
         this.currentStriker = servingSide;
@@ -40,22 +47,19 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     public void onBounce(Lib.Detection detection) {
         switch (this.state) {
             case WAIT_FOR_SERVE:
-                if ((getServer() == Side.LEFT && detection.directionX == DirectionX.RIGHT) ||
+                if ((detection.predecessor != null) && (Math.abs(detection.centerX-detection.predecessor.centerX)>20) &&
+                        (getServer() == Side.LEFT && detection.directionX == DirectionX.RIGHT) ||
                         (getServer()  == Side.RIGHT && detection.directionX == DirectionX.LEFT)) {
                     this.state = GameState.SERVING;
                     currentBallSide = getServer();
                 }
+                break;
             case SERVING:
-                if (bounces == 0) {
-                    bounces++;
-                    Log.d("onBounce: " +bounces);
-                }
+                bounces++;
                 applyRuleSetServing();
                 break;
             case PLAY:
-                if (bounces == 0) {
-                    bounces++;
-                }
+                bounces++;
                 applyRuleSet();
                 break;
             default:
@@ -71,26 +75,29 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
                 currentStriker = side;
                 break;
             case SERVING:
-                Log.d("Side change, reset bounces");
                 if (side != getServer()) {
                     bounces = 0;
                 }
                 currentStriker = side;
                 break;
             default:
+                currentStriker = side;
                 break;
         }
     }
 
     @Override
     public void onNearlyOutOfFrame(Lib.Detection detection, Side side) {
-        if(this.state == GameState.PLAY && side != Side.TOP && side != Side.BOTTOM) {
+        if(this.state == GameState.PLAY && side != Side.TOP) {
             if(this.bounces == 0) {
                 Log.d("No bounce and went out of frame");
                 faultBySide(currentStriker);
             } else {
+                // schedule out of frame timer
+                TimerTask outOfFrameTask = new OutOfFrameTimerTask(this);
+                outOfFrameTimer = new Timer("outOfFrameTimer");
+                outOfFrameTimer.schedule(outOfFrameTask, OUT_OF_FRAME_MAX_DELAY);
                 this.state = GameState.OUT_OF_FRAME;
-                this.outOfFrameTimestamp = System.currentTimeMillis();
             }
         }
     }
@@ -99,25 +106,19 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     public void onStrikeFound(TrackSet tracks) {
         switch (this.state) {
             case WAIT_FOR_SERVE:
-                if ((getServer() == Side.LEFT && tracks.getTracks().get(0).getLatest().directionX == DirectionX.RIGHT) ||
-                        (getServer()  == Side.RIGHT && tracks.getTracks().get(0).getLatest().directionX == DirectionX.LEFT)) {
+                if (((getServer() == Side.LEFT && tracks.getTracks().get(0).getLatest().directionX == DirectionX.RIGHT) ||
+                        (getServer()  == Side.RIGHT && tracks.getTracks().get(0).getLatest().directionX == DirectionX.LEFT)) &&
+                        (tracks.getTracks().get(0).getLatest().predecessor != null)) {
                     this.state = GameState.SERVING;
                     currentBallSide = getServer();
+                    this.currentStriker = getServer();
                 }
                 break;
             case OUT_OF_FRAME:
-                if(isOutOfFrameForTooLong()) {
-                    if(this.bounces == 1) {
-                        Log.d("Out of Frame for too long - Strike received no return");
-                        pointBySide(currentStriker);
-                    } else {
-                        Log.d("Out of Frame for too long - Striker did not bounce");
-                        faultBySide(currentStriker);
-                    }
-
-                } else {
-                    this.state = GameState.PLAY;
-                }
+                // if ball was out of frame for too long, a point would have been scored.
+                this.outOfFrameTimer.cancel();
+                this.outOfFrameTimer = null;
+                this.state = GameState.PLAY;
                 break;
             default:
                 break;
@@ -126,14 +127,12 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
 
     @Override
     public void onTableSideChange(Side side) {
-        Log.d("Table side change: " +side);
-        Log.d("bounces: " +bounces);
         switch (this.state) {
             case SERVING:
                 if(bounces == 0) {
-                    Log.d("Server fault: No Bounce on own Side");
-                    faultBySide(getServer());
-                    break;
+                    //Log.d("Server fault: No Bounce on own Side");
+                    //faultBySide(getServer());
+                    //break;
                 }
             case PLAY:
                 this.state = GameState.PLAY;
@@ -146,6 +145,21 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     }
 
     @Override
+    public void onBallDroppedSideWays() {
+        switch (this.state) {
+            case PLAY:
+                if (bounces == 0) {
+                    Log.d("Fault by Striker: Ball has fallen off side ways and had no bounce");
+                    faultBySide(currentStriker);
+                } else if (bounces == 1) {
+                    Log.d("Point by Striker: Ball has fallen off side ways and had a bounce");
+                    pointBySide(currentStriker);
+                }
+                break;
+        }
+    }
+
+    @Override
     public void onPointDeduction(Side side) {
         gameCallback.onPointDeduction(side);
         initPoint();
@@ -153,16 +167,43 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
 
     @Override
     public void onPointAddition(Side side) {
-        pointBySide(side);
+        gameCallback.onPoint(side);
+        initPoint();
     }
 
     public Side getCurrentBallSide() {
         return currentBallSide;
     }
 
+    public void onOutOfFrameForTooLong() {
+        if (this.state == GameState.OUT_OF_FRAME) {
+            if(this.bounces == 1) {
+                Log.d("Out of Frame for too long - Strike received no return");
+                pointBySide(currentStriker);
+            } else {
+                Log.d("Out of Frame for too long - Striker did not bounce");
+                faultBySide(currentStriker);
+            }
+        } else {
+            this.outOfFrameTimer = null;
+        }
+    }
+
+    public void onStartNextServe() {
+        this.state = GameState.WAIT_FOR_SERVE;
+    }
+
+    private void setTimeoutForNextServe() {
+        this.state = GameState.PAUSE;
+        TimerTask outOfFrameTask = new PauseTimerTask(this);
+        this.timeOutNextServeTimer = new Timer("timeOutNextServeTimer");
+        this.timeOutNextServeTimer.schedule(outOfFrameTask, 1000);
+    }
+
     private void pointBySide(Side side) {
         gameCallback.onPoint(side);
         initPoint();
+        setTimeoutForNextServe();
     }
 
     private void faultBySide(Side side) {
@@ -172,10 +213,15 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
             gameCallback.onPoint(Side.RIGHT);
         }
         initPoint();
+        setTimeoutForNextServe();
     }
 
     private void initPoint() {
         this.bounces = 0;
+        if (this.outOfFrameTimer != null) {
+            this.outOfFrameTimer.cancel();
+            this.outOfFrameTimer = null;
+        }
         this.state = GameState.WAIT_FOR_SERVE;
         this.currentBallSide = getServer();
         this.currentStriker = getServer();
@@ -202,9 +248,5 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
             Log.d("Server Fault: Multiple Bounces on same Side");
             faultBySide(getServer());
         }
-    }
-
-    private boolean isOutOfFrameForTooLong() {
-        return System.currentTimeMillis() - this.outOfFrameTimestamp > 1500;
     }
 }

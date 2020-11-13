@@ -16,6 +16,7 @@ public abstract class DebugActivity extends CameraPreviewActivity implements Sur
     private TextView mBounceCountText;
     private TextView mScoreLeftText;
     private TextView mScoreRightText;
+    private boolean mSurfaceTrackReady;
 
     /**
      * In this method the inherited class must set the content view.

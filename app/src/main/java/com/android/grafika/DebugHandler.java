@@ -109,7 +109,7 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
             }
             canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
             if (hasNewTable) {
-                drawTable(activity);
+                drawTable();
                 hasNewTable = false;
             }
             drawAllTracks(canvas, tracks);
@@ -126,7 +126,12 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
 
     @Override
     public void onTableSideChange(Side side) {
+        // do nothing
+    }
 
+    @Override
+    public void onBallDroppedSideWays() {
+        // do nothing
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -198,7 +203,9 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
         surfaceHolder.unlockCanvasAndPost(canvas);
     }
 
-    void drawTable(DebugActivity activity) {
+    void drawTable() {
+        DebugActivity activity = mActivity.get();
+        if (activity == null) return;
         SurfaceHolder surfaceHolderTable = activity.getmSurfaceTable().getHolder();
         Canvas canvas = surfaceHolderTable.lockCanvas();
         if (canvas == null) {
@@ -234,31 +241,28 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
         if(match.getReferee().getCurrentBallSide() != null) {
             setTextInTextView(R.id.txtBounce, String.valueOf(this.newBounceCount));
         }
-
-        drawTable(this.mActivity.get());
     }
 
     private void drawAllTracks(Canvas canvas, TrackSet set) {
-        for (Track t : set.getTracks()) {
-            t.updateColor();
-            Lib.Detection pre = t.getLatest();
-            cz.fmo.util.Color.RGBA r = t.getColor();
-            int c = Color.argb(255, Math.round(r.rgba[0] * 255), Math.round(r.rgba[1] * 255), Math.round(r.rgba[2] * 255));
-            p.setColor(c);
-            p.setStrokeWidth(pre.radius);
-            int count = 0;
-            while (pre != null && count < 4) {
-                canvas.drawCircle(scaleX(pre.centerX), scaleY(pre.centerY), pre.radius, p);
-                if (pre.predecessor != null) {
-                    int x1 = scaleX(pre.centerX);
-                    int x2 = scaleX(pre.predecessor.centerX);
-                    int y1 = scaleY(pre.centerY);
-                    int y2 = scaleY(pre.predecessor.centerY);
-                    canvas.drawLine(x1, y1, x2, y2, p);
-                }
-                pre = pre.predecessor;
-                count++;
+        Track t = set.getTracks().get(0);
+        t.updateColor();
+        Lib.Detection pre = t.getLatest();
+        cz.fmo.util.Color.RGBA r = t.getColor();
+        int c = Color.argb(255, Math.round(r.rgba[0] * 255), Math.round(r.rgba[1] * 255), Math.round(r.rgba[2] * 255));
+        p.setColor(c);
+        p.setStrokeWidth(pre.radius);
+        int count = 0;
+        while (pre != null && count < 2) {
+            canvas.drawCircle(scaleX(pre.centerX), scaleY(pre.centerY), pre.radius, p);
+            if (pre.predecessor != null) {
+                int x1 = scaleX(pre.centerX);
+                int x2 = scaleX(pre.predecessor.centerX);
+                int y1 = scaleY(pre.centerY);
+                int y2 = scaleY(pre.predecessor.centerY);
+                canvas.drawLine(x1, y1, x2, y2, p);
             }
+            pre = pre.predecessor;
+            count++;
         }
     }
 

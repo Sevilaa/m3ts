@@ -14,7 +14,7 @@ import cz.fmo.util.Config;
  * Latest detected tracks that are meant to be kept on screen to allow inspection by the user.
  */
 public class TrackSet {
-    private static final int FRAMES_UNTIL_OLD_TRACK_REMOVAL = 3;
+    private static final int FRAMES_UNTIL_OLD_TRACK_REMOVAL = 6;
     private static final int NUM_TRACKS = 2;
     private final Object mLock = new Object();
     private final ArrayList<Track> mTracks = new ArrayList<>();
@@ -60,7 +60,8 @@ public class TrackSet {
             this.filterOutOldTracks(detectionTime);
             for (Lib.Detection detection : detections) {
                 if (detection.id < 0) {
-                    throw new RuntimeException("ID of a detection not specified");
+                    return;
+                    //throw new RuntimeException("ID of a detection not specified");
                 }
 
                 // get the track of the predecessor

@@ -77,6 +77,24 @@ public class PlayMovieSurfaceActivity extends DebugActivity implements OnItemSel
     private MoviePlayer.PlayTask mPlayTask;
     private PlayMovieDebugHandler mHandler;
 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        this.mHandler = new PlayMovieDebugHandler(this);
+        // Populate file-selection spinner.
+        Spinner spinner = findViewById(R.id.playMovieFile_spinner);
+        // Need to create one of these fancy ArrayAdapter thingies, and specify the generic layout
+        // for the widget itself.
+        mMovieFiles = mFileMan.listMP4();
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item, mMovieFiles);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // Apply the adapter to the spinner.
+        spinner.setAdapter(adapter);
+        spinner.setOnItemSelectedListener(this);
+        updateControls();
+    }
+
     /**
      * onClick handler for "play"/"stop" button.
      */
@@ -112,6 +130,7 @@ public class PlayMovieSurfaceActivity extends DebugActivity implements OnItemSel
                 Config mConfig = new Config(this);
                 mHandler.init(mConfig, player.getVideoWidth(), player.getVideoHeight());
                 trySettingTableLocationFromXML(mMovieFiles[mSelectedMovie]);
+                mHandler.drawTable();
                 mHandler.startDetections();
             } catch (IOException ioe) {
                 Log.e("Unable to play movie", ioe);
@@ -155,24 +174,6 @@ public class PlayMovieSurfaceActivity extends DebugActivity implements OnItemSel
         Log.d("playback stopped");
         mShowStopLabel = false;
         mPlayTask = null;
-        updateControls();
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        this.mHandler = new PlayMovieDebugHandler(this);
-        // Populate file-selection spinner.
-        Spinner spinner = findViewById(R.id.playMovieFile_spinner);
-        // Need to create one of these fancy ArrayAdapter thingies, and specify the generic layout
-        // for the widget itself.
-        mMovieFiles = mFileMan.listMP4();
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_spinner_item, mMovieFiles);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        // Apply the adapter to the spinner.
-        spinner.setAdapter(adapter);
-        spinner.setOnItemSelectedListener(this);
         updateControls();
     }
 
