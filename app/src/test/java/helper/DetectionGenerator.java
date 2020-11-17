@@ -10,8 +10,8 @@ import cz.fmo.tabletennis.Side;
  */
 public class DetectionGenerator {
     private static final int START_Y_POS = 100;
-    private static final int START_X_POS = 600;
-    private static final int SPACE_BETWEEN_OBJECTS = 50;
+    private static final int START_X_POS = 400;
+    private static final int SPACE_BETWEEN_OBJECTS = 140;
     private static final int MAX_ID = 99999;
     /**
      * Generates Detections which represent ONE object thrown horizontally.
@@ -21,15 +21,17 @@ public class DetectionGenerator {
      * @return 10 detections which form a horizontal line (with some space in between of course).
      */
     public static Lib.Detection[] makeDetectionsInXDirectionOnTable(boolean toRight) {
-        int n = 10;
+        int n = 9;
         int id = new Random().nextInt(MAX_ID);
         int directionFactor = -1;
+        int startXPos = 400;
+        if(!toRight) startXPos = 1800;
         if(toRight) {directionFactor = 1;}
 
         Lib.Detection[] detections = new Lib.Detection[n];
         for (int i = 0; i<n; i++) {
             detections[i] = new Lib.Detection();
-            detections[i].centerX = directionFactor*i*SPACE_BETWEEN_OBJECTS+START_X_POS;
+            detections[i].centerX = directionFactor*i*SPACE_BETWEEN_OBJECTS+startXPos;
             detections[i].centerY = START_Y_POS;
             detections[i].id = i + id;
             detections[i].radius = 3;

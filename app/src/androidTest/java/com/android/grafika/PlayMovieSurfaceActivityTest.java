@@ -1,8 +1,6 @@
 package com.android.grafika;
 
 import android.Manifest;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
@@ -88,11 +86,11 @@ public class PlayMovieSurfaceActivityTest {
         findAllViewsInActivity();
         movieSelectSpinner.setSelection(0, true);
         playMovieSurfaceActivity.onItemSelected(movieSelectSpinner, null, 0, R.id.playMovieFile_spinner);
-        implAssertSideChange(txtSide);
         onView(withId(R.id.play_stop_button))
                 .perform(click());
         onView(isRoot()).perform(waitFor(10000));
         assertNotEquals("0", txtBounce.getText());
+        assertNotEquals("None", txtSide.getText());
         assertEquals(playMovieSurfaceActivity.getResources().getString(R.string.stop_button_text),playStopButton.getText());
         onView(withId(R.id.play_stop_button))
                 .perform(click());
@@ -112,28 +110,6 @@ public class PlayMovieSurfaceActivityTest {
         assertNotNull(txtScoreRight);
         assertEquals(playMovieSurfaceActivity.getResources().getString(R.string.play_button_text), playStopButton.getText());
         assertEquals("0", txtBounce.getText());
-    }
-
-    public void implAssertSideChange(TextView txtSide) {
-        txtSide.addTextChangedListener(new TextWatcher() {
-            private String lastSide = "";
-
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                // no implementation for test needed
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                assertNotEquals(lastSide, String.valueOf(charSequence));
-                lastSide = String.valueOf(charSequence);
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                // no implementation for test needed
-            }
-        });
     }
 
     /**

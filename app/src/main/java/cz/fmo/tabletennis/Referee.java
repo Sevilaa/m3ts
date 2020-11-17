@@ -14,6 +14,7 @@ import helper.DirectionX;
 
 public class Referee implements EventDetectionCallback, ScoreManipulationCallback {
     private static final int OUT_OF_FRAME_MAX_DELAY = 1500;
+    private static final int PAUSE_DELAY = 1000;
     private Timer outOfFrameTimer;
     private Timer timeOutNextServeTimer;
     private GameCallback gameCallback;
@@ -197,7 +198,7 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
         this.state = GameState.PAUSE;
         TimerTask outOfFrameTask = new PauseTimerTask(this);
         this.timeOutNextServeTimer = new Timer("timeOutNextServeTimer");
-        this.timeOutNextServeTimer.schedule(outOfFrameTask, 1000);
+        this.timeOutNextServeTimer.schedule(outOfFrameTask, PAUSE_DELAY);
     }
 
     private void pointBySide(Side side) {

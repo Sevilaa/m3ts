@@ -2,6 +2,8 @@ package cz.fmo.events;
 
 import android.support.annotation.NonNull;
 
+import com.android.grafika.Log;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -22,7 +24,10 @@ public class EventDetector implements Lib.Callback {
     private int srcWidth;
     private int srcHeight;
     private Lib.Detection previousDetection;
-    private Lib.Detection beforePreviousDetection;
+    private int previousDirectionY;
+    private int previousDirectionX;
+    private int previousCenterX;
+    private int previousCenterY;
     private Table table;
 
     public EventDetector(Config config, int srcWidth, int srcHeight, EventDetectionCallback callback, TrackSet tracks, @NonNull Table table) {
@@ -60,7 +65,6 @@ public class EventDetector implements Lib.Callback {
             Track track = tracks.getTracks().get(0);
             Lib.Detection latestDetection = track.getLatest();
             calcDirectionY(latestDetection);
-
             if (table.isOnOrAbove(latestDetection.centerX, latestDetection.centerY)) {
                 track.setTableCrossed();
             }
@@ -70,16 +74,13 @@ public class EventDetector implements Lib.Callback {
                 }
                 hasBouncedOnTable(latestDetection);
                 callAllOnStrikeFound(tracks);
-                if (beforePreviousDetection == null)
-                    beforePreviousDetection = latestDetection;
                 hasSideChanged(latestDetection);
-                beforePreviousDetection = latestDetection;
                 hasTableSideChanged(latestDetection.centerX);
-                previousDetection = latestDetection;
                 Side nearlyOutOfFrameSide = getNearlyOutOfFrameSide(latestDetection);
                 if (nearlyOutOfFrameSide != null) {
                     callAllOnNearlyOutOfFrame(latestDetection, nearlyOutOfFrameSide);
                 }
+                savePreviousDetection(latestDetection);
             }
         }
     }
@@ -96,6 +97,14 @@ public class EventDetector implements Lib.Callback {
         for (EventDetectionCallback callback : callbacks) {
             callback.onStrikeFound(tracks);
         }
+    }
+
+    private void savePreviousDetection(Lib.Detection detection) {
+        this.previousCenterX = detection.centerX;
+        this.previousCenterY = detection.centerY;
+        this.previousDirectionX = (int) detection.directionX;
+        this.previousDirectionY = (int) detection.directionY;
+        this.previousDetection = detection;
     }
 
     private void callAllOnBounce(Lib.Detection latestDetection) {
@@ -132,12 +141,12 @@ public class EventDetector implements Lib.Callback {
         // not a side change when the ball was sent back by the net
         boolean hasSideChanged = false;
 
-        if (beforePreviousDetection != null && beforePreviousDetection.directionX != detection.directionX) {
+        if (previousDirectionX != detection.directionX) {
             Side side = Side.LEFT;
             if (detection.directionX == DirectionX.LEFT) {
                 side = Side.RIGHT;
             }
-            if (!(beforePreviousDetection.centerX >= table.getCloseNetEnd().x * 0.6 && beforePreviousDetection.centerX <= table.getCloseNetEnd().x * 1.4)) {
+            if (!(previousCenterX >= table.getCloseNetEnd().x * 0.6 && previousCenterX <= table.getCloseNetEnd().x * 1.4)) {
                 callAllOnSideChange(side);
                 hasSideChanged = true;
             }
@@ -146,14 +155,14 @@ public class EventDetector implements Lib.Callback {
     }
 
     private void hasBouncedOnTable(Lib.Detection detection) {
-        if ((previousDetection != null && previousDetection.directionY != detection.directionY &&
-                previousDetection.directionX == detection.directionX) &&
-                (table.isBounceOn(previousDetection.centerX, previousDetection.centerY))) {
+        if (previousDirectionY != detection.directionY &&
+                (previousDirectionX == detection.directionX) &&
+                (table.isBounceOn(previousCenterX, previousCenterY)) &&
+                (previousDirectionY == DirectionY.DOWN) && (detection.directionY == DirectionY.UP) &&
+                (detection.directionX != 0)) {
+            Log.d("bounced!");
             callAllOnBounce(detection);
         }
-        /*if (table.isBounceOn(detection.centerX, detection.centerY)) {
-            callAllOnBounce(detection);
-        }*/
     }
 
     private Side getNearlyOutOfFrameSide(Lib.Detection detection) {
@@ -177,19 +186,31 @@ public class EventDetector implements Lib.Callback {
     }
 
     private void calcDirectionY(Lib.Detection detection) {
-        if (previousDetection != null) {
-            if (previousDetection.centerY >= detection.centerY)
+        if (previousDirectionY != 0) {
+            if (previousCenterY >= detection.centerY)
                 detection.directionY = DirectionY.UP;
             else
                 detection.directionY = DirectionY.DOWN;
         }
     }
 
+    private void calcDirectionX(Lib.Detection detection) {
+        if (previousDetection != null) {
+            if (previousCenterX >= detection.centerX)
+                detection.directionX = DirectionX.LEFT;
+            else
+                detection.directionX = DirectionX.RIGHT;
+        } else {
+            // first detection of a track
+            detection.directionX = 0;
+        }
+    }
+
     private void hasTableSideChanged(int currentXPosition) {
         if (previousDetection != null) {
-            if (currentXPosition > table.getCloseNetEnd().x && previousDetection.centerX < table.getCloseNetEnd().x) {
+            if (currentXPosition > table.getCloseNetEnd().x && previousCenterX < table.getCloseNetEnd().x) {
                 callAllOnTableSideChange(Side.RIGHT);
-            } else if (currentXPosition < table.getCloseNetEnd().x && previousDetection.centerX > table.getCloseNetEnd().x) {
+            } else if (currentXPosition < table.getCloseNetEnd().x && previousCenterX > table.getCloseNetEnd().x) {
                 callAllOnTableSideChange(Side.LEFT);
             }
         }

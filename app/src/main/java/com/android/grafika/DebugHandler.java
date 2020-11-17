@@ -244,6 +244,7 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     }
 
     private void drawAllTracks(Canvas canvas, TrackSet set) {
+        // only draw the tracks which get processed by EventDetector (this case getTracks().get(0))
         Track t = set.getTracks().get(0);
         t.updateColor();
         Lib.Detection pre = t.getLatest();

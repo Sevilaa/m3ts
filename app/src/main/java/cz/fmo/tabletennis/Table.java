@@ -107,7 +107,7 @@ public class Table {
         double rightThreshold = this.getCornerDownRight().x;
         double bottomThreshold = this.getCloseNetEnd().y;
         double topThreshold = this.getFarNetEnd().y * 0.9;
-        return (x >= leftThreshold && x <= rightThreshold && y < bottomThreshold && y > topThreshold);
+        return (x >= leftThreshold && x <= rightThreshold && y <= bottomThreshold && y >= topThreshold);
     }
 
     public boolean isBelow(int x, int y) {
