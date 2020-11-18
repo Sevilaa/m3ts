@@ -9,18 +9,24 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.io.IOException;
+import java.util.Properties;
+
+import cz.fmo.DisplayPubNub;
 import cz.fmo.R;
 import cz.fmo.tabletennis.Side;
+import cz.fmo.tabletennis.UICallback;
 import helper.OnSwipeListener;
 
-public class MatchScoreFragment extends Fragment {
+public class MatchScoreFragment extends Fragment implements UICallback {
     private FragmentReplaceCallback callback;
-    private String pubnub = "test";
+    private DisplayPubNub pubnub;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_match_score, container, false);
+        initPubNub(v.getContext(),  getArguments().getString("matchID"));
         setOnSwipeListener(v);
         return v;
     }
@@ -39,30 +45,39 @@ public class MatchScoreFragment extends Fragment {
         }
     }
 
-    private void onPoint(Side side, int score) {
-        if (side == Side.LEFT) {
-            setTextInTextView(R.id.left_score, String.valueOf(score));
-        } else {
-            setTextInTextView(R.id.right_score, String.valueOf(score));
-        }
+    @Override
+    public void onMatchEnded(String winnerName) {
+        Bundle bundle = new Bundle();
+        bundle.putString("winner", winnerName);
+        Fragment fragment = new MatchWonFragment();
+        fragment.setArguments(bundle);
+        callback.replaceFragment(fragment);
     }
 
-    private void onGameWin(Side side, int wins) {
+    @Override
+    public void onScore(Side side, int score) {
+        setScoreTextViews(side, score);
+    }
+
+    @Override
+    public void onWin(Side side, int wins) {
         if (side == Side.LEFT) {
             setTextInTextView(R.id.left_games, String.valueOf(wins));
         } else {
             setTextInTextView(R.id.right_games, String.valueOf(wins));
         }
-        onPoint(Side.LEFT, 0);
-        onPoint(Side.LEFT, 0);
+        setScoreTextViews(Side.LEFT, 0);
+        setScoreTextViews(Side.LEFT, 0);
     }
 
-    private void onMatchWin(Side side) {
-        Bundle bundle = new Bundle();
-        bundle.putString("winner", "tester");
-        Fragment fragment = new MatchWonFragment();
-        fragment.setArguments(bundle);
-        callback.replaceFragment(fragment);
+    private void initPubNub(Context context, String matchID) {
+        Properties properties = new Properties();
+        try {
+            properties.load(context.getAssets().open("app.properties"));
+        } catch (IOException ex) {
+            throw new RuntimeException("No app.properties file found!");
+        }
+        this.pubnub = new DisplayPubNub(matchID, properties.getProperty("pub_key"), properties.getProperty("sub_key"), this);
     }
 
     private void setTextInTextView(int id, final String text) {
@@ -77,17 +92,25 @@ public class MatchScoreFragment extends Fragment {
                 @Override
                 public void onSwipeDown(Side swipeSide) {
                     if(pubnub != null) {
-                        //pubnub.send("onPointDeduction",swipeSide);
+                        pubnub.onPointDeduction(swipeSide);
                     }
                 }
 
                 @Override
                 public void onSwipeUp(Side swipeSide) {
                     if(pubnub != null) {
-                        //pubnub.send("onPointAddition",swipeSide);
+                        pubnub.onPointAddition(swipeSide);
                     }
                 }
             });
+        }
+    }
+
+    private void setScoreTextViews(Side side, int score) {
+        if (side == Side.LEFT) {
+            setTextInTextView(R.id.left_score, String.valueOf(score));
+        } else {
+            setTextInTextView(R.id.right_score, String.valueOf(score));
         }
     }
 }
