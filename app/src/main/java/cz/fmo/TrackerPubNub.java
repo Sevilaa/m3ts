@@ -51,14 +51,8 @@ public class TrackerPubNub implements UICallback {
                         @Override
                         public void successCallback(String channel, Object message) {
                             // all messages get received here
-                            System.out.println("SUBSCRIBE : " + channel + " : "
-                                    + message.getClass() + " : " + message.toString());
-                            try {
-                                if (message instanceof JSONObject) {
-                                    ((JSONObject)message).getString("content");
-                                }
-                            } catch (JSONException ex) {
-
+                            if (message instanceof JSONObject) {
+                                handleMessage((JSONObject)message);
                             }
                         }
 
@@ -106,6 +100,28 @@ public class TrackerPubNub implements UICallback {
             pubnub.publish(this.roomID, json, new Callback() {});
         } catch (JSONException ex) {
             Log.d("Unable to send JSON to channel "+this.roomID+"\n"+ex.getMessage());
+        }
+    }
+
+    private void handleMessage(JSONObject json) {
+        try {
+            String event = json.getString("event");
+            String side = json.getString("side");
+            if(event != null && side != null) {
+                switch (event) {
+                    case "onPointDeduction":
+                        this.scoreManipulationCallback.onPointDeduction(Side.valueOf(side));
+                        break;
+                    case "onPointAddition":
+                        this.scoreManipulationCallback.onPointAddition(Side.valueOf(side));
+                        break;
+                    default:
+                        Log.d("Invalid side or event received.\nevent:"+event+" side:"+side);
+                        break;
+                }
+            }
+        } catch (JSONException ex) {
+            Log.d("Unable to parse JSON from "+this.roomID+"\n"+ex.getMessage());
         }
     }
 }

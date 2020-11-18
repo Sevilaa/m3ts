@@ -11,7 +11,7 @@ public class LiveDebugHandler extends DebugHandler implements CameraThread.Callb
     private static final int CAMERA_ERROR = 2;
 
     public LiveDebugHandler(@NonNull DebugActivity activity, Side servingSide, MatchType matchType, String matchID) {
-        super(activity, servingSide, matchType, matchID);
+        super(activity, servingSide, matchType, matchID, false);
     }
 
     @Override

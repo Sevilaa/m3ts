@@ -33,7 +33,7 @@ public final class LiveDebugActivity extends DebugActivity {
     protected void onCreate(android.os.Bundle savedBundle) {
         super.onCreate(savedBundle);
         getDataFromIntent();
-        this.matchId = "bruh";
+        this.matchId = "bruh_2";
         this.mHandler = new LiveDebugHandler(this, this.servingSide, this.matchType, this.matchId);
         cameraCallback = this.mHandler;
         this.mConfig = new Config(this);

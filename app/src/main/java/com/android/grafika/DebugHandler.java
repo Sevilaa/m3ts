@@ -61,7 +61,7 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     private ScoreManipulationCallback smc;
     private TrackerPubNub trackerPubNub;
 
-    public DebugHandler(@NonNull DebugActivity activity, Side servingSide, MatchType matchType, String matchID) {
+    public DebugHandler(@NonNull DebugActivity activity, Side servingSide, MatchType matchType, String matchID, boolean useScreenForUICallback) {
         mActivity = new WeakReference<>(activity);
         initTTS(activity);
         TTS_WIN = activity.getResources().getString(R.string.ttsWin);
@@ -76,6 +76,9 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
             Properties properties = new Properties();
             properties.load(activity.getAssets().open("app.properties"));
             this.trackerPubNub = new TrackerPubNub(matchID, properties.getProperty("pub_key"), properties.getProperty("sub_key"));
+            UICallback uiCallback = this.trackerPubNub;
+            if (useScreenForUICallback) uiCallback = this;
+            match = new Match(this.matchType, GameType.G11, ServeRules.S2,"Hans", "Peter", uiCallback, this.servingSide);
         } catch (IOException ex) {
             throw new RuntimeException("No app.properties file found!");
         }
@@ -245,7 +248,6 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     }
 
     private void startMatch() {
-        match = new Match(this.matchType, GameType.G11, ServeRules.S2,"Hans", "Peter", this.trackerPubNub, this.servingSide);
         setOnSwipeListener();
         setTextInTextView(R.id.txtPlayMovieState, match.getReferee().getState().toString());
         setTextInTextView(R.id.txtPlayMovieServing, match.getReferee().getServer().toString());
