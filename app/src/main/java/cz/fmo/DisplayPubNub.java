@@ -96,7 +96,7 @@ public class DisplayPubNub {
             if(event != null) {
                 switch (event) {
                     case "onMatchEnded":
-                        this.callback.onMatchEnded();
+                        this.callback.onMatchEnded(json.getString("side"));
                         break;
                     case "onScore":
                         this.callback.onScore(Side.valueOf(json.getString("side")), Integer.parseInt(json.getString("score")));

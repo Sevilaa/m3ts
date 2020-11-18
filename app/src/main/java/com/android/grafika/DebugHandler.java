@@ -150,7 +150,7 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
-    public void onMatchEnded() {
+    public void onMatchEnded(String winnerName) {
         this.match = null;
         Lib.detectionStop();
         mActivity.get().getmSurfaceView().setOnTouchListener(null);

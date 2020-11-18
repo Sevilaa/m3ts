@@ -46,9 +46,9 @@ public class MatchScoreFragment extends Fragment implements UICallback {
     }
 
     @Override
-    public void onMatchEnded() {
+    public void onMatchEnded(String winnerName) {
         Bundle bundle = new Bundle();
-        bundle.putString("winner", "tester");
+        bundle.putString("winner", winnerName);
         Fragment fragment = new MatchWonFragment();
         fragment.setArguments(bundle);
         callback.replaceFragment(fragment);

@@ -74,8 +74,8 @@ public class TrackerPubNub implements UICallback {
     }
 
     @Override
-    public void onMatchEnded() {
-        send("onMatchEnded", null, null,null);
+    public void onMatchEnded(String winnerName) {
+        send("onMatchEnded", winnerName, null,null);
     }
 
     @Override
