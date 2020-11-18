@@ -9,20 +9,17 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 
-import java.lang.ref.WeakReference;
-
 import cz.fmo.R;
 import cz.fmo.tabletennis.MatchType;
 import cz.fmo.tabletennis.Side;
 
 /**
- * Use the {@link InitializeSpecifyMatchFragment#newInstance} factory method to
+ * Use the {@link InitializeFragmentFactory#newSpecifyMatchInstance} factory method to
  * create an instance of this fragment.
  */
 public class InitializeSpecifyMatchFragment extends android.app.Fragment implements AdapterView.OnItemSelectedListener, Button.OnClickListener {
     private static final String[] MATCH_TYPE = {MatchType.BO1.toString(), MatchType.BO3.toString(), MatchType.BO5.toString()};
     private static final String[] SERVING_SIDES = {Side.LEFT.toString(), Side.RIGHT.toString()};
-    private WeakReference<InitializeActivity> activityWeakReference;
 
     public InitializeSpecifyMatchFragment() {
         // Required empty public constructor
@@ -30,13 +27,11 @@ public class InitializeSpecifyMatchFragment extends android.app.Fragment impleme
 
     @Override
     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-        InitializeActivity activity = this.activityWeakReference.get();
-        if (activity != null) {
-            if (adapterView.getId() == R.id.init_spinnerSelectMatchType) {
-                activity.setSelectedMatchType(i);
-            } else if (adapterView.getId() == R.id.init_spinnerSelectServingSide) {
-                activity.setSelectedServingSide(i);
-            }
+        InitializeActivity activity = (InitializeActivity) getActivity();
+        if (adapterView.getId() == R.id.init_spinnerSelectMatchType) {
+            activity.setSelectedMatchType(i);
+        } else if (adapterView.getId() == R.id.init_spinnerSelectServingSide) {
+            activity.setSelectedServingSide(i);
         }
     }
 
@@ -56,10 +51,6 @@ public class InitializeSpecifyMatchFragment extends android.app.Fragment impleme
         return view;
     }
 
-    void setActivityWeakReference(WeakReference<InitializeActivity> activityWeakReference) {
-        this.activityWeakReference = activityWeakReference;
-    }
-
     private void fillSpinners(View view) {
         Spinner spinnerMatchType = view.findViewById(R.id.init_spinnerSelectMatchType);
         Spinner spinnerServingSide = view.findViewById(R.id.init_spinnerSelectServingSide);
@@ -77,9 +68,6 @@ public class InitializeSpecifyMatchFragment extends android.app.Fragment impleme
 
     @Override
     public void onClick(View view) {
-        InitializeActivity activity = activityWeakReference.get();
-        if (activity != null) {
-            activity.onSideAndMatchSelectDone();
-        }
+        ((InitializeActivity) getActivity()).onSideAndMatchSelectDone();
     }
 }

@@ -29,10 +29,10 @@ public class MainActivity extends Activity {
     }
 
     public void onUseAsDisplay(View toggle) {
-        startActivity(new Intent(this, InitializeActivity.class));
+        startActivity(new Intent(this, MatchActivity.class));
     }
 
     public void onUseAsTracker(View toggle) {
-        startActivity(new Intent(this, MatchActivity.class));
+        startActivity(new Intent(this, InitializeActivity.class));
     }
 }

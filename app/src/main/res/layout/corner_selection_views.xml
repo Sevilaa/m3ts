@@ -10,7 +10,8 @@
         android:background="@drawable/radius_background"
         android:padding="8dp"
         android:layout_centerHorizontal="true"
-        android:layout_alignParentBottom="true" >
+        android:layout_alignParentBottom="true"
+        android:elevation="8dp">
 
         <TextView
             android:id="@+id/init_cornersSelectedLabel"

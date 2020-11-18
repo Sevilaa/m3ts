@@ -2,8 +2,6 @@ package cz.fmo.events;
 
 import android.support.annotation.NonNull;
 
-import com.android.grafika.Log;
-
 import java.util.Collections;
 import java.util.List;
 
@@ -72,9 +70,10 @@ public class EventDetector implements Lib.Callback {
                 if (hasBallFallenOffSideWays(latestDetection)){
                     callAllOnBallDroppedSideWays();
                 }
-                hasBouncedOnTable(latestDetection);
                 callAllOnStrikeFound(tracks);
-                hasSideChanged(latestDetection);
+                if(!hasSideChanged(latestDetection)) {
+                    hasBouncedOnTable(latestDetection);
+                }
                 hasTableSideChanged(latestDetection.centerX);
                 Side nearlyOutOfFrameSide = getNearlyOutOfFrameSide(latestDetection);
                 if (nearlyOutOfFrameSide != null) {
@@ -157,10 +156,9 @@ public class EventDetector implements Lib.Callback {
     private void hasBouncedOnTable(Lib.Detection detection) {
         if (previousDirectionY != detection.directionY &&
                 (previousDirectionX == detection.directionX) &&
-                (table.isBounceOn(previousCenterX, previousCenterY)) &&
+                (table.isBounceOn(previousCenterX, previousCenterY) || table.isBounceOn(detection.centerX, detection.centerY)) &&
                 (previousDirectionY == DirectionY.DOWN) && (detection.directionY == DirectionY.UP) &&
                 (detection.directionX != 0)) {
-            Log.d("bounced!");
             callAllOnBounce(detection);
         }
     }
@@ -195,13 +193,20 @@ public class EventDetector implements Lib.Callback {
     }
 
     private void calcDirectionX(Lib.Detection detection) {
-        if (previousDetection != null) {
-            if (previousCenterX >= detection.centerX)
-                detection.directionX = DirectionX.LEFT;
-            else
-                detection.directionX = DirectionX.RIGHT;
+        int prevCX = previousCenterX;
+        if (detection.predecessor != null) {
+           prevCX = detection.predecessor.centerX;
+        }
+
+        if (prevCX == 0) {
+           detection.directionX = 0;
+           return;
+        }
+        if (prevCX > detection.centerX)
+            detection.directionX = DirectionX.LEFT;
+        else if (previousCenterX < detection.centerX) {
+            detection.directionX = DirectionX.RIGHT;
         } else {
-            // first detection of a track
             detection.directionX = 0;
         }
     }
