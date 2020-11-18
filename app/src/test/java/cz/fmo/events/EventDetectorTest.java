@@ -101,11 +101,12 @@ public class EventDetectorTest {
         Lib.Detection[] nearlyOutOfFrame;
         Lib.Detection predecessor = new Lib.Detection();
         predecessor.centerX = SOME_WIDTH / 2;
-        predecessor.centerY = SOME_WIDTH / 2;
+        predecessor.centerY = SOME_HEIGHT / 3;
         for(int i = 0; i < 10; i++) {
             nearlyOutOfFrame = DetectionGenerator.makeNearlyOutOfFrameDetections(ev.getNearlyOutOfFrameThresholds(), SOME_WIDTH, SOME_HEIGHT);
             for(Lib.Detection detection : nearlyOutOfFrame) {
                 detection.predecessor = predecessor;
+                detection.predecessorId = predecessor.predecessorId;
                 invokeOnObjectDetectedWithDelay(new Lib.Detection[]{predecessor}, ev, i);
                 invokeOnObjectDetectedWithDelay(new Lib.Detection[]{detection}, ev, i);
                 verify(mockCallback, times(1)).onNearlyOutOfFrame(detection, DetectionGenerator.getNearlyOutOfFrameSide(ev.getNearlyOutOfFrameThresholds(), detection));

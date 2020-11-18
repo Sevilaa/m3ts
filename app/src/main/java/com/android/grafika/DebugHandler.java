@@ -11,13 +11,16 @@ import android.support.annotation.NonNull;
 import android.view.SurfaceHolder;
 import android.widget.TextView;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Properties;
 
 import cz.fmo.Lib;
 import cz.fmo.R;
+import cz.fmo.TrackerPubNub;
 import cz.fmo.data.Track;
 import cz.fmo.data.TrackSet;
 import cz.fmo.events.EventDetectionCallback;
@@ -56,8 +59,9 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     private Match match;
     private int newBounceCount;
     private ScoreManipulationCallback smc;
+    private TrackerPubNub trackerPubNub;
 
-    public DebugHandler(@NonNull DebugActivity activity, Side servingSide, MatchType matchType) {
+    public DebugHandler(@NonNull DebugActivity activity, Side servingSide, MatchType matchType, String matchID, boolean useScreenForUICallback) {
         mActivity = new WeakReference<>(activity);
         initTTS(activity);
         TTS_WIN = activity.getResources().getString(R.string.ttsWin);
@@ -68,6 +72,16 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
         this.matchType = matchType;
         hasNewTable = true;
         p = new Paint();
+        try {
+            Properties properties = new Properties();
+            properties.load(activity.getAssets().open("app.properties"));
+            this.trackerPubNub = new TrackerPubNub(matchID, properties.getProperty("pub_key"), properties.getProperty("sub_key"));
+            UICallback uiCallback = this.trackerPubNub;
+            if (useScreenForUICallback) uiCallback = this;
+            match = new Match(this.matchType, GameType.G11, ServeRules.S2,"Hans", "Peter", uiCallback, this.servingSide);
+        } catch (IOException ex) {
+            throw new RuntimeException("No app.properties file found!");
+        }
         startMatch();
     }
 
@@ -141,7 +155,7 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
-    public void onMatchEnded() {
+    public void onMatchEnded(String winnerName) {
         this.match = null;
         Lib.detectionStop();
         mActivity.get().getmSurfaceView().setOnTouchListener(null);
@@ -239,7 +253,6 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     }
 
     private void startMatch() {
-        match = new Match(this.matchType, GameType.G11, ServeRules.S2,"Hans", "Peter", this, this.servingSide);
         setOnSwipeListener();
         setTextInTextView(R.id.txtPlayMovieState, match.getReferee().getState().toString());
         setTextInTextView(R.id.txtPlayMovieServing, match.getReferee().getServer().toString());
@@ -350,7 +363,7 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
 
     private void setCallbackForNewGame() {
         if(match != null) {
-            this.smc = match.getReferee();
+            this.trackerPubNub.setScoreManipulationCallback(match.getReferee());
         }
     }
 

@@ -6,8 +6,7 @@ import java.util.Map;
 public class Match implements MatchCallback {
     private Game[] games;
     private MatchType type;
-    private Player playerLeft;
-    private Player playerRight;
+    private Map<Side, Player> players;
     private Map<Side, Integer> wins;
     private UICallback uiCallback;
     private Referee referee;
@@ -22,8 +21,9 @@ public class Match implements MatchCallback {
         this.wins.put(Side.LEFT, 0);
         this.wins.put(Side.RIGHT,0);
         this.games = new Game[type.amountOfGames];
-        this.playerLeft = new Player(playerLeftName);
-        this.playerRight = new Player(playerRightName);
+        this.players = new HashMap<>();
+        this.players.put(Side.LEFT, new Player(playerLeftName));
+        this.players.put(Side.RIGHT, new Player(playerRightName));
         this.uiCallback = uiCallback;
         this.serveRules = serveRules;
         this.referee = new Referee(startingServer);
@@ -38,8 +38,8 @@ public class Match implements MatchCallback {
         this.referee.setGame(game);
     }
 
-    void end() {
-        this.uiCallback.onMatchEnded();
+    void end(Side winner) {
+        this.uiCallback.onMatchEnded(this.players.get(winner).getName());
     }
 
     @Override
@@ -48,7 +48,7 @@ public class Match implements MatchCallback {
         wins.put(side, win);
         uiCallback.onWin(side, win);
         if (isMatchOver(win)) {
-            end();
+            end(side);
         } else {
             startNewGame(false);
         }

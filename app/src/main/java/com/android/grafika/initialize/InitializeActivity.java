@@ -5,6 +5,7 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
+import android.graphics.drawable.AnimationDrawable;
 import android.support.annotation.NonNull;
 import android.view.Display;
 import android.view.GestureDetector;
@@ -14,6 +15,7 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 
 import com.android.grafika.CameraPreviewActivity;
 import com.otaliastudios.zoom.ZoomLayout;
@@ -25,6 +27,10 @@ import cz.fmo.R;
  * I.e. Select Table corners, settings, ...
  */
 public final class InitializeActivity extends CameraPreviewActivity {
+    private static final String TAG_SELECT_CORNERS = "SELECT_CORNERS";
+    private static final String TAG_SPECIFY_MATCH = "SPECIFY_MATCH";
+    private static final String TAG_DONE = "DONE";
+    private static final String TAG_CREATE_MATCH_ID = "MATCH_ID";
     private SurfaceView tableSurface;
     private SurfaceHolder.Callback tableSurfaceCallback;
     private ZoomLayout zoomLayout;
@@ -33,6 +39,7 @@ public final class InitializeActivity extends CameraPreviewActivity {
     private int currentCornerIndex;
     private int selectedMatchType;
     private int selectedServingSide;
+    private String selectedMatchId;
 
     @Override
     protected void onCreate(android.os.Bundle savedBundle) {
@@ -94,6 +101,27 @@ public final class InitializeActivity extends CameraPreviewActivity {
         init();
     }
 
+    /**
+     * Turn on the camera if we went back to the last fragment which needs the camera preview.
+     */
+    @Override
+    public void onBackPressed()
+    {
+        super.onBackPressed();
+        Fragment f = getFragmentManager().findFragmentByTag(TAG_SELECT_CORNERS);
+        if (f instanceof InitializeSelectingCornersFragment) {
+            this.onResume();
+        }
+    }
+
+    public void startBackgroundAnimation() {
+        RelativeLayout relativeLayout = findViewById(R.id.mainBackground);
+        AnimationDrawable animationDrawable = (AnimationDrawable) relativeLayout.getBackground();
+        animationDrawable.setEnterFadeDuration(2000);
+        animationDrawable.setExitFadeDuration(4000);
+        animationDrawable.start();
+    }
+
     ZoomLayout getZoomLayout() {
         return zoomLayout;
     }
@@ -127,28 +155,42 @@ public final class InitializeActivity extends CameraPreviewActivity {
     }
 
     void onSideAndMatchSelectDone() {
+        this.onPause();
+        setInitializeCreateMatchRoomFragment();
+    }
+
+    void onMatchIDSelected(String matchId) {
+        this.selectedMatchId = matchId;
         setInitializeDoneFragment();
     }
 
-    private void switchFragment(Fragment fragment, boolean addToBackStack) {
+    String getMatchID() {
+        return this.selectedMatchId.toLowerCase();
+    }
+
+    private void switchFragment(Fragment fragment, String tag, boolean addToBackStack) {
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
-        transaction.replace(R.id.init_fragmentPlaceholder, fragment);
+        transaction.replace(R.id.init_fragmentPlaceholder, fragment, tag);
         if(addToBackStack) transaction.addToBackStack(null);
         transaction.commit();
     }
 
     private void setInitializeSelectingCornersFragment() {
-        this.initSelectCornerFragment = InitializeFragmentFactory.newSelectingCornersInstance(this);
-        switchFragment(this.initSelectCornerFragment, false);
+        this.initSelectCornerFragment = InitializeFragmentFactory.newSelectingCornersInstance();
+        switchFragment(this.initSelectCornerFragment, TAG_SELECT_CORNERS,false);
     }
 
     private void setInitializeSpecifyMatchFragment() {
-        switchFragment(InitializeFragmentFactory.newSpecifyMatchInstance(this), true);
+        switchFragment(InitializeFragmentFactory.newSpecifyMatchInstance(), TAG_SPECIFY_MATCH,true);
     }
 
     private void setInitializeDoneFragment() {
-        this.initSelectCornerFragment = InitializeFragmentFactory.newDoneInstance(this);
-        switchFragment(this.initSelectCornerFragment, true);
+        this.initSelectCornerFragment = InitializeFragmentFactory.newDoneInstance();
+        switchFragment(this.initSelectCornerFragment, TAG_DONE, true);
+    }
+
+    private void setInitializeCreateMatchRoomFragment() {
+        switchFragment(InitializeFragmentFactory.newCreateRoomInstance(), TAG_CREATE_MATCH_ID, true);
     }
 
     @SuppressLint("ClickableViewAccessibility")

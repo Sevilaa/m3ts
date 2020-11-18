@@ -16,35 +16,35 @@ import cz.fmo.tabletennis.MatchType;
 import cz.fmo.tabletennis.Side;
 
 /**
- * Use the {@link InitializeDoneFragment#newInstance} factory method to
+ * Use the {@link InitializeFragmentFactory#newDoneInstance} factory method to
  * create an instance of this fragment.
  */
 public class InitializeDoneFragment extends InitializeSelectingCornersFragment implements Button.OnClickListener {
     private static final String CORNERS_PARAM = "CORNERS_UNSORTED";
     private static final String MATCH_TYPE_PARAM = "MATCH_TYPE";
     private static final String SERVING_SIDE_PARAM = "SERVING_SIDE";
+    private static final String MATCH_ID = "MATCH_ID";
     private TextView txtMatchType;
     private TextView txtServerSide;
+    private TextView txtMatchID;
     private Point[] corners;
     private MatchType selectedMatchType;
     private Side selectedServerSide;
+    private String selectedMatchId;
 
     public InitializeDoneFragment() {
         // Required empty public constructor
         this.layout = R.layout.fragment_init_done;
     }
 
-
-
     @Override
     public void onStateChanged() {
         super.onStateChanged();
-        InitializeActivity activity = this.activityWeakReference.get();
-        if (activity != null) {
-            this.corners = activity.getTableCorners();
-            this.selectedMatchType = MatchType.values()[activity.getSelectedMatchType()];
-            this.selectedServerSide = Side.values()[activity.getSelectedServingSide()];
-        }
+        InitializeActivity activity = (InitializeActivity) getActivity();
+        this.corners = activity.getTableCorners();
+        this.selectedMatchType = MatchType.values()[activity.getSelectedMatchType()];
+        this.selectedServerSide = Side.values()[activity.getSelectedServingSide()];
+        this.selectedMatchId = activity.getMatchID();
     }
 
     @Override
@@ -52,6 +52,7 @@ public class InitializeDoneFragment extends InitializeSelectingCornersFragment i
         super.updateViews();
         this.txtMatchType.setText(this.selectedMatchType.toString());
         this.txtServerSide.setText(this.selectedServerSide.toString());
+        this.txtMatchID.setText(this.selectedMatchId);
     }
 
     @Override
@@ -63,23 +64,23 @@ public class InitializeDoneFragment extends InitializeSelectingCornersFragment i
         btnStart.setOnClickListener(this);
         this.txtMatchType = view.findViewById(R.id.init_selectedMatchType);
         this.txtServerSide = view.findViewById(R.id.init_selectedServerSide);
+        this.txtMatchID = view.findViewById(R.id.init_selectedMatchId);
         updateViews();
         return view;
     }
 
     @Override
     public void onClick(View view) {
-        InitializeActivity activity = activityWeakReference.get();
-        if (activity != null) {
-            Intent intent = new Intent(getContext(), LiveDebugActivity.class);
-            Bundle bundle = new Bundle();
-            bundle.putIntArray(CORNERS_PARAM, pointsToIntArray(corners));
-            bundle.putInt(MATCH_TYPE_PARAM, activity.getSelectedMatchType());
-            bundle.putInt(SERVING_SIDE_PARAM, activity.getSelectedServingSide());
-            intent.putExtras(bundle);
-            startActivity(intent);
-            getActivity().finish();
-        }
+        InitializeActivity activity = (InitializeActivity) getActivity();
+        Intent intent = new Intent(getContext(), LiveDebugActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putIntArray(CORNERS_PARAM, pointsToIntArray(corners));
+        bundle.putInt(MATCH_TYPE_PARAM, activity.getSelectedMatchType());
+        bundle.putInt(SERVING_SIDE_PARAM, activity.getSelectedServingSide());
+        bundle.putString(MATCH_ID, activity.getMatchID());
+        intent.putExtras(bundle);
+        startActivity(intent);
+        getActivity().finish();
     }
 
     private static int[] pointsToIntArray(Point[] points) {

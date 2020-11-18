@@ -5,13 +5,18 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import cz.fmo.R;
 
-public class ConnectToMatchFragment extends Fragment {
+public class MatchWonFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View v = inflater.inflate(R.layout.fragment_match_won, container, false);
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_connect_to_match, container, false);
+        String winner = getArguments().getString("winner");
+        TextView txtView = v.findViewById(R.id.winner_name);
+        txtView.setText(winner);
+        return v;
     }
 }
