@@ -1,6 +1,5 @@
 <resources>
-    <string name="app_name">FMO</string>
-
+    <string name="app_name">M3TS</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
 
     <string name="play_button_text">Play</string>
@@ -73,7 +72,11 @@
     <string name="debugBallCountStart">0</string>
     <string name="contentDescRevert">reverts last selected corner</string>
     <string name="initMarkTableLabel">Mark all four table corners</string>
-
+    <!-- Main Activity -->
+    <string name="appName">M3TS</string>
+    <string name="appNameLong">mobile table tennis tracking system</string>
+    <string name="mainTrackerBtnLabel">Use as Tracker</string>
+    <string name="mainDisplayBtnLabel">Use as Display</string>
     <!-- Init Activity -->
     <string name="initMarkTableLabelExplanation">Long Press to select a corner</string>
     <string name="initCornersSelectedLabel">Corners selected: </string>

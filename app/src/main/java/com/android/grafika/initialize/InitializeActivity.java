@@ -3,7 +3,6 @@ package com.android.grafika.initialize;
 import android.annotation.SuppressLint;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.support.annotation.NonNull;
@@ -20,7 +19,6 @@ import com.android.grafika.CameraPreviewActivity;
 import com.otaliastudios.zoom.ZoomLayout;
 
 import cz.fmo.R;
-import cz.fmo.SettingsActivity;
 
 /**
  * Activity to initialize a table tennis game
@@ -94,11 +92,6 @@ public final class InitializeActivity extends CameraPreviewActivity {
     public void onRequestPermissionsResult(int requestID, @NonNull String[] permissionList,
                                            @NonNull int[] grantedList) {
         init();
-    }
-
-    public void onOpenMenu(View toggle) {
-        setmSurfaceHolderReady(false);
-        startActivity(new Intent(this, SettingsActivity.class));
     }
 
     ZoomLayout getZoomLayout() {
