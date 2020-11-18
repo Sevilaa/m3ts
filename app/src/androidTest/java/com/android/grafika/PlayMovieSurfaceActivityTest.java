@@ -1,14 +1,9 @@
 package com.android.grafika;
 
 import android.Manifest;
-import android.view.SurfaceView;
 import android.view.View;
-import android.widget.Button;
-import android.widget.Spinner;
-import android.widget.TextView;
 
 import org.hamcrest.Matcher;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -20,96 +15,92 @@ import androidx.test.filters.LargeTest;
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.rule.GrantPermissionRule;
 import androidx.test.runner.AndroidJUnit4;
+import cz.fmo.MainActivity;
 import cz.fmo.R;
 import helper.GrantPermission;
 
+import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static org.hamcrest.CoreMatchers.anything;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.Matchers.allOf;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
 public class PlayMovieSurfaceActivityTest {
-    private PlayMovieSurfaceActivity playMovieSurfaceActivity;
-    private SurfaceView surfaceViewMovie;
-    private SurfaceView surfaceViewTracks;
-    private SurfaceView surfaceViewTable;
-    private Spinner movieSelectSpinner;
-    private Button playStopButton;
-    private TextView txtSide;
-    private TextView txtBounce;
-    private TextView txtScoreLeft;
-    private TextView txtScoreRight;
-    private TextView txtGameLeft;
-    private TextView txtGameRight;
 
     @Rule
     public GrantPermissionRule grantPermissionRuleCamera = GrantPermissionRule.grant(android.Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE);
 
+    //@Rule
+    //public ActivityTestRule<PlayMovieSurfaceActivity> pmsActivityRule = new ActivityTestRule<PlayMovieSurfaceActivity>(PlayMovieSurfaceActivity.class);
+
     @Rule
-    public ActivityTestRule<PlayMovieSurfaceActivity> pmsActivityRule = new ActivityTestRule<PlayMovieSurfaceActivity>(PlayMovieSurfaceActivity.class);
+    public ActivityTestRule<MainActivity> pmsMainActivityRule = new ActivityTestRule<>(MainActivity.class);
 
     @Before
     public void grantAllPermissions() {
         GrantPermission.grantAllPermissions();
     }
 
-    @Before
-    public void setUp() throws Exception {
-        playMovieSurfaceActivity = pmsActivityRule.getActivity();
-        surfaceViewMovie = playMovieSurfaceActivity.findViewById(R.id.playMovie_surface);
-        surfaceViewTracks = playMovieSurfaceActivity.findViewById(R.id.playMovie_surfaceTracks);
-        surfaceViewTable = playMovieSurfaceActivity.findViewById(R.id.playMovie_surfaceTable);
-        movieSelectSpinner = playMovieSurfaceActivity.findViewById(R.id.playMovieFile_spinner);
-        playStopButton = playMovieSurfaceActivity.findViewById(R.id.play_stop_button);
-        txtSide = playMovieSurfaceActivity.findViewById(R.id.txtSide);
-        txtBounce = playMovieSurfaceActivity.findViewById(R.id.txtBounce);
-        txtScoreLeft = playMovieSurfaceActivity.findViewById(R.id.txtPlayMovieScoreLeft);
-        txtScoreRight = playMovieSurfaceActivity.findViewById(R.id.txtPlayMovieScoreRight);
-        txtGameLeft = playMovieSurfaceActivity.findViewById(R.id.txtPlayMovieGameLeft);
-        txtGameRight = playMovieSurfaceActivity.findViewById(R.id.txtPlayMovieGameRight);
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        playMovieSurfaceActivity.finish();
-        playMovieSurfaceActivity = null;
-    }
-
     @Test
     // plays a video for a couple of seconds (with bounces in it), and then checks if there was a bounce
     public void testPlayMovieAndFindBounces() {
+        pmsMainActivityRule.getActivity();
+        onView(withId(R.id.live_settings_button))
+                .perform(click());
+        onView(withText("Advanced"))
+                .perform(click());
+        onView(withText("Run video player"))
+                .perform(click());
         findAllViewsInActivity();
-        movieSelectSpinner.setSelection(0, true);
-        playMovieSurfaceActivity.onItemSelected(movieSelectSpinner, null, 0, R.id.playMovieFile_spinner);
+        onView(withId(R.id.playMovieFile_spinner))
+                .perform(click());
+        onData(anything()).atPosition(0).perform(click());
         onView(withId(R.id.play_stop_button))
                 .perform(click());
         onView(isRoot()).perform(waitFor(10000));
-        assertNotEquals("0", txtBounce.getText());
-        assertNotEquals("None", txtSide.getText());
-        assertEquals(playMovieSurfaceActivity.getResources().getString(R.string.stop_button_text),playStopButton.getText());
+        onView(allOf(withId(R.id.txtBounce), not(withText("0"))));
+        onView(allOf(withId(R.id.txtSide), not(withText("None"))));
+        onView(withId(R.id.play_stop_button))
+                .check(matches(withText(R.string.stop_button_text)));
         onView(withId(R.id.play_stop_button))
                 .perform(click());
     }
 
     private void findAllViewsInActivity() {
-        assertNotNull(surfaceViewMovie);
-        assertNotNull(surfaceViewTracks);
-        assertNotNull(surfaceViewTable);
-        assertNotNull(movieSelectSpinner);
-        assertNotNull(playStopButton);
-        assertNotNull(txtSide);
-        assertNotNull(txtBounce);
-        assertNotNull(txtGameLeft);
-        assertNotNull(txtGameRight);
-        assertNotNull(txtScoreLeft);
-        assertNotNull(txtScoreRight);
-        assertEquals(playMovieSurfaceActivity.getResources().getString(R.string.play_button_text), playStopButton.getText());
-        assertEquals("0", txtBounce.getText());
+        onView(withId(R.id.playMovie_surface))
+                .check(matches(isDisplayed()));
+        onView(withId(R.id.playMovie_surfaceTracks))
+                .check(matches(isDisplayed()));
+        onView(withId(R.id.playMovie_surfaceTable))
+                .check(matches(isDisplayed()));
+        onView(withId(R.id.playMovieFile_spinner))
+                .check(matches(isDisplayed()));
+        onView(withId(R.id.play_stop_button))
+                .check(matches(isDisplayed()));
+        onView(withId(R.id.txtSide))
+                .check(matches(isDisplayed()));
+        onView(withId(R.id.txtBounce))
+                .check(matches(isDisplayed()));
+        onView(withId(R.id.txtPlayMovieScoreLeft))
+                .check(matches(isDisplayed()));
+        onView(withId(R.id.txtPlayMovieScoreRight))
+                .check(matches(isDisplayed()));
+        onView(withId(R.id.txtPlayMovieGameLeft))
+                .check(matches(isDisplayed()));
+        onView(withId(R.id.txtPlayMovieGameRight))
+                .check(matches(isDisplayed()));
+        onView(withId(R.id.play_stop_button))
+                .check(matches(withText(R.string.play_button_text)));
+        onView(withId(R.id.txtBounce))
+                .check(matches(withText("0")));
     }
 
     /**
