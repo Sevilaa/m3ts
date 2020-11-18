@@ -9,6 +9,8 @@ import android.widget.RelativeLayout;
 
 import com.android.grafika.initialize.InitializeActivity;
 
+import cz.fmo.display.MatchActivity;
+
 public class MainActivity extends Activity {
 
     @Override
@@ -31,6 +33,6 @@ public class MainActivity extends Activity {
     }
 
     public void onUseAsTracker(View toggle) {
-        startActivity(new Intent(this, InitializeActivity.class));
+        startActivity(new Intent(this, MatchActivity.class));
     }
 }

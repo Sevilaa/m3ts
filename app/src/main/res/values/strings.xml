@@ -95,6 +95,9 @@
     <string name="ctmSubTitle">input the Match ID set by the display device</string>
     <string name="ctmJoin">Join</string>
 
+    <!-- MatchWin Fragment -->
+    <string name="mwStartNew">Play another Match</string>
+    <string name="mwWon"> won!</string>
 
     <!-- Movie Player Activity -->
     <string-array name="prefCameraFacingNames">
