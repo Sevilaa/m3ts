@@ -11,4 +11,5 @@ public interface EventDetectionCallback {
     void onStrikeFound(TrackSet tracks);
     void onTableSideChange(Side side);
     void onBallDroppedSideWays();
+    void onTimeout();
 }
