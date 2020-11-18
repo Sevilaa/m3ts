@@ -87,6 +87,12 @@
     <string name="ttsWin">Game Win </string>
     <string name="ttsServe">Serve </string>
 
+    <!-- ConnectToMatch Fragment -->
+    <string name="ctmTitle">Connect To Active Match</string>
+    <string name="ctmSubTitle">input the Match ID set by the display device</string>
+    <string name="ctmJoin">Join</string>
+
+
     <!-- Movie Player Activity -->
     <string-array name="prefCameraFacingNames">
         <item>Front-facing</item>

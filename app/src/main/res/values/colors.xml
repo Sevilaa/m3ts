@@ -5,4 +5,7 @@
     <color name="recordManualRunning">#de4d4d</color>
     <color name="recordAutomaticStopped">#4dbade</color>
     <color name="recordAutomaticRunning">#de4d4d</color>
+    <color name="primary_dark">#303030</color>
+    <color name="secondary_dark">#91919c</color>
+    <color name="primary_light">#ebeff2</color>
 </resources>
