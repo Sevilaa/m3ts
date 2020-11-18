@@ -130,6 +130,11 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     }
 
     @Override
+    public void onTimeout() {
+        // do nothing
+    }
+
+    @Override
     public void onBallDroppedSideWays() {
         // do nothing
     }

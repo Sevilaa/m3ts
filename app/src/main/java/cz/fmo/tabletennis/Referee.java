@@ -89,18 +89,8 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
 
     @Override
     public void onNearlyOutOfFrame(Lib.Detection detection, Side side) {
-        if(this.state == GameState.PLAY && side != Side.TOP) {
-            if(this.bounces == 0) {
-                Log.d("No bounce and went out of frame");
-                faultBySide(currentStriker);
-            } else {
-                // schedule out of frame timer
-                TimerTask outOfFrameTask = new OutOfFrameTimerTask(this);
-                outOfFrameTimer = new Timer("outOfFrameTimer");
-                outOfFrameTimer.schedule(outOfFrameTask, OUT_OF_FRAME_MAX_DELAY);
-                this.state = GameState.OUT_OF_FRAME;
-            }
-        }
+        if(this.state == GameState.PLAY && side != Side.TOP)
+            handleOutOfFrame();
     }
 
     @Override
@@ -161,6 +151,13 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     }
 
     @Override
+    public void onTimeout() {
+        Log.d("Timeout (2 seconds since last valid detection)");
+        if (this.state == GameState.PLAY)
+            handleOutOfFrame();
+    }
+
+    @Override
     public void onPointDeduction(Side side) {
         gameCallback.onPointDeduction(side);
         initPoint();
@@ -192,6 +189,19 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
 
     public void onStartNextServe() {
         this.state = GameState.WAIT_FOR_SERVE;
+    }
+
+    private void handleOutOfFrame() {
+        if(this.bounces == 0) {
+            Log.d("No bounce and went out of frame");
+            faultBySide(currentStriker);
+        } else {
+            // schedule out of frame timer
+            TimerTask outOfFrameTask = new OutOfFrameTimerTask(this);
+            outOfFrameTimer = new Timer("outOfFrameTimer");
+            outOfFrameTimer.schedule(outOfFrameTask, OUT_OF_FRAME_MAX_DELAY);
+            this.state = GameState.OUT_OF_FRAME;
+        }
     }
 
     private void setTimeoutForNextServe() {
