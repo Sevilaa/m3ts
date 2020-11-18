@@ -39,7 +39,7 @@
         </activity>
         <activity
             android:name=".SettingsActivity"
-            android:label="@string/settings"
+            android:label="@string/app_name"
             android:parentActivityName="com.android.grafika.LiveDebugActivity"
             android:screenOrientation="landscape">
             <meta-data
@@ -49,13 +49,12 @@
         <activity
             android:name="com.android.grafika.PlayMovieSurfaceActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
-            android:label="Play movie"
+            android:label="@string/app_name"
             android:screenOrientation="landscape"
             android:theme="@style/PlayMovieSurfaceActivity">
             <intent-filter>
                 <action android:name="com.android.grafika.PlayMovieSurfaceActivity" />
                 <action android:name="android.intent.action.TTS_SERVICE" />
-
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
