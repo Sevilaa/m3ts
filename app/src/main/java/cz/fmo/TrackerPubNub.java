@@ -3,7 +3,6 @@ package cz.fmo;
 import com.android.grafika.Log;
 import com.pubnub.api.Callback;
 import com.pubnub.api.Pubnub;
-import com.pubnub.api.PubnubError;
 import com.pubnub.api.PubnubException;
 
 import org.json.JSONException;
@@ -15,7 +14,7 @@ import cz.fmo.tabletennis.ScoreManipulationCallback;
 import cz.fmo.tabletennis.Side;
 import cz.fmo.tabletennis.UICallback;
 
-public class TrackerPubNub implements UICallback {
+public class TrackerPubNub extends Callback implements UICallback {
     private static final String ROLE = "tracker";
     private final Pubnub pubnub;
     private final String roomID;
@@ -26,46 +25,23 @@ public class TrackerPubNub implements UICallback {
         this.roomID = roomID;
         try {
             pubnub.setUUID(UUID.randomUUID());
-            pubnub.subscribe(roomID, new Callback() {
-                        @Override
-                        public void connectCallback(String channel, Object message) {
-                            // send init message if needed
-                            send("hello gaymers", null, null, null);
-                        }
-
-                        @Override
-                        public void disconnectCallback(String channel, Object message) {
-                            // don't care
-                            System.out.println("SUBSCRIBE : DISCONNECT on channel:" + channel
-                                    + " : " + message.getClass() + " : "
-                                    + message.toString());
-                        }
-
-                        public void reconnectCallback(String channel, Object message) {
-                            // don't care
-                            System.out.println("SUBSCRIBE : RECONNECT on channel:" + channel
-                                    + " : " + message.getClass() + " : "
-                                    + message.toString());
-                        }
-
-                        @Override
-                        public void successCallback(String channel, Object message) {
-                            // all messages get received here
-                            if (message instanceof JSONObject) {
-                                handleMessage((JSONObject)message);
-                            }
-                        }
-
-                        @Override
-                        public void errorCallback(String channel, PubnubError error) {
-                            // don't care
-                            System.out.println("SUBSCRIBE : ERROR on channel " + channel
-                                    + " : " + error.toString());
-                        }
-                    }
-            );
+            pubnub.subscribe(roomID, this);
         } catch (PubnubException e) {
             System.out.println(e.toString());
+        }
+    }
+
+    @Override
+    public void connectCallback(String channel, Object message) {
+        // send init message if needed
+        send("hello gaymers", null, null, null);
+    }
+
+    @Override
+    public void successCallback(String channel, Object message) {
+        // all messages get received here
+        if (message instanceof JSONObject) {
+            handleMessage((JSONObject)message);
         }
     }
 
