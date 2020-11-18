@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 
 import cz.fmo.R;
 
@@ -38,6 +39,10 @@ public class MatchConnectFragment extends Fragment implements View.OnClickListen
     @Override
     public void onClick(View v) {
         Fragment fragment = new MatchScoreFragment();
+        Bundle bundle = new Bundle();
+        EditText matchID = getView().findViewById(R.id.pubnub_id);
+        bundle.putString("matchID", matchID.getText().toString());
+        fragment.setArguments(bundle);
         callback.replaceFragment(fragment);
     }
 }
