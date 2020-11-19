@@ -9,6 +9,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.android.grafika.Log;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -75,10 +77,10 @@ public class MatchScoreFragment extends Fragment implements UICallback {
         Properties properties = new Properties();
         try (InputStream is = context.getAssets().open("app.properties")) {
             properties.load(is);
+            this.pubnub = new DisplayPubNub(matchID, properties.getProperty("pub_key"), properties.getProperty("sub_key"), this);
         } catch (IOException ex) {
-            throw new RuntimeException("No app.properties file found!");
+            Log.d("Using MatchScoreFragment in without app.properties file!");
         }
-        this.pubnub = new DisplayPubNub(matchID, properties.getProperty("pub_key"), properties.getProperty("sub_key"), this);
     }
 
     private void setTextInTextView(int id, final String text) {
