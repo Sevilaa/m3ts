@@ -60,10 +60,12 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     private Match match;
     private int newBounceCount;
     private ScoreManipulationCallback smc;
+    private boolean useScreenForUICallback;
     private TrackerPubNub trackerPubNub;
 
     public DebugHandler(@NonNull DebugActivity activity, Side servingSide, MatchType matchType, String matchID, boolean useScreenForUICallback) {
         mActivity = new WeakReference<>(activity);
+        this.useScreenForUICallback = useScreenForUICallback;
         initTTS(activity);
         TTS_WIN = activity.getResources().getString(R.string.ttsWin);
         TTS_SCORE = activity.getResources().getString(R.string.ttsScore);
@@ -73,18 +75,20 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
         this.matchType = matchType;
         hasNewTable = true;
         p = new Paint();
-        try {
-            Properties properties = new Properties();
-            try (InputStream is = activity.getAssets().open("app.properties")) {
-                properties.load(is);
-                this.trackerPubNub = new TrackerPubNub(matchID, properties.getProperty("pub_key"), properties.getProperty("sub_key"));
-                UICallback uiCallback = this.trackerPubNub;
-                if (useScreenForUICallback) uiCallback = this;
-                match = new Match(this.matchType, GameType.G11, ServeRules.S2,"Hans", "Peter", uiCallback, this.servingSide);
+        UICallback uiCallback = this;
+        if (!useScreenForUICallback) {
+            try {
+                Properties properties = new Properties();
+                try (InputStream is = activity.getAssets().open("app.properties")) {
+                    properties.load(is);
+                    this.trackerPubNub = new TrackerPubNub(matchID, properties.getProperty("pub_key"), properties.getProperty("sub_key"));
+                    uiCallback = this.trackerPubNub;
+                }
+            } catch (IOException ex) {
+                throw new RuntimeException("No app.properties file found!");
             }
-        } catch (IOException ex) {
-            throw new RuntimeException("No app.properties file found!");
         }
+        match = new Match(this.matchType, GameType.G11, ServeRules.S2,"Hans", "Peter", uiCallback, this.servingSide);
         startMatch();
     }
 
@@ -349,14 +353,14 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
             mActivity.get().getmSurfaceView().setOnTouchListener(new OnSwipeListener(mActivity.get()) {
                 @Override
                 public void onSwipeDown(Side swipeSide) {
-                    if(smc != null) {
+                    if (smc != null) {
                         smc.onPointDeduction(swipeSide);
                     }
                 }
 
                 @Override
                 public void onSwipeUp(Side swipeSide) {
-                    if(smc != null) {
+                    if (smc != null) {
                         smc.onPointAddition(swipeSide);
                     }
                 }
@@ -366,7 +370,11 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
 
     private void setCallbackForNewGame() {
         if(match != null) {
-            this.trackerPubNub.setScoreManipulationCallback(match.getReferee());
+            if (!useScreenForUICallback) {
+                this.trackerPubNub.setScoreManipulationCallback(match.getReferee());
+            } else {
+                this.smc = match.getReferee();
+            }
         }
     }
 
