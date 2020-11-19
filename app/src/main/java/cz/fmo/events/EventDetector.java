@@ -170,7 +170,7 @@ public class EventDetector implements Lib.Callback {
             if (detection.directionX == DirectionX.LEFT) {
                 side = Side.RIGHT;
             }
-            if (!(previousCenterX >= table.getCloseNetEnd().x * 0.6 && previousCenterX <= table.getCloseNetEnd().x * 1.4)) {
+            if (!(detection.directionX >= table.getCloseNetEnd().x * 0.6 && detection.directionX <= table.getCloseNetEnd().x * 1.4)) {
                 callAllOnSideChange(side);
                 hasSideChanged = true;
             }
@@ -179,7 +179,7 @@ public class EventDetector implements Lib.Callback {
     }
 
     private void hasBouncedOnTable(Lib.Detection detection) {
-        if (previousDirectionY != detection.directionY &&
+        if (previousDetection != null && previousDirectionY != detection.directionY &&
                 (previousDirectionX == detection.directionX) &&
                 (table.isBounceOn(previousCenterX, previousCenterY) || table.isBounceOn(detection.centerX, detection.centerY)) &&
                 (previousDirectionY == DirectionY.DOWN) && (detection.directionY == DirectionY.UP) &&
