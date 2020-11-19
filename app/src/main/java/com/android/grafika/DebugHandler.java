@@ -12,6 +12,7 @@ import android.view.SurfaceHolder;
 import android.widget.TextView;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
@@ -74,11 +75,13 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
         p = new Paint();
         try {
             Properties properties = new Properties();
-            properties.load(activity.getAssets().open("app.properties"));
-            this.trackerPubNub = new TrackerPubNub(matchID, properties.getProperty("pub_key"), properties.getProperty("sub_key"));
-            UICallback uiCallback = this.trackerPubNub;
-            if (useScreenForUICallback) uiCallback = this;
-            match = new Match(this.matchType, GameType.G11, ServeRules.S2,"Hans", "Peter", uiCallback, this.servingSide);
+            try (InputStream is = activity.getAssets().open("app.properties")) {
+                properties.load(is);
+                this.trackerPubNub = new TrackerPubNub(matchID, properties.getProperty("pub_key"), properties.getProperty("sub_key"));
+                UICallback uiCallback = this.trackerPubNub;
+                if (useScreenForUICallback) uiCallback = this;
+                match = new Match(this.matchType, GameType.G11, ServeRules.S2,"Hans", "Peter", uiCallback, this.servingSide);
+            }
         } catch (IOException ex) {
             throw new RuntimeException("No app.properties file found!");
         }

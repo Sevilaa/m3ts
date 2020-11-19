@@ -1,15 +1,16 @@
 package cz.fmo.display;
 
 import android.annotation.SuppressLint;
+import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
-import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 import cz.fmo.DisplayPubNub;
@@ -72,8 +73,8 @@ public class MatchScoreFragment extends Fragment implements UICallback {
 
     private void initPubNub(Context context, String matchID) {
         Properties properties = new Properties();
-        try {
-            properties.load(context.getAssets().open("app.properties"));
+        try (InputStream is = context.getAssets().open("app.properties")) {
+            properties.load(is);
         } catch (IOException ex) {
             throw new RuntimeException("No app.properties file found!");
         }

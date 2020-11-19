@@ -18,6 +18,7 @@ public class InitializeCreateMatchRoom extends android.app.Fragment implements B
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private EditText editMatchId;
     private String matchID;
+    private Random random = new Random();
     protected int layout;
 
     public InitializeCreateMatchRoom() {
@@ -58,7 +59,6 @@ public class InitializeCreateMatchRoom extends android.app.Fragment implements B
     private String generateRandomAlphabeticString(int length) {
         int leftLimit = 97; // letter 'a'
         int rightLimit = 122; // letter 'z'
-        Random random = new Random();
         StringBuilder buffer = new StringBuilder(length);
         for (int i = 0; i < length; i++) {
             int randomLimitedInt = leftLimit + (int)
