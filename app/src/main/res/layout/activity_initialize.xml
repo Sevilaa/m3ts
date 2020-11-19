@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context="com.android.grafika.LiveDebugActivity">
+
+    <com.otaliastudios.zoom.ZoomLayout
+        android:id="@+id/init_zoomLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="vertical|horizontal"
+        android:fitsSystemWindows="true"
+        android:longClickable="true"
+        app:alignment="center"
+        app:animationDuration="280"
+        app:flingEnabled="true"
+        app:hasClickableChildren="true"
+        app:horizontalPanEnabled="false"
+        app:maxZoom="5"
+        app:maxZoomType="zoom"
+        app:minZoom="1"
+        app:minZoomType="zoom"
+        app:oneFingerScrollEnabled="true"
+        app:overPinchable="false"
+        app:overScrollHorizontal="true"
+        app:overScrollVertical="true"
+        app:scrollEnabled="true"
+        app:threeFingersScrollEnabled="true"
+        app:transformation="centerInside"
+        app:transformationGravity="center"
+        app:twoFingersScrollEnabled="true"
+        app:verticalPanEnabled="false"
+        app:zoomEnabled="true">
+        <FrameLayout
+            android:id="@+id/frameLayout"
+            android:layout_width="1920dp"
+            android:layout_height="1080dp">
+            <include layout="@layout/camera_surface_view" />
+        </FrameLayout>
+    </com.otaliastudios.zoom.ZoomLayout>
+
+    <RelativeLayout
+        android:id="@+id/relativeLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <SurfaceView
+            android:id="@+id/init_tableSurface"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+        <ImageButton
+            android:id="@+id/init_revertButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/radius_background"
+            android:contentDescription="@string/contentDescRevert"
+            android:padding="4dp"
+            android:src="@android:drawable/ic_menu_revert"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"/>
+
+    </RelativeLayout>
+    <FrameLayout
+        android:id="@+id/init_fragmentPlaceholder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+</merge>

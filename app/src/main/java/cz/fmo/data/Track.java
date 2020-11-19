@@ -82,8 +82,8 @@ public class Track {
 
             mVelocityNumFrames++;
         } else {
-            latest.directionY = latest.directionY / Math.abs(latest.directionY);
-            latest.directionX = latest.directionX / Math.abs(latest.directionX);
+            latest.directionY = 0;
+            latest.directionX = 0;
         }
 
         mLastDetectionTime = detectionTime;

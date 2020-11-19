@@ -8,10 +8,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import cz.fmo.Lib;
-import cz.fmo.graphics.FontRenderer;
-import cz.fmo.graphics.GL;
-import cz.fmo.graphics.TriangleStripRenderer;
-import cz.fmo.util.Color;
 import cz.fmo.util.Config;
 
 /**
@@ -19,14 +15,11 @@ import cz.fmo.util.Config;
  */
 public class TrackSet {
     private static final int FRAMES_UNTIL_OLD_TRACK_REMOVAL = 2;
-    private static final int NUM_TRACKS = 2;
     private final Object mLock = new Object();
     private final ArrayList<Track> mTracks = new ArrayList<>();
     private Config mConfig = null;
     private SparseArray<Track> mCurrentTrackMap = new SparseArray<>();
     private SparseArray<Track> mPreviousTrackMap = new SparseArray<>();
-    private int mWidth = 1;  // width of the source image (not necessarily the screen width)
-    private int mHeight = 1; // height of the source image (not necessarily the screen height)
 
     private TrackSet() {}
 
@@ -51,8 +44,8 @@ public class TrackSet {
     public void addDetections(Lib.Detection[] detections, int width, int height, long detectionTime) {
         synchronized (mLock) {
             if (mConfig == null) return;
-            mWidth = width;
-            mHeight = height;
+            int mWidth = width;
+            int mHeight = height;
             // swap the maps
             {
                 SparseArray<Track> temp = mCurrentTrackMap;
@@ -86,83 +79,17 @@ public class TrackSet {
 
     public List<Track> getTracks() {return Collections.unmodifiableList(mTracks);}
 
-    public void generateTracksAndLabels(TriangleStripRenderer tsRender, FontRenderer fontRender,
-                                        int imageHeight) {
-        synchronized (mLock) {
-            if (mConfig == null) return;
-            generateCurves(tsRender.getBuffers());
-            fontRender.clear();
-            generateLabels(fontRender, imageHeight);
+    public Track getTrackWithLatestDetection() {
+        int index = 0;
+        long latestDetectionTime = Long.MAX_VALUE;
+        for (int i = 0; i<this.getTracks().size(); i++) {
+            Track t = this.getTracks().get(i);
+            if(t.getLastDetectionTime() < latestDetectionTime) {
+                latestDetectionTime = t.getLastDetectionTime();
+                index = i;
+            }
         }
-    }
-
-    private void generateCurves(TriangleStripRenderer.Buffers b) {
-        GL.setIdentity(b.posMat);
-        b.posMat[0x0] = 2.f / mWidth;
-        b.posMat[0x5] = -2.f / mHeight;
-        b.posMat[0xC] = -1.f;
-        b.posMat[0xD] = 1.f;
-        b.pos.clear();
-        b.color.clear();
-        b.numVertices = 0;
-
-        for (Track track : mTracks) {
-            track.generateCurve(b);
-        }
-
-        b.pos.limit(b.numVertices * 2);
-        b.color.limit(b.numVertices * 4);
-    }
-
-    private void generateLabels(FontRenderer fontRender, int imageHeight) {
-        if (mTracks.isEmpty()) {
-            // don't show anything if there's no tracks
-            return;
-        }
-
-        Color.RGBA color = new Color.RGBA();
-        float hs = ((float) imageHeight) / 18.f;
-        float ws = hs * FontRenderer.CHAR_STEP_X;
-        int items = mTracks.size();
-        float top = 1.f * hs;
-        float left = 1.f * hs;
-
-        // draw box and header
-        color.rgba[0] = 0.350f;
-        color.rgba[1] = 0.350f;
-        color.rgba[2] = 0.350f;
-        color.rgba[3] = 1.000f;
-        fontRender.addRectangle(left, top, 7 * ws, (items + 1) * hs, color);
-        color.rgba[0] = 0.745f;
-        color.rgba[1] = 0.745f;
-        color.rgba[2] = 0.745f;
-        color.rgba[3] = 1.000f;
-
-        // pick a label based on mode
-        String label;
-        switch(mConfig.getVelocityEstimationMode()) {
-            default:
-            case PX_FR:
-                label = "px/fr";
-                break;
-            case M_S:
-                label = "  m/s";
-                break;
-            case KM_H:
-                label = " km/h";
-                break;
-            case MPH:
-                label = "  mph";
-                break;
-        }
-
-        // write the label
-        fontRender.addString(label, left + ws, top + 0.5f * hs, hs, color);
-
-        // draw speeds
-        for (int i = 0; i < items; i++) {
-            mTracks.get(i).generateLabel(fontRender, hs, ws, left, top, i);
-        }
+        return this.getTracks().get(index);
     }
 
     public void clear() {
@@ -175,15 +102,17 @@ public class TrackSet {
 
     private void filterOutOldTracks(long currentTime) {
         // filter out tracks which were not updated after n Frames (n=FRAMES_UNTIL_OLD_TRACK_REMOVAL)
-        long maxTimeDeltaForOldestTrack = (long)(FRAMES_UNTIL_OLD_TRACK_REMOVAL/ mConfig.getFrameRate() * Math.pow(1000,3));
-        Iterator<Track> it = mTracks.iterator();
-        while(it.hasNext()) {
-            Track t = it.next();
-            // if a track hasn't been updated in n Frames ...
-            if (t.getLastDetectionTime()<=currentTime-maxTimeDeltaForOldestTrack) {
-                // delete it
-                it.remove();
-                break;
+        if(this.getTracks().size()>1) {
+            long maxTimeDeltaForOldestTrack = (long)(FRAMES_UNTIL_OLD_TRACK_REMOVAL/ mConfig.getFrameRate() * Math.pow(1000,3));
+            Iterator<Track> it = mTracks.iterator();
+            while(it.hasNext()) {
+                Track t = it.next();
+                // if a track hasn't been updated in n Frames ...
+                if (t.getLastDetectionTime()<=currentTime-maxTimeDeltaForOldestTrack) {
+                    // delete it
+                    it.remove();
+                    break;
+                }
             }
         }
     }

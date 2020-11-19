@@ -1,150 +1,127 @@
 package com.android.grafika;
 
 import android.Manifest;
-import android.support.test.rule.ActivityTestRule;
-import android.support.test.rule.GrantPermissionRule;
-import android.support.test.runner.AndroidJUnit4;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.view.SurfaceView;
-import android.widget.Button;
-import android.widget.Spinner;
-import android.widget.TextView;
+import android.view.View;
 
-import org.junit.After;
+import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import androidx.test.espresso.UiController;
+import androidx.test.espresso.ViewAction;
+import androidx.test.filters.LargeTest;
+import androidx.test.rule.ActivityTestRule;
+import androidx.test.rule.GrantPermissionRule;
+import androidx.test.runner.AndroidJUnit4;
+import cz.fmo.MainActivity;
 import cz.fmo.R;
+import helper.GrantPermission;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static androidx.test.espresso.Espresso.onData;
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static org.hamcrest.CoreMatchers.anything;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.Matchers.allOf;
 
 @RunWith(AndroidJUnit4.class)
+@LargeTest
 public class PlayMovieSurfaceActivityTest {
-    private PlayMovieSurfaceActivity playMovieSurfaceActivity;
-    private SurfaceView surfaceViewMovie;
-    private SurfaceView surfaceViewTracks;
-    private SurfaceView surfaceViewTable;
-    private Spinner movieSelectSpinner;
-    private Button playStopButton;
-    private TextView txtSide;
-    private TextView txtBounce;
 
     @Rule
-    public ActivityTestRule<PlayMovieSurfaceActivity> pmsActivityRule = new ActivityTestRule<PlayMovieSurfaceActivity>(PlayMovieSurfaceActivity.class);
+    public GrantPermissionRule grantPermissionRuleCamera = GrantPermissionRule.grant(android.Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE);
+
+    //@Rule
+    //public ActivityTestRule<PlayMovieSurfaceActivity> pmsActivityRule = new ActivityTestRule<PlayMovieSurfaceActivity>(PlayMovieSurfaceActivity.class);
+
     @Rule
-    public GrantPermissionRule grantPermissionRuleCamera = GrantPermissionRule.grant(Manifest.permission.CAMERA);
-    @Rule
-    public GrantPermissionRule grantPermissionRuleStorage = GrantPermissionRule.grant(Manifest.permission.READ_EXTERNAL_STORAGE);
+    public ActivityTestRule<MainActivity> pmsMainActivityRule = new ActivityTestRule<>(MainActivity.class);
 
     @Before
-    public void setUp() throws Exception {
-        playMovieSurfaceActivity = pmsActivityRule.getActivity();
-        surfaceViewMovie = playMovieSurfaceActivity.findViewById(R.id.playMovie_surface);
-        surfaceViewTracks = playMovieSurfaceActivity.findViewById(R.id.playMovie_surfaceTracks);
-        surfaceViewTable = playMovieSurfaceActivity.findViewById(R.id.playMovie_surfaceTable);
-        movieSelectSpinner = playMovieSurfaceActivity.findViewById(R.id.playMovieFile_spinner);
-        playStopButton = playMovieSurfaceActivity.findViewById(R.id.play_stop_button);
-        txtSide = playMovieSurfaceActivity.findViewById(R.id.txtSide);
-        txtBounce = playMovieSurfaceActivity.findViewById(R.id.txtBounce);
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        playMovieSurfaceActivity.finish();
-        playMovieSurfaceActivity = null;
-    }
-
-    @Test
-    public void findAllViewsInActivity() {
-        assertNotNull(surfaceViewMovie);
-        assertNotNull(surfaceViewTracks);
-        assertNotNull(surfaceViewTable);
-        assertNotNull(movieSelectSpinner);
-        assertNotNull(playStopButton);
-        assertNotNull(txtSide);
-        assertNotNull(txtBounce);
-        assertEquals(playMovieSurfaceActivity.getResources().getString(R.string.play_button_text), playStopButton.getText());
-        assertEquals("0", txtBounce.getText());
+    public void grantAllPermissions() {
+        GrantPermission.grantAllPermissions();
     }
 
     @Test
     // plays a video for a couple of seconds (with bounces in it), and then checks if there was a bounce
     public void testPlayMovieAndFindBounces() {
-        movieSelectSpinner.setSelection(0, true);
-        playMovieSurfaceActivity.onItemSelected(movieSelectSpinner, null, 0, R.id.playMovieFile_spinner);
-        implAssertBounce(txtBounce);
-        implAssertSideChange(txtSide);
-        Runnable clickPlayButton = new ClickPlayButton(playStopButton);
-        playMovieSurfaceActivity.runOnUiThread(clickPlayButton);
-        try {
-            Thread.sleep(10000);
-        } catch (InterruptedException ex) {
-            fail();
-        }
-        assertEquals(playMovieSurfaceActivity.getResources().getString(R.string.stop_button_text),playStopButton.getText());
-        playMovieSurfaceActivity.runOnUiThread(clickPlayButton);
+        pmsMainActivityRule.getActivity();
+        onView(withId(R.id.live_settings_button))
+                .perform(click());
+        onView(withText("Advanced"))
+                .perform(click());
+        onView(withText("Run video player"))
+                .perform(click());
+        findAllViewsInActivity();
+        onView(withId(R.id.playMovieFile_spinner))
+                .perform(click());
+        onData(anything()).atPosition(0).perform(click());
+        onView(withId(R.id.play_stop_button))
+                .perform(click());
+        onView(isRoot()).perform(waitFor(10000));
+        onView(allOf(withId(R.id.txtBounce), not(withText("0"))));
+        onView(allOf(withId(R.id.txtSide), not(withText("None"))));
+        onView(withId(R.id.play_stop_button))
+                .check(matches(withText(R.string.stop_button_text)));
+        onView(withId(R.id.play_stop_button))
+                .perform(click());
     }
 
-    public void implAssertBounce(TextView txtBounce) {
-        txtBounce.addTextChangedListener(new TextWatcher() {
-            int amountOfBounces = 0;
-
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                // no implementation for test needed
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                assertNotEquals("0", String.valueOf(charSequence));
-                amountOfBounces++;
-                assertEquals(String.valueOf(amountOfBounces), String.valueOf(charSequence));
-                assertEquals(playMovieSurfaceActivity.getResources().getString(R.string.stop_button_text),playStopButton.getText());
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                // no implementation for test needed
-            }
-        });
+    private void findAllViewsInActivity() {
+        onView(withId(R.id.playMovie_surface))
+                .check(matches(isDisplayed()));
+        onView(withId(R.id.playMovie_surfaceTracks))
+                .check(matches(isDisplayed()));
+        onView(withId(R.id.playMovie_surfaceTable))
+                .check(matches(isDisplayed()));
+        onView(withId(R.id.playMovieFile_spinner))
+                .check(matches(isDisplayed()));
+        onView(withId(R.id.play_stop_button))
+                .check(matches(isDisplayed()));
+        onView(withId(R.id.txtSide))
+                .check(matches(isDisplayed()));
+        onView(withId(R.id.txtBounce))
+                .check(matches(isDisplayed()));
+        onView(withId(R.id.txtPlayMovieScoreLeft))
+                .check(matches(isDisplayed()));
+        onView(withId(R.id.txtPlayMovieScoreRight))
+                .check(matches(isDisplayed()));
+        onView(withId(R.id.txtPlayMovieGameLeft))
+                .check(matches(isDisplayed()));
+        onView(withId(R.id.txtPlayMovieGameRight))
+                .check(matches(isDisplayed()));
+        onView(withId(R.id.play_stop_button))
+                .check(matches(withText(R.string.play_button_text)));
+        onView(withId(R.id.txtBounce))
+                .check(matches(withText("0")));
     }
 
-    public void implAssertSideChange(TextView txtSide) {
-        txtSide.addTextChangedListener(new TextWatcher() {
-            private String lastSide = "";
-
+    /**
+     * Perform action of waiting for a specific time.
+     */
+    public static ViewAction waitFor(final long millis) {
+        return new ViewAction() {
             @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                // no implementation for test needed
+            public Matcher<View> getConstraints() {
+                return isRoot();
             }
 
             @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                assertNotEquals(lastSide, String.valueOf(charSequence));
-                lastSide = String.valueOf(charSequence);
+            public String getDescription() {
+                return "Wait for " + millis + " milliseconds.";
             }
 
             @Override
-            public void afterTextChanged(Editable editable) {
-                // no implementation for test needed
+            public void perform(UiController uiController, final View view) {
+                uiController.loopMainThreadForAtLeast(millis);
             }
-        });
-    }
-}
-
-class ClickPlayButton implements Runnable {
-    private Button button;
-    ClickPlayButton(Button button) {
-        this.button = button;
-    }
-    @Override
-    public void run() {
-        button.performClick();
+        };
     }
 }

@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.android.grafika.LiveDebugActivity">
+
+    <include layout="@layout/camera_and_tracks_surface_views" />
+
+    <RelativeLayout
+        android:id="@+id/relativeLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <GridLayout
+            android:id="@+id/playMovie_debugGrid"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:background="@drawable/radius_background"
+            android:columnCount="2"
+            android:padding="10dp"
+            android:rowCount="5">
+
+            <TextView
+                android:id="@+id/txtLabelSide"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:text="@string/debugBallShotLabel"
+                android:textAlignment="viewStart"
+                android:textColor="@android:color/secondary_text_light"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/txtSide"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"
+                android:text="@string/debugBallShotStart"
+                android:textAlignment="textEnd"
+                android:textColor="@android:color/secondary_text_light"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtLabelBounce"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:text="@string/debugBallBounceLabel"
+                android:textAlignment="viewStart"
+                android:textColor="@android:color/secondary_text_light"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/txtBounce"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"
+                android:text="@string/debugBallCountStart"
+                android:textAlignment="textStart"
+                android:textColor="@android:color/secondary_text_light"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"
+                android:text="Current state:"
+                android:textAlignment="textStart"
+                android:textColor="@android:color/secondary_text_light"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/txtPlayMovieState"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"
+                android:text="NONE"
+                android:textAlignment="textStart"
+                android:textColor="@android:color/secondary_text_light"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"
+                android:text="Server:"
+                android:textAlignment="textStart"
+                android:textColor="@android:color/secondary_text_light"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/txtPlayMovieServing"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"
+                android:text="true"
+                android:textAlignment="textStart"
+                android:textColor="@android:color/secondary_text_light"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+        </GridLayout>
+
+        <GridLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:background="@drawable/radius_background"
+            android:columnCount="7"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="4dp"
+            android:rowCount="1">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_vertical"
+                android:layout_marginEnd="12dp"
+                android:text="@string/playerLeftDefaultName"
+                android:textColor="@android:color/secondary_text_light"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/txtPlayMovieGameLeft"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginEnd="8dp"
+                android:text="@string/gameScoreStart"
+                android:textColor="@android:color/secondary_text_light"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtPlayMovieScoreLeft"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="3dp"
+                android:text="@string/gameScoreStart"
+                android:textColor="@android:color/secondary_text_light"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="@string/gameScoreDivider"
+                android:textColor="@android:color/secondary_text_light"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtPlayMovieScoreRight"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="3dp"
+                android:text="@string/gameScoreStart"
+                android:textColor="@android:color/secondary_text_light"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtPlayMovieGameRight"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="8dp"
+                android:text="@string/gameScoreStart"
+                android:textColor="@android:color/secondary_text_light"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="12dp"
+                android:text="@string/playerRightDefaultName"
+                android:textColor="@android:color/secondary_text_light"
+                android:textSize="14sp" />
+        </GridLayout>
+
+        <ImageButton
+            android:id="@+id/live_settings_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:onClick="onOpenMenu"
+            android:src="@drawable/settings"
+            android:textAppearance="@android:style/TextAppearance.Material.Medium" />
+
+        <TextView
+            android:id="@+id/camera_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:textAppearance="@android:style/TextAppearance.Material.Large" />
+
+    </RelativeLayout>
+</merge>

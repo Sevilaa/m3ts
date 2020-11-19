@@ -6,33 +6,40 @@ import java.util.Map;
 public class Match implements MatchCallback {
     private Game[] games;
     private MatchType type;
-    private Player playerLeft;
-    private Player playerRight;
+    private Map<Side, Player> players;
     private Map<Side, Integer> wins;
     private UICallback uiCallback;
     private Referee referee;
+    private Side serverSide;
+    private ServeRules serveRules;
+    private GameType gameType;
 
-    public Match(MatchType type, String playerLeftName, String playerRightName, UICallback uiCallback) {
+    public Match(MatchType type, GameType gameType, ServeRules serveRules, String playerLeftName, String playerRightName, UICallback uiCallback, Side startingServer) {
         this.type = type;
+        this.gameType = gameType;
         this.wins = new HashMap<>();
         this.wins.put(Side.LEFT, 0);
         this.wins.put(Side.RIGHT,0);
         this.games = new Game[type.amountOfGames];
-        this.playerLeft = new Player(playerLeftName);
-        this.playerRight = new Player(playerRightName);
+        this.players = new HashMap<>();
+        this.players.put(Side.LEFT, new Player(playerLeftName));
+        this.players.put(Side.RIGHT, new Player(playerRightName));
         this.uiCallback = uiCallback;
-        this.referee = new Referee(Side.LEFT);
-        startNewGame();
+        this.serveRules = serveRules;
+        this.referee = new Referee(startingServer);
+        this.serverSide = startingServer;
+        startNewGame(true);
     }
 
-    void startNewGame() {
-        Game game = new Game(this, uiCallback);
+    void startNewGame(boolean firstInit) {
+        if(!firstInit) switchServers();
+        Game game = new Game(this, uiCallback, gameType, serveRules, this.serverSide);
         this.games[this.wins.get(Side.RIGHT) + this.wins.get(Side.LEFT)] = game;
         this.referee.setGame(game);
     }
 
-    void end() {
-        this.uiCallback.onMatchEnded();
+    void end(Side winner) {
+        this.uiCallback.onMatchEnded(this.players.get(winner).getName());
     }
 
     @Override
@@ -41,9 +48,9 @@ public class Match implements MatchCallback {
         wins.put(side, win);
         uiCallback.onWin(side, win);
         if (isMatchOver(win)) {
-            end();
+            end(side);
         } else {
-            startNewGame();
+            startNewGame(false);
         }
     }
 
@@ -53,5 +60,13 @@ public class Match implements MatchCallback {
 
     private boolean isMatchOver(int wins) {
         return (wins >= this.type.gamesNeededToWin);
+    }
+
+    private void switchServers() {
+        if (this.serverSide == Side.LEFT) {
+            this.serverSide = Side.RIGHT;
+        } else {
+            this.serverSide = Side.LEFT;
+        }
     }
 }

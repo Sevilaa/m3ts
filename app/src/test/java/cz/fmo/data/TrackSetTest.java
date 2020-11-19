@@ -56,7 +56,7 @@ public class TrackSetTest {
 
     @Test
     public void oldTracksGetFilteredOutAfterNFrames() {
-        int nFrames = 4; // needs to be bigger or equal to FRAMES_UNTIL_OLD_TRACK_REMOVAL in TrackSet.java
+        int nFrames = 100; // needs to be bigger or equal to FRAMES_UNTIL_OLD_TRACK_REMOVAL in TrackSet.java
         int delay = 1000/FRAME_RATE;
         long detectionTime = System.nanoTime();
         spyTrackSet.setConfig(mockConfig);
@@ -68,11 +68,12 @@ public class TrackSetTest {
         // assert we have one track, as all generated directions form a track
         assertEquals(1, spyTrackSet.getTracks().size());
 
-         // now wait a couple of frames, the track should get removed on next addDetection invocation
-        detectionTime = detectionTime + 1000/FRAME_RATE * nFrames * 1000 * 1000;
-        // "stub call" addDetection with empty array to trigger removal
-        spyTrackSet.addDetections(new Lib.Detection[0], SOME_WIDTH, SOME_HEIGHT, detectionTime);
-        assertEquals(0, spyTrackSet.getTracks().size());
+         // now wait a couple of frames, invoke some more tracks - max of 2 tracks should now only be in there
+        for(int i = 0; i<someDetections.length; i++) {
+            detectionTime = detectionTime + 1000/FRAME_RATE * nFrames * 1000 * 1000;
+            spyTrackSet.addDetections(new Lib.Detection[]{someDetections[i]}, SOME_WIDTH, SOME_HEIGHT, detectionTime);
+            assertEquals(2, spyTrackSet.getTracks().size());
+        }
     }
 
     // this test simulates n objects thrown left to right and vice versa

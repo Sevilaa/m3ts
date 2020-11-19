@@ -4,5 +4,6 @@ public enum GameState {
     SERVING,
     PLAY,
     PAUSE,
-    WAIT_FOR_SERVE
+    WAIT_FOR_SERVE,
+    OUT_OF_FRAME
 }
