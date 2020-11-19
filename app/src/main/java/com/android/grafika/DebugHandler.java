@@ -85,7 +85,8 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
                     uiCallback = this.trackerPubNub;
                 }
             } catch (IOException ex) {
-                throw new RuntimeException("No app.properties file found!");
+                Log.d("No properties file found, use device display.");
+                this.useScreenForUICallback = true;
             }
         }
         match = new Match(this.matchType, GameType.G11, ServeRules.S2,"Hans", "Peter", uiCallback, this.servingSide);
