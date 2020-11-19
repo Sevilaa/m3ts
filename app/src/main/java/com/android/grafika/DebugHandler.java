@@ -11,13 +11,17 @@ import android.support.annotation.NonNull;
 import android.view.SurfaceHolder;
 import android.widget.TextView;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Properties;
 
 import cz.fmo.Lib;
 import cz.fmo.R;
+import cz.fmo.TrackerPubNub;
 import cz.fmo.data.Track;
 import cz.fmo.data.TrackSet;
 import cz.fmo.events.EventDetectionCallback;
@@ -35,6 +39,7 @@ import helper.OnSwipeListener;
 
 public class DebugHandler extends android.os.Handler implements EventDetectionCallback, UICallback {
     final WeakReference<DebugActivity> mActivity;
+    private int strikeCount = 0;
     private final String TTS_WIN;
     private final String TTS_SCORE;
     private TextToSpeech tts;
@@ -55,8 +60,9 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     private Match match;
     private int newBounceCount;
     private ScoreManipulationCallback smc;
+    private TrackerPubNub trackerPubNub;
 
-    public DebugHandler(@NonNull DebugActivity activity, Side servingSide, MatchType matchType) {
+    public DebugHandler(@NonNull DebugActivity activity, Side servingSide, MatchType matchType, String matchID, boolean useScreenForUICallback) {
         mActivity = new WeakReference<>(activity);
         initTTS(activity);
         TTS_WIN = activity.getResources().getString(R.string.ttsWin);
@@ -67,6 +73,18 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
         this.matchType = matchType;
         hasNewTable = true;
         p = new Paint();
+        try {
+            Properties properties = new Properties();
+            try (InputStream is = activity.getAssets().open("app.properties")) {
+                properties.load(is);
+                this.trackerPubNub = new TrackerPubNub(matchID, properties.getProperty("pub_key"), properties.getProperty("sub_key"));
+                UICallback uiCallback = this.trackerPubNub;
+                if (useScreenForUICallback) uiCallback = this;
+                match = new Match(this.matchType, GameType.G11, ServeRules.S2,"Hans", "Peter", uiCallback, this.servingSide);
+            }
+        } catch (IOException ex) {
+            throw new RuntimeException("No app.properties file found!");
+        }
         startMatch();
     }
 
@@ -108,25 +126,39 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
             }
             canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
             if (hasNewTable) {
-                drawTable(activity);
+                drawTable();
                 hasNewTable = false;
             }
             drawAllTracks(canvas, tracks);
+            drawLatestBounce(canvas);
+            drawLatestOutOfFrameDetection(canvas);
             surfaceHolder.unlockCanvasAndPost(canvas);
         }
         setTextInTextView(R.id.txtPlayMovieState, match.getReferee().getState().toString());
         setTextInTextView(R.id.txtPlayMovieServing, match.getReferee().getServer().toString());
-        setTextInTextView(R.id.txtBounce, String.valueOf(newBounceCount));
+        if(match.getReferee().getCurrentBallSide() != null) {
+            setTextInTextView(R.id.txtBounce, String.valueOf(this.newBounceCount));
+        }
     }
 
     @Override
     public void onTableSideChange(Side side) {
+        // do nothing
+    }
 
+    @Override
+    public void onTimeout() {
+        // do nothing
+    }
+
+    @Override
+    public void onBallDroppedSideWays() {
+        // do nothing
     }
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
-    public void onMatchEnded() {
+    public void onMatchEnded(String winnerName) {
         this.match = null;
         Lib.detectionStop();
         mActivity.get().getmSurfaceView().setOnTouchListener(null);
@@ -193,7 +225,9 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
         surfaceHolder.unlockCanvasAndPost(canvas);
     }
 
-    void drawTable(DebugActivity activity) {
+    void drawTable() {
+        DebugActivity activity = mActivity.get();
+        if (activity == null) return;
         SurfaceHolder surfaceHolderTable = activity.getmSurfaceTable().getHolder();
         Canvas canvas = surfaceHolderTable.lockCanvas();
         if (canvas == null) {
@@ -222,36 +256,36 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     }
 
     private void startMatch() {
-        match = new Match(this.matchType, GameType.G11, ServeRules.S2,"Hans", "Peter", this, this.servingSide);
         setOnSwipeListener();
         setTextInTextView(R.id.txtPlayMovieState, match.getReferee().getState().toString());
         setTextInTextView(R.id.txtPlayMovieServing, match.getReferee().getServer().toString());
-        setTextInTextView(R.id.txtBounce, String.valueOf(newBounceCount));
-        drawTable(this.mActivity.get());
+        if(match.getReferee().getCurrentBallSide() != null) {
+            setTextInTextView(R.id.txtBounce, String.valueOf(this.newBounceCount));
+        }
     }
 
     private void drawAllTracks(Canvas canvas, TrackSet set) {
-        for (Track t : set.getTracks()) {
-            t.updateColor();
-            Lib.Detection pre = t.getLatest();
-            cz.fmo.util.Color.RGBA r = t.getColor();
-            int c = Color.argb(255, Math.round(r.rgba[0] * 255), Math.round(r.rgba[1] * 255), Math.round(r.rgba[2] * 255));
-            p.setColor(c);
-            p.setStrokeWidth(pre.radius);
-            while (pre != null) {
-                canvas.drawCircle(scaleX(pre.centerX), scaleY(pre.centerY), pre.radius, p);
-                if (pre.predecessor != null) {
-                    int x1 = scaleX(pre.centerX);
-                    int x2 = scaleX(pre.predecessor.centerX);
-                    int y1 = scaleY(pre.centerY);
-                    int y2 = scaleY(pre.predecessor.centerY);
-                    canvas.drawLine(x1, y1, x2, y2, p);
-                }
-                pre = pre.predecessor;
+        // only draw the tracks which get processed by EventDetector (this case getTracks().get(0))
+        Track t = set.getTracks().get(0);
+        t.updateColor();
+        Lib.Detection pre = t.getLatest();
+        cz.fmo.util.Color.RGBA r = t.getColor();
+        int c = Color.argb(255, Math.round(r.rgba[0] * 255), Math.round(r.rgba[1] * 255), Math.round(r.rgba[2] * 255));
+        p.setColor(c);
+        p.setStrokeWidth(pre.radius);
+        int count = 0;
+        while (pre != null && count < 2) {
+            canvas.drawCircle(scaleX(pre.centerX), scaleY(pre.centerY), pre.radius, p);
+            if (pre.predecessor != null) {
+                int x1 = scaleX(pre.centerX);
+                int x2 = scaleX(pre.predecessor.centerX);
+                int y1 = scaleY(pre.centerY);
+                int y2 = scaleY(pre.predecessor.centerY);
+                canvas.drawLine(x1, y1, x2, y2, p);
             }
+            pre = pre.predecessor;
+            count++;
         }
-        drawLatestBounce(canvas);
-        drawLatestOutOfFrameDetection(canvas);
     }
 
     private void drawLatestOutOfFrameDetection(Canvas canvas) {
@@ -332,7 +366,7 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
 
     private void setCallbackForNewGame() {
         if(match != null) {
-            this.smc = match.getReferee();
+            this.trackerPubNub.setScoreManipulationCallback(match.getReferee());
         }
     }
 

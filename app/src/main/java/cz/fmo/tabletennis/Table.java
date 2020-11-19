@@ -96,10 +96,25 @@ public class Table {
     }
 
     public boolean isOnOrAbove(int x, int y) {
-        double leftThreshold = this.getCornerTopLeft().x * 1.05;
-        double rightThreshold = this.getCornerTopRight().x / 1.05;
+        double leftThreshold = this.getCornerTopLeft().x * 0.95;
+        double rightThreshold = this.getCornerTopRight().x * 1.05;
         double bottomThreshold = this.getCloseNetEnd().y;
         return (x >= leftThreshold && x <= rightThreshold && y <= bottomThreshold);
+    }
+
+    public boolean isBounceOn(int x, int y) {
+        double leftThreshold = this.getCornerDownLeft().x;
+        double rightThreshold = this.getCornerDownRight().x;
+        double bottomThreshold = this.getCloseNetEnd().y;
+        double topThreshold = this.getFarNetEnd().y * 0.9;
+        return (x >= leftThreshold && x <= rightThreshold && y <= bottomThreshold && y >= topThreshold);
+    }
+
+    public boolean isBelow(int x, int y) {
+        double leftThreshold = this.getCornerDownLeft().x;
+        double rightThreshold = this.getCornerDownRight().x;
+        double bottomThreshold = this.getCloseNetEnd().y * 1.05;
+        return (x >= leftThreshold && x <= rightThreshold && y > bottomThreshold);
     }
 
     public int getWidth() {

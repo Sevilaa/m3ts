@@ -143,6 +143,10 @@ public class InitializeActivityTest extends InstrumentationTestCase {
         onView(withId(R.id.init_sideAndMatchTypeDoneBtn))
                 .perform(click());
 
+        // enter some room
+        onView(withId(R.id.init_createRoomBtn))
+                .perform(click());
+
         onView(withId(R.id.init_startGameBtn))
                 .perform(click());
 

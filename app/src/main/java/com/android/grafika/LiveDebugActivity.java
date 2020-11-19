@@ -21,19 +21,24 @@ public final class LiveDebugActivity extends DebugActivity {
     private static final String CORNERS_PARAM = "CORNERS_UNSORTED";
     private static final String MATCH_TYPE_PARAM = "MATCH_TYPE";
     private static final String SERVING_SIDE_PARAM = "SERVING_SIDE";
+    private static final String MATCH_ID = "MATCH_ID";
     private Config mConfig;
     private LiveDebugHandler mHandler;
     private int[] tableCorners;
     private MatchType matchType;
     private Side servingSide;
+    private String matchId;
 
     @Override
     protected void onCreate(android.os.Bundle savedBundle) {
         super.onCreate(savedBundle);
         getDataFromIntent();
-        this.mHandler = new LiveDebugHandler(this, this.servingSide, this.matchType);
+        this.matchId = "bruh_2";
+        this.mHandler = new LiveDebugHandler(this, this.servingSide, this.matchType, this.matchId);
         cameraCallback = this.mHandler;
         this.mConfig = new Config(this);
+        Log.d("Found match: " +matchId);
+        this.onPause();
     }
 
     @Override
@@ -96,6 +101,7 @@ public final class LiveDebugActivity extends DebugActivity {
         tableCorners = bundle.getIntArray(CORNERS_PARAM);
         servingSide = Side.values()[bundle.getInt(SERVING_SIDE_PARAM)];
         matchType = MatchType.values()[bundle.getInt(MATCH_TYPE_PARAM)];
+        matchId = bundle.getString(MATCH_ID);
         if (tableCorners == null) {
             throw new NoCornersInIntendFoundException();
         }

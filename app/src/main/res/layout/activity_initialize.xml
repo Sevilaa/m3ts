@@ -48,15 +48,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
         <ImageButton
-            android:id="@+id/live_settings_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true"
-            android:onClick="onOpenMenu"
-            android:src="@drawable/settings"
-            android:textAppearance="@android:style/TextAppearance.Material.Medium" />
-        <ImageButton
             android:id="@+id/init_revertButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

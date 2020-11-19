@@ -3,13 +3,13 @@ package cz.fmo.tabletennis;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
 
 import cz.fmo.Lib;
 import cz.fmo.data.TrackSet;
 import cz.fmo.util.Config;
 import helper.DetectionGenerator;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -53,7 +53,7 @@ public class RefereeTest {
         referee.onBounce(detection);
         verify(gameMock, times(1)).onPoint(STARTING_SIDE);
         verify(gameMock, times(0)).onPoint(Side.RIGHT);
-        assertEquals(referee.getState(), GameState.WAIT_FOR_SERVE);
+        assertEquals(referee.getState(), GameState.PAUSE);
     }
 
     @Test
@@ -71,7 +71,7 @@ public class RefereeTest {
         referee.onStrikeFound(realTrackSet);
         verify(gameMock, times(1)).onPoint(STARTING_SIDE);
         verify(gameMock, times(0)).onPoint(Side.RIGHT);
-        assertEquals(referee.getState(), GameState.WAIT_FOR_SERVE);
+        assertEquals(referee.getState(), GameState.PAUSE);
     }
 
     @Test
@@ -102,17 +102,18 @@ public class RefereeTest {
         referee.onBounce(detection);
         verify(gameMock, times(1)).onPoint(Side.RIGHT);
         verify(gameMock, times(0)).onPoint(Side.LEFT);
-        assertEquals(referee.getState(), GameState.WAIT_FOR_SERVE);
+        assertEquals(referee.getState(), GameState.PAUSE);
     }
 
     @Test
     public void onServingWithoutBounceFault() {
+        // will be ignored at the moment
         simulateServe();
         referee.onTableSideChange(Side.RIGHT);
         referee.onBounce(detection);
-        verify(gameMock, times(1)).onPoint(Side.RIGHT);
+        verify(gameMock, times(0)).onPoint(Side.RIGHT);
         verify(gameMock, times(0)).onPoint(Side.LEFT);
-        assertEquals(referee.getState(), GameState.WAIT_FOR_SERVE);
+        assertEquals(referee.getState(), GameState.PLAY);
     }
 
     @Test

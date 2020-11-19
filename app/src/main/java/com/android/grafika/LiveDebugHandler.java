@@ -10,8 +10,8 @@ import cz.fmo.tabletennis.Side;
 public class LiveDebugHandler extends DebugHandler implements CameraThread.Callback {
     private static final int CAMERA_ERROR = 2;
 
-    public LiveDebugHandler(@NonNull DebugActivity activity, Side servingSide, MatchType matchType) {
-        super(activity, servingSide, matchType);
+    public LiveDebugHandler(@NonNull DebugActivity activity, Side servingSide, MatchType matchType, String matchID) {
+        super(activity, servingSide, matchType, matchID, false);
     }
 
     @Override
