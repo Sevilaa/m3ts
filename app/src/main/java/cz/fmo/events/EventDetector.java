@@ -4,10 +4,13 @@ import android.support.annotation.NonNull;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import cz.fmo.Lib;
 import cz.fmo.data.Track;
 import cz.fmo.data.TrackSet;
+import cz.fmo.events.timeouts.TimeoutTimerTask;
 import cz.fmo.tabletennis.Side;
 import cz.fmo.tabletennis.Table;
 import cz.fmo.util.Config;
@@ -16,6 +19,7 @@ import helper.DirectionY;
 
 public class EventDetector implements Lib.Callback {
     private static final double PERCENTAGE_OF_NEARLY_OUT_OF_FRAME = 0.07;
+    private static final int MILLISECONDS_TILL_TIMEOUT = 2000;
     private final TrackSet tracks;
     private final List<EventDetectionCallback> callbacks;
     private final int[] nearlyOutOfFrameThresholds;
@@ -27,6 +31,8 @@ public class EventDetector implements Lib.Callback {
     private int previousCenterX;
     private int previousCenterY;
     private Table table;
+    private Timer timeoutTimer;
+    private int numberOfDetections;
 
     public EventDetector(Config config, int srcWidth, int srcHeight, EventDetectionCallback callback, TrackSet tracks, @NonNull Table table) {
         this(config, srcWidth, srcHeight, Collections.singletonList(callback), tracks, table);
@@ -44,6 +50,7 @@ public class EventDetector implements Lib.Callback {
         };
         this.callbacks = callbacks;
         this.table = table;
+        this.numberOfDetections = 0;
         tracks.setConfig(config);
     }
 
@@ -60,6 +67,7 @@ public class EventDetector implements Lib.Callback {
     public void onObjectsDetected(Lib.Detection[] detections, long detectionTime) {
         tracks.addDetections(detections, this.srcWidth, this.srcHeight, detectionTime); // after this, object direction is update
         if (!tracks.getTracks().isEmpty()) {
+            numberOfDetections++;
             Track track = tracks.getTracks().get(0);
             Lib.Detection latestDetection = track.getLatest();
             calcDirectionY(latestDetection);
@@ -81,6 +89,7 @@ public class EventDetector implements Lib.Callback {
                 }
                 savePreviousDetection(latestDetection);
             }
+            setTimeoutTimer(numberOfDetections);
         }
     }
 
@@ -90,6 +99,22 @@ public class EventDetector implements Lib.Callback {
 
     public int[] getNearlyOutOfFrameThresholds() {
         return nearlyOutOfFrameThresholds;
+    }
+
+    public void callAllOnTimeout() {
+        for (EventDetectionCallback callback : callbacks) {
+            callback.onTimeout();
+        }
+    }
+
+    public int getNumberOfDetections() {
+        return numberOfDetections;
+    }
+
+    private void setTimeoutTimer(int currentNumberOfDetections) {
+        TimerTask timeoutTimerTask = new TimeoutTimerTask(this, currentNumberOfDetections);
+        this.timeoutTimer = new Timer("timeoutTimer");
+        this.timeoutTimer.schedule(timeoutTimerTask, MILLISECONDS_TILL_TIMEOUT);
     }
 
     private void callAllOnStrikeFound(TrackSet tracks) {
