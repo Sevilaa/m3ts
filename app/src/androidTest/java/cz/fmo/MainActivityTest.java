@@ -24,7 +24,10 @@ import cz.fmo.R;
 import helper.GrantPermission;
 
 import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.clearText;
 import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
+import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
@@ -56,6 +59,8 @@ public class MainActivityTest {
         // check if we are at the MatchActivity
         onView(withId(R.id.pubnub_id))
                 .check(matches(isDisplayed()));
+        enterARoomAsDisplay();
+        mDevice.pressBack();
         mDevice.pressBack();
 
         // should be back now
@@ -69,6 +74,23 @@ public class MainActivityTest {
         onView(withText(R.string.initMarkTableLabel))
                 .check(matches(isDisplayed()));
         mDevice.pressBack();
+    }
+
+    private void enterARoomAsDisplay() {
+        onView(withId(R.id.connect_to_match_lbl))
+                .check(matches(isDisplayed()));
+        onView(withId(R.id.pubnub_id))
+                .perform(clearText(), typeText("test_room"), closeSoftKeyboard());
+        onView(withId(R.id.join_btn))
+                .perform(click());
+        onView(withId(R.id.left_score))
+                .check(matches(withText("0")));
+        onView(withId(R.id.right_score))
+                .check(matches(withText("0")));
+        onView(withId(R.id.left_games))
+                .check(matches(withText("0")));
+        onView(withId(R.id.right_games))
+                .check(matches(withText("0")));
     }
 
     private void setMobileDataEnabled(Context context, boolean enabled) throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
