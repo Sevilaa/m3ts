@@ -44,6 +44,10 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
 
     public Side getServer() { return currentGame.getServer(); }
 
+    public Side getCurrentStriker() {
+        return currentStriker;
+    }
+
     @Override
     public void onBounce(Lib.Detection detection) {
         switch (this.state) {
