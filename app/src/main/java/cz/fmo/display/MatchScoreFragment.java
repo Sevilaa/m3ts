@@ -22,6 +22,7 @@ import cz.fmo.tabletennis.UICallback;
 import helper.OnSwipeListener;
 
 public class MatchScoreFragment extends Fragment implements UICallback {
+    private static final String TAG_MATCH_ENDED = "MATCH_WON";
     private FragmentReplaceCallback callback;
     private DisplayPubNub pubnub;
 
@@ -54,7 +55,7 @@ public class MatchScoreFragment extends Fragment implements UICallback {
         bundle.putString("winner", winnerName);
         Fragment fragment = new MatchWonFragment();
         fragment.setArguments(bundle);
-        callback.replaceFragment(fragment);
+        callback.replaceFragment(fragment, TAG_MATCH_ENDED);
     }
 
     @Override
