@@ -19,7 +19,7 @@ import helper.DirectionY;
 
 public class EventDetector implements Lib.Callback {
     private static final double PERCENTAGE_OF_NEARLY_OUT_OF_FRAME = 0.07;
-    private static final int MILLISECONDS_TILL_TIMEOUT = 2000;
+    private static final int MILLISECONDS_TILL_TIMEOUT = 1000;
     private final TrackSet tracks;
     private final List<EventDetectionCallback> callbacks;
     private final int[] nearlyOutOfFrameThresholds;
@@ -66,24 +66,23 @@ public class EventDetector implements Lib.Callback {
     }
 
     public void onObjectsDetected(Lib.Detection[] detections, long detectionTime) {
-        tracks.addDetections(detections, this.srcWidth, this.srcHeight, detectionTime); // after this, object direction is update
+        tracks.addDetections(detections, this.srcWidth, this.srcHeight, detectionTime); // after this, object direction is up to date
         if (!tracks.getTracks().isEmpty()) {
             numberOfDetections++;
             Track track = tracks.getTracks().get(0);
             Lib.Detection latestDetection = track.getLatest();
-            calcDirectionY(latestDetection);
-            calcDirectionX(latestDetection);
             if (table.isOnOrAbove(latestDetection.centerX, latestDetection.centerY)) {
                 track.setTableCrossed();
             }
             if (isOnTable(track)) {
+                calcDirectionY(latestDetection);
+                calcDirectionX(latestDetection);
                 if (hasBallFallenOffSideWays(latestDetection)){
                     callAllOnBallDroppedSideWays();
                 }
                 callAllOnStrikeFound(tracks);
-                if(!hasSideChanged(latestDetection)) {
-                    hasBouncedOnTable(latestDetection);
-                }
+                hasSideChanged(latestDetection);
+                hasBouncedOnTable(latestDetection);
                 hasTableSideChanged(latestDetection.centerX);
                 Side nearlyOutOfFrameSide = getNearlyOutOfFrameSide(latestDetection);
                 if (nearlyOutOfFrameSide != null) {
@@ -126,11 +125,14 @@ public class EventDetector implements Lib.Callback {
     }
 
     private void savePreviousDetection(Lib.Detection detection) {
-        this.previousCenterX = detection.centerX;
-        this.previousCenterY = detection.centerY;
-        this.previousDirectionX = (int) detection.directionX;
-        this.previousDirectionY = (int) detection.directionY;
-        this.previousDetection = detection;
+        // important check, if removed dirX and dirY will be set to 0 sometimes
+        if (detection != this.previousDetection) {
+            this.previousCenterX = detection.centerX;
+            this.previousCenterY = detection.centerY;
+            this.previousDirectionX = (int) detection.directionX;
+            this.previousDirectionY = (int) detection.directionY;
+            this.previousDetection = detection;
+        }
     }
 
     private void callAllOnBounce(Lib.Detection latestDetection) {
@@ -163,22 +165,18 @@ public class EventDetector implements Lib.Callback {
         }
     }
 
-    private boolean hasSideChanged(Lib.Detection detection) {
-        boolean hasSideChanged = false;
+    private void hasSideChanged(Lib.Detection detection) {
         Side otherBallSide = Side.RIGHT;
         if(currentBallSide == Side.RIGHT) otherBallSide = Side.LEFT;
         if ((detection.directionX == DirectionX.LEFT && currentBallSide != Side.RIGHT) ||
                 (detection.directionX == DirectionX.RIGHT && currentBallSide != Side.LEFT)) {
             currentBallSide = otherBallSide;
             callAllOnSideChange(otherBallSide);
-            hasSideChanged = true;
         }
-
-        return hasSideChanged;
     }
 
     private void hasBouncedOnTable(Lib.Detection detection) {
-        if (previousDetection != null && previousDirectionY != detection.directionY &&
+        if (previousDirectionY != detection.directionY &&
                 (previousDirectionX == detection.directionX) &&
                 (table.isBounceOn(previousCenterX, previousCenterY) || table.isBounceOn(detection.centerX, detection.centerY)) &&
                 ((previousDirectionY == DirectionY.DOWN) && (detection.directionY == DirectionY.UP))) {
