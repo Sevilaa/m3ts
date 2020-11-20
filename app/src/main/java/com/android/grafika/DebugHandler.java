@@ -110,7 +110,8 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
 
     @Override
     public void onSideChange(final Side side) {
-        setTextInTextView(R.id.txtSide, side.toString());
+        // use the referees current striker (might be different then side in parameter!)
+        setTextInTextView(R.id.txtSide, match.getReferee().getCurrentStriker().toString());
     }
 
     @Override
