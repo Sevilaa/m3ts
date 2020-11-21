@@ -44,6 +44,10 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
 
     public Side getServer() { return currentGame.getServer(); }
 
+    public Side getCurrentStriker() {
+        return currentStriker;
+    }
+
     @Override
     public void onBounce(Lib.Detection detection) {
         switch (this.state) {
@@ -72,8 +76,11 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     public void onSideChange(Side side) {
         switch (this.state) {
             case PLAY:
-                bounces = 0;
-                currentStriker = side;
+                // do not change striker if the ball was sent back by net
+                if (currentBallSide == side) {
+                    bounces = 0;
+                    currentStriker = side;
+                }
                 break;
             case SERVING:
                 if (side != getServer()) {

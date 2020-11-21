@@ -22,6 +22,10 @@ import helper.GrantPermission;
 import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.action.ViewActions.swipeDown;
+import static androidx.test.espresso.action.ViewActions.swipeLeft;
+import static androidx.test.espresso.action.ViewActions.swipeRight;
+import static androidx.test.espresso.action.ViewActions.swipeUp;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
@@ -60,6 +64,7 @@ public class PlayMovieSurfaceActivityTest {
         onView(withText("Run video player"))
                 .perform(click());
         findAllViewsInActivity();
+        verifyIfSwipeScoreManipulationWorks();
         onView(withId(R.id.playMovieFile_spinner))
                 .perform(click());
         onData(anything()).atPosition(0).perform(click());
@@ -72,6 +77,31 @@ public class PlayMovieSurfaceActivityTest {
                 .check(matches(withText(R.string.stop_button_text)));
         onView(withId(R.id.play_stop_button))
                 .perform(click());
+    }
+
+    private void verifyIfSwipeScoreManipulationWorks() {
+        // swipe 3 times to see if score changes
+        onView(withId(R.id.playMovie_surface))
+                .perform(swipeUp());
+        onView(withId(R.id.playMovie_surface))
+                .perform(swipeUp());
+        onView(withId(R.id.playMovie_surface))
+                .perform(swipeUp());
+        onView(withText("3"))
+                .check(matches(isDisplayed()));
+        onView(withId(R.id.playMovie_surface))
+                .perform(swipeDown());
+        onView(withId(R.id.playMovie_surface))
+                .perform(swipeDown());
+        onView(withText("1"))
+                .check(matches(isDisplayed()));
+        // no score changes on left or right swipe
+        onView(withId(R.id.playMovie_surface))
+                .perform(swipeLeft());
+        onView(withId(R.id.playMovie_surface))
+                .perform(swipeRight());
+        onView(withText("1"))
+                .check(matches(isDisplayed()));
     }
 
     private void findAllViewsInActivity() {

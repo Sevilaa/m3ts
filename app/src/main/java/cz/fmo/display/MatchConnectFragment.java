@@ -1,8 +1,8 @@
 package cz.fmo.display;
 
+import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
-import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +12,7 @@ import android.widget.EditText;
 import cz.fmo.R;
 
 public class MatchConnectFragment extends Fragment implements View.OnClickListener {
+    private static final String TAG_MATCH_SCORE = "MATCH_SCORE";
     private FragmentReplaceCallback callback;
 
     @Override
@@ -43,6 +44,6 @@ public class MatchConnectFragment extends Fragment implements View.OnClickListen
         EditText matchID = getView().findViewById(R.id.pubnub_id);
         bundle.putString("matchID", matchID.getText().toString());
         fragment.setArguments(bundle);
-        callback.replaceFragment(fragment);
+        callback.replaceFragment(fragment, TAG_MATCH_SCORE);
     }
 }

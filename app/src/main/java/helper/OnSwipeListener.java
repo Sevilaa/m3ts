@@ -16,15 +16,19 @@ public class OnSwipeListener implements View.OnTouchListener {
     }
 
     public void onSwipeLeft() {
+        // do nothing
     }
 
     public void onSwipeRight() {
+        // do nothing
     }
 
     public void onSwipeDown(Side swipeSide) {
+        // do nothing
     }
 
     public void onSwipeUp(Side swipeSide) {
+        // do nothing
     }
 
     public boolean onTouch(View v, MotionEvent event) {

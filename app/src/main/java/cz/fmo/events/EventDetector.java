@@ -19,7 +19,7 @@ import helper.DirectionY;
 
 public class EventDetector implements Lib.Callback {
     private static final double PERCENTAGE_OF_NEARLY_OUT_OF_FRAME = 0.07;
-    private static final int MILLISECONDS_TILL_TIMEOUT = 2000;
+    private static final int MILLISECONDS_TILL_TIMEOUT = 1000;
     private final TrackSet tracks;
     private final List<EventDetectionCallback> callbacks;
     private final int[] nearlyOutOfFrameThresholds;
@@ -30,6 +30,7 @@ public class EventDetector implements Lib.Callback {
     private int previousDirectionX;
     private int previousCenterX;
     private int previousCenterY;
+    private Side currentBallSide;
     private Table table;
     private Timer timeoutTimer;
     private int numberOfDetections;
@@ -65,23 +66,23 @@ public class EventDetector implements Lib.Callback {
     }
 
     public void onObjectsDetected(Lib.Detection[] detections, long detectionTime) {
-        tracks.addDetections(detections, this.srcWidth, this.srcHeight, detectionTime); // after this, object direction is update
+        tracks.addDetections(detections, this.srcWidth, this.srcHeight, detectionTime); // after this, object direction is up to date
         if (!tracks.getTracks().isEmpty()) {
             Track track = tracks.getTracks().get(0);
             Lib.Detection latestDetection = track.getLatest();
-            calcDirectionY(latestDetection);
             if (table.isOnOrAbove(latestDetection.centerX, latestDetection.centerY)) {
                 track.setTableCrossed();
             }
             if (isOnTable(track)) {
+                calcDirectionY(latestDetection);
+                calcDirectionX(latestDetection);
                 numberOfDetections++;
                 if (hasBallFallenOffSideWays(latestDetection)){
                     callAllOnBallDroppedSideWays();
                 }
                 callAllOnStrikeFound(tracks);
-                if(!hasSideChanged(latestDetection)) {
-                    hasBouncedOnTable(latestDetection);
-                }
+                hasSideChanged(latestDetection);
+                hasBouncedOnTable(latestDetection);
                 hasTableSideChanged(latestDetection.centerX);
                 Side nearlyOutOfFrameSide = getNearlyOutOfFrameSide(latestDetection);
                 if (nearlyOutOfFrameSide != null) {
@@ -124,11 +125,14 @@ public class EventDetector implements Lib.Callback {
     }
 
     private void savePreviousDetection(Lib.Detection detection) {
-        this.previousCenterX = detection.centerX;
-        this.previousCenterY = detection.centerY;
-        this.previousDirectionX = (int) detection.directionX;
-        this.previousDirectionY = (int) detection.directionY;
-        this.previousDetection = detection;
+        // important check, if removed dirX and dirY will be set to 0 sometimes
+        if (detection != this.previousDetection) {
+            this.previousCenterX = detection.centerX;
+            this.previousCenterY = detection.centerY;
+            this.previousDirectionX = (int) detection.directionX;
+            this.previousDirectionY = (int) detection.directionY;
+            this.previousDetection = detection;
+        }
     }
 
     private void callAllOnBounce(Lib.Detection latestDetection) {
@@ -161,29 +165,21 @@ public class EventDetector implements Lib.Callback {
         }
     }
 
-    private boolean hasSideChanged(Lib.Detection detection) {
-        // not a side change when the ball was sent back by the net
-        boolean hasSideChanged = false;
-
-        if (previousDirectionX != detection.directionX) {
-            Side side = Side.LEFT;
-            if (detection.directionX == DirectionX.LEFT) {
-                side = Side.RIGHT;
-            }
-            if (!(detection.directionX >= table.getCloseNetEnd().x * 0.6 && detection.directionX <= table.getCloseNetEnd().x * 1.4)) {
-                callAllOnSideChange(side);
-                hasSideChanged = true;
-            }
+    private void hasSideChanged(Lib.Detection detection) {
+        Side otherBallSide = Side.RIGHT;
+        if(currentBallSide == Side.RIGHT) otherBallSide = Side.LEFT;
+        if ((detection.directionX == DirectionX.LEFT && currentBallSide != Side.RIGHT) ||
+                (detection.directionX == DirectionX.RIGHT && currentBallSide != Side.LEFT)) {
+            currentBallSide = otherBallSide;
+            callAllOnSideChange(otherBallSide);
         }
-        return hasSideChanged;
     }
 
     private void hasBouncedOnTable(Lib.Detection detection) {
-        if (previousDetection != null && previousDirectionY != detection.directionY &&
+        if (previousDirectionY != detection.directionY &&
                 (previousDirectionX == detection.directionX) &&
                 (table.isBounceOn(previousCenterX, previousCenterY) || table.isBounceOn(detection.centerX, detection.centerY)) &&
-                (previousDirectionY == DirectionY.DOWN) && (detection.directionY == DirectionY.UP) &&
-                (detection.directionX != 0)) {
+                ((previousDirectionY == DirectionY.DOWN) && (detection.directionY == DirectionY.UP))) {
             callAllOnBounce(detection);
         }
     }
@@ -209,31 +205,11 @@ public class EventDetector implements Lib.Callback {
     }
 
     private void calcDirectionY(Lib.Detection detection) {
-        if (previousDirectionY != 0) {
-            if (previousCenterY >= detection.centerY)
-                detection.directionY = DirectionY.UP;
-            else
-                detection.directionY = DirectionY.DOWN;
-        }
+        detection.directionY = Integer.compare(detection.centerY, previousCenterY);
     }
 
     private void calcDirectionX(Lib.Detection detection) {
-        int prevCX = previousCenterX;
-        if (detection.predecessor != null) {
-           prevCX = detection.predecessor.centerX;
-        }
-
-        if (prevCX == 0) {
-           detection.directionX = 0;
-           return;
-        }
-        if (prevCX > detection.centerX)
-            detection.directionX = DirectionX.LEFT;
-        else if (previousCenterX < detection.centerX) {
-            detection.directionX = DirectionX.RIGHT;
-        } else {
-            detection.directionX = 0;
-        }
+        detection.directionX = Integer.compare(detection.centerX, previousCenterX);
     }
 
     private void hasTableSideChanged(int currentXPosition) {

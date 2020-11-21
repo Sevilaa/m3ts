@@ -15,9 +15,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.Timer;
 
 import cz.fmo.Lib;
 import cz.fmo.R;
@@ -38,6 +40,7 @@ import cz.fmo.util.Config;
 import helper.OnSwipeListener;
 
 public class DebugHandler extends android.os.Handler implements EventDetectionCallback, UICallback {
+    private static final int MAX_REFRESHING_TIME_MS = 500;
     final WeakReference<DebugActivity> mActivity;
     private int strikeCount = 0;
     private final String TTS_WIN;
@@ -91,6 +94,8 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
         }
         match = new Match(this.matchType, GameType.G11, ServeRules.S2,"Hans", "Peter", uiCallback, this.servingSide);
         startMatch();
+        Timer refreshTimer = new Timer();
+        refreshTimer.scheduleAtFixedRate(new DebugHandlerRefreshTimerTask(this), new Date(), MAX_REFRESHING_TIME_MS);
     }
 
     @Override
@@ -105,7 +110,8 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
 
     @Override
     public void onSideChange(final Side side) {
-        setTextInTextView(R.id.txtSide, side.toString());
+        // use the referees current striker (might be different then side in parameter!)
+        setTextInTextView(R.id.txtSide, match.getReferee().getCurrentStriker().toString());
     }
 
     @Override
@@ -178,8 +184,7 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
         } else {
             setTextInTextView(R.id.txtPlayMovieScoreRight, String.valueOf(score));
         }
-        setTextInTextView(R.id.txtPlayMovieState, match.getReferee().getState().toString());
-        setTextInTextView(R.id.txtPlayMovieServing, match.getReferee().getServer().toString());
+        refreshDebugTextViews();
         tts.speak(TTS_SCORE+side, TextToSpeech.QUEUE_FLUSH, null, null);
     }
 
@@ -193,6 +198,14 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
         }
         tts.speak(TTS_WIN+side, TextToSpeech.QUEUE_FLUSH, null, null);
         setCallbackForNewGame();
+    }
+
+    public void refreshDebugTextViews() {
+        setTextInTextView(R.id.txtPlayMovieState, match.getReferee().getState().toString());
+        setTextInTextView(R.id.txtPlayMovieServing, match.getReferee().getServer().toString());
+        if(match.getReferee().getCurrentStriker() != null) {
+            setTextInTextView(R.id.txtSide, match.getReferee().getCurrentStriker().toString());
+        }
     }
 
     void init(Config config, int srcWidth, int srcHeight) {
@@ -262,11 +275,7 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
 
     private void startMatch() {
         setOnSwipeListener();
-        setTextInTextView(R.id.txtPlayMovieState, match.getReferee().getState().toString());
-        setTextInTextView(R.id.txtPlayMovieServing, match.getReferee().getServer().toString());
-        if(match.getReferee().getCurrentBallSide() != null) {
-            setTextInTextView(R.id.txtBounce, String.valueOf(this.newBounceCount));
-        }
+        refreshDebugTextViews();
     }
 
     private void drawAllTracks(Canvas canvas, TrackSet set) {

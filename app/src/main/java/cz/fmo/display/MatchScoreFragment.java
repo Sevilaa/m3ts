@@ -9,6 +9,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.android.grafika.Log;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -20,6 +22,7 @@ import cz.fmo.tabletennis.UICallback;
 import helper.OnSwipeListener;
 
 public class MatchScoreFragment extends Fragment implements UICallback {
+    private static final String TAG_MATCH_ENDED = "MATCH_WON";
     private FragmentReplaceCallback callback;
     private DisplayPubNub pubnub;
 
@@ -52,7 +55,7 @@ public class MatchScoreFragment extends Fragment implements UICallback {
         bundle.putString("winner", winnerName);
         Fragment fragment = new MatchWonFragment();
         fragment.setArguments(bundle);
-        callback.replaceFragment(fragment);
+        callback.replaceFragment(fragment, TAG_MATCH_ENDED);
     }
 
     @Override
@@ -75,10 +78,10 @@ public class MatchScoreFragment extends Fragment implements UICallback {
         Properties properties = new Properties();
         try (InputStream is = context.getAssets().open("app.properties")) {
             properties.load(is);
+            this.pubnub = new DisplayPubNub(matchID, properties.getProperty("pub_key"), properties.getProperty("sub_key"), this);
         } catch (IOException ex) {
-            throw new RuntimeException("No app.properties file found!");
+            Log.d("Using MatchScoreFragment in without app.properties file!");
         }
-        this.pubnub = new DisplayPubNub(matchID, properties.getProperty("pub_key"), properties.getProperty("sub_key"), this);
     }
 
     private void setTextInTextView(int id, final String text) {

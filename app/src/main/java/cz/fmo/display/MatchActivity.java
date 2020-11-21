@@ -28,10 +28,10 @@ public class MatchActivity extends FragmentActivity implements FragmentReplaceCa
     }
 
     @Override
-    public void replaceFragment(Fragment fragment) {
+    public void replaceFragment(Fragment fragment, String tag) {
         FragmentManager manager = getFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
-        transaction.replace(R.id.mainBackground, fragment);
+        transaction.replace(R.id.mainBackground, fragment, tag);
         transaction.addToBackStack(null);
         transaction.commit();
     }

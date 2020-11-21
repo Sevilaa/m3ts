@@ -12,6 +12,7 @@
         android:columnCount="1"
         android:rowCount="4">
         <TextView
+            android:id="@+id/connect_to_match_lbl"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
