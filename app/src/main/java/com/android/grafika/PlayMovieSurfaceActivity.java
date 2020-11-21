@@ -33,6 +33,7 @@ import java.util.Properties;
 
 import cz.fmo.R;
 import cz.fmo.graphics.EGL;
+import cz.fmo.tabletennis.Side;
 import cz.fmo.tabletennis.Table;
 import cz.fmo.util.Config;
 import cz.fmo.util.FileManager;
@@ -76,13 +77,14 @@ public class PlayMovieSurfaceActivity extends DebugActivity implements OnItemSel
     private boolean mShowStopLabel;
     private MoviePlayer.PlayTask mPlayTask;
     private PlayMovieDebugHandler mHandler;
+    private String currentMovie;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.mHandler = new PlayMovieDebugHandler(this);
         // Populate file-selection spinner.
         Spinner spinner = findViewById(R.id.playMovieFile_spinner);
+        this.mHandler = new PlayMovieDebugHandler(this);
         // Need to create one of these fancy ArrayAdapter thingies, and specify the generic layout
         // for the widget itself.
         mMovieFiles = mFileMan.listMP4();
@@ -125,6 +127,9 @@ public class PlayMovieSurfaceActivity extends DebugActivity implements OnItemSel
 
             MoviePlayer player;
             try {
+                Side servingSide = tryGettingServingSideFromXML(mMovieFiles[mSelectedMovie]);
+                mHandler.initMatch(servingSide);
+                currentMovie = mMovieFiles[mSelectedMovie];
                 player = new MoviePlayer(mFileMan.open(mMovieFiles[mSelectedMovie]), surface,
                         callback, mHandler);
                 Config mConfig = new Config(this);
@@ -258,5 +263,23 @@ public class PlayMovieSurfaceActivity extends DebugActivity implements OnItemSel
         } catch (IOException ex) {
             Log.e(ex.getMessage(), ex);
         }
+    }
+
+    /**
+     * Tries to load the serving side from an xml file from assets.
+     * @param videoFileName - Full name of video file in phones Camera dir. Example: "bounce_back_1.mp4"
+     */
+    private Side tryGettingServingSideFromXML(String videoFileName) {
+        Side servingSide = Side.LEFT;
+        String fileNameWithoutExtension = videoFileName.split("\\.")[0];
+        try (InputStream is = getAssets().open(fileNameWithoutExtension+".xml")) {
+            Properties properties = new Properties();
+            properties.loadFromXML(is);
+            if (properties.containsKey("servingSide") && properties.getProperty("servingSide").equals("RIGHT"))
+                servingSide = Side.RIGHT;
+        } catch (IOException ex) {
+            Log.e(ex.getMessage(), ex);
+        }
+        return servingSide;
     }
 }
