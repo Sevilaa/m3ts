@@ -27,7 +27,7 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
 
     public Referee(Side servingSide) {
         this.currentStriker = servingSide;
-        this.currentBallSide = null;
+        this.currentBallSide = servingSide;
         this.serveCounter = 0;
         this.bounces = 0;
         this.state = GameState.WAIT_FOR_SERVE;
@@ -49,8 +49,8 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
         switch (this.state) {
             case WAIT_FOR_SERVE:
                 if ((detection.predecessor != null) && (Math.abs(detection.centerX-detection.predecessor.centerX)>20) &&
-                        (getServer() == Side.LEFT && detection.directionX == DirectionX.RIGHT) ||
-                        (getServer()  == Side.RIGHT && detection.directionX == DirectionX.LEFT)) {
+                        (getServer() == Side.LEFT && currentBallSide == Side.LEFT && detection.directionX == DirectionX.RIGHT) ||
+                        (getServer()  == Side.RIGHT && currentBallSide == Side.RIGHT && detection.directionX == DirectionX.LEFT)) {
                     this.state = GameState.SERVING;
                     currentBallSide = getServer();
                 }
@@ -97,9 +97,10 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     public void onStrikeFound(TrackSet tracks) {
         switch (this.state) {
             case WAIT_FOR_SERVE:
-                if (((getServer() == Side.LEFT && tracks.getTracks().get(0).getLatest().directionX == DirectionX.RIGHT) ||
-                        (getServer()  == Side.RIGHT && tracks.getTracks().get(0).getLatest().directionX == DirectionX.LEFT)) &&
-                        (tracks.getTracks().get(0).getLatest().predecessor != null)) {
+                Lib.Detection latestDetection = tracks.getTracks().get(0).getLatest();
+                if (((getServer() == Side.LEFT && currentBallSide == Side.LEFT && latestDetection.directionX == DirectionX.RIGHT) ||
+                        (getServer()  == Side.RIGHT && currentBallSide == Side.RIGHT && latestDetection.directionX == DirectionX.LEFT)) &&
+                        (latestDetection.predecessor != null)) {
                     this.state = GameState.SERVING;
                     currentBallSide = getServer();
                     this.currentStriker = getServer();
