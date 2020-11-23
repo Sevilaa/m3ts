@@ -5,6 +5,11 @@ public class MatchStatus {
     private String playerRight;
     private int scoreLeft;
     private int scoreRight;
+    private Side nextServer;
+
+    public Side getNextServer() {
+        return nextServer;
+    }
 
     public String getPlayerLeft() {
         return playerLeft;
@@ -33,12 +38,13 @@ public class MatchStatus {
     private int winsLeft;
     private int winsRight;
 
-    public MatchStatus(String playerLeft, String playerRight, int scoreLeft, int scoreRight, int winsLeft, int winsRight) {
+    public MatchStatus(String playerLeft, String playerRight, int scoreLeft, int scoreRight, int winsLeft, int winsRight, Side nextServer) {
         this.playerLeft = playerLeft;
         this.playerRight = playerRight;
         this.scoreLeft = scoreLeft;
         this.scoreRight = scoreRight;
         this.winsLeft = winsLeft;
         this.winsRight = winsRight;
+        this.nextServer = nextServer;
     }
 }

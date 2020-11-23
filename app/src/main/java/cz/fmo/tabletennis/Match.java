@@ -77,6 +77,6 @@ public class Match implements MatchCallback, TrackerPubNubCallback {
     @Override
     public MatchStatus onRequestMatchStatus() {
         return new MatchStatus(players.get(Side.LEFT).getName(), players.get(Side.RIGHT).getName(), getCurrentGame().getScore(Side.LEFT),
-                getCurrentGame().getScore(Side.RIGHT), wins.get(Side.LEFT), wins.get(Side.RIGHT));
+                getCurrentGame().getScore(Side.RIGHT), wins.get(Side.LEFT), wins.get(Side.RIGHT), getCurrentGame().getServer());
     }
 }

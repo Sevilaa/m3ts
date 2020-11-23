@@ -57,20 +57,20 @@ public class TrackerPubNub extends Callback implements UICallback {
 
     @Override
     public void onMatchEnded(String winnerName) {
-        send("onMatchEnded", winnerName, null,null);
+        send("onMatchEnded", winnerName, null,null, null);
     }
 
     @Override
-    public void onScore(Side side, int score) {
-        send("onScore", side.toString(), score,null);
+    public void onScore(Side side, int score, Side nextServer) {
+        send("onScore", side.toString(), score,null, nextServer);
     }
 
     @Override
     public void onWin(Side side, int wins) {
-        send("onWin", side.toString(), null, wins);
+        send("onWin", side.toString(), null, wins, null);
     }
 
-    private void send(String event, String side, Integer score, Integer wins) {
+    private void send(String event, String side, Integer score, Integer wins, Side nextServer) {
         try {
             JSONObject json = new JSONObject();
             json.put(JSONInfo.SENDER_PROPERTY, pubnub.getUUID());
@@ -79,12 +79,13 @@ public class TrackerPubNub extends Callback implements UICallback {
             json.put(JSONInfo.WINS_PROPERTY, wins);
             json.put(JSONInfo.EVENT_PROPERTY, event);
             json.put(JSONInfo.ROLE_PROPERTY, ROLE);
+            json.put(JSONInfo.NEXT_SERVER_PROPERTY, nextServer);
             pubnub.publish(this.roomID, json, new Callback() {});
         } catch (JSONException ex) {
             Log.d("Unable to send JSON to channel "+this.roomID+"\n"+ex.getMessage());
         }
     }
-    private void sendStatusUpdate(String playerNameLeft, String playerNameRight, int scoreLeft, int scoreRight, int winsLeft, int winsRight) {
+    private void sendStatusUpdate(String playerNameLeft, String playerNameRight, int scoreLeft, int scoreRight, int winsLeft, int winsRight, Side nextServer) {
         try {
             JSONObject json = new JSONObject();
             json.put(JSONInfo.SENDER_PROPERTY, pubnub.getUUID());
@@ -96,6 +97,7 @@ public class TrackerPubNub extends Callback implements UICallback {
             json.put(JSONInfo.WINS_RIGHT_PROPERTY, winsRight);
             json.put(JSONInfo.EVENT_PROPERTY, "onStatusUpdate");
             json.put(JSONInfo.ROLE_PROPERTY, ROLE);
+            json.put(JSONInfo.NEXT_SERVER_PROPERTY, nextServer);
             pubnub.publish(this.roomID, json, new Callback() {});
         } catch (JSONException ex) {
             Log.d("Unable to send JSON to channel "+this.roomID+"\n"+ex.getMessage());
@@ -121,7 +123,7 @@ public class TrackerPubNub extends Callback implements UICallback {
                             MatchStatus status = this.callback.onRequestMatchStatus();
                             sendStatusUpdate(status.getPlayerLeft(), status.getPlayerRight(),
                                     status.getScoreLeft(), status.getScoreRight(), status.getWinsLeft(),
-                                    status.getWinsRight());
+                                    status.getWinsRight(), status.getNextServer());
                         }
                         break;
                     default:

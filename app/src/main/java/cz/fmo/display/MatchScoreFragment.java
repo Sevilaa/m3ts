@@ -5,6 +5,8 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.style.UnderlineSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -70,8 +72,9 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayE
     }
 
     @Override
-    public void onScore(Side side, int score) {
+    public void onScore(Side side, int score, Side nextServer) {
         setScoreTextViews(side, score);
+        updateIndicationNextServer(nextServer);
     }
 
     @Override
@@ -83,6 +86,24 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayE
         }
         setScoreTextViews(Side.LEFT, 0);
         setScoreTextViews(Side.LEFT, 0);
+    }
+
+    private void updateIndicationNextServer(Side nextServer) {
+        Activity activity = getActivity();
+        if (activity == null) return;
+
+        int idServer = R.id.right_name;
+        int idOther = R.id.left_name;
+        if (nextServer == Side.LEFT) {
+            idServer = R.id.left_name;
+            idOther = R.id.right_name;
+        }
+        TextView txtView = activity.findViewById(idServer);
+        SpannableString content = new SpannableString(txtView.getText());
+        content.setSpan(new UnderlineSpan(), 0, content.length(), 0);
+        txtView.setText(content);
+        txtView = activity.findViewById(idOther);
+        txtView.setText(txtView.getText().toString());
     }
 
     private void initPubNub(Context context, String matchID) {
@@ -133,13 +154,14 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayE
 
 
     @Override
-    public void onStatusUpdate(String playerNameLeft, String playerNameRight, int pointsLeft, int pointsRight, int gamesLeft, int gamesRight) {
+    public void onStatusUpdate(String playerNameLeft, String playerNameRight, int pointsLeft, int pointsRight, int gamesLeft, int gamesRight, Side nextServer) {
         setTextInTextView(R.id.left_name, playerNameLeft);
         setTextInTextView(R.id.right_name, playerNameRight);
         setTextInTextView(R.id.left_score, String.valueOf(pointsLeft));
         setTextInTextView(R.id.right_score, String.valueOf(pointsRight));
         setTextInTextView(R.id.left_games, String.valueOf(gamesLeft));
         setTextInTextView(R.id.right_games, String.valueOf(gamesRight));
+        updateIndicationNextServer(nextServer);
     }
 
     @Override

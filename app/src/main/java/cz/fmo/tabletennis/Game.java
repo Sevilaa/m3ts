@@ -29,7 +29,7 @@ public class Game implements GameCallback {
         int score = scores.get(side) + 1;
         scores.put(side, score);
         changeServer();
-        uiCallback.onScore(side, score);
+        uiCallback.onScore(side, score, this.server);
         if (hasReachedMax(score)) {
             matchCallback.onWin(side);
         }
@@ -41,7 +41,7 @@ public class Game implements GameCallback {
         if(score >= 0) {
             scores.put(side, score);
             changeServer();
-            uiCallback.onScore(side, score);
+            uiCallback.onScore(side, score, this.server);
             if (hasReachedMax(score)) {
                 matchCallback.onWin(side);
             }

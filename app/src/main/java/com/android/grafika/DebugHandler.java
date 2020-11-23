@@ -181,7 +181,7 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     }
 
     @Override
-    public void onScore(Side side, int score) {
+    public void onScore(Side side, int score, Side nextServer) {
         if (side == Side.LEFT) {
             setTextInTextView(R.id.txtPlayMovieScoreLeft, String.valueOf(score));
         } else {
