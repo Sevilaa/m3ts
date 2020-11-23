@@ -55,8 +55,6 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     private Config config;
     private TrackSet tracks;
     private Table table;
-    private Side servingSide;
-    private MatchType matchType;
     private boolean hasNewTable;
     private Lib.Detection latestNearlyOutOfFrame;
     private Lib.Detection latestBounce;
@@ -65,10 +63,9 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     private ScoreManipulationCallback smc;
     private boolean useScreenForUICallback;
     private TrackerPubNub trackerPubNub;
-    private Timer refreshTimer;
     private UICallback uiCallback;
 
-    public DebugHandler(@NonNull DebugActivity activity, Side servingSide, MatchType matchType, String matchID, boolean useScreenForUICallback, Player playerLeft, Player playerRight) {
+    public DebugHandler(@NonNull DebugActivity activity, String matchID, boolean useScreenForUICallback) {
         mActivity = new WeakReference<>(activity);
         this.useScreenForUICallback = useScreenForUICallback;
         initTTS(activity);
@@ -92,12 +89,11 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
                 this.useScreenForUICallback = true;
             }
         }
-        if (this.trackerPubNub != null) this.trackerPubNub.setTrackerPubNubCallback(match);
-        refreshTimer = new Timer();
     }
 
     void initMatch(Side servingSide, MatchType matchType, Player playerLeft, Player playerRight) {
-        match = new Match(this.matchType, GameType.G11, ServeRules.S2, playerLeft, playerRight, uiCallback, this.servingSide);
+        match = new Match(matchType, GameType.G11, ServeRules.S2, playerLeft, playerRight, uiCallback, servingSide);
+        if (this.trackerPubNub != null) this.trackerPubNub.setTrackerPubNubCallback(match);
         startMatch();
         setTextInTextView(R.id.txtDebugPlayerNameLeft, playerLeft.getName());
         setTextInTextView(R.id.txtDebugPlayerNameRight, playerRight.getName());

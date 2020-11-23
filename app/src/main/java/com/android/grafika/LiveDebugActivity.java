@@ -36,7 +36,8 @@ public final class LiveDebugActivity extends DebugActivity {
         getDataFromIntent();
         Player playerLeft = new Player("Hannes");
         Player playerRight = new Player("Kannes");
-        this.mHandler = new LiveDebugHandler(this, this.servingSide, this.matchType, this.matchId, playerLeft, playerRight);
+        this.mHandler = new LiveDebugHandler(this, this.matchId);
+        this.mHandler.initMatch(this.servingSide, this.matchType, playerLeft, playerRight);
         cameraCallback = this.mHandler;
         this.mConfig = new Config(this);
         Log.d("Found match: " +matchId);
