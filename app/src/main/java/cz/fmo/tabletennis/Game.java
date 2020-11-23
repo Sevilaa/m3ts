@@ -52,6 +52,10 @@ public class Game implements GameCallback {
         return this.server;
     }
 
+    public int getScore(Side side) {
+        return scores.get(side);
+    }
+
     private boolean hasReachedMax(int score) {
         if (scores.get(Side.LEFT).equals(scores.get(Side.RIGHT)) && score == maxScore-1) {
             increaseMaxScore();

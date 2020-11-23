@@ -12,6 +12,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.Random;
 
+import cz.fmo.display.DisplayEventCallback;
 import cz.fmo.tabletennis.Side;
 import cz.fmo.tabletennis.UICallback;
 
@@ -32,9 +33,10 @@ public class DisplayPubNubTest {
     public void testWithValidJSON() {
         try {
             UICallback spyCallback = spy(mock(UICallback.class));
+            DisplayEventCallback deCallback = spy(mock(DisplayEventCallback.class));
             Pubnub pubnubSpy = spy(mock(Pubnub.class));
             PowerMockito.whenNew(Pubnub.class).withArguments("invalid", "invalid").thenReturn(pubnubSpy);
-            DisplayPubNub displayPubNub = new DisplayPubNub("invalid", "invalid", "invalid", spyCallback);
+            DisplayPubNub displayPubNub = new DisplayPubNub("invalid", "invalid", "invalid", spyCallback, deCallback);
 
             // test onScore
             JSONObject jsonScore = makeJSONObject("onScore", Side.RIGHT, random.nextInt(999), null);
@@ -66,9 +68,10 @@ public class DisplayPubNubTest {
     public void testWithInvalidJSON() {
         try {
             UICallback spyCallback = spy(mock(UICallback.class));
+            DisplayEventCallback deCallback = spy(mock(DisplayEventCallback.class));
             Pubnub pubnubSpy = spy(mock(Pubnub.class));
             PowerMockito.whenNew(Pubnub.class).withArguments("invalid", "invalid").thenReturn(pubnubSpy);
-            DisplayPubNub displayPubNub = new DisplayPubNub("invalid", "invalid", "invalid", spyCallback);
+            DisplayPubNub displayPubNub = new DisplayPubNub("invalid", "invalid", "invalid", spyCallback, deCallback);
 
             for (int i = 0; i<100; i++) {
                 JSONObject invalidJSON = makeJSONObject(generateRandomAlphabeticString(random.nextInt(20)),

@@ -69,12 +69,9 @@ public class EventDetector implements Lib.Callback {
         tracks.addDetections(detections, this.srcWidth, this.srcHeight, detectionTime); // after this, object direction is up to date
         if (!tracks.getTracks().isEmpty()) {
             numberOfDetections++;
-            Track track = tracks.getTracks().get(0);
-            Lib.Detection latestDetection = track.getLatest();
-            if (table.isOnOrAbove(latestDetection.centerX, latestDetection.centerY)) {
-                track.setTableCrossed();
-            }
-            if (isOnTable(track)) {
+            Track track = selectTrack(tracks.getTracks());
+            if (track != null) {
+                Lib.Detection latestDetection = track.getLatest();
                 calcDirectionY(latestDetection);
                 calcDirectionX(latestDetection);
                 if (hasBallFallenOffSideWays(latestDetection)){
@@ -92,6 +89,26 @@ public class EventDetector implements Lib.Callback {
             }
             setTimeoutTimer(numberOfDetections);
         }
+    }
+
+    public Track selectTrack(List<Track> tracks) {
+        // first tag all tracks which have crossed the table once
+        for(Track t : tracks) {
+            Lib.Detection latestDetection = t.getLatest();
+            if (table.isOnOrAbove(latestDetection.centerX, latestDetection.centerY)) {
+                t.setTableCrossed();
+            }
+        }
+
+        // now select a track which has crossed the table, preferably oldest one (index low), if there are none return null
+        Track selectedTrack = null;
+        for(Track t : tracks) {
+            if (isOnTable(t)) {
+               selectedTrack = t;
+               break;
+            }
+        }
+        return selectedTrack;
     }
 
     public void setTable(Table table) {

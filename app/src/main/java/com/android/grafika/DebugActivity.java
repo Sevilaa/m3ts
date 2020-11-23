@@ -16,6 +16,8 @@ public abstract class DebugActivity extends CameraPreviewActivity implements Sur
     private TextView mBounceCountText;
     private TextView mScoreLeftText;
     private TextView mScoreRightText;
+    private TextView mPlayerNameLeft;
+    private TextView mPlayerNameRight;
     private boolean mSurfaceTrackReady;
 
     /**
@@ -30,8 +32,8 @@ public abstract class DebugActivity extends CameraPreviewActivity implements Sur
         this.setCurrentContentView();
         mShotSideText = findViewById(R.id.txtSide);
         mBounceCountText = findViewById(R.id.txtBounce);
-        mScoreLeftText = findViewById(R.id.txtPlayMovieScoreLeft);
-        mScoreRightText = findViewById(R.id.txtPlayMovieScoreRight);
+        mScoreLeftText = findViewById(R.id.txtDebugPlayerNameLeft);
+        mScoreRightText = findViewById(R.id.txtDebugPlayerNameRight);
         mSurfaceView = findViewById(R.id.playMovie_surface);
         mSurfaceView.getHolder().addCallback(this);
         mSurfaceTrack = findViewById(R.id.playMovie_surfaceTracks);
@@ -67,5 +69,13 @@ public abstract class DebugActivity extends CameraPreviewActivity implements Sur
 
     public TextView getmScoreRightText() {
         return mScoreRightText;
+    }
+
+    protected TextView getmPlayerNameLeft() {
+        return mPlayerNameLeft;
+    }
+
+    protected TextView getmPlayerNameRight() {
+        return mPlayerNameRight;
     }
 }

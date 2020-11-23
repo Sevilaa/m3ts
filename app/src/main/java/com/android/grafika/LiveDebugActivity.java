@@ -10,6 +10,7 @@ import android.view.View;
 import cz.fmo.R;
 import cz.fmo.SettingsActivity;
 import cz.fmo.tabletennis.MatchType;
+import cz.fmo.tabletennis.Player;
 import cz.fmo.tabletennis.Side;
 import cz.fmo.tabletennis.Table;
 import cz.fmo.util.Config;
@@ -33,8 +34,9 @@ public final class LiveDebugActivity extends DebugActivity {
     protected void onCreate(android.os.Bundle savedBundle) {
         super.onCreate(savedBundle);
         getDataFromIntent();
-        this.matchId = "bruh_2";
-        this.mHandler = new LiveDebugHandler(this, this.servingSide, this.matchType, this.matchId);
+        Player playerLeft = new Player("Hannes");
+        Player playerRight = new Player("Kannes");
+        this.mHandler = new LiveDebugHandler(this, this.servingSide, this.matchType, this.matchId, playerLeft, playerRight);
         cameraCallback = this.mHandler;
         this.mConfig = new Config(this);
         Log.d("Found match: " +matchId);

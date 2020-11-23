@@ -3,7 +3,7 @@ package cz.fmo.tabletennis;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Match implements MatchCallback {
+public class Match implements MatchCallback, TrackerPubNubCallback {
     private Game[] games;
     private MatchType type;
     private Map<Side, Player> players;
@@ -14,7 +14,7 @@ public class Match implements MatchCallback {
     private ServeRules serveRules;
     private GameType gameType;
 
-    public Match(MatchType type, GameType gameType, ServeRules serveRules, String playerLeftName, String playerRightName, UICallback uiCallback, Side startingServer) {
+    public Match(MatchType type, GameType gameType, ServeRules serveRules, Player playerLeft, Player playerRight, UICallback uiCallback, Side startingServer) {
         this.type = type;
         this.gameType = gameType;
         this.wins = new HashMap<>();
@@ -22,8 +22,8 @@ public class Match implements MatchCallback {
         this.wins.put(Side.RIGHT,0);
         this.games = new Game[type.amountOfGames];
         this.players = new HashMap<>();
-        this.players.put(Side.LEFT, new Player(playerLeftName));
-        this.players.put(Side.RIGHT, new Player(playerRightName));
+        this.players.put(Side.LEFT, playerLeft);
+        this.players.put(Side.RIGHT, playerRight);
         this.uiCallback = uiCallback;
         this.serveRules = serveRules;
         this.referee = new Referee(startingServer);
@@ -68,5 +68,15 @@ public class Match implements MatchCallback {
         } else {
             this.serverSide = Side.LEFT;
         }
+    }
+
+    private Game getCurrentGame() {
+        return this.games[this.wins.get(Side.RIGHT) + this.wins.get(Side.LEFT)];
+    }
+
+    @Override
+    public MatchStatus onRequestMatchStatus() {
+        return new MatchStatus(players.get(Side.LEFT).getName(), players.get(Side.RIGHT).getName(), getCurrentGame().getScore(Side.LEFT),
+                getCurrentGame().getScore(Side.RIGHT), wins.get(Side.LEFT), wins.get(Side.RIGHT));
     }
 }

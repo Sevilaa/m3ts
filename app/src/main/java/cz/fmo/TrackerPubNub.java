@@ -10,14 +10,17 @@ import org.json.JSONObject;
 
 import java.util.UUID;
 
+import cz.fmo.tabletennis.MatchStatus;
 import cz.fmo.tabletennis.ScoreManipulationCallback;
 import cz.fmo.tabletennis.Side;
+import cz.fmo.tabletennis.TrackerPubNubCallback;
 import cz.fmo.tabletennis.UICallback;
 
 public class TrackerPubNub extends Callback implements UICallback {
     private static final String ROLE = "tracker";
     private final Pubnub pubnub;
     private final String roomID;
+    private TrackerPubNubCallback callback;
     private ScoreManipulationCallback scoreManipulationCallback;
 
     public TrackerPubNub(final String roomID, String pubKey, String subKey) {
@@ -33,8 +36,7 @@ public class TrackerPubNub extends Callback implements UICallback {
 
     @Override
     public void connectCallback(String channel, Object message) {
-        // send init message if needed
-        send("hello gaymers", null, null, null);
+        // send an init message if needed
     }
 
     @Override
@@ -43,6 +45,10 @@ public class TrackerPubNub extends Callback implements UICallback {
         if (message instanceof JSONObject) {
             handleMessage((JSONObject)message);
         }
+    }
+
+    public void setTrackerPubNubCallback(TrackerPubNubCallback callback) {
+        this.callback = callback;
     }
 
     public void setScoreManipulationCallback(ScoreManipulationCallback scoreManipulationCallback) {
@@ -67,12 +73,29 @@ public class TrackerPubNub extends Callback implements UICallback {
     private void send(String event, String side, Integer score, Integer wins) {
         try {
             JSONObject json = new JSONObject();
-            json.put("sender", pubnub.getUUID());
-            json.put("side", side);
-            json.put("score", score);
-            json.put("wins", wins);
-            json.put("event", event);
-            json.put("role", ROLE);
+            json.put(JSONInfo.SENDER_PROPERTY, pubnub.getUUID());
+            json.put(JSONInfo.SIDE_PROPERTY, side);
+            json.put(JSONInfo.SCORE_PROPERTY, score);
+            json.put(JSONInfo.WINS_PROPERTY, wins);
+            json.put(JSONInfo.EVENT_PROPERTY, event);
+            json.put(JSONInfo.ROLE_PROPERTY, ROLE);
+            pubnub.publish(this.roomID, json, new Callback() {});
+        } catch (JSONException ex) {
+            Log.d("Unable to send JSON to channel "+this.roomID+"\n"+ex.getMessage());
+        }
+    }
+    private void sendStatusUpdate(String playerNameLeft, String playerNameRight, int scoreLeft, int scoreRight, int winsLeft, int winsRight) {
+        try {
+            JSONObject json = new JSONObject();
+            json.put(JSONInfo.SENDER_PROPERTY, pubnub.getUUID());
+            json.put(JSONInfo.PLAYER_NAME_LEFT_PROPERTY, playerNameLeft);
+            json.put(JSONInfo.PLAYER_NAME_RIGHT_PROPERTY, playerNameRight);
+            json.put(JSONInfo.SCORE_LEFT_PROPERTY, scoreLeft);
+            json.put(JSONInfo.SCORE_RIGHT_PROPERTY, scoreRight);
+            json.put(JSONInfo.WINS_LEFT_PROPERTY, winsLeft);
+            json.put(JSONInfo.WINS_RIGHT_PROPERTY, winsRight);
+            json.put(JSONInfo.EVENT_PROPERTY, "onStatusUpdate");
+            json.put(JSONInfo.ROLE_PROPERTY, ROLE);
             pubnub.publish(this.roomID, json, new Callback() {});
         } catch (JSONException ex) {
             Log.d("Unable to send JSON to channel "+this.roomID+"\n"+ex.getMessage());
@@ -81,18 +104,28 @@ public class TrackerPubNub extends Callback implements UICallback {
 
     private void handleMessage(JSONObject json) {
         try {
-            String event = json.getString("event");
-            String side = json.getString("side");
-            if(event != null && side != null) {
+            String event = json.getString(JSONInfo.EVENT_PROPERTY);
+            String side;
+            if(event != null) {
                 switch (event) {
                     case "onPointDeduction":
+                        side = json.getString(JSONInfo.SIDE_PROPERTY);
                         this.scoreManipulationCallback.onPointDeduction(Side.valueOf(side));
                         break;
                     case "onPointAddition":
+                        side = json.getString(JSONInfo.SIDE_PROPERTY);
                         this.scoreManipulationCallback.onPointAddition(Side.valueOf(side));
                         break;
+                    case "requestStatus":
+                        if (this.callback != null) {
+                            MatchStatus status = this.callback.onRequestMatchStatus();
+                            sendStatusUpdate(status.getPlayerLeft(), status.getPlayerRight(),
+                                    status.getScoreLeft(), status.getScoreRight(), status.getWinsLeft(),
+                                    status.getWinsRight());
+                        }
+                        break;
                     default:
-                        Log.d("Invalid side or event received.\nevent:"+event+" side:"+side);
+                        Log.d("Invalid event received.\nevent:"+event);
                         break;
                 }
             }

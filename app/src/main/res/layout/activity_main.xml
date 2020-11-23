@@ -43,6 +43,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/radius_background"
+                android:backgroundTint="@android:color/secondary_text_light"
                 android:layout_marginTop="40dp"
                 android:paddingStart="72dp"
                 android:paddingEnd="72dp"
@@ -52,7 +53,7 @@
                 android:text="@string/mainTrackerBtnLabel"
                 android:layout_marginStart="4dp"
                 android:layout_marginEnd="4dp"
-                android:textColor="@android:color/secondary_text_light"
+                android:textColor="#fff"
                 android:textSize="24sp"/>
             <Button
                 android:id="@+id/mainUseAsDisplayBtn"
@@ -60,6 +61,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/radius_background"
+                android:backgroundTint="@android:color/secondary_text_light"
+                android:elevation="8dp"
                 android:layout_marginTop="40dp"
                 android:layout_marginStart="4dp"
                 android:layout_marginEnd="4dp"
@@ -67,10 +70,9 @@
                 android:paddingEnd="72dp"
                 android:textAllCaps="false"
                 android:textStyle="normal"
-                android:elevation="8dp"
                 android:layout_marginBottom="8dp"
                 android:text="@string/mainDisplayBtnLabel"
-                android:textColor="@android:color/secondary_text_light"
+                android:textColor="#fff"
                 android:textSize="24sp"/>
         </GridLayout>
 
@@ -85,12 +87,13 @@
             android:layout_marginEnd="8dp"
             android:layout_marginBottom="8dp"
             android:background="@drawable/radius_background"
+            android:backgroundTint="@android:color/secondary_text_light"
             android:elevation="8dp"
             android:onClick="onOpenMenu"
-            android:padding="4dp"
+            android:padding="8dp"
             android:src="@drawable/settings"
             android:textAppearance="@android:style/TextAppearance.Material.Medium"
-            android:tint="@android:color/secondary_text_light" />
+            android:tint="@android:color/white" />
 
     </RelativeLayout>
 </RelativeLayout>

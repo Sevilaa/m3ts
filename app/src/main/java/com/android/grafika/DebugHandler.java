@@ -31,6 +31,7 @@ import cz.fmo.events.EventDetector;
 import cz.fmo.tabletennis.GameType;
 import cz.fmo.tabletennis.Match;
 import cz.fmo.tabletennis.MatchType;
+import cz.fmo.tabletennis.Player;
 import cz.fmo.tabletennis.ScoreManipulationCallback;
 import cz.fmo.tabletennis.ServeRules;
 import cz.fmo.tabletennis.Side;
@@ -42,7 +43,6 @@ import helper.OnSwipeListener;
 public class DebugHandler extends android.os.Handler implements EventDetectionCallback, UICallback {
     private static final int MAX_REFRESHING_TIME_MS = 500;
     final WeakReference<DebugActivity> mActivity;
-    private int strikeCount = 0;
     private final String TTS_WIN;
     private final String TTS_SCORE;
     private TextToSpeech tts;
@@ -66,7 +66,7 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     private boolean useScreenForUICallback;
     private TrackerPubNub trackerPubNub;
 
-    public DebugHandler(@NonNull DebugActivity activity, Side servingSide, MatchType matchType, String matchID, boolean useScreenForUICallback) {
+    public DebugHandler(@NonNull DebugActivity activity, Side servingSide, MatchType matchType, String matchID, boolean useScreenForUICallback, Player playerLeft, Player playerRight) {
         mActivity = new WeakReference<>(activity);
         this.useScreenForUICallback = useScreenForUICallback;
         initTTS(activity);
@@ -88,12 +88,15 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
                     uiCallback = this.trackerPubNub;
                 }
             } catch (IOException ex) {
-                Log.d("No properties file found, use device display.");
+                Log.d("No properties file found, using display of this device...");
                 this.useScreenForUICallback = true;
             }
         }
-        match = new Match(this.matchType, GameType.G11, ServeRules.S2,"Hans", "Peter", uiCallback, this.servingSide);
+        match = new Match(this.matchType, GameType.G11, ServeRules.S2,playerLeft, playerRight, uiCallback, this.servingSide);
+        if (this.trackerPubNub != null) this.trackerPubNub.setTrackerPubNubCallback(match);
         startMatch();
+        setTextInTextView(R.id.txtDebugPlayerNameLeft, playerLeft.getName());
+        setTextInTextView(R.id.txtDebugPlayerNameRight, playerRight.getName());
         Timer refreshTimer = new Timer();
         refreshTimer.scheduleAtFixedRate(new DebugHandlerRefreshTimerTask(this), new Date(), MAX_REFRESHING_TIME_MS);
     }

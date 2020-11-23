@@ -1,15 +1,19 @@
 package cz.fmo.display;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.android.grafika.Log;
+
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,7 +25,7 @@ import cz.fmo.tabletennis.Side;
 import cz.fmo.tabletennis.UICallback;
 import helper.OnSwipeListener;
 
-public class MatchScoreFragment extends Fragment implements UICallback {
+public class MatchScoreFragment extends Fragment implements UICallback, DisplayEventCallback {
     private static final String TAG_MATCH_ENDED = "MATCH_WON";
     private FragmentReplaceCallback callback;
     private DisplayPubNub pubnub;
@@ -30,7 +34,14 @@ public class MatchScoreFragment extends Fragment implements UICallback {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_match_score, container, false);
-        initPubNub(v.getContext(),  getArguments().getString("matchID"));
+        initPubNub(v.getContext(), getArguments().getString("matchID"));
+        ImageButton refreshButton = v.findViewById(R.id.btnDisplayRefresh);
+        refreshButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                pubnub.requestStatusUpdate();
+            }
+        });
         setOnSwipeListener(v);
         return v;
     }
@@ -78,14 +89,16 @@ public class MatchScoreFragment extends Fragment implements UICallback {
         Properties properties = new Properties();
         try (InputStream is = context.getAssets().open("app.properties")) {
             properties.load(is);
-            this.pubnub = new DisplayPubNub(matchID, properties.getProperty("pub_key"), properties.getProperty("sub_key"), this);
+            this.pubnub = new DisplayPubNub(matchID, properties.getProperty("pub_key"), properties.getProperty("sub_key"), this, this);
         } catch (IOException ex) {
             Log.d("Using MatchScoreFragment in without app.properties file!");
         }
     }
 
     private void setTextInTextView(int id, final String text) {
-        TextView txtView = getView().findViewById(id);
+        Activity activity = getActivity();
+        if (activity == null) return;
+        TextView txtView = activity.findViewById(id);
         txtView.setText(text);
     }
 
@@ -116,5 +129,21 @@ public class MatchScoreFragment extends Fragment implements UICallback {
         } else {
             setTextInTextView(R.id.right_score, String.valueOf(score));
         }
+    }
+
+
+    @Override
+    public void onStatusUpdate(String playerNameLeft, String playerNameRight, int pointsLeft, int pointsRight, int gamesLeft, int gamesRight) {
+        setTextInTextView(R.id.left_name, playerNameLeft);
+        setTextInTextView(R.id.right_name, playerNameRight);
+        setTextInTextView(R.id.left_score, String.valueOf(pointsLeft));
+        setTextInTextView(R.id.right_score, String.valueOf(pointsRight));
+        setTextInTextView(R.id.left_games, String.valueOf(gamesLeft));
+        setTextInTextView(R.id.right_games, String.valueOf(gamesRight));
+    }
+
+    @Override
+    public void onImageReceived(JSONObject jsonObject) {
+        // TODO implement corner selection in here
     }
 }

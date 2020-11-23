@@ -10,6 +10,7 @@ import org.json.JSONObject;
 
 import java.util.UUID;
 
+import cz.fmo.display.DisplayEventCallback;
 import cz.fmo.tabletennis.Side;
 import cz.fmo.tabletennis.UICallback;
 
@@ -18,11 +19,13 @@ public class DisplayPubNub extends Callback {
     private final Pubnub pubnub;
     private final String roomID;
     private UICallback callback;
+    private DisplayEventCallback displayEventCallback;
 
-    public DisplayPubNub(final String roomID, String pubKey, String subKey, UICallback callback) {
+    public DisplayPubNub(final String roomID, String pubKey, String subKey, UICallback callback, DisplayEventCallback displayEventCallback) {
         this.pubnub = new Pubnub(pubKey, subKey);
         this.roomID = roomID;
         this.callback = callback;
+        this.displayEventCallback = displayEventCallback;
         try {
             pubnub.setUUID(UUID.randomUUID());
             pubnub.subscribe(roomID, this);
@@ -34,7 +37,7 @@ public class DisplayPubNub extends Callback {
     @Override
     public void connectCallback(String channel, Object message) {
         // send init message if needed
-        send("hello gaymers", null, null, null);
+        send("requestStatus", null, null, null);
     }
 
     @Override
@@ -43,6 +46,10 @@ public class DisplayPubNub extends Callback {
         if (message instanceof JSONObject) {
             handleMessage((JSONObject)message);
         }
+    }
+
+    public void requestStatusUpdate() {
+        send("requestStatus", null, null, null);
     }
 
     public void onPointDeduction(Side side) {
@@ -56,10 +63,10 @@ public class DisplayPubNub extends Callback {
     private void send(String event, String side, Integer score, Integer wins) {
         try {
             JSONObject json = new JSONObject();
-            json.put("sender", pubnub.getUUID());
-            json.put("event", event);
-            json.put("side", side);
-            json.put("role", ROLE);
+            json.put(JSONInfo.SENDER_PROPERTY, pubnub.getUUID());
+            json.put(JSONInfo.EVENT_PROPERTY, event);
+            json.put(JSONInfo.SIDE_PROPERTY, side);
+            json.put(JSONInfo.ROLE_PROPERTY, ROLE);
             pubnub.publish(this.roomID, json, new Callback() {});
         } catch (JSONException ex) {
             Log.d("Unable to send JSON to channel "+this.roomID+"\n"+ex.getMessage());
@@ -68,20 +75,25 @@ public class DisplayPubNub extends Callback {
 
     private void handleMessage(JSONObject json) {
         try {
-            String event = json.getString("event");
+            String event = json.getString(JSONInfo.EVENT_PROPERTY);
             if(event != null) {
                 switch (event) {
                     case "onMatchEnded":
-                        this.callback.onMatchEnded(json.getString("side"));
+                        this.callback.onMatchEnded(json.getString(JSONInfo.SIDE_PROPERTY));
                         break;
                     case "onScore":
-                        this.callback.onScore(Side.valueOf(json.getString("side")), Integer.parseInt(json.getString("score")));
+                        this.callback.onScore(Side.valueOf(json.getString(JSONInfo.SIDE_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.SCORE_PROPERTY)));
                         break;
                     case "onWin":
-                        this.callback.onWin(Side.valueOf(json.getString("side")), Integer.parseInt(json.getString("wins")));
+                        this.callback.onWin(Side.valueOf(json.getString(JSONInfo.SIDE_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.WINS_PROPERTY)));
+                        break;
+                    case "onStatusUpdate":
+                        this.displayEventCallback.onStatusUpdate(json.getString(JSONInfo.PLAYER_NAME_LEFT_PROPERTY), json.getString(JSONInfo.PLAYER_NAME_RIGHT_PROPERTY),
+                                Integer.parseInt(json.getString(JSONInfo.SCORE_LEFT_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.SCORE_RIGHT_PROPERTY)),
+                                Integer.parseInt(json.getString(JSONInfo.WINS_LEFT_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.WINS_RIGHT_PROPERTY)));
                         break;
                     default:
-                        Log.d("Invalid side or event received.");
+                        Log.d("Unhandled event received:\n"+json.toString());
                         break;
                 }
             }

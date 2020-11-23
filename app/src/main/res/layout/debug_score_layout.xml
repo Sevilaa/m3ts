@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GridLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_alignParentBottom="true"
+    android:layout_centerHorizontal="true"
+    android:rowCount="1"
+    android:columnCount="7"
+    android:background="@drawable/radius_background"
+    android:paddingVertical="4dp"
+    android:paddingHorizontal="24dp">
+
+    <TextView
+        android:id="@+id/txtDebugPlayerNameLeft"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
+        android:layout_marginEnd="12dp"
+        android:text="@string/playerLeftDefaultName"
+        android:textColor="@android:color/secondary_text_light"
+        android:textSize="14sp" />
+    <TextView
+        android:id="@+id/txtPlayMovieGameLeft"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/gameScoreStart"
+        android:textSize="14sp"
+        android:layout_marginEnd="8dp"
+        android:layout_gravity="center_vertical"
+        android:textStyle="bold"
+        android:textColor="@android:color/secondary_text_light"/>
+    <TextView
+        android:id="@+id/txtPlayMovieScoreLeft"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/gameScoreStart"
+        android:textSize="22sp"
+        android:layout_marginEnd="3dp"
+        android:textStyle="bold"
+        android:textColor="@android:color/secondary_text_light"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/gameScoreDivider"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_gravity="center_vertical"
+        android:textColor="@android:color/secondary_text_light"/>
+    <TextView
+        android:id="@+id/txtPlayMovieScoreRight"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/gameScoreStart"
+        android:textSize="22sp"
+        android:layout_marginStart="3dp"
+        android:textStyle="bold"
+        android:textColor="@android:color/secondary_text_light"/>
+    <TextView
+        android:id="@+id/txtPlayMovieGameRight"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/gameScoreStart"
+        android:textSize="14sp"
+        android:layout_marginStart="8dp"
+        android:layout_gravity="center_vertical"
+        android:textStyle="bold"
+        android:textColor="@android:color/secondary_text_light"/>
+
+    <TextView
+        android:id="@+id/txtDebugPlayerNameRight"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="12dp"
+        android:text="@string/playerRightDefaultName"
+        android:textColor="@android:color/secondary_text_light"
+        android:textSize="14sp" />
+</GridLayout>

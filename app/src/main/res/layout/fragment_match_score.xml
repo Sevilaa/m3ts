@@ -1,14 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/match_score_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <TableRow
+
+    <ImageButton
+        android:id="@+id/btnDisplayRefresh"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/radius_background"
+        android:backgroundTint="@color/primary_dark"
+        android:contentDescription="Refresh Button"
+        android:elevation="8dp"
+        android:padding="4dp"
+        android:src="@android:drawable/ic_popup_sync"
+        tools:src="@android:drawable/ic_popup_sync" />
+    <TableLayout
+        android:id="@+id/match_score_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:weightSum="2">
+        android:layout_margin="50dp">
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:weightSum="2">
             <TextView
                 android:id="@+id/left_name"
                 android:layout_weight="1"
@@ -32,63 +54,64 @@
                 android:textAlignment="center"
                 android:textStyle="bold"
                 android:textColor="@android:color/secondary_text_light"/>
-    </TableRow>
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_weight="4"
-        android:weightSum="10.5">
-        <TextView
-            android:id="@+id/left_score"
+        </TableRow>
+        <TableRow
+            android:layout_width="match_parent"
             android:layout_weight="4"
-            android:layout_height="match_parent"
-            android:layout_width="0dp"
-            android:text="@string/msInitialValue"
-            android:textSize="200sp"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:textColor="@android:color/secondary_text_light"/>
-        <TextView
-            android:id="@+id/left_games"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            android:layout_width="0dp"
-            android:text="@string/msInitialValue"
-            android:textSize="80sp"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:textAlignment="viewEnd"
-            android:textColor="@android:color/secondary_text_light"
-            tools:ignore="RtlCompat" />
-        <TextView
-            android:layout_height="match_parent"
-            android:layout_width="0dp"
-            android:layout_weight="0.5"
-            android:text="@string/msDivider"
-            android:textSize="80sp"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:textColor="@android:color/secondary_text_light"/>
-        <TextView
-            android:id="@+id/right_games"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            android:layout_width="0dp"
-            android:text="@string/msInitialValue"
-            android:textSize="80sp"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:textAlignment="viewStart"
-            android:textColor="@android:color/secondary_text_light"
-            tools:ignore="RtlCompat" />
-        <TextView
-            android:id="@+id/right_score"
-            android:layout_weight="4"
-            android:layout_height="match_parent"
-            android:layout_width="0dp"
-            android:gravity="center"
-            android:text="@string/msInitialValue"
-            android:textSize="200sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/secondary_text_light"/>
-    </TableRow>
-</TableLayout>
+            android:weightSum="10.5">
+            <TextView
+                android:id="@+id/left_score"
+                android:layout_weight="4"
+                android:layout_height="match_parent"
+                android:layout_width="0dp"
+                android:text="@string/msInitialValue"
+                android:textSize="200sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:textColor="@android:color/secondary_text_light"/>
+            <TextView
+                android:id="@+id/left_games"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:layout_width="0dp"
+                android:text="@string/msInitialValue"
+                android:textSize="80sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:textAlignment="viewEnd"
+                android:textColor="@android:color/secondary_text_light"
+                tools:ignore="RtlCompat" />
+            <TextView
+                android:layout_height="match_parent"
+                android:layout_width="0dp"
+                android:layout_weight="0.5"
+                android:text="@string/msDivider"
+                android:textSize="80sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:textColor="@android:color/secondary_text_light"/>
+            <TextView
+                android:id="@+id/right_games"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:layout_width="0dp"
+                android:text="@string/msInitialValue"
+                android:textSize="80sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:textAlignment="viewStart"
+                android:textColor="@android:color/secondary_text_light"
+                tools:ignore="RtlCompat" />
+            <TextView
+                android:id="@+id/right_score"
+                android:layout_weight="4"
+                android:layout_height="match_parent"
+                android:layout_width="0dp"
+                android:gravity="center"
+                android:text="@string/msInitialValue"
+                android:textSize="200sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/secondary_text_light"/>
+        </TableRow>
+    </TableLayout>
+</RelativeLayout>
