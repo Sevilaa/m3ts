@@ -12,6 +12,10 @@ public class PlayMovieDebugHandler extends DebugHandler implements PlayMovieDete
         super(activity, Side.LEFT, MatchType.BO5, "bruh_2", true, new Player("Hans"), new Player("Peter"));
     }
 
+    public void initMatch(Side servingSide) {
+        super.initMatch(servingSide, MatchType.BO5);
+    }
+
     @Override
     public void onEncodedFrame(byte[] dataYUV420SP) {
         try {

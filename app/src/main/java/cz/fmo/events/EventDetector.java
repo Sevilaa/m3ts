@@ -68,12 +68,12 @@ public class EventDetector implements Lib.Callback {
     public void onObjectsDetected(Lib.Detection[] detections, long detectionTime) {
         tracks.addDetections(detections, this.srcWidth, this.srcHeight, detectionTime); // after this, object direction is up to date
         if (!tracks.getTracks().isEmpty()) {
-            numberOfDetections++;
             Track track = selectTrack(tracks.getTracks());
             if (track != null) {
                 Lib.Detection latestDetection = track.getLatest();
                 calcDirectionY(latestDetection);
                 calcDirectionX(latestDetection);
+                numberOfDetections++;
                 if (hasBallFallenOffSideWays(latestDetection)){
                     callAllOnBallDroppedSideWays();
                 }
@@ -86,8 +86,8 @@ public class EventDetector implements Lib.Callback {
                     callAllOnNearlyOutOfFrame(latestDetection, nearlyOutOfFrameSide);
                 }
                 savePreviousDetection(latestDetection);
+                setTimeoutTimer(numberOfDetections);
             }
-            setTimeoutTimer(numberOfDetections);
         }
     }
 

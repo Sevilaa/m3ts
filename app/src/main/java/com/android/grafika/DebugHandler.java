@@ -65,6 +65,8 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     private ScoreManipulationCallback smc;
     private boolean useScreenForUICallback;
     private TrackerPubNub trackerPubNub;
+    private Timer refreshTimer;
+    private UICallback uiCallback;
 
     public DebugHandler(@NonNull DebugActivity activity, Side servingSide, MatchType matchType, String matchID, boolean useScreenForUICallback, Player playerLeft, Player playerRight) {
         mActivity = new WeakReference<>(activity);
@@ -74,11 +76,9 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
         TTS_SCORE = activity.getResources().getString(R.string.ttsScore);
         tracks = TrackSet.getInstance();
         tracks.clear();
-        this.servingSide = servingSide;
-        this.matchType = matchType;
         hasNewTable = true;
         p = new Paint();
-        UICallback uiCallback = this;
+        uiCallback = this;
         if (!useScreenForUICallback) {
             try {
                 Properties properties = new Properties();
@@ -92,8 +92,12 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
                 this.useScreenForUICallback = true;
             }
         }
-        match = new Match(this.matchType, GameType.G11, ServeRules.S2,playerLeft, playerRight, uiCallback, this.servingSide);
         if (this.trackerPubNub != null) this.trackerPubNub.setTrackerPubNubCallback(match);
+        refreshTimer = new Timer();
+    }
+
+    void initMatch(Side servingSide, MatchType matchType, Player playerLeft, Player playerRight) {
+        match = new Match(this.matchType, GameType.G11, ServeRules.S2, playerLeft, playerRight, uiCallback, this.servingSide);
         startMatch();
         setTextInTextView(R.id.txtDebugPlayerNameLeft, playerLeft.getName());
         setTextInTextView(R.id.txtDebugPlayerNameRight, playerRight.getName());
