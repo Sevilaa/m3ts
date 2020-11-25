@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
+import android.speech.tts.TextToSpeech;
 import android.text.SpannableString;
 import android.text.style.UnderlineSpan;
 import android.view.LayoutInflater;
@@ -19,6 +20,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Locale;
 import java.util.Properties;
 
 import cz.fmo.DisplayPubNub;
@@ -29,6 +31,11 @@ import helper.OnSwipeListener;
 
 public class MatchScoreFragment extends Fragment implements UICallback, DisplayEventCallback {
     private static final String TAG_MATCH_ENDED = "MATCH_WON";
+    private String TTS_WIN;
+    private String TTS_POINTS;
+    private String TTS_POINT;
+    private String TTS_SIDE;
+    private TextToSpeech tts;
     private FragmentReplaceCallback callback;
     private DisplayPubNub pubnub;
 
@@ -37,6 +44,7 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayE
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_match_score, container, false);
         initPubNub(v.getContext(), getArguments().getString("matchID"));
+        initTTS();
         ImageButton refreshButton = v.findViewById(R.id.btnDisplayRefresh);
         refreshButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -75,6 +83,8 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayE
     public void onScore(Side side, int score, Side nextServer) {
         setScoreTextViews(side, score);
         updateIndicationNextServer(nextServer);
+        if (score == 1) tts.speak(score +TTS_POINT+side.toString()+TTS_SIDE, TextToSpeech.QUEUE_FLUSH, null, null);
+        else tts.speak(score +TTS_POINTS+side.toString()+TTS_SIDE, TextToSpeech.QUEUE_FLUSH, null, null);
     }
 
     @Override
@@ -86,6 +96,20 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayE
         }
         setScoreTextViews(Side.LEFT, 0);
         setScoreTextViews(Side.LEFT, 0);
+        tts.speak(TTS_WIN+side+TTS_SIDE, TextToSpeech.QUEUE_FLUSH, null, null);
+    }
+
+    private void initTTS() {
+        TTS_WIN = getResources().getString(R.string.ttsWin);
+        TTS_POINTS = getResources().getString(R.string.ttsPoints);
+        TTS_POINT = getResources().getString(R.string.ttsPoint);
+        TTS_SIDE = getResources().getString(R.string.ttsSide);
+        this.tts = new TextToSpeech(getContext(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int i) {
+                tts.setLanguage(Locale.ENGLISH);
+            }
+        });
     }
 
     private void updateIndicationNextServer(Side nextServer) {

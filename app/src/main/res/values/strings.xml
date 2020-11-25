@@ -86,7 +86,9 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
     <!-- TTS -->
-    <string name="ttsScore">Point </string>
+    <string name="ttsPoints">points </string>
+    <string name="ttsPoint">point </string>
+    <string name="ttsSide"> Side</string>
     <string name="ttsWin">Game Win </string>
     <string name="ttsServe">Serve </string>
 

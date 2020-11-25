@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
-import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
 import android.view.SurfaceHolder;
 import android.widget.TextView;
@@ -17,7 +16,6 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.Properties;
 import java.util.Timer;
 
@@ -43,9 +41,6 @@ import helper.OnSwipeListener;
 public class DebugHandler extends android.os.Handler implements EventDetectionCallback, UICallback {
     private static final int MAX_REFRESHING_TIME_MS = 500;
     final WeakReference<DebugActivity> mActivity;
-    private final String TTS_WIN;
-    private final String TTS_SCORE;
-    private TextToSpeech tts;
     private EventDetector eventDetector;
     private int canvasWidth;
     private int canvasHeight;
@@ -68,9 +63,6 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     public DebugHandler(@NonNull DebugActivity activity, String matchID, boolean useScreenForUICallback) {
         mActivity = new WeakReference<>(activity);
         this.useScreenForUICallback = useScreenForUICallback;
-        initTTS(activity);
-        TTS_WIN = activity.getResources().getString(R.string.ttsWin);
-        TTS_SCORE = activity.getResources().getString(R.string.ttsScore);
         tracks = TrackSet.getInstance();
         tracks.clear();
         hasNewTable = true;
@@ -188,7 +180,6 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
             setTextInTextView(R.id.txtPlayMovieScoreRight, String.valueOf(score));
         }
         refreshDebugTextViews();
-        tts.speak(TTS_SCORE+side, TextToSpeech.QUEUE_FLUSH, null, null);
     }
 
     @Override
@@ -199,7 +190,6 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
         } else {
             setTextInTextView(R.id.txtPlayMovieGameRight, String.valueOf(wins));
         }
-        tts.speak(TTS_WIN+side, TextToSpeech.QUEUE_FLUSH, null, null);
         setCallbackForNewGame();
     }
 
@@ -389,14 +379,5 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
                 this.smc = match.getReferee();
             }
         }
-    }
-
-    private void initTTS(DebugActivity activity) {
-        this.tts = new TextToSpeech(activity.getApplicationContext(), new TextToSpeech.OnInitListener() {
-            @Override
-            public void onInit(int i) {
-                tts.setLanguage(Locale.ENGLISH);
-            }
-        });
     }
 }
