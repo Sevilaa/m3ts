@@ -13,6 +13,6 @@ public class PauseTimerTask extends TimerTask {
 
     @Override
     public void run() {
-        referee.onStartNextServe();
+        referee.resume();
     }
 }

@@ -131,6 +131,12 @@ public class TrackerPubNub extends Callback implements UICallback {
                                     status.getWinsRight(), status.getNextServer());
                         }
                         break;
+                    case "onPause":
+                        this.scoreManipulationCallback.onPause();
+                        break;
+                    case "onResume":
+                        this.scoreManipulationCallback.onResume();
+                        break;
                     default:
                         Log.d("Invalid event received.\nevent:"+event);
                         break;

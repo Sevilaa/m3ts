@@ -40,6 +40,7 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayE
     private TextToSpeech tts;
     private FragmentReplaceCallback callback;
     private DisplayPubNub pubNub;
+    private boolean isPaused = false;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -52,6 +53,21 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayE
             @Override
             public void onClick(View view) {
                 pubNub.requestStatusUpdate();
+            }
+        });
+
+        final ImageButton pauseResumeButton = v.findViewById(R.id.btnPauseResumeReferee);
+        pauseResumeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (isPaused) {
+                    pubNub.onResume();
+                    pauseResumeButton.setImageResource(android.R.drawable.ic_media_pause);
+                } else {
+                    pubNub.onPause();
+                    pauseResumeButton.setImageResource(android.R.drawable.ic_media_play);
+                }
+                isPaused = !isPaused;
             }
         });
         setOnSwipeListener(v);

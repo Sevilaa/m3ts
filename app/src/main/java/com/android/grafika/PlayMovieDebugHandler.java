@@ -9,7 +9,7 @@ import cz.fmo.tabletennis.Side;
 
 public class PlayMovieDebugHandler extends DebugHandler implements PlayMovieDetectionCallback {
     public PlayMovieDebugHandler(@NonNull DebugActivity activity) {
-        super(activity, "bruh_2", true);
+        super(activity, "bruh_2", false);
     }
 
     public void initMatch(Side servingSide) {

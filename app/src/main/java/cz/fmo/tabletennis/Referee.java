@@ -177,6 +177,16 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
         initPoint();
     }
 
+    @Override
+    public void onPause() {
+        this.pause();
+    }
+
+    @Override
+    public void onResume() {
+        this.resume();
+    }
+
     public Side getCurrentBallSide() {
         return currentBallSide;
     }
@@ -195,13 +205,17 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
         }
     }
 
-    public void onStartNextServe() {
+    public void resume() {
         this.state = GameState.WAIT_FOR_SERVE;
         this.gameCallback.onReadyToServe(getServer());
     }
 
+    private void pause() {
+        this.state = GameState.PAUSE;
+    }
+
     private void handleOutOfFrame() {
-        if(this.bounces == 0) {
+        if (this.bounces == 0) {
             Log.d("No bounce and went out of frame");
             faultBySide(currentStriker);
         } else {

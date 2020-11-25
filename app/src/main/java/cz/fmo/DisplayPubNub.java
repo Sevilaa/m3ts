@@ -60,7 +60,14 @@ public class DisplayPubNub extends Callback {
         send("onPointAddition", side.toString(), null,null);
     }
 
-    public void onReadyToServe(Side server) {}
+    public void onPause() {
+        send("onPause", null, null, null);
+    }
+
+    public void onResume() {
+        send("onResume", null, null, null);
+    }
+
     private void send(String event, String side, Integer score, Integer wins) {
         try {
             JSONObject json = new JSONObject();
