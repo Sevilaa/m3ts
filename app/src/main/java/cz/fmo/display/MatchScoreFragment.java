@@ -31,13 +31,13 @@ import helper.OnSwipeListener;
 
 public class MatchScoreFragment extends Fragment implements UICallback, DisplayEventCallback {
     private static final String TAG_MATCH_ENDED = "MATCH_WON";
-    private String TTS_WIN;
-    private String TTS_POINTS;
-    private String TTS_POINT;
-    private String TTS_SIDE;
+    private String ttsWin;
+    private String ttsPoints;
+    private String ttsPoint;
+    private String ttsSide;
     private TextToSpeech tts;
     private FragmentReplaceCallback callback;
-    private DisplayPubNub pubnub;
+    private DisplayPubNub pubNub;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -49,7 +49,7 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayE
         refreshButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                pubnub.requestStatusUpdate();
+                pubNub.requestStatusUpdate();
             }
         });
         setOnSwipeListener(v);
@@ -83,8 +83,8 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayE
     public void onScore(Side side, int score, Side nextServer) {
         setScoreTextViews(side, score);
         updateIndicationNextServer(nextServer);
-        if (score == 1) tts.speak(score +TTS_POINT+side.toString()+TTS_SIDE, TextToSpeech.QUEUE_FLUSH, null, null);
-        else tts.speak(score +TTS_POINTS+side.toString()+TTS_SIDE, TextToSpeech.QUEUE_FLUSH, null, null);
+        if (score == 1) tts.speak(score + ttsPoint +side.toString()+ ttsSide, TextToSpeech.QUEUE_FLUSH, null, null);
+        else tts.speak(score + ttsPoints +side.toString()+ ttsSide, TextToSpeech.QUEUE_FLUSH, null, null);
     }
 
     @Override
@@ -96,14 +96,14 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayE
         }
         setScoreTextViews(Side.LEFT, 0);
         setScoreTextViews(Side.LEFT, 0);
-        tts.speak(TTS_WIN+side+TTS_SIDE, TextToSpeech.QUEUE_FLUSH, null, null);
+        tts.speak(ttsWin +side+ ttsSide, TextToSpeech.QUEUE_FLUSH, null, null);
     }
 
     private void initTTS() {
-        TTS_WIN = getResources().getString(R.string.ttsWin);
-        TTS_POINTS = getResources().getString(R.string.ttsPoints);
-        TTS_POINT = getResources().getString(R.string.ttsPoint);
-        TTS_SIDE = getResources().getString(R.string.ttsSide);
+        ttsWin = getResources().getString(R.string.ttsWin);
+        ttsPoints = getResources().getString(R.string.ttsPoints);
+        ttsPoint = getResources().getString(R.string.ttsPoint);
+        ttsSide = getResources().getString(R.string.ttsSide);
         this.tts = new TextToSpeech(getContext(), new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int i) {
@@ -134,7 +134,7 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayE
         Properties properties = new Properties();
         try (InputStream is = context.getAssets().open("app.properties")) {
             properties.load(is);
-            this.pubnub = new DisplayPubNub(matchID, properties.getProperty("pub_key"), properties.getProperty("sub_key"), this, this);
+            this.pubNub = new DisplayPubNub(matchID, properties.getProperty("pub_key"), properties.getProperty("sub_key"), this, this);
         } catch (IOException ex) {
             Log.d("Using MatchScoreFragment in without app.properties file!");
         }
@@ -149,19 +149,19 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayE
 
     @SuppressLint("ClickableViewAccessibility")
     private void setOnSwipeListener(View v) {
-        if(pubnub != null) {
+        if(pubNub != null) {
             v.setOnTouchListener(new OnSwipeListener(this.getContext()) {
                 @Override
                 public void onSwipeDown(Side swipeSide) {
-                    if(pubnub != null) {
-                        pubnub.onPointDeduction(swipeSide);
+                    if(pubNub != null) {
+                        pubNub.onPointDeduction(swipeSide);
                     }
                 }
 
                 @Override
                 public void onSwipeUp(Side swipeSide) {
-                    if(pubnub != null) {
-                        pubnub.onPointAddition(swipeSide);
+                    if(pubNub != null) {
+                        pubNub.onPointAddition(swipeSide);
                     }
                 }
             });
