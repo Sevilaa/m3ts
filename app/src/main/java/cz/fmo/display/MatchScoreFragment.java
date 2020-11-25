@@ -99,7 +99,7 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayE
 
     @Override
     public void onScore(Side side, int score, Side nextServer) {
-        setScoreTextViews(side, score);
+        setScoreOnTextView(side, score);
         updateIndicationNextServer(nextServer, false);
         if (score == 1) tts.speak(score + ttsPoint +side.toString()+ ttsSide, TextToSpeech.QUEUE_FLUSH, null, null);
         else tts.speak(score + ttsPoints +side.toString()+ ttsSide, TextToSpeech.QUEUE_FLUSH, null, null);
@@ -107,13 +107,9 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayE
 
     @Override
     public void onWin(Side side, int wins) {
-        if (side == Side.LEFT) {
-            setTextInTextView(R.id.left_games, String.valueOf(wins));
-        } else {
-            setTextInTextView(R.id.right_games, String.valueOf(wins));
-        }
-        setScoreTextViews(Side.LEFT, 0);
-        setScoreTextViews(Side.LEFT, 0);
+        setWinsOnTextView(side, wins);
+        setScoreOnTextView(Side.LEFT, 0);
+        setScoreOnTextView(Side.RIGHT, 0);
         tts.speak(ttsWin +side+ ttsSide, TextToSpeech.QUEUE_FLUSH, null, null);
     }
 
@@ -218,11 +214,22 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayE
         }
     }
 
-    private void setScoreTextViews(Side side, int score) {
+    private void setScoreOnTextView(Side side, int score) {
+        String scoreToDisplay = String.valueOf(score);
+        if (score < 10) scoreToDisplay = "0" + scoreToDisplay;
         if (side == Side.LEFT) {
-            setTextInTextView(R.id.left_score, String.valueOf(score));
+            setTextInTextView(R.id.left_score, scoreToDisplay);
         } else {
-            setTextInTextView(R.id.right_score, String.valueOf(score));
+            setTextInTextView(R.id.right_score, scoreToDisplay);
+        }
+    }
+
+    private void setWinsOnTextView(Side side, int wins) {
+        String winsToDisplay = "0"+ wins;
+        if (side == Side.LEFT) {
+            setTextInTextView(R.id.left_games, winsToDisplay);
+        } else {
+            setTextInTextView(R.id.right_games, winsToDisplay);
         }
     }
 
@@ -231,10 +238,10 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayE
     public void onStatusUpdate(String playerNameLeft, String playerNameRight, int pointsLeft, int pointsRight, int gamesLeft, int gamesRight, Side nextServer) {
         setTextInTextView(R.id.left_name, playerNameLeft);
         setTextInTextView(R.id.right_name, playerNameRight);
-        setTextInTextView(R.id.left_score, String.valueOf(pointsLeft));
-        setTextInTextView(R.id.right_score, String.valueOf(pointsRight));
-        setTextInTextView(R.id.left_games, String.valueOf(gamesLeft));
-        setTextInTextView(R.id.right_games, String.valueOf(gamesRight));
+        setScoreOnTextView(Side.LEFT, pointsLeft);
+        setScoreOnTextView(Side.RIGHT, pointsRight);
+        setWinsOnTextView(Side.LEFT, gamesLeft);
+        setWinsOnTextView(Side.RIGHT, gamesRight);
         updateIndicationNextServer(nextServer, true);
     }
 

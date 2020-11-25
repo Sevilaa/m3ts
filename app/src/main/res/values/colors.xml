@@ -8,5 +8,7 @@
     <color name="primary_dark">#303030</color>
     <color name="secondary_dark">#91919c</color>
     <color name="primary_light">#ebeff2</color>
-    <color name="display_serving">#35ff69</color>
+    <color name="display_serving">#DF2935</color>
+    <color name="player_left_background">#3772FF</color>
+    <color name="player_right_background">#F49D37</color>
 </resources>

@@ -103,7 +103,7 @@
     <string name="mwWon">\u0020won!</string>
 
     <!-- MatchScore Fragment -->
-    <string name="msInitialValue">0</string>
+    <string name="msInitialValue">00</string>
     <string name="msDivider">:</string>
 
     <!-- Movie Player Activity -->
