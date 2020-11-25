@@ -39,21 +39,21 @@ public class DisplayPubNubTest {
             DisplayPubNub displayPubNub = new DisplayPubNub("invalid", "invalid", "invalid", spyCallback, deCallback);
 
             // test onScore
-            JSONObject jsonScore = makeJSONObject("onScore", Side.RIGHT, random.nextInt(999), null);
+            JSONObject jsonScore = makeJSONObject("onScore", Side.RIGHT, random.nextInt(999), null, Side.LEFT);
             displayPubNub.connectCallback("invalid", jsonScore);
-            verify(spyCallback, times(0)).onScore(Side.RIGHT, jsonScore.getInt("score"));
+            verify(spyCallback, times(0)).onScore(Side.RIGHT, jsonScore.getInt("score"), Side.LEFT);
             displayPubNub.successCallback("invalid", jsonScore);
-            verify(spyCallback, times(1)).onScore(Side.RIGHT, jsonScore.getInt("score"));
+            verify(spyCallback, times(1)).onScore(Side.RIGHT, jsonScore.getInt("score"), Side.LEFT);
 
             // test onWin
-            JSONObject jsonWin = makeJSONObject("onWin", Side.LEFT, null, random.nextInt(999));
+            JSONObject jsonWin = makeJSONObject("onWin", Side.LEFT, null, random.nextInt(999), null);
             displayPubNub.connectCallback("invalid", jsonWin);
             verify(spyCallback, times(0)).onWin(Side.LEFT, jsonWin.getInt("wins"));
             displayPubNub.successCallback("invalid", jsonWin);
             verify(spyCallback, times(1)).onWin(Side.LEFT, jsonWin.getInt("wins"));
 
             // test onMatchEnded
-            JSONObject jsonMatchEnded = makeJSONObject("onMatchEnded", Side.LEFT, null, null);
+            JSONObject jsonMatchEnded = makeJSONObject("onMatchEnded", Side.LEFT, null, null, null);
             displayPubNub.connectCallback("invalid", jsonMatchEnded);
             verify(spyCallback, times(0)).onMatchEnded(Side.LEFT.toString());
             displayPubNub.successCallback("invalid", jsonMatchEnded);
@@ -75,11 +75,11 @@ public class DisplayPubNubTest {
 
             for (int i = 0; i<100; i++) {
                 JSONObject invalidJSON = makeJSONObject(generateRandomAlphabeticString(random.nextInt(20)),
-                        Side.values()[random.nextInt(4)], random.nextInt(999), random.nextInt(999));
+                        Side.values()[random.nextInt(4)], random.nextInt(999), random.nextInt(999), Side.values()[random.nextInt(4)]);
                 displayPubNub.connectCallback("invalid", invalidJSON);
                 displayPubNub.disconnectCallback("invalid", invalidJSON);
                 displayPubNub.successCallback("invalid", invalidJSON);
-                verify(spyCallback, times(0)).onScore(any(Side.class), anyInt());
+                verify(spyCallback, times(0)).onScore(any(Side.class), anyInt(), any(Side.class));
                 verify(spyCallback, times(0)).onWin(any(Side.class), anyInt());
                 verify(spyCallback, times(0)).onMatchEnded(any(String.class));
             }
@@ -89,13 +89,14 @@ public class DisplayPubNubTest {
     }
 
 
-    private JSONObject makeJSONObject(String event, Side side, Integer score, Integer wins) {
+    private JSONObject makeJSONObject(String event, Side side, Integer score, Integer wins, Side nextServer) {
         JSONObject json = new JSONObject();
         try {
-            json.put("event", event);
-            json.put("side", side);
-            json.put("score", score);
-            json.put("wins", wins);
+            json.put(JSONInfo.EVENT_PROPERTY, event);
+            json.put(JSONInfo.SIDE_PROPERTY, side);
+            json.put(JSONInfo.SCORE_PROPERTY, score);
+            json.put(JSONInfo.WINS_PROPERTY, wins);
+            json.put(JSONInfo.NEXT_SERVER_PROPERTY, nextServer);
         } catch (JSONException ex) {
             fail(ex.getMessage());
         }

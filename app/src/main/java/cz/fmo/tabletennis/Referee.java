@@ -197,6 +197,7 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
 
     public void onStartNextServe() {
         this.state = GameState.WAIT_FOR_SERVE;
+        this.gameCallback.onReadyToServe(getServer());
     }
 
     private void handleOutOfFrame() {

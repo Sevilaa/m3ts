@@ -70,6 +70,11 @@ public class TrackerPubNub extends Callback implements UICallback {
         send("onWin", side.toString(), null, wins, null);
     }
 
+    @Override
+    public void onReadyToServe(Side server) {
+        send("onReadyToServe", server.toString(), null, null, null);
+    }
+
     private void send(String event, String side, Integer score, Integer wins, Side nextServer) {
         try {
             JSONObject json = new JSONObject();

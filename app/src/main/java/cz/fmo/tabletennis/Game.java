@@ -48,6 +48,11 @@ public class Game implements GameCallback {
         }
     }
 
+    @Override
+    public void onReadyToServe(Side side) {
+        uiCallback.onReadyToServe(side);
+    }
+
     public Side getServer() {
         return this.server;
     }

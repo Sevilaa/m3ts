@@ -193,6 +193,11 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
         setCallbackForNewGame();
     }
 
+    @Override
+    public void onReadyToServe(Side server) {
+        // do nothing for now
+    }
+
     public void refreshDebugTextViews() {
         setTextInTextView(R.id.txtPlayMovieState, match.getReferee().getState().toString());
         setTextInTextView(R.id.txtPlayMovieServing, match.getReferee().getServer().toString());

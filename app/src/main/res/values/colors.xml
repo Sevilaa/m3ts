@@ -8,4 +8,5 @@
     <color name="primary_dark">#303030</color>
     <color name="secondary_dark">#91919c</color>
     <color name="primary_light">#ebeff2</color>
+    <color name="display_serving">#35ff69</color>
 </resources>

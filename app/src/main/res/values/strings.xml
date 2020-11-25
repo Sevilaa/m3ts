@@ -90,6 +90,7 @@
     <string name="ttsPoint">point </string>
     <string name="ttsSide"> Side</string>
     <string name="ttsWin">Game Win </string>
+    <string name="ttsReadyServe"> ready to serve!</string>
     <string name="ttsServe">Serve </string>
 
     <!-- ConnectToMatch Fragment -->

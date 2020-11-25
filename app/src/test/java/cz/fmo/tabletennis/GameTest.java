@@ -5,6 +5,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -35,7 +37,7 @@ public class GameTest {
         // let left side win 11:0
         for (int i = 0; i<GameType.G11.amountOfPoints; i++) {
             game.onPoint(Side.LEFT);
-            verify(uiCallback, times(1)).onScore(Side.LEFT, i+1);
+            verify(uiCallback, times(1)).onScore(eq(Side.LEFT), eq(i+1), any(Side.class));
         }
         verify(matchCallback, times(1)).onWin(Side.LEFT);
 
@@ -43,7 +45,7 @@ public class GameTest {
         game = new Game(matchCallback, uiCallback, GameType.G11, ServeRules.S2, STARTING_SIDE);
         for (int i = 0; i<11; i++) {
             game.onPoint(Side.RIGHT);
-            verify(uiCallback, times(1)).onScore(Side.RIGHT, i+1);
+            verify(uiCallback, times(1)).onScore(eq(Side.RIGHT), eq(i+1), any(Side.class));
         }
         verify(matchCallback, times(1)).onWin(Side.RIGHT);
     }

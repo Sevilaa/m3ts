@@ -6,6 +6,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
+import android.support.annotation.NonNull;
 import android.text.SpannableString;
 import android.text.style.UnderlineSpan;
 import android.view.LayoutInflater;
@@ -35,6 +36,7 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayE
     private String ttsPoints;
     private String ttsPoint;
     private String ttsSide;
+    private String ttsReadyToServe;
     private TextToSpeech tts;
     private FragmentReplaceCallback callback;
     private DisplayPubNub pubNub;
@@ -82,7 +84,7 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayE
     @Override
     public void onScore(Side side, int score, Side nextServer) {
         setScoreTextViews(side, score);
-        updateIndicationNextServer(nextServer);
+        updateIndicationNextServer(nextServer, false);
         if (score == 1) tts.speak(score + ttsPoint +side.toString()+ ttsSide, TextToSpeech.QUEUE_FLUSH, null, null);
         else tts.speak(score + ttsPoints +side.toString()+ ttsSide, TextToSpeech.QUEUE_FLUSH, null, null);
     }
@@ -99,11 +101,27 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayE
         tts.speak(ttsWin +side+ ttsSide, TextToSpeech.QUEUE_FLUSH, null, null);
     }
 
+    @Override
+    public void onReadyToServe(Side server) {
+        tts.speak(server.toString() + ttsSide + ttsReadyToServe, TextToSpeech.QUEUE_ADD, null, null);
+        Activity activity = getActivity();
+        if (activity == null) return;
+
+        Side otherSide = Side.RIGHT;
+        if (server == Side.RIGHT) otherSide = Side.LEFT;
+
+        TextView txtView = getServerLabelTextView(activity, server);
+        colorTextViewAsActive(txtView);
+        txtView = getServerLabelTextView(activity, otherSide);
+        colorTextViewAsInactive(txtView);
+    }
+
     private void initTTS() {
         ttsWin = getResources().getString(R.string.ttsWin);
         ttsPoints = getResources().getString(R.string.ttsPoints);
         ttsPoint = getResources().getString(R.string.ttsPoint);
         ttsSide = getResources().getString(R.string.ttsSide);
+        ttsReadyToServe = getResources().getString(R.string.ttsReadyServe);
         this.tts = new TextToSpeech(getContext(), new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int i) {
@@ -112,22 +130,38 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayE
         });
     }
 
-    private void updateIndicationNextServer(Side nextServer) {
+    private void updateIndicationNextServer(Side nextServer, boolean init) {
         Activity activity = getActivity();
         if (activity == null) return;
 
-        int idServer = R.id.right_name;
-        int idOther = R.id.left_name;
-        if (nextServer == Side.LEFT) {
-            idServer = R.id.left_name;
-            idOther = R.id.right_name;
-        }
-        TextView txtView = activity.findViewById(idServer);
+        Side otherSide = Side.RIGHT;
+        if (nextServer == Side.RIGHT) otherSide = Side.LEFT;
+
+        TextView txtView = getServerLabelTextView(activity, nextServer);
         SpannableString content = new SpannableString(txtView.getText());
         content.setSpan(new UnderlineSpan(), 0, content.length(), 0);
         txtView.setText(content);
-        txtView = activity.findViewById(idOther);
+        if (init) colorTextViewAsActive(txtView);
+        else colorTextViewAsInactive(txtView);
+        txtView = getServerLabelTextView(activity, otherSide);
         txtView.setText(txtView.getText().toString());
+        colorTextViewAsInactive(txtView);
+    }
+
+    private TextView getServerLabelTextView(@NonNull Activity activity, Side server) {
+        int idServer = R.id.right_name;
+        if (server == Side.LEFT) {
+            idServer = R.id.left_name;
+        }
+        return activity.findViewById(idServer);
+    }
+
+    private void colorTextViewAsInactive(TextView txtView) {
+        txtView.setTextColor(getResources().getColor(android.R.color.secondary_text_light));
+    }
+
+    private void colorTextViewAsActive(TextView txtView) {
+        txtView.setTextColor(getResources().getColor(R.color.display_serving));
     }
 
     private void initPubNub(Context context, String matchID) {
@@ -185,7 +219,7 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayE
         setTextInTextView(R.id.right_score, String.valueOf(pointsRight));
         setTextInTextView(R.id.left_games, String.valueOf(gamesLeft));
         setTextInTextView(R.id.right_games, String.valueOf(gamesRight));
-        updateIndicationNextServer(nextServer);
+        updateIndicationNextServer(nextServer, true);
     }
 
     @Override

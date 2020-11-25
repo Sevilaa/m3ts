@@ -60,6 +60,7 @@ public class DisplayPubNub extends Callback {
         send("onPointAddition", side.toString(), null,null);
     }
 
+    public void onReadyToServe(Side server) {}
     private void send(String event, String side, Integer score, Integer wins) {
         try {
             JSONObject json = new JSONObject();
@@ -87,6 +88,9 @@ public class DisplayPubNub extends Callback {
                         break;
                     case "onWin":
                         this.callback.onWin(Side.valueOf(json.getString(JSONInfo.SIDE_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.WINS_PROPERTY)));
+                        break;
+                    case "onReadyToServe":
+                        this.callback.onReadyToServe(Side.valueOf(json.getString(JSONInfo.SIDE_PROPERTY)));
                         break;
                     case "onStatusUpdate":
                         this.displayEventCallback.onStatusUpdate(json.getString(JSONInfo.PLAYER_NAME_LEFT_PROPERTY), json.getString(JSONInfo.PLAYER_NAME_RIGHT_PROPERTY),
