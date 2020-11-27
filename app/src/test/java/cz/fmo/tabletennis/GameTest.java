@@ -6,8 +6,11 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -30,6 +33,30 @@ public class GameTest {
         game = null;
         matchCallback = null;
         uiCallback = null;
+    }
+
+    @Test
+    public void testOnPointDeduction() {
+        UICallback uiCallbackSpy = spy(UICallback.class);
+        game = new Game(matchCallback, uiCallbackSpy, GameType.G11, ServeRules.S2, STARTING_SIDE);
+        game.onPointDeduction(Side.RIGHT);
+        game.onPointDeduction(Side.LEFT);
+        verify(uiCallbackSpy, never()).onScore(any(Side.class), anyInt(), any(Side.class));
+        verify(uiCallbackSpy, never()).onWin(any(Side.class), anyInt());
+        assertEquals(0, game.getScore(Side.RIGHT));
+        assertEquals(0, game.getScore(Side.LEFT));
+        game.onPoint(Side.RIGHT);
+        game.onPoint(Side.LEFT);
+        game.onPoint(Side.RIGHT);
+        assertEquals(2, game.getScore(Side.RIGHT));
+        game.onPointDeduction(Side.RIGHT);
+        game.onPointDeduction(Side.RIGHT);
+        assertEquals(0, game.getScore(Side.RIGHT));
+        game.onPointDeduction(Side.LEFT);
+        game.onPointDeduction(Side.LEFT);
+        assertEquals(0, game.getScore(Side.LEFT));
+        // expect 6 times on score -> 3 for onPoint, 3 for onPointDeduction
+        verify(uiCallbackSpy, times(6)).onScore(any(Side.class), anyInt(), any(Side.class));
     }
 
     @Test

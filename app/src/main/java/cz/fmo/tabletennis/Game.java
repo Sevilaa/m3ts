@@ -1,11 +1,8 @@
 package cz.fmo.tabletennis;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class Game implements GameCallback {
     private int maxScore;
-    private Map<Side, Integer> scores;
+    private ScoreManager scoreManager;
     private MatchCallback matchCallback;
     private UICallback uiCallback;
     private Side server;
@@ -13,9 +10,7 @@ public class Game implements GameCallback {
     private ServeRules serveRules;
 
     public Game (MatchCallback matchCallback, UICallback uiCallback, GameType type, ServeRules serveRules, Side server) {
-        scores = new HashMap<>();
-        scores.put(Side.LEFT, 0);
-        scores.put(Side.RIGHT, 0);
+        scoreManager = new ScoreManager(server);
         this.server = server;
         this.matchCallback = matchCallback;
         this.uiCallback = uiCallback;
@@ -26,8 +21,8 @@ public class Game implements GameCallback {
 
     @Override
     public void onPoint(Side side) {
-        int score = scores.get(side) + 1;
-        scores.put(side, score);
+        scoreManager.score(side, server);
+        int score = scoreManager.getScore(side);
         changeServer();
         uiCallback.onScore(side, score, this.server);
         if (hasReachedMax(score)) {
@@ -37,10 +32,11 @@ public class Game implements GameCallback {
 
     @Override
     public void onPointDeduction(Side side) {
-        int score = scores.get(side) - 1;
-        if(score >= 0) {
-            scores.put(side, score);
-            changeServer();
+        int score = scoreManager.getScore(side);
+        if (score > 0) {
+            Side lastServer = scoreManager.revertLastScore(side);
+            score = scoreManager.getScore(side);
+            this.server = lastServer;
             uiCallback.onScore(side, score, this.server);
             if (hasReachedMax(score)) {
                 matchCallback.onWin(side);
@@ -57,12 +53,12 @@ public class Game implements GameCallback {
         return this.server;
     }
 
-    public int getScore(Side side) {
-        return scores.get(side);
+    public int getScore(Side player) {
+        return scoreManager.getScore(player);
     }
 
     private boolean hasReachedMax(int score) {
-        if (scores.get(Side.LEFT).equals(scores.get(Side.RIGHT)) && score == maxScore-1) {
+        if ((scoreManager.getScore(Side.LEFT) == scoreManager.getScore(Side.RIGHT)) && (score == maxScore - 1)) {
             increaseMaxScore();
         }
         return (score >= maxScore);
@@ -73,7 +69,7 @@ public class Game implements GameCallback {
     }
 
     private int getSumOfScores() {
-        return this.scores.get(Side.LEFT) + this.scores.get(Side.RIGHT);
+        return this.scoreManager.getScore(Side.LEFT) + this.scoreManager.getScore(Side.RIGHT);
     }
 
     private boolean isOneServeRuleActive() {
