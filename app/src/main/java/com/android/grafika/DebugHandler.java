@@ -38,7 +38,7 @@ import cz.fmo.tabletennis.UICallback;
 import cz.fmo.util.Config;
 import helper.OnSwipeListener;
 
-public class DebugHandler extends android.os.Handler implements EventDetectionCallback, UICallback {
+public class DebugHandler extends android.os.Handler implements EventDetectionCallback, UICallback, FrameCallback {
     private static final int MAX_REFRESHING_TIME_MS = 500;
     final WeakReference<DebugActivity> mActivity;
     private EventDetector eventDetector;
@@ -59,6 +59,7 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     private boolean useScreenForUICallback;
     private TrackerPubNub trackerPubNub;
     private UICallback uiCallback;
+    private byte[] currentFrame = null;
 
     public DebugHandler(@NonNull DebugActivity activity, String matchID, boolean useScreenForUICallback) {
         mActivity = new WeakReference<>(activity);
@@ -85,7 +86,10 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
 
     void initMatch(Side servingSide, MatchType matchType, Player playerLeft, Player playerRight) {
         match = new Match(matchType, GameType.G11, ServeRules.S2, playerLeft, playerRight, uiCallback, servingSide);
-        if (this.trackerPubNub != null) this.trackerPubNub.setTrackerPubNubCallback(match);
+        if (this.trackerPubNub != null) {
+            this.trackerPubNub.setTrackerPubNubCallback(match);
+            this.trackerPubNub.setFrameCallback(this);
+        }
         startMatch();
         setTextInTextView(R.id.txtDebugPlayerNameLeft, playerLeft.getName());
         setTextInTextView(R.id.txtDebugPlayerNameRight, playerRight.getName());
@@ -196,6 +200,16 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     @Override
     public void onReadyToServe(Side server) {
         // do nothing for now
+    }
+
+    @Override
+    public void onFrame(byte[] dataYUV420SP) {
+        this.currentFrame = dataYUV420SP;
+    }
+
+    @Override
+    public byte[] onCaptureFrame() {
+        return this.currentFrame;
     }
 
     public void refreshDebugTextViews() {

@@ -20,6 +20,7 @@ public class PlayMovieDebugHandler extends DebugHandler implements PlayMovieDete
     public void onEncodedFrame(byte[] dataYUV420SP) {
         try {
             Lib.detectionFrame(dataYUV420SP);
+            super.onFrame(dataYUV420SP);
         } catch (Exception ex) {
             Log.e(ex.getMessage(), ex);
         }
