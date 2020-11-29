@@ -17,6 +17,7 @@ public final class JSONInfo {
     static final String PLAYER_NAME_LEFT_PROPERTY = "playerNameLeft";
     static final String PLAYER_NAME_RIGHT_PROPERTY = "playerNameRight";
     static final String NEXT_SERVER_PROPERTY = "nextServer";
+    static final String TABLE_FRAME_BYTES = "tableFrameBytes";
 
     private JSONInfo(){}
 }

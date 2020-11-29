@@ -1,5 +1,8 @@
 package cz.fmo;
 
+import android.provider.SyncStateContract;
+
+import com.android.grafika.FrameCallback;
 import com.android.grafika.Log;
 import com.pubnub.api.Callback;
 import com.pubnub.api.Pubnub;
@@ -15,6 +18,7 @@ import cz.fmo.tabletennis.ScoreManipulationCallback;
 import cz.fmo.tabletennis.Side;
 import cz.fmo.tabletennis.TrackerPubNubCallback;
 import cz.fmo.tabletennis.UICallback;
+import cz.fmo.util.ByteToBase64Encoder;
 
 public class TrackerPubNub extends Callback implements UICallback {
     private static final String ROLE = "tracker";
@@ -22,6 +26,7 @@ public class TrackerPubNub extends Callback implements UICallback {
     private final String roomID;
     private TrackerPubNubCallback callback;
     private ScoreManipulationCallback scoreManipulationCallback;
+    private FrameCallback frameCallback;
 
     public TrackerPubNub(final String roomID, String pubKey, String subKey) {
         this.pubnub = new Pubnub(pubKey, subKey);
@@ -55,6 +60,10 @@ public class TrackerPubNub extends Callback implements UICallback {
         this.scoreManipulationCallback = scoreManipulationCallback;
     }
 
+    public void setFrameCallback(FrameCallback frameCallback) {
+        this.frameCallback = frameCallback;
+    }
+
     @Override
     public void onMatchEnded(String winnerName) {
         send("onMatchEnded", winnerName, null,null, null);
@@ -75,6 +84,18 @@ public class TrackerPubNub extends Callback implements UICallback {
         send("onReadyToServe", server.toString(), null, null, null);
     }
 
+    private void sendTableFrame(String encodedTableImage) {
+        try {
+            JSONObject json = new JSONObject();
+            json.put(JSONInfo.SENDER_PROPERTY, pubnub.getUUID());
+            json.put(JSONInfo.TABLE_FRAME_BYTES, encodedTableImage);
+            json.put(JSONInfo.EVENT_PROPERTY, "onTableFrameReceived");
+            pubnub.publish(this.roomID, json, new Callback() {});
+        } catch (JSONException ex) {
+            Log.d("Unable to send JSON to channel "+this.roomID+"\n"+ex.getMessage());
+        }
+    }
+
     private void send(String event, String side, Integer score, Integer wins, Side nextServer) {
         try {
             JSONObject json = new JSONObject();
@@ -90,6 +111,7 @@ public class TrackerPubNub extends Callback implements UICallback {
             Log.d("Unable to send JSON to channel "+this.roomID+"\n"+ex.getMessage());
         }
     }
+
     private void sendStatusUpdate(String playerNameLeft, String playerNameRight, int scoreLeft, int scoreRight, int winsLeft, int winsRight, Side nextServer) {
         try {
             JSONObject json = new JSONObject();
@@ -136,6 +158,13 @@ public class TrackerPubNub extends Callback implements UICallback {
                         break;
                     case "onResume":
                         this.scoreManipulationCallback.onResume();
+                        break;
+                    case "onRequestTableFrame":
+                        Log.d("onRequestTableFrame");
+                        byte[] frame = this.frameCallback.onCaptureFrame();
+                        String encodedFrame = ByteToBase64Encoder.encodeToString(frame);
+                        sendTableFrame(encodedFrame);
+                        Log.d("frame send: " + frame);
                         break;
                     default:
                         Log.d("Invalid event received.\nevent:"+event);
