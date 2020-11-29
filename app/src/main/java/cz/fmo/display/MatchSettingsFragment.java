@@ -1,5 +1,7 @@
-package com.android.grafika.initialize;
+package cz.fmo.display;
 
+import android.app.Fragment;
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,25 +15,24 @@ import cz.fmo.R;
 import cz.fmo.tabletennis.MatchType;
 import cz.fmo.tabletennis.Side;
 
-/**
- * Use the {@link InitializeFragmentFactory#newSpecifyMatchInstance} factory method to
- * create an instance of this fragment.
- */
-public class InitializeSpecifyMatchFragment extends android.app.Fragment implements AdapterView.OnItemSelectedListener, Button.OnClickListener {
+public class MatchSettingsFragment extends android.app.Fragment implements AdapterView.OnItemSelectedListener, Button.OnClickListener {
     private static final String[] MATCH_TYPE = {MatchType.BO1.toString(), MatchType.BO3.toString(), MatchType.BO5.toString()};
     private static final String[] SERVING_SIDES = {Side.LEFT.toString(), Side.RIGHT.toString()};
+    private int selectedMatchType;
+    private int selectedStartingServer;
+    private FragmentReplaceCallback callback;
+    private static final String TAG_MATCH_INIT = "MATCH_INIT";
 
-    public InitializeSpecifyMatchFragment() {
+    public MatchSettingsFragment() {
         // Required empty public constructor
     }
 
     @Override
     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-        InitializeActivity activity = (InitializeActivity) getActivity();
         if (adapterView.getId() == R.id.init_spinnerSelectMatchType) {
-            activity.setSelectedMatchType(i);
+            selectedMatchType = i;
         } else if (adapterView.getId() == R.id.init_spinnerSelectServingSide) {
-            activity.setSelectedServingSide(i);
+            selectedStartingServer = i;
         }
     }
 
@@ -41,10 +42,24 @@ public class InitializeSpecifyMatchFragment extends android.app.Fragment impleme
     }
 
     @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        // This makes sure that the container activity has implemented
+        // the callback interface. If not, it throws an exception
+        try {
+            callback = (FragmentReplaceCallback) context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString()
+                    + " must implement FragmentReplaceListener");
+        }
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_init_specify_match, container, false);
+        View view = inflater.inflate(R.layout.fragment_match_settings, container, false);
         Button doneButton = view.findViewById(R.id.init_sideAndMatchTypeDoneBtn);
         doneButton.setOnClickListener(this);
         fillSpinners(view);
@@ -68,6 +83,11 @@ public class InitializeSpecifyMatchFragment extends android.app.Fragment impleme
 
     @Override
     public void onClick(View view) {
-        ((InitializeActivity) getActivity()).onSideAndMatchSelectDone();
+        Fragment fragment = new MatchInitFragment();
+        Bundle bundle = new Bundle();
+        bundle.putString("type", Integer.toString(selectedMatchType));
+        bundle.putString("server", Integer.toString(selectedStartingServer));
+        fragment.setArguments(bundle);
+        callback.replaceFragment(fragment, TAG_MATCH_INIT);
     }
 }

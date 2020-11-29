@@ -12,7 +12,7 @@
         android:columnCount="1"
         android:rowCount="4">
         <TextView
-            android:id="@+id/connect_to_match_lbl"
+            android:id="@+id/miTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
@@ -21,8 +21,9 @@
             android:textStyle="bold"
             android:textSize="50sp"
             android:textColor="@android:color/secondary_text_light"
-            android:text="@string/ctmTitle" />
+            android:text="@string/miTitle" />
         <TextView
+            android:id="@+id/miSubTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
@@ -31,34 +32,23 @@
             android:textAlignment="center"
             android:textSize="16sp"
             android:textColor="@android:color/secondary_text_light"
-            android:text="@string/ctmSubTitle"
+            android:text="@string/miSubTitle"
             android:paddingBottom="40dp"/>
-        <EditText
-            android:id="@+id/pubnub_id"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
-            android:text=""
-            android:inputType="text"
-            android:paddingTop="5dp"
-            android:paddingBottom="5dp"
-            android:paddingLeft="15dp"
-            android:paddingRight="15dp"
-            android:background="@drawable/radius_small_background"
-            android:elevation="8dp"
-            android:textAllCaps="false"
-            android:textStyle="normal"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp"
-            android:textColor="@android:color/secondary_text_light"
-            android:textSize="24sp"/>
-        <Button
-            android:id="@+id/join_btn"
+        <ImageView
+            android:id="@+id/qr_code"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:elevation="8dp"
+            />
+        <Button
+            android:id="@+id/miPictureBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
             android:background="@drawable/radius_background"
             android:backgroundTint="@android:color/secondary_text_light"
-            android:layout_marginTop="40dp"
+            android:layout_marginTop="20dp"
             android:layout_marginStart="4dp"
             android:layout_marginEnd="4dp"
             android:paddingStart="72dp"
@@ -67,7 +57,7 @@
             android:textStyle="normal"
             android:elevation="8dp"
             android:layout_marginBottom="8dp"
-            android:text="@string/ctmJoin"
+            android:text="@string/miTakePicture"
             android:textColor="#fff"
             android:textSize="24sp"
             android:layout_gravity="center"

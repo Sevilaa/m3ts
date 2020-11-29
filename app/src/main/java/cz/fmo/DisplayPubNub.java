@@ -10,7 +10,8 @@ import org.json.JSONObject;
 
 import java.util.UUID;
 
-import cz.fmo.display.DisplayEventCallback;
+import cz.fmo.display.DisplayConnectCallback;
+import cz.fmo.display.DisplayScoreEventCallback;
 import cz.fmo.tabletennis.Side;
 import cz.fmo.tabletennis.UICallback;
 import cz.fmo.util.ByteToBase64Encoder;
@@ -19,14 +20,13 @@ public class DisplayPubNub extends Callback {
     private static final String ROLE = "display";
     private final Pubnub pubnub;
     private final String roomID;
-    private UICallback callback;
-    private DisplayEventCallback displayEventCallback;
+    private UICallback uiCallback;
+    private DisplayScoreEventCallback scoreCallback;
+    private DisplayConnectCallback connectCallback;
 
-    public DisplayPubNub(final String roomID, String pubKey, String subKey, UICallback callback, DisplayEventCallback displayEventCallback) {
+    public DisplayPubNub(final String roomID, String pubKey, String subKey) {
         this.pubnub = new Pubnub(pubKey, subKey);
         this.roomID = roomID;
-        this.callback = callback;
-        this.displayEventCallback = displayEventCallback;
         try {
             pubnub.setUUID(UUID.randomUUID());
             pubnub.subscribe(roomID, this);
@@ -61,12 +61,32 @@ public class DisplayPubNub extends Callback {
         send("onPointAddition", side.toString(), null,null);
     }
 
+    public void onRequestTableFrame() {
+        send("onRequestTableFrame", null, null, null);
+    }
+
     public void onPause() {
         send("onPause", null, null, null);
     }
 
     public void onResume() {
         send("onResume", null, null, null);
+    }
+
+    public void setUiCallback(UICallback uiCallback) {
+        this.uiCallback = uiCallback;
+    }
+
+    public void setDisplayScoreEventCallback(DisplayScoreEventCallback displayScoreCallback) {
+        this.scoreCallback = displayScoreCallback;
+    }
+
+    public void setDisplayConnectCallback(DisplayConnectCallback displayConnectCallback) {
+        this.connectCallback = displayConnectCallback;
+    }
+
+    public String getRoomID() {
+        return roomID;
     }
 
     private void send(String event, String side, Integer score, Integer wins) {
@@ -88,23 +108,29 @@ public class DisplayPubNub extends Callback {
             if(event != null) {
                 switch (event) {
                     case "onMatchEnded":
-                        this.callback.onMatchEnded(json.getString(JSONInfo.SIDE_PROPERTY));
+                        this.uiCallback.onMatchEnded(json.getString(JSONInfo.SIDE_PROPERTY));
                         break;
                     case "onScore":
-                        this.callback.onScore(Side.valueOf(json.getString(JSONInfo.SIDE_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.SCORE_PROPERTY)),
+                        this.uiCallback.onScore(Side.valueOf(json.getString(JSONInfo.SIDE_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.SCORE_PROPERTY)),
                                 Side.valueOf(json.getString(JSONInfo.NEXT_SERVER_PROPERTY)));
                         break;
                     case "onWin":
-                        this.callback.onWin(Side.valueOf(json.getString(JSONInfo.SIDE_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.WINS_PROPERTY)));
+                        this.uiCallback.onWin(Side.valueOf(json.getString(JSONInfo.SIDE_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.WINS_PROPERTY)));
                         break;
                     case "onReadyToServe":
-                        this.callback.onReadyToServe(Side.valueOf(json.getString(JSONInfo.SIDE_PROPERTY)));
+                        this.uiCallback.onReadyToServe(Side.valueOf(json.getString(JSONInfo.SIDE_PROPERTY)));
                         break;
                     case "onStatusUpdate":
-                        this.displayEventCallback.onStatusUpdate(json.getString(JSONInfo.PLAYER_NAME_LEFT_PROPERTY), json.getString(JSONInfo.PLAYER_NAME_RIGHT_PROPERTY),
+                        this.scoreCallback.onStatusUpdate(json.getString(JSONInfo.PLAYER_NAME_LEFT_PROPERTY), json.getString(JSONInfo.PLAYER_NAME_RIGHT_PROPERTY),
                                 Integer.parseInt(json.getString(JSONInfo.SCORE_LEFT_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.SCORE_RIGHT_PROPERTY)),
                                 Integer.parseInt(json.getString(JSONInfo.WINS_LEFT_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.WINS_RIGHT_PROPERTY)),
                                 Side.valueOf(json.getString(JSONInfo.NEXT_SERVER_PROPERTY)));
+                        break;
+                    case "onConnected":
+                        this.connectCallback.onConnected();
+                        break;
+                    case "onImageReceived":
+                        this.connectCallback.onImageReceived(json);
                         break;
                     case "onTableFrameReceived":
                         Log.d("onTableFrameReceived");
