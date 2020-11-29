@@ -13,6 +13,7 @@ import java.util.UUID;
 import cz.fmo.display.DisplayEventCallback;
 import cz.fmo.tabletennis.Side;
 import cz.fmo.tabletennis.UICallback;
+import cz.fmo.util.ByteToBase64Encoder;
 
 public class DisplayPubNub extends Callback {
     private static final String ROLE = "display";
@@ -104,6 +105,12 @@ public class DisplayPubNub extends Callback {
                                 Integer.parseInt(json.getString(JSONInfo.SCORE_LEFT_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.SCORE_RIGHT_PROPERTY)),
                                 Integer.parseInt(json.getString(JSONInfo.WINS_LEFT_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.WINS_RIGHT_PROPERTY)),
                                 Side.valueOf(json.getString(JSONInfo.NEXT_SERVER_PROPERTY)));
+                        break;
+                    case "onTableFrameReceived":
+                        Log.d("onTableFrameReceived");
+                        String encodedFrame = json.getString(JSONInfo.TABLE_FRAME_BYTES);
+                        byte[] frame = ByteToBase64Encoder.decodeToByte(encodedFrame);
+                        Log.d("frame received: " + frame);
                         break;
                     default:
                         Log.d("Unhandled event received:\n"+json.toString());
