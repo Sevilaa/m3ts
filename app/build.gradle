@@ -115,6 +115,9 @@ dependencies {
     implementation 'com.android.support:support-v4:26.1.0'
     implementation 'com.otaliastudios:zoomlayout:1.8.0'
     implementation group: 'com.pubnub', name: 'pubnub', version: '3.7.11'
+    implementation 'com.google.api-client:google-api-client:1.23.0'
+    implementation 'com.google.oauth-client:google-oauth-client-jetty:1.23.0'
+    implementation 'com.google.apis:google-api-services-drive:v3-rev110-1.23.0'
     testImplementation 'junit:junit:4.12'
     testImplementation "org.mockito:mockito-core:1.+"
     testImplementation 'org.powermock:powermock-api-mockito:1.6.2'
