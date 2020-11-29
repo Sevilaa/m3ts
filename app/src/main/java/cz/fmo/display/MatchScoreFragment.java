@@ -30,7 +30,7 @@ import cz.fmo.tabletennis.Side;
 import cz.fmo.tabletennis.UICallback;
 import helper.OnSwipeListener;
 
-public class MatchScoreFragment extends Fragment implements UICallback, DisplayEventCallback {
+public class MatchScoreFragment extends Fragment implements UICallback, DisplayScoreEventCallback {
     private static final String TAG_MATCH_ENDED = "MATCH_WON";
     private String ttsWin;
     private String ttsPoints;
@@ -46,7 +46,9 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayE
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_match_score, container, false);
-        initPubNub(v.getContext(), getArguments().getString("matchID"));
+        this.pubNub = ((MatchActivity)getActivity()).getPubNub();
+        pubNub.setDisplayScoreEventCallback(this);
+        pubNub.setUiCallback(this);
         initTTS();
         ImageButton refreshButton = v.findViewById(R.id.btnDisplayRefresh);
         refreshButton.setOnClickListener(new View.OnClickListener() {
@@ -176,16 +178,6 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayE
         txtView.setTextColor(getResources().getColor(R.color.display_serving));
     }
 
-    private void initPubNub(Context context, String matchID) {
-        Properties properties = new Properties();
-        try (InputStream is = context.getAssets().open("app.properties")) {
-            properties.load(is);
-            this.pubNub = new DisplayPubNub(matchID, properties.getProperty("pub_key"), properties.getProperty("sub_key"), this, this);
-        } catch (IOException ex) {
-            Log.d("Using MatchScoreFragment in without app.properties file!");
-        }
-    }
-
     private void setTextInTextView(int id, final String text) {
         Activity activity = getActivity();
         if (activity == null) return;
@@ -243,10 +235,5 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayE
         setWinsOnTextView(Side.LEFT, gamesLeft);
         setWinsOnTextView(Side.RIGHT, gamesRight);
         updateIndicationNextServer(nextServer, true);
-    }
-
-    @Override
-    public void onImageReceived(JSONObject jsonObject) {
-        // TODO implement corner selection in here
     }
 }

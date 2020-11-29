@@ -12,7 +12,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.Random;
 
-import cz.fmo.display.DisplayEventCallback;
+import cz.fmo.display.DisplayScoreEventCallback;
 import cz.fmo.tabletennis.Side;
 import cz.fmo.tabletennis.UICallback;
 
@@ -33,10 +33,12 @@ public class DisplayPubNubTest {
     public void testWithValidJSON() {
         try {
             UICallback spyCallback = spy(mock(UICallback.class));
-            DisplayEventCallback deCallback = spy(mock(DisplayEventCallback.class));
+            DisplayScoreEventCallback deCallback = spy(mock(DisplayScoreEventCallback.class));
             Pubnub pubnubSpy = spy(mock(Pubnub.class));
             PowerMockito.whenNew(Pubnub.class).withArguments("invalid", "invalid").thenReturn(pubnubSpy);
-            DisplayPubNub displayPubNub = new DisplayPubNub("invalid", "invalid", "invalid", spyCallback, deCallback);
+            DisplayPubNub displayPubNub = new DisplayPubNub("invalid", "invalid", "invalid");
+            displayPubNub.setUiCallback(spyCallback);
+            displayPubNub.setDisplayScoreEventCallback(deCallback);
 
             // test onScore
             JSONObject jsonScore = makeJSONObject("onScore", Side.RIGHT, random.nextInt(999), null, Side.LEFT);
@@ -68,10 +70,12 @@ public class DisplayPubNubTest {
     public void testWithInvalidJSON() {
         try {
             UICallback spyCallback = spy(mock(UICallback.class));
-            DisplayEventCallback deCallback = spy(mock(DisplayEventCallback.class));
+            DisplayScoreEventCallback deCallback = spy(mock(DisplayScoreEventCallback.class));
             Pubnub pubnubSpy = spy(mock(Pubnub.class));
             PowerMockito.whenNew(Pubnub.class).withArguments("invalid", "invalid").thenReturn(pubnubSpy);
-            DisplayPubNub displayPubNub = new DisplayPubNub("invalid", "invalid", "invalid", spyCallback, deCallback);
+            DisplayPubNub displayPubNub = new DisplayPubNub("invalid", "invalid", "invalid");
+            displayPubNub.setUiCallback(spyCallback);
+            displayPubNub.setDisplayScoreEventCallback(deCallback);
 
             for (int i = 0; i<100; i++) {
                 JSONObject invalidJSON = makeJSONObject(generateRandomAlphabeticString(random.nextInt(20)),

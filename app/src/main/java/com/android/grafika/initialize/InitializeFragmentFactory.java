@@ -1,5 +1,7 @@
 package com.android.grafika.initialize;
 
+import cz.fmo.display.MatchSettingsFragment;
+
 class InitializeFragmentFactory {
 
     private InitializeFragmentFactory(){
@@ -12,8 +14,8 @@ class InitializeFragmentFactory {
      *
      * @return A new instance of fragment InitializeSpecifyMatchFragment.
      */
-    static InitializeSpecifyMatchFragment newSpecifyMatchInstance() {
-        return new InitializeSpecifyMatchFragment();
+    static MatchSettingsFragment newSpecifyMatchInstance() {
+        return new MatchSettingsFragment();
     }
 
     /**

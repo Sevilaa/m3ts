@@ -93,10 +93,18 @@
     <string name="ttsReadyServe"> ready to serve!</string>
     <string name="ttsServe">Serve </string>
 
-    <!-- ConnectToMatch Fragment -->
-    <string name="ctmTitle">Connect To Active Match</string>
-    <string name="ctmSubTitle">input the Match ID set by the display device</string>
-    <string name="ctmJoin">Join</string>
+    <!-- MatchInit Fragment -->
+    <string name="miTitle">Connect With Tracker</string>
+    <string name="miSubTitle">scan the QR code with the tracker device</string>
+    <string name="miConnectedTitle">Connected With Tracker</string>
+    <string name="miConnectedSubTitle">click on the button to take a picture of the table with the tracker device</string>
+    <string name="miTakePicture">Take Picture</string>
+
+    <!-- MatchSettings Fragment -->
+    <string name="msTitle">Match Settings</string>
+    <string name="msType">Match Type</string>
+    <string name="msServer">Starting Server Side</string>
+    <string name="msBtn">Create Match</string>
 
     <!-- MatchWin Fragment -->
     <string name="mwStartNew">Play another Match</string>
