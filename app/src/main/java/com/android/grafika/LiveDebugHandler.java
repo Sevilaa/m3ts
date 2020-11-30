@@ -27,7 +27,6 @@ public class LiveDebugHandler extends DebugHandler implements CameraThread.Callb
     @Override
     public void onCameraFrame(byte[] dataYUV420SP) {
         Lib.detectionFrame(dataYUV420SP);
-        super.onFrame(dataYUV420SP);
     }
 
     @Override
