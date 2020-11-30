@@ -1,6 +1,6 @@
 package cz.fmo;
 
-import com.android.grafika.InitializeCallback;
+import com.android.grafika.tracker.InitTrackerCallback;
 import com.android.grafika.Log;
 import com.pubnub.api.Callback;
 import com.pubnub.api.Pubnub;
@@ -25,7 +25,7 @@ public class TrackerPubNub extends Callback implements UICallback {
     private final String roomID;
     private TrackerPubNubCallback callback;
     private ScoreManipulationCallback scoreManipulationCallback;
-    private InitializeCallback initializeCallback;
+    private InitTrackerCallback initTrackerCallback;
 
     public TrackerPubNub(final String roomID, String pubKey, String subKey) {
         this.pubnub = new Pubnub(pubKey, subKey);
@@ -60,8 +60,8 @@ public class TrackerPubNub extends Callback implements UICallback {
         this.scoreManipulationCallback = scoreManipulationCallback;
     }
 
-    public void setInitializeCallback(InitializeCallback initializeCallback) {
-        this.initializeCallback = initializeCallback;
+    public void setInitTrackerCallback(InitTrackerCallback initTrackerCallback) {
+        this.initTrackerCallback = initTrackerCallback;
     }
 
     @Override
@@ -133,7 +133,7 @@ public class TrackerPubNub extends Callback implements UICallback {
 
     private void handleOnRequestTableFrame() {
         Log.d("onRequestTableFrame");
-        byte[] frame = this.initializeCallback.onCaptureFrame();
+        byte[] frame = this.initTrackerCallback.onCaptureFrame();
         String encodedFrame = ByteToBase64Encoder.encodeToString(frame);
         sendTableFrame(encodedFrame);
         Log.d("frame send: " + encodedFrame);
@@ -147,7 +147,7 @@ public class TrackerPubNub extends Callback implements UICallback {
             for (int i = 0; i < tableCorners.length(); ++i) {
                 coordinates[i] = tableCorners.optInt(i);
             }
-            this.initializeCallback.setTableCorners(coordinates);
+            this.initTrackerCallback.setTableCorners(coordinates);
         }
     }
 
@@ -187,7 +187,7 @@ public class TrackerPubNub extends Callback implements UICallback {
                         handleOnTableCorner(tableCorners);
                         break;
                     case "onStartMatch":
-                        this.initializeCallback.switchToDebugActivity();
+                        this.initTrackerCallback.switchToDebugActivity();
                         break;
                     default:
                         Log.d("Invalid event received.\nevent:"+event);

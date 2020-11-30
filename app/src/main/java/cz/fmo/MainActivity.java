@@ -7,7 +7,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.RelativeLayout;
 
-import com.android.grafika.initialize.InitializeActivity;
+import com.android.grafika.tracker.InitTrackerActivity;
 
 import cz.fmo.display.MatchActivity;
 
@@ -33,6 +33,6 @@ public class MainActivity extends Activity {
     }
 
     public void onUseAsTracker(View toggle) {
-        startActivity(new Intent(this, InitializeActivity.class));
+        startActivity(new Intent(this, InitTrackerActivity.class));
     }
 }
