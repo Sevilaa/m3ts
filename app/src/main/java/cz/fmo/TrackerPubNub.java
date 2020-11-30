@@ -1,13 +1,12 @@
 package cz.fmo;
 
-import android.provider.SyncStateContract;
-
-import com.android.grafika.FrameCallback;
+import com.android.grafika.InitializeCallback;
 import com.android.grafika.Log;
 import com.pubnub.api.Callback;
 import com.pubnub.api.Pubnub;
 import com.pubnub.api.PubnubException;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -26,7 +25,7 @@ public class TrackerPubNub extends Callback implements UICallback {
     private final String roomID;
     private TrackerPubNubCallback callback;
     private ScoreManipulationCallback scoreManipulationCallback;
-    private FrameCallback frameCallback;
+    private InitializeCallback initializeCallback;
 
     public TrackerPubNub(final String roomID, String pubKey, String subKey) {
         this.pubnub = new Pubnub(pubKey, subKey);
@@ -42,6 +41,7 @@ public class TrackerPubNub extends Callback implements UICallback {
     @Override
     public void connectCallback(String channel, Object message) {
         // send an init message if needed
+        send("onConnected", null, null, null, null);
     }
 
     @Override
@@ -60,8 +60,8 @@ public class TrackerPubNub extends Callback implements UICallback {
         this.scoreManipulationCallback = scoreManipulationCallback;
     }
 
-    public void setFrameCallback(FrameCallback frameCallback) {
-        this.frameCallback = frameCallback;
+    public void setInitializeCallback(InitializeCallback initializeCallback) {
+        this.initializeCallback = initializeCallback;
     }
 
     @Override
@@ -88,8 +88,8 @@ public class TrackerPubNub extends Callback implements UICallback {
         try {
             JSONObject json = new JSONObject();
             json.put(JSONInfo.SENDER_PROPERTY, pubnub.getUUID());
-            json.put(JSONInfo.TABLE_FRAME_BYTES, encodedTableImage);
-            json.put(JSONInfo.EVENT_PROPERTY, "onTableFrameReceived");
+            json.put(JSONInfo.TABLE_FRAME, encodedTableImage);
+            json.put(JSONInfo.EVENT_PROPERTY, "onTableFrame");
             pubnub.publish(this.roomID, json, new Callback() {});
         } catch (JSONException ex) {
             Log.d("Unable to send JSON to channel "+this.roomID+"\n"+ex.getMessage());
@@ -131,6 +131,26 @@ public class TrackerPubNub extends Callback implements UICallback {
         }
     }
 
+    private void handleOnRequestTableFrame() {
+        Log.d("onRequestTableFrame");
+        byte[] frame = this.initializeCallback.onCaptureFrame();
+        String encodedFrame = ByteToBase64Encoder.encodeToString(frame);
+        sendTableFrame(encodedFrame);
+        Log.d("frame send: " + encodedFrame);
+    }
+
+    private void handleOnTableCorner(JSONArray tableCorners) {
+        Log.d("onTableCoordinate: " + tableCorners);
+        if (tableCorners != null) {
+            int[] coordinates = new int[tableCorners.length()];
+
+            for (int i = 0; i < tableCorners.length(); ++i) {
+                coordinates[i] = tableCorners.optInt(i);
+            }
+            this.initializeCallback.setTableCorners(coordinates);
+        }
+    }
+
     private void handleMessage(JSONObject json) {
         try {
             String event = json.getString(JSONInfo.EVENT_PROPERTY);
@@ -160,11 +180,14 @@ public class TrackerPubNub extends Callback implements UICallback {
                         this.scoreManipulationCallback.onResume();
                         break;
                     case "onRequestTableFrame":
-                        Log.d("onRequestTableFrame");
-                        byte[] frame = this.frameCallback.onCaptureFrame();
-                        String encodedFrame = ByteToBase64Encoder.encodeToString(frame);
-                        sendTableFrame(encodedFrame);
-                        Log.d("frame send: " + frame);
+                        handleOnRequestTableFrame();
+                        break;
+                    case "onTableCorner":
+                        JSONArray tableCorners = json.getJSONArray(JSONInfo.TABLE_FRAME);
+                        handleOnTableCorner(tableCorners);
+                        break;
+                    case "onStartMatch":
+                        this.initializeCallback.switchToDebugActivity();
                         break;
                     default:
                         Log.d("Invalid event received.\nevent:"+event);
