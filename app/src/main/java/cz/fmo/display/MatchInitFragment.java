@@ -51,7 +51,7 @@ public class MatchInitFragment extends Fragment implements DisplayConnectCallbac
     }
 
     @Override
-    public void onImageReceived(JSONObject jsonObject) {
+    public void onImageReceived(byte[] imageBytes) {
         Fragment fragment = new MatchScoreFragment();
         Bundle bundle = new Bundle();
         //bundle.putString("imageUrl", jsonObject.url oderso);
