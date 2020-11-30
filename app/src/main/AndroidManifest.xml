@@ -33,6 +33,12 @@
             android:theme="@style/Recording">
         </activity>
         <activity
+            android:name="com.android.grafika.tracker.InitTrackerActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape"
+            android:theme="@style/Recording">
+        </activity>
+        <activity
             android:name="com.android.grafika.LiveDebugActivity"
             android:configChanges=""
             android:label="@string/app_name"
