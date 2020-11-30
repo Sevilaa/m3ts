@@ -38,7 +38,6 @@ public class DisplayPubNub extends Callback {
     @Override
     public void connectCallback(String channel, Object message) {
         // send init message if needed
-        send("requestStatus", null, null, null);
     }
 
     @Override
@@ -129,14 +128,12 @@ public class DisplayPubNub extends Callback {
                     case "onConnected":
                         this.connectCallback.onConnected();
                         break;
-                    case "onImageReceived":
-                        this.connectCallback.onImageReceived(json);
-                        break;
-                    case "onTableFrameReceived":
-                        Log.d("onTableFrameReceived");
-                        String encodedFrame = json.getString(JSONInfo.TABLE_FRAME_BYTES);
+                    case "onTableFrame":
+                        Log.d("onTableFrame");
+                        String encodedFrame = json.getString(JSONInfo.TABLE_FRAME);
                         byte[] frame = ByteToBase64Encoder.decodeToByte(encodedFrame);
-                        Log.d("frame received: " + frame);
+                        Log.d("frame received: " + encodedFrame);
+                        this.connectCallback.onImageReceived(frame);
                         break;
                     default:
                         Log.d("Unhandled event received:\n"+json.toString());
