@@ -161,11 +161,11 @@ public abstract class CameraPreviewActivity extends Activity implements SurfaceH
         this.mSurfaceHolderReady = mSurfaceHolderReady;
     }
 
-    protected int getCameraWidth() {
+    public int getCameraWidth() {
         return mCamera.getWidth();
     }
 
-    protected int getCameraHeight() {
+    public int getCameraHeight() {
         return mCamera.getHeight();
     }
 
