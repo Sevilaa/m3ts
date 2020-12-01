@@ -142,7 +142,7 @@ public class DisplayPubNub extends Callback {
                                 Log.d("encodedFrame length: " + this.encodedFrameComplete.length());
                                 byte[] frame = ByteToBase64Encoder.decodeToByte(this.encodedFrameComplete);
                                 Log.d("frame length: " + frame.length);
-                                this.connectCallback.onImageReceived(frame);
+                                this.connectCallback.onImageReceived(frame, json.getInt(JSONInfo.TABLE_FRAME_WIDTH), json.getInt(JSONInfo.TABLE_FRAME_HEIGHT));
                             }
                         }
                         break;

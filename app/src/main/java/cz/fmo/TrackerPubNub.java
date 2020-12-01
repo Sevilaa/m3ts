@@ -92,6 +92,8 @@ public class TrackerPubNub extends Callback implements UICallback {
             json.put(JSONInfo.EVENT_PROPERTY, "onTableFrame");
             json.put(JSONInfo.TABLE_FRAME_INDEX, index);
             json.put(JSONInfo.TABLE_FRAME_NUMBER_OF_PARTS, numberOfParts);
+            json.put(JSONInfo.TABLE_FRAME_WIDTH, this.initTrackerCallback.getCameraWidth());
+            json.put(JSONInfo.TABLE_FRAME_HEIGHT, this.initTrackerCallback.getCameraHeight());
             json.put(JSONInfo.TABLE_FRAME, encodedTableFramePart);
             pubnub.publish(this.roomID, json, new Callback() {});
         } catch (JSONException ex) {

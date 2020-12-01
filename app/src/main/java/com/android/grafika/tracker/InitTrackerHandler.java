@@ -75,6 +75,19 @@ public class InitTrackerHandler extends android.os.Handler implements CameraThre
         this.tableCorners = tableCorners;
     }
 
+    public int getCameraHeight() {
+        return this.cameraHeight;
+    }
+
+    public int getCameraWidth() {
+        return this.cameraWidth;
+    }
+
+    private void setCameraSize(CameraPreviewActivity activity) {
+        this.cameraHeight = activity.getCameraHeight();
+        this.cameraWidth = activity.getCameraWidth();
+    }
+
     private BinaryBitmap convertBytesToBinaryBitmap(byte[] bytes) {
         int[] out = new int[this.cameraHeight*this.cameraWidth];
         ColorConversions.yuv420pToRGBA8888(out, bytes, this.cameraWidth, this.cameraHeight);
@@ -84,10 +97,6 @@ public class InitTrackerHandler extends android.os.Handler implements CameraThre
         return new BinaryBitmap(new HybridBinarizer(source));
     }
 
-    private void setCameraSize(CameraPreviewActivity activity) {
-        this.cameraHeight = activity.getCameraHeight();
-        this.cameraWidth = activity.getCameraWidth();
-    }
 
     private String readQRCode(BinaryBitmap binaryBitmap) {
         Reader reader = new QRCodeReader();
