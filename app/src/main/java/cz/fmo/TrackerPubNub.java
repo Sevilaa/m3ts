@@ -11,6 +11,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 import cz.fmo.tabletennis.MatchStatus;
@@ -86,22 +87,23 @@ public class TrackerPubNub extends Callback implements UICallback {
         send("onReadyToServe", server.toString(), null, null, null);
     }
 
-    private void sendTableFramePart(final String encodedFrame, final int index, final int numberOfPackages, boolean doContinue) {
-        String subString;
+    private void sendTableFramePart(final byte[] frame, final int index, final int size, final int numberOfPackages, boolean doContinue) {
+        byte[] subArray;
         if (index == numberOfPackages-1) {
-            subString = encodedFrame.substring(index*MAX_SIZE);
+            subArray = Arrays.copyOfRange(frame, index*MAX_SIZE, frame.length);
         } else {
-            subString = encodedFrame.substring(index*MAX_SIZE, (index+1)*MAX_SIZE);
+            subArray = Arrays.copyOfRange(frame,index*MAX_SIZE, (index+1)*MAX_SIZE);
         }
         try {
             JSONObject json = new JSONObject();
             json.put(JSONInfo.SENDER_PROPERTY, pubnub.getUUID());
             json.put(JSONInfo.EVENT_PROPERTY, "onTableFrame");
             json.put(JSONInfo.TABLE_FRAME_INDEX, index);
+            json.put(JSONInfo.TABLE_FRAME_SIZE, size);
             json.put(JSONInfo.TABLE_FRAME_NUMBER_OF_PARTS, numberOfPackages);
             json.put(JSONInfo.TABLE_FRAME_WIDTH, this.initTrackerCallback.getCameraWidth());
             json.put(JSONInfo.TABLE_FRAME_HEIGHT, this.initTrackerCallback.getCameraHeight());
-            json.put(JSONInfo.TABLE_FRAME, subString);
+            json.put(JSONInfo.TABLE_FRAME, subArray);
             if (doContinue) {
                 pubnub.publish(this.roomID, json, new Callback() {
                     @Override
@@ -110,7 +112,7 @@ public class TrackerPubNub extends Callback implements UICallback {
                         if (index == numberOfPackages-2) {
                             doContinue = false;
                         }
-                        sendTableFramePart(encodedFrame, index + 1, numberOfPackages, doContinue);
+                        sendTableFramePart(frame, index + 1, size, numberOfPackages, doContinue);
                     }
                     @Override
                     public void errorCallback(String channel, PubnubError error) {
@@ -166,20 +168,17 @@ public class TrackerPubNub extends Callback implements UICallback {
         byte[] frame = this.initTrackerCallback.onCaptureFrame();
         Log.d("frame length: " + frame.length);
         try {
-            String encodedFrame = ByteToBase64Encoder.encodeToString(frame);
-            Log.d("encodedFrame length: " + encodedFrame.length());
-            sendTableFrame(encodedFrame);
+            sendTableFrame(frame);
         } catch (Exception ex) {
             Log.d("UNSUPPORTED ENCODING EXCEPTION:");
             Log.d(ex.getMessage());
         }
-
     }
 
-    private void sendTableFrame(String encodedFrame) {
-        int numberOfPackages = (int)Math.ceil(encodedFrame.length() / (double) MAX_SIZE);
+    private void sendTableFrame(byte[] frame) {
+        int numberOfPackages = (int)Math.ceil(frame.length / (double) MAX_SIZE);
         Log.d("numberOfPackages: " + numberOfPackages);
-        sendTableFramePart(encodedFrame, 0, numberOfPackages, true);
+        sendTableFramePart(frame, 0, frame.length, numberOfPackages, true);
     }
 
     private void handleOnTableCorner(JSONArray tableCorners) {

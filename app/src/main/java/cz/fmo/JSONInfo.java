@@ -19,6 +19,7 @@ public final class JSONInfo {
     static final String NEXT_SERVER_PROPERTY = "nextServer";
     static final String TABLE_FRAME = "tableFrame";
     static final String TABLE_FRAME_INDEX = "tableFrameIndex";
+    static final String TABLE_FRAME_SIZE = "tableFrameSize";
     static final String TABLE_FRAME_NUMBER_OF_PARTS = "tableFrameNumberOfParts";
     static final String TABLE_FRAME_WIDTH = "tableFrameWidth";
     static final String TABLE_FRAME_HEIGHT = "tableFrameHeight";

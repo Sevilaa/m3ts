@@ -23,8 +23,9 @@ public class DisplayPubNub extends Callback {
     private UICallback uiCallback;
     private DisplayScoreEventCallback scoreCallback;
     private DisplayConnectCallback connectCallback;
-    private String encodedFrameComplete;
-    private int numberOfEncodedFrameParts;
+    private byte[] frameComplete;
+    private int frameCompleteIndex;
+    private int numberOfFramePartsReceived;
 
     public DisplayPubNub(final String roomID, String pubKey, String subKey) {
         this.pubnub = new Pubnub(pubKey, subKey);
@@ -105,27 +106,39 @@ public class DisplayPubNub extends Callback {
 
     private void handleOnTableFrame(JSONObject json) throws JSONException {
         Log.d("onTableFrame");
-        int encodedFrameIndex = json.getInt(JSONInfo.TABLE_FRAME_INDEX);
-        int numberOfParts = json.getInt(JSONInfo.TABLE_FRAME_NUMBER_OF_PARTS);
-        String encodedFrame = json.getString(JSONInfo.TABLE_FRAME);
-        if (encodedFrameIndex == 0) {
-            this.numberOfEncodedFrameParts = 1;
-            this.encodedFrameComplete = encodedFrame;
+        int frameSize = json.getInt(JSONInfo.TABLE_FRAME_SIZE);
+        int framePartIndex = json.getInt(JSONInfo.TABLE_FRAME_INDEX);
+        int numberOfFramePartsSent = json.getInt(JSONInfo.TABLE_FRAME_NUMBER_OF_PARTS);
+        byte[] framePart = json.get(JSONInfo.TABLE_FRAME).toString().getBytes();
+        Log.d("framePart: "+framePart );
+        if (framePartIndex == 0) {
+            this.frameComplete = new byte[frameSize];
+            this.frameCompleteIndex = 0;
+            this.numberOfFramePartsReceived = 1;
+            restoreFramePart(framePart, this.frameCompleteIndex, framePart.length);
+            this.frameCompleteIndex += framePart.length;
         } else {
-            this.numberOfEncodedFrameParts++;
-            this.encodedFrameComplete += encodedFrame;
-            if (encodedFrameIndex == numberOfParts-1) {
-                Log.d("number of frame parts sent: " + numberOfParts);
-                Log.d("number of frame parts received: " + numberOfEncodedFrameParts);
-                if (this.numberOfEncodedFrameParts == numberOfParts) {
-                    Log.d("encodedFrame length: " + this.encodedFrameComplete.length());
-                    byte[] frame = ByteToBase64Encoder.decodeToByte(this.encodedFrameComplete);
-                    Log.d("frame length: " + frame.length);
-                    this.connectCallback.onImageReceived(frame, json.getInt(JSONInfo.TABLE_FRAME_WIDTH), json.getInt(JSONInfo.TABLE_FRAME_HEIGHT));
+            this.numberOfFramePartsReceived++;
+            restoreFramePart(framePart, this.frameCompleteIndex, framePart.length);
+            this.frameCompleteIndex += framePart.length;
+            if (framePartIndex == numberOfFramePartsSent-1) {
+                Log.d("number of frame parts sent: " + numberOfFramePartsSent);
+                Log.d("number of frame parts received: " + this.numberOfFramePartsReceived);
+                if (this.numberOfFramePartsReceived == numberOfFramePartsSent) {
+                    //Log.d("encodedFrame length: " + this.encodedFrameComplete.length());
+                    //byte[] frame = ByteToBase64Encoder.decodeToByte(this.encodedFrameComplete);
+                    Log.d("frame length: " + this.frameComplete.length);
+                    this.connectCallback.onImageReceived(this.frameComplete, json.getInt(JSONInfo.TABLE_FRAME_WIDTH), json.getInt(JSONInfo.TABLE_FRAME_HEIGHT));
                 } else {
                     onRequestTableFrame();
                 }
             }
+        }
+    }
+
+    private void restoreFramePart(byte[] framePart, int startIndex, int endIndex) {
+        for (int i = 0; i < endIndex-startIndex; i++) {
+            this.frameComplete[startIndex+i] = framePart[i];
         }
     }
 
