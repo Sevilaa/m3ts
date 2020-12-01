@@ -21,7 +21,7 @@ import cz.fmo.util.ByteToBase64Encoder;
 
 public class TrackerPubNub extends Callback implements UICallback {
     private static final String ROLE = "tracker";
-    private static final int MAX_SIZE = 30000;
+    private static final int MAX_SIZE = 20000;
     private final Pubnub pubnub;
     private final String roomID;
     private TrackerPubNubCallback callback;
