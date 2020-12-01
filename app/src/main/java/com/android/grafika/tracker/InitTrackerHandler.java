@@ -32,6 +32,7 @@ public class InitTrackerHandler extends android.os.Handler implements CameraThre
     private int selectedMatchType;
     private int selectedServingSide;
     private String selectedMatchId;
+    private boolean isReadingQRCode = true;
 
     public InitTrackerHandler(@NonNull InitTrackerActivity activity) {
         mActivity = new WeakReference<>(activity);
@@ -45,10 +46,12 @@ public class InitTrackerHandler extends android.os.Handler implements CameraThre
     @Override
     public void onCameraFrame(byte[] dataYUV420SP) {
         this.currentFrame = dataYUV420SP;
-        setCameraSize(this.mActivity.get());
-        BinaryBitmap binaryBitmap = convertBytesToBinaryBitmap(dataYUV420SP);
-        String result = readQRCode(binaryBitmap);
-        parseQRCodeData(result);
+        if(this.isReadingQRCode) {
+            setCameraSize(this.mActivity.get());
+            BinaryBitmap binaryBitmap = convertBytesToBinaryBitmap(dataYUV420SP);
+            String result = readQRCode(binaryBitmap);
+            parseQRCodeData(result);
+        }
     }
 
     @Override
@@ -108,6 +111,7 @@ public class InitTrackerHandler extends android.os.Handler implements CameraThre
                     this.selectedMatchType = Integer.parseInt(resultArray[1]);
                     this.selectedServingSide = Integer.parseInt(resultArray[2]);
                     mActivity.get().createPubNubRoom(this.selectedMatchId);
+                    this.isReadingQRCode = false;
                 }
             } catch (Exception e) {
                 Log.d("Data of QR-Code is incorrect");
