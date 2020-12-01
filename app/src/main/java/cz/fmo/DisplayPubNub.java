@@ -109,7 +109,7 @@ public class DisplayPubNub extends Callback {
         int numberOfParts = json.getInt(JSONInfo.TABLE_FRAME_NUMBER_OF_PARTS);
         String encodedFrame = json.getString(JSONInfo.TABLE_FRAME);
         if (encodedFrameIndex == 0) {
-            this.numberOfEncodedFrameParts = 0;
+            this.numberOfEncodedFrameParts = 1;
             this.encodedFrameComplete = encodedFrame;
         } else {
             this.numberOfEncodedFrameParts++;
