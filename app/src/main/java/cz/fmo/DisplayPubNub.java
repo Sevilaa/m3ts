@@ -127,7 +127,7 @@ public class DisplayPubNub extends Callback {
         int frameSize = json.getInt(JSONInfo.TABLE_FRAME_SIZE);
         int framePartIndex = json.getInt(JSONInfo.TABLE_FRAME_INDEX);
         int numberOfFramePartsSent = json.getInt(JSONInfo.TABLE_FRAME_NUMBER_OF_PARTS);
-        byte[] framePart = json.get(JSONInfo.TABLE_FRAME).toString().getBytes();
+        byte[] framePart = json.getr(JSONInfo.TABLE_FRAME).toString().getBytes();
         Log.d("framePart: "+framePart );
         if (framePartIndex == 0) {
             this.frameComplete = new byte[frameSize];
