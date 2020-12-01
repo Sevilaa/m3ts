@@ -21,6 +21,7 @@ import cz.fmo.util.ByteToBase64Encoder;
 
 public class TrackerPubNub extends Callback implements UICallback {
     private static final String ROLE = "tracker";
+    private static final int MAX_SIZE = 30000;
     private final Pubnub pubnub;
     private final String roomID;
     private TrackerPubNubCallback callback;
@@ -84,12 +85,14 @@ public class TrackerPubNub extends Callback implements UICallback {
         send("onReadyToServe", server.toString(), null, null, null);
     }
 
-    private void sendTableFrame(String encodedTableImage) {
+    private void sendTableFramePart(String encodedTableFramePart, int index, int numberOfParts) {
         try {
             JSONObject json = new JSONObject();
             json.put(JSONInfo.SENDER_PROPERTY, pubnub.getUUID());
-            json.put(JSONInfo.TABLE_FRAME, encodedTableImage);
             json.put(JSONInfo.EVENT_PROPERTY, "onTableFrame");
+            json.put(JSONInfo.TABLE_FRAME_INDEX, index);
+            json.put(JSONInfo.TABLE_FRAME_NUMBER_OF_PARTS, numberOfParts);
+            json.put(JSONInfo.TABLE_FRAME, encodedTableFramePart);
             pubnub.publish(this.roomID, json, new Callback() {});
         } catch (JSONException ex) {
             Log.d("Unable to send JSON to channel "+this.roomID+"\n"+ex.getMessage());
@@ -134,13 +137,33 @@ public class TrackerPubNub extends Callback implements UICallback {
     private void handleOnRequestTableFrame() {
         Log.d("onRequestTableFrame");
         byte[] frame = this.initTrackerCallback.onCaptureFrame();
+        Log.d("frame length: " + frame.length);
         String encodedFrame = ByteToBase64Encoder.encodeToString(frame);
+        Log.d("encodedFrame length: " + encodedFrame.length());
         sendTableFrame(encodedFrame);
-        Log.d("frame send: " + encodedFrame);
+    }
+
+    private void sendTableFrame(String encodedFrame) {
+        int numberOfPackages = (int)Math.ceil(encodedFrame.length() / (double)MAX_SIZE);
+        Log.d("numberOfPackages: " + numberOfPackages);
+        for (int i = 0; i < numberOfPackages; i++) {
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            String subString;
+            if (i == numberOfPackages-1) {
+                subString = encodedFrame.substring(i*MAX_SIZE);
+            } else {
+                subString = encodedFrame.substring(i*MAX_SIZE, (i+1)*MAX_SIZE);
+            }
+            sendTableFramePart(subString, i, numberOfPackages);
+        }
     }
 
     private void handleOnTableCorner(JSONArray tableCorners) {
-        Log.d("onTableCoordinate: " + tableCorners);
+        Log.d("onTableCorner: " + tableCorners);
         if (tableCorners != null) {
             int[] coordinates = new int[tableCorners.length()];
 

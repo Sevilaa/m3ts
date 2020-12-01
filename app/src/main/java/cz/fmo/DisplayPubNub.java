@@ -23,6 +23,7 @@ public class DisplayPubNub extends Callback {
     private UICallback uiCallback;
     private DisplayScoreEventCallback scoreCallback;
     private DisplayConnectCallback connectCallback;
+    private String encodedFrameComplete;
 
     public DisplayPubNub(final String roomID, String pubKey, String subKey) {
         this.pubnub = new Pubnub(pubKey, subKey);
@@ -130,10 +131,20 @@ public class DisplayPubNub extends Callback {
                         break;
                     case "onTableFrame":
                         Log.d("onTableFrame");
+                        int encodedFrameIndex = json.getInt(JSONInfo.TABLE_FRAME_INDEX);
+                        int numberOfParts = json.getInt(JSONInfo.TABLE_FRAME_NUMBER_OF_PARTS);
                         String encodedFrame = json.getString(JSONInfo.TABLE_FRAME);
-                        byte[] frame = ByteToBase64Encoder.decodeToByte(encodedFrame);
-                        Log.d("frame received: " + encodedFrame);
-                        this.connectCallback.onImageReceived(frame);
+                        if (encodedFrameIndex == 0) {
+                            this.encodedFrameComplete = encodedFrame;
+                        } else {
+                            this.encodedFrameComplete += encodedFrame;
+                            if (encodedFrameIndex == numberOfParts-1) {
+                                Log.d("encodedFrame length: " + this.encodedFrameComplete.length());
+                                byte[] frame = ByteToBase64Encoder.decodeToByte(this.encodedFrameComplete);
+                                Log.d("frame length: " + frame.length);
+                                this.connectCallback.onImageReceived(frame);
+                            }
+                        }
                         break;
                     default:
                         Log.d("Unhandled event received:\n"+json.toString());
