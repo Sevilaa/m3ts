@@ -23,6 +23,6 @@ public final class JSONInfo {
     static final String TABLE_FRAME_NUMBER_OF_PARTS = "tableFrameNumberOfParts";
     static final String TABLE_FRAME_WIDTH = "tableFrameWidth";
     static final String TABLE_FRAME_HEIGHT = "tableFrameHeight";
-
+    static final String CORNERS = "corners";
     private JSONInfo(){}
 }

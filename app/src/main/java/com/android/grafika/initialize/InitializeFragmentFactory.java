@@ -1,5 +1,6 @@
 package com.android.grafika.initialize;
 
+import cz.fmo.display.MatchSelectCornerFragment;
 import cz.fmo.display.MatchSettingsFragment;
 
 class InitializeFragmentFactory {
@@ -24,8 +25,8 @@ class InitializeFragmentFactory {
      *
      * @return A new instance of fragment InitializeSelectingCornersFragment.
      */
-    static InitializeSelectingCornersFragment newSelectingCornersInstance() {
-        return new InitializeSelectingCornersFragment();
+    static MatchSelectCornerFragment newSelectingCornersInstance() {
+        return new MatchSelectCornerFragment();
     }
 
     /**

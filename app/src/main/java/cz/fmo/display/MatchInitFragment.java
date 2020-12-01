@@ -52,9 +52,9 @@ public class MatchInitFragment extends Fragment implements DisplayConnectCallbac
 
     @Override
     public void onImageReceived(byte[] imageBytes, int imageWidth, int imageHeight) {
-        Fragment fragment = new MatchScoreFragment();
+        Fragment fragment = new MatchSelectCornerFragment();
         Bundle bundle = new Bundle();
-        //bundle.putString("imageUrl", jsonObject.url oderso);
+        bundle.putByteArray("tableFrame", imageBytes);
         fragment.setArguments(bundle);
         callback.replaceFragment(fragment, TAG_MATCH_SCORE);
     }

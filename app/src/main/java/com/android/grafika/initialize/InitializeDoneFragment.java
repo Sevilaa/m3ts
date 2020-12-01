@@ -12,6 +12,7 @@ import android.widget.TextView;
 import com.android.grafika.LiveDebugActivity;
 
 import cz.fmo.R;
+import cz.fmo.display.MatchSelectCornerFragment;
 import cz.fmo.tabletennis.MatchType;
 import cz.fmo.tabletennis.Side;
 
@@ -19,7 +20,7 @@ import cz.fmo.tabletennis.Side;
  * Use the {@link InitializeFragmentFactory#newDoneInstance} factory method to
  * create an instance of this fragment.
  */
-public class InitializeDoneFragment extends InitializeSelectingCornersFragment implements Button.OnClickListener {
+public class InitializeDoneFragment extends MatchSelectCornerFragment implements Button.OnClickListener {
     private static final String CORNERS_PARAM = "CORNERS_UNSORTED";
     private static final String MATCH_TYPE_PARAM = "MATCH_TYPE";
     private static final String SERVING_SIDE_PARAM = "SERVING_SIDE";

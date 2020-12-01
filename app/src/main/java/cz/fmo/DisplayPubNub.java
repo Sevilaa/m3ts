@@ -1,5 +1,7 @@
 package cz.fmo;
 
+import android.graphics.Point;
+
 import com.android.grafika.Log;
 import com.pubnub.api.Callback;
 import com.pubnub.api.Pubnub;
@@ -50,6 +52,22 @@ public class DisplayPubNub extends Callback {
             handleMessage((JSONObject)message);
         }
     }
+
+    public void onStartMatch(Point[] tableCorners) {
+        try {
+            for(int i = 0; i < tableCorners.length; i++) {
+                System.out.println("Point"+ i+ ": "+ tableCorners[i].x + ", " + tableCorners[i].y);
+            }
+            JSONObject json = new JSONObject();
+            json.put(JSONInfo.SENDER_PROPERTY, pubnub.getUUID());
+            json.put(JSONInfo.CORNERS, tableCorners);
+            json.put(JSONInfo.EVENT_PROPERTY, "onStartMatch");
+            pubnub.publish(this.roomID, json, new Callback() {});
+        } catch (JSONException ex) {
+            Log.d("Unable to send JSON to channel "+this.roomID+"\n"+ex.getMessage());
+        }
+    }
+
 
     public void requestStatusUpdate() {
         send("requestStatus", null, null, null);

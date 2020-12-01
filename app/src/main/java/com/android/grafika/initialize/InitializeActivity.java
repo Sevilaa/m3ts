@@ -21,6 +21,7 @@ import com.android.grafika.CameraPreviewActivity;
 import com.otaliastudios.zoom.ZoomLayout;
 
 import cz.fmo.R;
+import cz.fmo.display.MatchSelectCornerFragment;
 
 /**
  * Activity to initialize a table tennis game
@@ -34,7 +35,7 @@ public final class InitializeActivity extends CameraPreviewActivity {
     private SurfaceView tableSurface;
     private SurfaceHolder.Callback tableSurfaceCallback;
     private ZoomLayout zoomLayout;
-    private InitializeSelectingCornersFragment initSelectCornerFragment;
+    private MatchSelectCornerFragment initSelectCornerFragment;
     private final Point[] tableCorners = new Point[4];
     private int currentCornerIndex;
     private int selectedMatchType;
@@ -87,7 +88,7 @@ public final class InitializeActivity extends CameraPreviewActivity {
 
     @Override
     public void setCurrentContentView() {
-        setContentView(R.layout.activity_initialize);
+        setContentView(R.layout.fragment_match_corners);
     }
 
     /**
@@ -109,7 +110,7 @@ public final class InitializeActivity extends CameraPreviewActivity {
     {
         super.onBackPressed();
         Fragment f = getFragmentManager().findFragmentByTag(TAG_SELECT_CORNERS);
-        if (f instanceof InitializeSelectingCornersFragment) {
+        if (f instanceof MatchSelectCornerFragment) {
             this.onResume();
         }
     }
@@ -170,7 +171,7 @@ public final class InitializeActivity extends CameraPreviewActivity {
 
     private void switchFragment(Fragment fragment, String tag, boolean addToBackStack) {
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
-        transaction.replace(R.id.init_fragmentPlaceholder, fragment, tag);
+        //transaction.replace(R.id.init_fragmentPlaceholder, fragment, tag);
         if(addToBackStack) transaction.addToBackStack(null);
         transaction.commit();
     }
