@@ -154,8 +154,8 @@ public class DisplayPubNub extends Callback {
         }
     }
 
-    private void restoreFramePart(byte[] framePart, int startIndex, int endIndex) {
-        for (int i = 0; i < endIndex-startIndex; i++) {
+    private void restoreFramePart(byte[] framePart, int startIndex, int length) {
+        for (int i = 0; i < length; i++) {
             this.frameComplete[startIndex+i] = framePart[i];
         }
     }
