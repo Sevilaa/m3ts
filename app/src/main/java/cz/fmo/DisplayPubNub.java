@@ -26,6 +26,7 @@ public class DisplayPubNub extends Callback {
     private DisplayScoreEventCallback scoreCallback;
     private DisplayConnectCallback connectCallback;
     private String encodedFrameComplete;
+    private int numberOfEncodedFrameParts;
 
     public DisplayPubNub(final String roomID, String pubKey, String subKey) {
         this.pubnub = new Pubnub(pubKey, subKey);
@@ -120,6 +121,32 @@ public class DisplayPubNub extends Callback {
         }
     }
 
+    private void handleOnTableFrame(JSONObject json) throws JSONException {
+        Log.d("onTableFrame");
+        int encodedFrameIndex = json.getInt(JSONInfo.TABLE_FRAME_INDEX);
+        int numberOfParts = json.getInt(JSONInfo.TABLE_FRAME_NUMBER_OF_PARTS);
+        String encodedFrame = json.getString(JSONInfo.TABLE_FRAME);
+        if (encodedFrameIndex == 0) {
+            this.numberOfEncodedFrameParts = 1;
+            this.encodedFrameComplete = encodedFrame;
+        } else {
+            this.numberOfEncodedFrameParts++;
+            this.encodedFrameComplete += encodedFrame;
+            if (encodedFrameIndex == numberOfParts-1) {
+                Log.d("number of frame parts sent: " + numberOfParts);
+                Log.d("number of frame parts received: " + numberOfEncodedFrameParts);
+                if (this.numberOfEncodedFrameParts == numberOfParts) {
+                    Log.d("encodedFrame length: " + this.encodedFrameComplete.length());
+                    byte[] frame = ByteToBase64Encoder.decodeToByte(this.encodedFrameComplete);
+                    Log.d("frame length: " + frame.length);
+                    this.connectCallback.onImageReceived(frame, json.getInt(JSONInfo.TABLE_FRAME_WIDTH), json.getInt(JSONInfo.TABLE_FRAME_HEIGHT));
+                } else {
+                    onRequestTableFrame();
+                }
+            }
+        }
+    }
+
     private void handleMessage(JSONObject json) {
         try {
             String event = json.getString(JSONInfo.EVENT_PROPERTY);
@@ -148,21 +175,7 @@ public class DisplayPubNub extends Callback {
                         this.connectCallback.onConnected();
                         break;
                     case "onTableFrame":
-                        Log.d("onTableFrame");
-                        int encodedFrameIndex = json.getInt(JSONInfo.TABLE_FRAME_INDEX);
-                        int numberOfParts = json.getInt(JSONInfo.TABLE_FRAME_NUMBER_OF_PARTS);
-                        String encodedFrame = json.getString(JSONInfo.TABLE_FRAME);
-                        if (encodedFrameIndex == 0) {
-                            this.encodedFrameComplete = encodedFrame;
-                        } else {
-                            this.encodedFrameComplete += encodedFrame;
-                            if (encodedFrameIndex == numberOfParts-1) {
-                                Log.d("encodedFrame length: " + this.encodedFrameComplete.length());
-                                byte[] frame = ByteToBase64Encoder.decodeToByte(this.encodedFrameComplete);
-                                Log.d("frame length: " + frame.length);
-                                this.connectCallback.onImageReceived(frame, json.getInt(JSONInfo.TABLE_FRAME_WIDTH), json.getInt(JSONInfo.TABLE_FRAME_HEIGHT));
-                            }
-                        }
+                        this.handleOnTableFrame(json);
                         break;
                     default:
                         Log.d("Unhandled event received:\n"+json.toString());
