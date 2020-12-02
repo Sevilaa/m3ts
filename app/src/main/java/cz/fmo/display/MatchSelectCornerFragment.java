@@ -25,6 +25,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import com.android.grafika.Log;
 import com.otaliastudios.zoom.ZoomEngine;
 import com.otaliastudios.zoom.ZoomLayout;
 
@@ -163,8 +164,8 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
                 float zoom = zoomLayout.getZoom();
                 float panX = zoomLayout.getPanX();
                 float panY = zoomLayout.getPanY();
-                Point absPoint = makeAbsPoint(x,y,zoom,panX,panY);
-                tableCorners[currentCornerIndex] = absPoint;
+                Point relPoint = makeRelPoint(x,y,zoom,panX,panY);
+                tableCorners[currentCornerIndex] = relPoint;
                 currentCornerIndex++;
                 onStateChanged();
                 updateViews();
@@ -250,8 +251,9 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
 
     @Override
     public void onClick(View v) {
+        Point[] scaledPoints = pointsToRelativeFormat(this.tableCorners);
         ((MatchActivity)getActivity()).getPubNub().setDisplayConnectCallback(null);
-        ((MatchActivity) getActivity()).getPubNub().onSelectTableCorners(tableCorners);
+        ((MatchActivity) getActivity()).getPubNub().onSelectTableCorners(scaledPoints);
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
@@ -260,6 +262,17 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
         ((MatchActivity) getActivity()).getPubNub().onStartMatch();
         Fragment fragment = new MatchScoreFragment();
         callback.replaceFragment(fragment, TAG_MATCH_SCORE);
+    }
+
+    private Point[] pointsToRelativeFormat(Point[] points) {
+        Point[] relPoints = new Point[points.length];
+        for(int i = 0; i<relPoints.length; i++) {
+            int scaledX = (int) Math.round(points[i].x / (double) displaySize.x * 100);
+            int scaledY = (int) Math.round(points[i].y / (double) displaySize.y * 100);
+            relPoints[i] = new Point(scaledX, scaledY);
+            Log.d("Scaled Point x: "+scaledX+" y: "+scaledY);
+        }
+        return relPoints;
     }
 
     @Override

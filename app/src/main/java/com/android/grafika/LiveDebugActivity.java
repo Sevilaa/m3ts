@@ -1,14 +1,11 @@
 package com.android.grafika;
 
-import android.content.Intent;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.view.Display;
-import android.view.View;
 
 import cz.fmo.R;
-import cz.fmo.SettingsActivity;
 import cz.fmo.tabletennis.MatchType;
 import cz.fmo.tabletennis.Player;
 import cz.fmo.tabletennis.Side;
@@ -77,11 +74,6 @@ public final class LiveDebugActivity extends DebugActivity {
         init();
     }
 
-    public void onOpenMenu(View toggle) {
-        setmSurfaceHolderReady(false);
-        startActivity(new Intent(this, SettingsActivity.class));
-    }
-
     /**
      * Perform cleanup after the activity has been paused.
      */
@@ -102,11 +94,25 @@ public final class LiveDebugActivity extends DebugActivity {
             throw new UnableToGetBundleException();
         }
         tableCorners = bundle.getIntArray(CORNERS_PARAM);
+        if (tableCorners == null) {
+            throw new NoCornersInIntendFoundException();
+        }
+        formatRelPointsToAbsPoints(tableCorners);
         servingSide = Side.values()[bundle.getInt(SERVING_SIDE_PARAM)];
         matchType = MatchType.values()[bundle.getInt(MATCH_TYPE_PARAM)];
         matchId = bundle.getString(MATCH_ID);
-        if (tableCorners == null) {
-            throw new NoCornersInIntendFoundException();
+    }
+
+    private void formatRelPointsToAbsPoints(int[] points) {
+        Display display = getWindowManager().getDefaultDisplay();
+        Point displaySize = new Point();
+        display.getSize(displaySize);
+        for (int i = 0; i<points.length; i++) {
+            if (i%2 == 0) {
+                points[i] = (int) Math.round(points[i] / 100.0 * displaySize.x);
+            } else {
+                points[i] = (int) Math.round(points[i] / 100.0 * displaySize.y);
+            }
         }
     }
 

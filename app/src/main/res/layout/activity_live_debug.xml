@@ -112,16 +112,6 @@
 
         <include layout="@layout/debug_score_layout" />
 
-        <ImageButton
-            android:id="@+id/live_settings_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true"
-            android:onClick="onOpenMenu"
-            android:src="@drawable/settings"
-            android:textAppearance="@android:style/TextAppearance.Material.Medium" />
-
         <TextView
             android:id="@+id/camera_status"
             android:layout_width="wrap_content"
