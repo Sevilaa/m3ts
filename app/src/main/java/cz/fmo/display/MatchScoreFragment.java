@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
@@ -15,14 +16,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import com.android.grafika.Log;
-
-import org.json.JSONObject;
-
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Locale;
-import java.util.Properties;
 
 import cz.fmo.DisplayPubNub;
 import cz.fmo.R;
@@ -31,7 +25,6 @@ import cz.fmo.tabletennis.UICallback;
 import helper.OnSwipeListener;
 
 public class MatchScoreFragment extends Fragment implements UICallback, DisplayScoreEventCallback {
-    private static final String TAG_MATCH_ENDED = "MATCH_WON";
     private String ttsWin;
     private String ttsPoints;
     private String ttsPoint;
@@ -93,11 +86,12 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
     @Override
     public void onMatchEnded(String winnerName) {
         this.pubNub.unsubscribe();
+        Intent intent = new Intent(getActivity(), MatchWonActivity.class);
         Bundle bundle = new Bundle();
         bundle.putString("winner", winnerName);
-        Fragment fragment = new MatchWonFragment();
-        fragment.setArguments(bundle);
-        callback.replaceFragment(fragment, TAG_MATCH_ENDED);
+        intent.putExtras(bundle);
+        startActivity(intent);
+        getActivity().finish();
     }
 
     @Override
