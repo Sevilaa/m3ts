@@ -5,9 +5,9 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
@@ -25,7 +25,10 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import com.otaliastudios.zoom.ZoomEngine;
 import com.otaliastudios.zoom.ZoomLayout;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.nio.IntBuffer;
 
@@ -46,6 +49,8 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
     private SurfaceView cornerSurface;
     private SurfaceView tableFrameSurface;
     private byte[] tableFrame;
+    private int tableFrameWidth;
+    private int tableFrameHeight;
     private Point displaySize;
 
     public MatchSelectCornerFragment() {
@@ -66,6 +71,7 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
         // Inflate the layout for this fragment
         View view = inflater.inflate(this.layout, container, false);
         this.zoomLayout = view.findViewById(R.id.init_zoomLayout);
+        setZoomLayoutListener();
         this.txtMaxCorners = view.findViewById(R.id.init_cornersSelectedMaxTxt);
         this.txtSelectedCorners = view.findViewById(R.id.init_cornersSelectedTxt);
         this.txtMaxCorners.setText(maxCorners);
@@ -76,6 +82,8 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
         view.findViewById(R.id.init_startMatch).setOnClickListener(this);
         this.tableFrameSurface.getHolder().addCallback(this);
         this.tableFrame = getArguments().getByteArray("tableFrame");
+        this.tableFrameWidth = getArguments().getInt("width");
+        this.tableFrameHeight = getArguments().getInt("height");
         setupOnLongTouchListener();
         setupOnRevertClickListener(view);
         return view;
@@ -97,12 +105,9 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
     private void drawTableFrame() {
         Canvas canvas = this.tableFrameSurface.getHolder().lockCanvas();
         if (canvas != null) {
-            Paint paint = new Paint();
-            int width = 1280;
-            int height = 720;
-            int[] out = new int[width*height];
-            ColorConversions.yuv420pToRGBA8888(out, this.tableFrame, width, height);
-            Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+            int[] out = new int[this.tableFrameWidth*this.tableFrameHeight];
+            ColorConversions.yuv420pToRGBA8888(out, this.tableFrame, this.tableFrameWidth, this.tableFrameHeight);
+            Bitmap bitmap = Bitmap.createBitmap(this.tableFrameWidth, this.tableFrameHeight, Bitmap.Config.ARGB_8888);
             bitmap.copyPixelsFromBuffer(IntBuffer.wrap(out));
             canvas.drawBitmap(bitmap, null, new Rect(0,0,this.displaySize.x, this.displaySize.y), null);
             this.tableFrameSurface.getHolder().unlockCanvasAndPost(canvas);
@@ -132,6 +137,20 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
         this.txtSelectedCorners.setText(selectedCorners);
         this.txtMaxCorners.setText(maxCorners);
         drawLines();
+    }
+
+    private void setZoomLayoutListener() {
+        this.zoomLayout.getEngine().addListener(new ZoomEngine.Listener() {
+            @Override
+            public void onUpdate(@NotNull ZoomEngine zoomEngine, @NotNull Matrix matrix) {
+                drawLines();
+            }
+
+            @Override
+            public void onIdle(@NotNull ZoomEngine zoomEngine) {
+
+            }
+        });
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -192,9 +211,7 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
     private void drawLines() {
         Canvas canvas = this.cornerSurface.getHolder().lockCanvas();
         ZoomLayout zoomLayout = this.zoomLayout;
-        System.out.println("----------------beforedraw");
         if (canvas != null) {
-            System.out.println("----------------draw");
             canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
             Paint paint = new Paint();
             paint.setColor(Color.CYAN);
@@ -233,7 +250,14 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
 
     @Override
     public void onClick(View v) {
-        ((MatchActivity) getActivity()).getPubNub().onStartMatch(tableCorners);
+        ((MatchActivity)getActivity()).getPubNub().setDisplayConnectCallback(null);
+        ((MatchActivity) getActivity()).getPubNub().onSelectTableCorners(tableCorners);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        ((MatchActivity) getActivity()).getPubNub().onStartMatch();
         Fragment fragment = new MatchScoreFragment();
         callback.replaceFragment(fragment, TAG_MATCH_SCORE);
     }

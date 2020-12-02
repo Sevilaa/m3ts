@@ -67,7 +67,9 @@ public class InitTrackerHandler extends android.os.Handler implements CameraThre
 
     @Override
     public void switchToDebugActivity() {
-        mActivity.get().switchToDebugActivity(this.selectedMatchId, this.selectedMatchType, this.selectedServingSide, this.tableCorners);
+        if(this.tableCorners != null) {
+            mActivity.get().switchToDebugActivity(this.selectedMatchId, this.selectedMatchType, this.selectedServingSide, this.tableCorners);
+        }
     }
 
     @Override
