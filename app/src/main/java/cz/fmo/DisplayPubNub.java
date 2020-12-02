@@ -129,19 +129,19 @@ public class DisplayPubNub extends Callback {
 
     private void handleOnTableFrame(JSONObject json) throws JSONException {
         Log.d("onTableFrame");
-        int encodedFrameIndex = json.getInt(JSONInfo.TABLE_FRAME_INDEX);
-        int numberOfParts = json.getInt(JSONInfo.TABLE_FRAME_NUMBER_OF_PARTS);
-        String encodedFrame = json.getString(JSONInfo.TABLE_FRAME);
-        if (encodedFrameIndex == 0) {
+        int encodedFramePartIndex = json.getInt(JSONInfo.TABLE_FRAME_INDEX);
+        int numberOfFramePartsSent = json.getInt(JSONInfo.TABLE_FRAME_NUMBER_OF_PARTS);
+        String encodedFramePart = json.getString(JSONInfo.TABLE_FRAME);
+        if (encodedFramePartIndex == 0) {
             this.numberOfEncodedFrameParts = 1;
-            this.encodedFrameComplete = encodedFrame;
+            this.encodedFrameComplete = encodedFramePart;
         } else {
             this.numberOfEncodedFrameParts++;
-            this.encodedFrameComplete += encodedFrame;
-            if (encodedFrameIndex == numberOfParts-1) {
-                Log.d("number of frame parts sent: " + numberOfParts);
+            this.encodedFrameComplete += encodedFramePart;
+            if (encodedFramePartIndex == numberOfFramePartsSent-1) {
+                Log.d("number of frame parts sent: " + numberOfFramePartsSent);
                 Log.d("number of frame parts received: " + numberOfEncodedFrameParts);
-                if (this.numberOfEncodedFrameParts == numberOfParts) {
+                if (this.numberOfEncodedFrameParts == numberOfFramePartsSent) {
                     Log.d("encodedFrame length: " + this.encodedFrameComplete.length());
                     byte[] frame = ByteToBase64Encoder.decodeToByte(this.encodedFrameComplete);
                     Log.d("frame length: " + frame.length);

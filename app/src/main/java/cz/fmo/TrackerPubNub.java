@@ -22,7 +22,7 @@ import cz.fmo.util.ByteToBase64Encoder;
 
 public class TrackerPubNub extends Callback implements UICallback {
     private static final String ROLE = "tracker";
-    private static final int MAX_SIZE = 20000;
+    private static final int MAX_SIZE = 10000;
     private final Pubnub pubnub;
     private final String roomID;
     private TrackerPubNubCallback callback;
@@ -87,11 +87,11 @@ public class TrackerPubNub extends Callback implements UICallback {
     }
 
     private void sendTableFramePart(final String encodedFrame, final int index, final int numberOfPackages, boolean doContinue) {
-        String subString;
+        String encodedFramePart;
         if (index == numberOfPackages-1) {
-            subString = encodedFrame.substring(index*MAX_SIZE);
+            encodedFramePart = encodedFrame.substring(index*MAX_SIZE);
         } else {
-            subString = encodedFrame.substring(index*MAX_SIZE, (index+1)*MAX_SIZE);
+            encodedFramePart = encodedFrame.substring(index*MAX_SIZE, (index+1)*MAX_SIZE);
         }
         try {
             JSONObject json = new JSONObject();
@@ -101,7 +101,7 @@ public class TrackerPubNub extends Callback implements UICallback {
             json.put(JSONInfo.TABLE_FRAME_NUMBER_OF_PARTS, numberOfPackages);
             json.put(JSONInfo.TABLE_FRAME_WIDTH, this.initTrackerCallback.getCameraWidth());
             json.put(JSONInfo.TABLE_FRAME_HEIGHT, this.initTrackerCallback.getCameraHeight());
-            json.put(JSONInfo.TABLE_FRAME, subString);
+            json.put(JSONInfo.TABLE_FRAME, encodedFramePart);
             if (doContinue) {
                 pubnub.publish(this.roomID, json, new Callback() {
                     @Override
