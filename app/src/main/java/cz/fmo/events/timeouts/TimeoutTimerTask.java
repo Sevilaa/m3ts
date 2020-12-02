@@ -1,7 +1,5 @@
 package cz.fmo.events.timeouts;
 
-import com.android.grafika.Log;
-
 import java.util.TimerTask;
 
 import cz.fmo.events.EventDetector;
@@ -17,9 +15,7 @@ public class TimeoutTimerTask extends TimerTask {
 
     @Override
     public void run() {
-        Log.d("if timeout then: " + currentNumberOfDetections + " == " + eventDetector.getNumberOfDetections());
         if (currentNumberOfDetections == eventDetector.getNumberOfDetections()) {
-            Log.d("Timeout: currentNumberOfDetections == eventDetector.getNumberOfDetections()");
             eventDetector.callAllOnTimeout();
         }
     }

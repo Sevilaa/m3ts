@@ -68,7 +68,7 @@ public class RefereeTest {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        referee.onStrikeFound(realTrackSet);
+        referee.onStrikeFound(realTrackSet.getTracks().get(0));
         verify(gameMock, times(1)).onPoint(STARTING_SIDE);
         verify(gameMock, times(0)).onPoint(Side.RIGHT);
         assertEquals(referee.getState(), GameState.PAUSE);
@@ -86,7 +86,7 @@ public class RefereeTest {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        referee.onStrikeFound(realTrackSet);
+        referee.onStrikeFound(realTrackSet.getTracks().get(0));
         referee.onSideChange(Side.RIGHT);
         referee.onTableSideChange(Side.LEFT);
         referee.onBounce(detection);
@@ -153,7 +153,7 @@ public class RefereeTest {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        referee.onStrikeFound(realTrackSet);
+        referee.onStrikeFound(realTrackSet.getTracks().get(0));
         verify(gameMock, times(1)).onPoint(Side.LEFT);
         verify(gameMock, times(0)).onPoint(Side.RIGHT);
     }
@@ -167,7 +167,7 @@ public class RefereeTest {
         referee.onSideChange(Side.RIGHT);
         referee.onTableSideChange(Side.LEFT);
         referee.onNearlyOutOfFrame(detection, Side.LEFT);
-        referee.onStrikeFound(realTrackSet);
+        referee.onStrikeFound(realTrackSet.getTracks().get(0));
         verify(gameMock, times(1)).onPoint(Side.LEFT);
         verify(gameMock, times(0)).onPoint(Side.RIGHT);
     }
@@ -185,7 +185,7 @@ public class RefereeTest {
         for (Lib.Detection someDetection : someDetections) {
             detectionTime = detectionTime + delay;
             realTrackSet.addDetections(new Lib.Detection[]{someDetection}, SOME_WIDTH, SOME_HEIGHT, detectionTime);
-            referee.onStrikeFound(realTrackSet);
+            referee.onStrikeFound(realTrackSet.getTracks().get(0));
         }
     }
 }

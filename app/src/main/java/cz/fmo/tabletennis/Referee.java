@@ -6,7 +6,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import cz.fmo.Lib;
-import cz.fmo.data.TrackSet;
+import cz.fmo.data.Track;
 import cz.fmo.events.EventDetectionCallback;
 import cz.fmo.tabletennis.timeouts.OutOfFrameTimerTask;
 import cz.fmo.tabletennis.timeouts.PauseTimerTask;
@@ -101,10 +101,10 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     }
 
     @Override
-    public void onStrikeFound(TrackSet tracks) {
+    public void onStrikeFound(Track track) {
         switch (this.state) {
             case WAIT_FOR_SERVE:
-                Lib.Detection latestDetection = tracks.getTracks().get(0).getLatest();
+                Lib.Detection latestDetection = track.getLatest();
                 if (((getServer() == Side.LEFT && currentBallSide == Side.LEFT && latestDetection.directionX == DirectionX.RIGHT) ||
                         (getServer()  == Side.RIGHT && currentBallSide == Side.RIGHT && latestDetection.directionX == DirectionX.LEFT)) &&
                         (latestDetection.predecessor != null)) {
