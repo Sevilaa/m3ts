@@ -47,19 +47,6 @@
             android:id="@+id/init_tableSurface"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
-        <ImageButton
-            android:id="@+id/init_revertButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="16dp"
-            android:background="@drawable/radius_background"
-            android:contentDescription="@string/contentDescRevert"
-            android:padding="4dp"
-            android:src="@android:drawable/ic_menu_revert"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentTop="true"/>
-
     </RelativeLayout>
     <FrameLayout
         android:id="@+id/init_fragmentPlaceholder"

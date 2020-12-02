@@ -54,6 +54,10 @@ public class TrackerPubNub extends Callback implements UICallback {
         }
     }
 
+    public void unsubscribe() {
+        this.pubnub.unsubscribe(this.roomID);
+    }
+
     public void setTrackerPubNubCallback(TrackerPubNubCallback callback) {
         this.callback = callback;
     }
