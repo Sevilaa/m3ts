@@ -77,7 +77,7 @@ public class EventDetector implements Lib.Callback {
                 if (hasBallFallenOffSideWays(latestDetection)){
                     callAllOnBallDroppedSideWays();
                 }
-                callAllOnStrikeFound(tracks);
+                callAllOnStrikeFound(track);
                 hasSideChanged(latestDetection);
                 hasBouncedOnTable(latestDetection);
                 hasTableSideChanged(latestDetection.centerX);
@@ -135,9 +135,9 @@ public class EventDetector implements Lib.Callback {
         this.timeoutTimer.schedule(timeoutTimerTask, MILLISECONDS_TILL_TIMEOUT);
     }
 
-    private void callAllOnStrikeFound(TrackSet tracks) {
+    private void callAllOnStrikeFound(Track track) {
         for (EventDetectionCallback callback : callbacks) {
-            callback.onStrikeFound(tracks);
+            callback.onStrikeFound(track);
         }
     }
 

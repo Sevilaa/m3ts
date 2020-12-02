@@ -116,7 +116,7 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     }
 
     @Override
-    public void onStrikeFound(TrackSet tracks) {
+    public void onStrikeFound(Track track) {
         DebugActivity activity = mActivity.get();
         if (activity == null) {
             return;
@@ -136,7 +136,7 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
                 drawTable();
                 hasNewTable = false;
             }
-            drawAllTracks(canvas, tracks);
+            drawTrack(canvas, track);
             drawLatestBounce(canvas);
             drawLatestOutOfFrameDetection(canvas);
             surfaceHolder.unlockCanvasAndPost(canvas);
@@ -277,9 +277,8 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
         refreshDebugTextViews();
     }
 
-    private void drawAllTracks(Canvas canvas, TrackSet set) {
+    private void drawTrack(Canvas canvas, Track t) {
         // only draw the tracks which get processed by EventDetector (this case getTracks().get(0))
-        Track t = set.getTracks().get(0);
         t.updateColor();
         Lib.Detection pre = t.getLatest();
         cz.fmo.util.Color.RGBA r = t.getColor();

@@ -63,7 +63,7 @@ public class EventDetectorTest {
         invokeOnObjectDetectedWithDelay(strikeDetections, ev, 0);
 
         // assert that we have now one track with all detections in it
-        verify(mockCallback, atLeastOnce()).onStrikeFound(realTrackSet);
+        verify(mockCallback, atLeastOnce()).onStrikeFound(realTrackSet.getTracks().get(0));
         assertEquals(1, realTrackSet.getTracks().size());
         Track track = realTrackSet.getTracks().get(0);
         Lib.Detection detection = track.getLatest();
