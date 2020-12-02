@@ -184,7 +184,7 @@ public class EventDetector implements Lib.Callback {
 
     private void hasSideChanged(Lib.Detection detection) {
         Side otherBallSide = Side.RIGHT;
-        if(currentBallSide == Side.RIGHT) otherBallSide = Side.LEFT;
+        if(detection.directionX == DirectionX.RIGHT) otherBallSide = Side.LEFT;
         if ((detection.directionX == DirectionX.LEFT && currentBallSide != Side.RIGHT) ||
                 (detection.directionX == DirectionX.RIGHT && currentBallSide != Side.LEFT)) {
             currentBallSide = otherBallSide;

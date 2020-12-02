@@ -86,6 +86,9 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
     @Override
     public void onMatchEnded(String winnerName) {
         this.pubNub.unsubscribe();
+        tts.stop();
+        tts.shutdown();
+        tts = null;
         Intent intent = new Intent(getActivity(), MatchWonActivity.class);
         Bundle bundle = new Bundle();
         bundle.putString("winner", winnerName);
