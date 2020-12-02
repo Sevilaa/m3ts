@@ -7,6 +7,7 @@ import com.pubnub.api.Callback;
 import com.pubnub.api.Pubnub;
 import com.pubnub.api.PubnubException;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -52,21 +53,26 @@ public class DisplayPubNub extends Callback {
         }
     }
 
-    public void onStartMatch(Point[] tableCorners) {
+    public void onSelectTableCorners(Point[] tableCorners) {
         try {
+            int[] corners = new int[tableCorners.length*2];
             for(int i = 0; i < tableCorners.length; i++) {
                 System.out.println("Point"+ i+ ": "+ tableCorners[i].x + ", " + tableCorners[i].y);
+
+                corners[2*i] = tableCorners[i].x;
+                corners[2*i+1] = tableCorners[i].y;
             }
             JSONObject json = new JSONObject();
             json.put(JSONInfo.SENDER_PROPERTY, pubnub.getUUID());
-            json.put(JSONInfo.CORNERS, tableCorners);
-            json.put(JSONInfo.EVENT_PROPERTY, "onStartMatch");
+            json.put(JSONInfo.CORNERS, new JSONArray(corners));
+            json.put(JSONInfo.EVENT_PROPERTY, "onSelectTableCorner");
             pubnub.publish(this.roomID, json, new Callback() {});
         } catch (JSONException ex) {
             Log.d("Unable to send JSON to channel "+this.roomID+"\n"+ex.getMessage());
         }
     }
 
+    public void onStartMatch() { send("onStartMatch", null, null, null); }
 
     public void requestStatusUpdate() {
         send("requestStatus", null, null, null);
@@ -172,7 +178,9 @@ public class DisplayPubNub extends Callback {
                                 Side.valueOf(json.getString(JSONInfo.NEXT_SERVER_PROPERTY)));
                         break;
                     case "onConnected":
-                        this.connectCallback.onConnected();
+                        if(this.connectCallback != null) {
+                            this.connectCallback.onConnected();
+                        }
                         break;
                     case "onTableFrame":
                         this.handleOnTableFrame(json);

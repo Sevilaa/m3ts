@@ -182,7 +182,7 @@ public class TrackerPubNub extends Callback implements UICallback {
         sendTableFramePart(encodedFrame, 0, numberOfPackages, true);
     }
 
-    private void handleOnTableCorner(JSONArray tableCorners) {
+    private void handleOnSelectTableCorner(JSONArray tableCorners) {
         Log.d("onTableCorner: " + tableCorners);
         if (tableCorners != null) {
             int[] coordinates = new int[tableCorners.length()];
@@ -225,9 +225,9 @@ public class TrackerPubNub extends Callback implements UICallback {
                     case "onRequestTableFrame":
                         handleOnRequestTableFrame();
                         break;
-                    case "onTableCorner":
-                        JSONArray tableCorners = json.getJSONArray(JSONInfo.TABLE_FRAME);
-                        handleOnTableCorner(tableCorners);
+                    case "onSelectTableCorner":
+                        JSONArray tableCorners = json.getJSONArray(JSONInfo.CORNERS);
+                        handleOnSelectTableCorner(tableCorners);
                         break;
                     case "onStartMatch":
                         this.initTrackerCallback.switchToDebugActivity();
