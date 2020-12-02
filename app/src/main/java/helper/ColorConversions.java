@@ -1,62 +1,61 @@
 package helper;
 
-/**
- * It took me a whole 6 hours to finally get the color conversion right.
- * I have a fairly good understanding of the various color formats (YUV420P, SP, 422, etc etc),
- * and how to access individual Y, U, and V components.
- * I however struggled because of a very simple yet hair-pulling gotcha.
- * All primitives in Java are signed! If you come from a Python-like world where 0xFF prints 255,
- * you see yourself struggle just the same. I am however embarrassed at spending 6 hours on this.
- *
- * @author rish
- */
 public class ColorConversions {
 
-    /**
-     * Converts yuv420p to rgba 8888
-     * The tricky bit here is:
-     * Java has signed primitives only. This means 0xFF is -1, and not 0x255, as you'd expect
-     * in an unsigned python like world.
-     * <p>
-     * And-ing with 0xFF (0xFF is an int, not a byte ;)) converts the individual Y, U, V, bits
-     * from an signed byte to a signed int, but for our purposes behaves as an unsigned byte.
-     * This means, (byte)0xFF=-1, whereas 0xFF & (byte)0xFF = 255.
-     **/
+    // decode Y, U, and V values on the YUV 420 buffer described as YCbCr_422_SP by Android
+    // David Manpearl 081201
     public static void yuv420pToRGBA8888(int[] out, byte[] yuv, int width, int height) {
-        if (out.length < width * height) {
-            throw new IllegalArgumentException("Size of out must be " + width * height);
-        }
-        if (yuv.length < width * height * 3.0 / 2) {
-            throw new IllegalArgumentException("Size of yuv must be " + width * height * 3.0 / 2);
-        }
-        int size = width * height;
-        for (int j = 0; j < height; j++) {
-            for (int i = 0; i < width; i++) {
-                /*accessing YUV420P elements*/
-                int indexY = j * width + i;
-                int indexU = (size + (j / 2) * (width / 2) + i / 2);
-                int indexV = (int) (size * 1.25 + (j / 2) * (width / 2) + i / 2);
+        int sz = width * height;
+        if (out == null)
+            throw new NullPointerException("buffer out is null");
+        if (out.length < sz)
+            throw new IllegalArgumentException("buffer out size " + out.length
+                    + " < minimum " + sz);
+        if (yuv == null)
+            throw new NullPointerException("buffer 'yuv' is null");
+        if (yuv.length < sz)
+            throw new IllegalArgumentException("buffer yuv size " + yuv.length
+                    + " < minimum " + sz * 3 / 2);
+        int i, j;
+        int Y, Cr = 0, Cb = 0;
+        for (j = 0; j < height; j++) {
+            int pixPtr = j * width;
+            final int jDiv2 = j >> 1;
+            for (i = 0; i < width; i++) {
+                Y = yuv[pixPtr];
+                if (Y < 0)
+                    Y += 255;
+                if ((i & 0x1) != 1) {
+                    final int cOff = sz + jDiv2 * width + (i >> 1) * 2;
+                    Cb = yuv[cOff];
+                    if (Cb < 0)
+                        Cb += 127;
+                    else
+                        Cb -= 128;
+                    Cr = yuv[cOff + 1];
+                    if (Cr < 0)
+                        Cr += 127;
+                    else
+                        Cr -= 128;
+                }
+                int R = Y + Cr + (Cr >> 2) + (Cr >> 3) + (Cr >> 5);
+                if (R < 0)
+                    R = 0;
+                else if (R > 255)
+                    R = 255;
+                int G = Y - (Cb >> 2) + (Cb >> 4) + (Cb >> 5) - (Cr >> 1)
+                        + (Cr >> 3) + (Cr >> 4) + (Cr >> 5);
+                if (G < 0)
+                    G = 0;
+                else if (G > 255)
+                    G = 255;
+                int B = Y + Cb + (Cb >> 1) + (Cb >> 2) + (Cb >> 6);
+                if (B < 0)
+                    B = 0;
+                else if (B > 255)
+                    B = 255;
 
-                // todo; this conversion to int and then later back to int really isn't required. 
-                // There's room for better work here.
-                int Y = 0xFF & yuv[indexY];
-                int U = 0xFF & yuv[indexU];
-                int V = 0xFF & yuv[indexV];
-
-                /*constants picked up from http://www.fourcc.org/fccyvrgb.php*/
-                int R = (int) (Y + 1.402f * (V - 128));
-                int G = (int) (Y - 0.344f * (U - 128) - 0.714f * (V - 128));
-                int B = (int) (Y + 1.772f * (U - 128));
-
-                /*clamping values*/
-                R = R < 0 ? 0 : R;
-                G = G < 0 ? 0 : G;
-                B = B < 0 ? 0 : B;
-                R = R > 255 ? 255 : R;
-                G = G > 255 ? 255 : G;
-                B = B > 255 ? 255 : B;
-
-                out[width * j + i] = 0xff000000 + (R << 16) + (G << 8) + B;
+                out[pixPtr++] = 0xff000000 + (B << 16) + (G << 8) + R;
             }
         }
     }
