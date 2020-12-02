@@ -53,6 +53,10 @@ public class DisplayPubNub extends Callback {
         }
     }
 
+    public void unsubscribe() {
+        this.pubnub.unsubscribe(this.roomID);
+    }
+
     public void onSelectTableCorners(Point[] tableCorners) {
         try {
             int[] corners = new int[tableCorners.length*2];

@@ -91,6 +91,7 @@ public final class InitTrackerActivity extends CameraPreviewActivity {
     }
 
     void switchToDebugActivity(String selectedMatchId, int selectedMatchType, int selectedServingSide, int[] tableCorners) {
+        this.trackerPubNub.unsubscribe();
         Intent intent = new Intent(this, LiveDebugActivity.class);
         Bundle bundle = new Bundle();
         bundle.putString(MATCH_ID, selectedMatchId);

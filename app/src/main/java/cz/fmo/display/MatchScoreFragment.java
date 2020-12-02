@@ -92,6 +92,7 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
 
     @Override
     public void onMatchEnded(String winnerName) {
+        this.pubNub.unsubscribe();
         Bundle bundle = new Bundle();
         bundle.putString("winner", winnerName);
         Fragment fragment = new MatchWonFragment();
