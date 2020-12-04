@@ -14,7 +14,7 @@ import helper.DirectionX;
 
 public class Referee implements EventDetectionCallback, ScoreManipulationCallback {
     private static final int OUT_OF_FRAME_MAX_DELAY = 1500;
-    private static final int PAUSE_DELAY = 1000;
+    private static final int PAUSE_DELAY = 2000;
     private Timer outOfFrameTimer;
     private Timer timeOutNextServeTimer;
     private GameCallback gameCallback;
@@ -51,14 +51,6 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     @Override
     public void onBounce(Lib.Detection detection) {
         switch (this.state) {
-            case WAIT_FOR_SERVE:
-                if ((detection.predecessor != null) && (Math.abs(detection.centerX-detection.predecessor.centerX)>20) &&
-                        (getServer() == Side.LEFT && currentBallSide == Side.LEFT && detection.directionX == DirectionX.RIGHT) ||
-                        (getServer()  == Side.RIGHT && currentBallSide == Side.RIGHT && detection.directionX == DirectionX.LEFT)) {
-                    this.state = GameState.SERVING;
-                    currentBallSide = getServer();
-                }
-                break;
             case SERVING:
                 bounces++;
                 applyRuleSetServing();
@@ -126,6 +118,7 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
 
     @Override
     public void onTableSideChange(Side side) {
+        Log.d("Table side change: "+side.toString());
         switch (this.state) {
             case SERVING:
                 if(bounces == 0) {
@@ -139,6 +132,7 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
                 this.bounces = 0;
                 break;
             default:
+                this.currentBallSide = side;
                 break;
         }
     }
@@ -212,19 +206,26 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
 
     private void pause() {
         this.state = GameState.PAUSE;
+        cancelTimers();
+    }
+
+    private void cancelTimers() {
+        if (this.outOfFrameTimer != null) {
+            this.outOfFrameTimer.cancel();
+            this.outOfFrameTimer = null;
+        }
+        if (this.timeOutNextServeTimer != null) {
+            this.timeOutNextServeTimer.cancel();
+            this.timeOutNextServeTimer = null;
+        }
     }
 
     private void handleOutOfFrame() {
-        if (this.bounces == 0) {
-            Log.d("No bounce and went out of frame");
-            faultBySide(currentStriker);
-        } else {
-            // schedule out of frame timer
-            TimerTask outOfFrameTask = new OutOfFrameTimerTask(this);
-            outOfFrameTimer = new Timer("outOfFrameTimer");
-            outOfFrameTimer.schedule(outOfFrameTask, OUT_OF_FRAME_MAX_DELAY);
-            this.state = GameState.OUT_OF_FRAME;
-        }
+        // schedule out of frame timer
+        TimerTask outOfFrameTask = new OutOfFrameTimerTask(this);
+        outOfFrameTimer = new Timer("outOfFrameTimer");
+        outOfFrameTimer.schedule(outOfFrameTask, OUT_OF_FRAME_MAX_DELAY);
+        this.state = GameState.OUT_OF_FRAME;
     }
 
     private void setTimeoutForNextServe() {
@@ -252,13 +253,8 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
 
     private void initPoint() {
         this.bounces = 0;
-        if (this.outOfFrameTimer != null) {
-            this.outOfFrameTimer.cancel();
-            this.outOfFrameTimer = null;
-        }
+        this.cancelTimers();
         this.state = GameState.WAIT_FOR_SERVE;
-        this.currentBallSide = getServer();
-        this.currentStriker = getServer();
     }
 
     private void applyRuleSet() {

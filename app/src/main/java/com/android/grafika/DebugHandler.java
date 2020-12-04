@@ -278,7 +278,7 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     }
 
     private void drawTrack(Canvas canvas, Track t) {
-        // only draw the tracks which get processed by EventDetector (this case getTracks().get(0))
+        // only draw the tracks which get processed by EventDetector
         t.updateColor();
         Lib.Detection pre = t.getLatest();
         cz.fmo.util.Color.RGBA r = t.getColor();

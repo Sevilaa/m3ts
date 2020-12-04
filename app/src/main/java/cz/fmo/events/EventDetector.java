@@ -30,7 +30,7 @@ public class EventDetector implements Lib.Callback {
     private int previousDirectionX;
     private int previousCenterX;
     private int previousCenterY;
-    private Side currentBallSide;
+    private Side currentStrikerSide;
     private Table table;
     private Timer timeoutTimer;
     private int numberOfDetections;
@@ -69,7 +69,7 @@ public class EventDetector implements Lib.Callback {
         tracks.addDetections(detections, this.srcWidth, this.srcHeight, detectionTime); // after this, object direction is up to date
         if (!tracks.getTracks().isEmpty()) {
             Track track = selectTrack(tracks.getTracks());
-            if (track != null) {
+            if (track != null && track.getLatest() != previousDetection) {
                 Lib.Detection latestDetection = track.getLatest();
                 calcDirectionY(latestDetection);
                 calcDirectionX(latestDetection);
@@ -77,10 +77,10 @@ public class EventDetector implements Lib.Callback {
                 if (hasBallFallenOffSideWays(latestDetection)){
                     callAllOnBallDroppedSideWays();
                 }
-                callAllOnStrikeFound(track);
-                hasSideChanged(latestDetection);
-                hasBouncedOnTable(latestDetection);
                 hasTableSideChanged(latestDetection.centerX);
+                callAllOnStrikeFound(track);
+                hasBouncedOnTable(latestDetection);
+                hasSideChanged(latestDetection);
                 Side nearlyOutOfFrameSide = getNearlyOutOfFrameSide(latestDetection);
                 if (nearlyOutOfFrameSide != null) {
                     callAllOnNearlyOutOfFrame(latestDetection, nearlyOutOfFrameSide);
@@ -185,9 +185,9 @@ public class EventDetector implements Lib.Callback {
     private void hasSideChanged(Lib.Detection detection) {
         Side otherBallSide = Side.RIGHT;
         if(detection.directionX == DirectionX.RIGHT) otherBallSide = Side.LEFT;
-        if ((detection.directionX == DirectionX.LEFT && currentBallSide != Side.RIGHT) ||
-                (detection.directionX == DirectionX.RIGHT && currentBallSide != Side.LEFT)) {
-            currentBallSide = otherBallSide;
+        if ((detection.directionX == DirectionX.LEFT && currentStrikerSide != Side.RIGHT) ||
+                (detection.directionX == 1.0 && currentStrikerSide != Side.LEFT) && detection.predecessor != null) {
+            currentStrikerSide = otherBallSide;
             callAllOnSideChange(otherBallSide);
         }
     }
