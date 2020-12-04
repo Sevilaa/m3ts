@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class ScoreManager {
     private Map<Side, Integer> pointsMap;
-    private Deque<Score> scores;
+    private Deque<Side> servers;
     private Side startServingSide;
 
     public ScoreManager(Side startServingSide) {
@@ -15,14 +15,12 @@ public class ScoreManager {
         this.pointsMap = new EnumMap<>(Side.class);
         pointsMap.put(Side.LEFT, 0);
         pointsMap.put(Side.RIGHT, 0);
-        this.scores = new LinkedList<>();
+        this.servers = new LinkedList<>();
     }
 
     public void score(Side winner, Side server) {
-        Score score = new Score(server);
-        score.setWinner(winner);
         updatePoints(winner, true);
-        this.scores.addLast(score);
+        this.servers.addLast(server);
     }
 
     /**
@@ -30,11 +28,12 @@ public class ScoreManager {
      * @return server of the previous round
      */
     public Side revertLastScore(Side player) {
-        if(!this.scores.isEmpty()) {
-            this.scores.removeLast();
+        Side lastServer = getLastServer();
+        if(!this.servers.isEmpty()) {
+            this.servers.removeLast();
             updatePoints(player, false);
         }
-        return getLastServer();
+        return lastServer;
     }
 
     public int getScore(Side player) {
@@ -42,10 +41,9 @@ public class ScoreManager {
     }
 
     private Side getLastServer() {
-        Score score = scores.peekLast();
-        Side server = startServingSide;
-        if (score != null) {
-            server = score.getServer();
+        Side server = servers.peekLast();
+        if (server == null) {
+            server = startServingSide;
         }
         return server;
     }

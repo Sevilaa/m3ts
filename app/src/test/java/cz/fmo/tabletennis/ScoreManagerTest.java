@@ -47,7 +47,7 @@ public class ScoreManagerTest {
         assertEquals(1, scoreManager.getScore(Side.LEFT));
 
         lastServer = scoreManager.revertLastScore(Side.LEFT);
-        assertEquals(Side.LEFT, lastServer);
+        assertEquals(Side.RIGHT, lastServer);
         assertEquals(2, scoreManager.getScore(Side.RIGHT));
         assertEquals(0, scoreManager.getScore(Side.LEFT));
 

@@ -60,6 +60,39 @@ public class GameTest {
     }
 
     @Test
+    public void testServerOnPointManipulation() {
+        assertEquals(STARTING_SIDE, game.getServer());
+        game.onPoint(Side.RIGHT);
+        assertEquals(STARTING_SIDE, game.getServer());
+        game.onPoint(Side.RIGHT);
+        assertEquals(Side.RIGHT, game.getServer());
+        // manipulate ("actually, LEFT scored instead of RIGHT")
+        game.onPointDeduction(Side.RIGHT);
+        assertEquals(STARTING_SIDE, game.getServer());
+        game.onPoint(Side.LEFT);
+        assertEquals(Side.RIGHT, game.getServer());
+        game.onPoint(Side.LEFT);
+        assertEquals(Side.RIGHT, game.getServer());
+        game.onPoint(Side.LEFT);
+        assertEquals(Side.LEFT, game.getServer());
+        game.onPoint(Side.RIGHT);
+        assertEquals(Side.LEFT, game.getServer());
+        // R:2 L:3 -> revert one for edge case score % 2 == 0
+        game.onPointDeduction(Side.LEFT);
+        assertEquals(Side.LEFT, game.getServer());
+        // R:2 L:2 -> now revert two more
+        game.onPointDeduction(Side.RIGHT);
+        assertEquals(Side.RIGHT, game.getServer());
+        game.onPointDeduction(Side.LEFT);
+        assertEquals(Side.RIGHT, game.getServer());
+        // R:1 L:1 -> now revert back to zero
+        game.onPointDeduction(Side.RIGHT);
+        assertEquals(Side.LEFT, game.getServer());
+        game.onPointDeduction(Side.LEFT);
+        assertEquals(Side.LEFT, game.getServer());
+    }
+
+    @Test
     public void onWin() {
         // let left side win 11:0
         for (int i = 0; i<GameType.G11.amountOfPoints; i++) {
