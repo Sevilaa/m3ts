@@ -115,6 +115,13 @@
     <string name="msInitialValue">00</string>
     <string name="msDivider">:</string>
 
+    <!-- Scan Overlay -->
+    <string name="scanText">Scan the QR code from the display</string>
+
+    <!-- Tracker Init -->
+    <string name="tiLoadingText">Sending Frame…</string>
+    <string name="tiWaitingText">Selecting corners…</string>
+
     <!-- Movie Player Activity -->
     <string-array name="prefCameraFacingNames">
         <item>Front-facing</item>

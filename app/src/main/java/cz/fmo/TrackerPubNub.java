@@ -111,8 +111,10 @@ public class TrackerPubNub extends Callback implements UICallback {
                     @Override
                     public void successCallback(String channel, Object message) {
                         boolean doContinue = true;
+                        initTrackerCallback.updateLoadingBar(index+2);
                         if (index == numberOfPackages-2) {
                             doContinue = false;
+                            initTrackerCallback.frameSent();
                         }
                         sendTableFramePart(encodedFrame, index + 1, numberOfPackages, doContinue);
                     }
@@ -183,6 +185,7 @@ public class TrackerPubNub extends Callback implements UICallback {
     private void sendTableFrame(String encodedFrame) {
         int numberOfPackages = (int)Math.ceil(encodedFrame.length() / (double) MAX_SIZE);
         Log.d("numberOfPackages: " + numberOfPackages);
+        this.initTrackerCallback.setLoadingBarSize(numberOfPackages);
         sendTableFramePart(encodedFrame, 0, numberOfPackages, true);
     }
 

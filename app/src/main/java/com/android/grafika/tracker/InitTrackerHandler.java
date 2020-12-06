@@ -1,7 +1,11 @@
 package com.android.grafika.tracker;
 
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
+import android.view.View;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.android.grafika.CameraPreviewActivity;
 import com.android.grafika.Log;
@@ -19,6 +23,7 @@ import com.google.zxing.qrcode.QRCodeReader;
 import java.lang.ref.WeakReference;
 import java.nio.IntBuffer;
 
+import cz.fmo.R;
 import cz.fmo.camera.CameraThread;
 import helper.ColorConversions;
 
@@ -62,6 +67,13 @@ public class InitTrackerHandler extends android.os.Handler implements CameraThre
 
     @Override
     public byte[] onCaptureFrame() {
+        final Activity activity = mActivity.get();
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                activity.findViewById(R.id.tracker_loading).setVisibility(View.VISIBLE);;
+            }
+        });
         return this.currentFrame;
     }
 
@@ -83,6 +95,31 @@ public class InitTrackerHandler extends android.os.Handler implements CameraThre
 
     public int getCameraWidth() {
         return this.cameraWidth;
+    }
+
+    @Override
+    public void updateLoadingBar(int partNumber) {
+        ProgressBar bar = mActivity.get().findViewById(R.id.loading_bar);
+        bar.setProgress(partNumber);
+    }
+
+    @Override
+    public void setLoadingBarSize(int size) {
+        ProgressBar bar = mActivity.get().findViewById(R.id.loading_bar);
+        bar.setMax(size);
+        bar.setProgress(0);
+    }
+
+    @Override
+    public void frameSent() {
+        final Activity activity = mActivity.get();
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                activity.findViewById(R.id.loading_bar_background).setVisibility(View.GONE);
+                ((TextView)activity.findViewById(R.id.tracker_info)).setText(activity.getResources().getString(R.string.tiWaitingText));
+            }
+        });
     }
 
     private void setCameraSize(CameraPreviewActivity activity) {
@@ -123,11 +160,22 @@ public class InitTrackerHandler extends android.os.Handler implements CameraThre
                     this.selectedServingSide = Integer.parseInt(resultArray[2]);
                     mActivity.get().createPubNubRoom(this.selectedMatchId);
                     this.isReadingQRCode = false;
+                    hideScanOverlay();
                 }
             } catch (Exception e) {
                 Log.d("Data of QR-Code is incorrect");
                 e.printStackTrace();
             }
         }
+    }
+
+    private void hideScanOverlay() {
+        final Activity activity = mActivity.get();
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                activity.findViewById(R.id.scan_overlay).setVisibility(View.GONE);;
+            }
+        });
     }
 }

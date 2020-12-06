@@ -9,16 +9,14 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
-
-import org.json.JSONObject;
 
 import cz.fmo.R;
 
@@ -76,10 +74,23 @@ public class MatchInitFragment extends Fragment implements DisplayConnectCallbac
     }
 
     @Override
+    public void onImageTransmissionStarted(int parts) {
+        ProgressBar bar = getActivity().findViewById(R.id.loading_bar);
+        bar.setMax(parts);
+        bar.setProgress(0);
+    }
+
+    @Override
+    public void onImagePartReceived(int partNumber) {
+        ProgressBar bar = getActivity().findViewById(R.id.loading_bar);
+        bar.setProgress(partNumber);
+    }
+
+    @Override
     public void onClick(View v) {
         Activity activity = getActivity();
         ((TextView)activity.findViewById(R.id.miSubTitle)).setText(R.string.miPictureLoadingSubTitle);
-        activity.findViewById(R.id.loading_picture).setVisibility(View.VISIBLE);
+        activity.findViewById(R.id.display_loading).setVisibility(View.VISIBLE);
         activity.findViewById(R.id.miPictureBtn).setVisibility(View.GONE);
         ((MatchActivity) getActivity()).getPubNub().onRequestTableFrame();
         v.setOnClickListener(null);

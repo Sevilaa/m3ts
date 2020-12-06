@@ -139,9 +139,11 @@ public class DisplayPubNub extends Callback {
         if (encodedFramePartIndex == 0) {
             this.numberOfEncodedFrameParts = 1;
             this.encodedFrameComplete = encodedFramePart;
+            this.connectCallback.onImageTransmissionStarted(numberOfFramePartsSent);
         } else {
             this.numberOfEncodedFrameParts++;
             this.encodedFrameComplete += encodedFramePart;
+            this.connectCallback.onImagePartReceived(encodedFramePartIndex+1);
             if (encodedFramePartIndex == numberOfFramePartsSent-1) {
                 Log.d("number of frame parts sent: " + numberOfFramePartsSent);
                 Log.d("number of frame parts received: " + numberOfEncodedFrameParts);

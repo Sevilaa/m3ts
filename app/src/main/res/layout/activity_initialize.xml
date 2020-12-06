@@ -52,4 +52,28 @@
         android:id="@+id/init_fragmentPlaceholder"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+    <LinearLayout
+        android:id="@+id/tracker_loading"
+        android:layout_gravity="center"
+        android:layout_height="wrap_content"
+        android:layout_width="250dp"
+        android:orientation="vertical"
+        android:visibility="gone">
+        <include
+            layout="@layout/loading_bar"/>
+        <TextView
+            android:id="@+id/tracker_info"
+            android:text="@string/tiLoadingText"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_gravity="center"
+            android:textColor="@color/primary_light"
+            android:textSize="20sp" />
+    </LinearLayout>
+    <include
+        layout="@layout/camera_scan_overlay"
+        android:id="@+id/scan_overlay"
+        android:layout_height="250dp"
+        android:layout_width="250dp"
+        android:layout_gravity="center"/>
 </merge>
