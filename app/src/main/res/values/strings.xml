@@ -98,6 +98,7 @@
     <string name="miSubTitle">scan the QR code with the tracker device</string>
     <string name="miConnectedTitle">Connected With Tracker</string>
     <string name="miConnectedSubTitle">click on the button to take a picture of the table with the tracker device</string>
+    <string name="miPictureLoadingSubTitle">the image of the table is being transmitted</string>
     <string name="miTakePicture">Take Picture</string>
 
     <!-- MatchSettings Fragment -->

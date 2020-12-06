@@ -77,6 +77,10 @@ public class MatchInitFragment extends Fragment implements DisplayConnectCallbac
 
     @Override
     public void onClick(View v) {
+        Activity activity = getActivity();
+        ((TextView)activity.findViewById(R.id.miSubTitle)).setText(R.string.miPictureLoadingSubTitle);
+        activity.findViewById(R.id.loading_picture).setVisibility(View.VISIBLE);
+        activity.findViewById(R.id.miPictureBtn).setVisibility(View.GONE);
         ((MatchActivity) getActivity()).getPubNub().onRequestTableFrame();
         v.setOnClickListener(null);
     }
