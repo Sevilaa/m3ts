@@ -164,8 +164,8 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
                 float zoom = zoomLayout.getZoom();
                 float panX = zoomLayout.getPanX();
                 float panY = zoomLayout.getPanY();
-                Point relPoint = makeRelPoint(x,y,zoom,panX,panY);
-                tableCorners[currentCornerIndex] = relPoint;
+                Point p = makeAbsPoint(x,y,zoom,panX,panY);
+                tableCorners[currentCornerIndex] = p;
                 currentCornerIndex++;
                 onStateChanged();
                 updateViews();
