@@ -21,11 +21,10 @@ import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.qrcode.QRCodeReader;
 
 import java.lang.ref.WeakReference;
-import java.nio.IntBuffer;
 
 import cz.fmo.R;
 import cz.fmo.camera.CameraThread;
-import helper.ColorConversions;
+import helper.CameraBytesConversions;
 
 public class InitTrackerHandler extends android.os.Handler implements CameraThread.Callback, InitTrackerCallback {
     private static final int CAMERA_ERROR = 2;
@@ -128,14 +127,10 @@ public class InitTrackerHandler extends android.os.Handler implements CameraThre
     }
 
     private BinaryBitmap convertBytesToBinaryBitmap(byte[] bytes) {
-        int[] out = new int[this.cameraHeight*this.cameraWidth];
-        ColorConversions.yuv420pToRGBA8888(out, bytes, this.cameraWidth, this.cameraHeight);
-        Bitmap bitmap = Bitmap.createBitmap(this.cameraWidth, this.cameraHeight, Bitmap.Config.ARGB_8888);
-        bitmap.copyPixelsFromBuffer(IntBuffer.wrap(out));
+        Bitmap bitmap = CameraBytesConversions.compressAndConvertCameraImageBytes(bytes, this.getCameraWidth(), this.getCameraHeight());
         LuminanceSource source = new PlanarYUVLuminanceSource(bytes, bitmap.getWidth(), bitmap.getHeight(), 0, 0, bitmap.getWidth(), bitmap.getHeight(), false);
         return new BinaryBitmap(new HybridBinarizer(source));
     }
-
 
     private String readQRCode(BinaryBitmap binaryBitmap) {
         Reader reader = new QRCodeReader();

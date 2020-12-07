@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -31,10 +32,7 @@ import com.otaliastudios.zoom.ZoomLayout;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.nio.IntBuffer;
-
 import cz.fmo.R;
-import helper.ColorConversions;
 
 public class MatchSelectCornerFragment extends android.app.Fragment implements View.OnClickListener, SurfaceHolder.Callback {
     private static final String TAG_MATCH_SCORE = "MATCH_SCORE";
@@ -106,10 +104,7 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
     private void drawTableFrame() {
         Canvas canvas = this.tableFrameSurface.getHolder().lockCanvas();
         if (canvas != null) {
-            int[] out = new int[this.tableFrameWidth*this.tableFrameHeight];
-            ColorConversions.yuv420pToRGBA8888(out, this.tableFrame, this.tableFrameWidth, this.tableFrameHeight);
-            Bitmap bitmap = Bitmap.createBitmap(this.tableFrameWidth, this.tableFrameHeight, Bitmap.Config.ARGB_8888);
-            bitmap.copyPixelsFromBuffer(IntBuffer.wrap(out));
+            Bitmap bitmap = BitmapFactory.decodeByteArray(this.tableFrame, 0, this.tableFrame.length);
             canvas.drawBitmap(bitmap, null, new Rect(0,0,this.displaySize.x, this.displaySize.y), null);
             this.tableFrameSurface.getHolder().unlockCanvasAndPost(canvas);
         }
