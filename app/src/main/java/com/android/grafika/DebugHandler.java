@@ -28,6 +28,7 @@ import cz.fmo.events.EventDetectionCallback;
 import cz.fmo.events.EventDetector;
 import cz.fmo.tabletennis.GameType;
 import cz.fmo.tabletennis.Match;
+import cz.fmo.tabletennis.MatchSettings;
 import cz.fmo.tabletennis.MatchType;
 import cz.fmo.tabletennis.Player;
 import cz.fmo.tabletennis.ScoreManipulationCallback;
@@ -38,7 +39,7 @@ import cz.fmo.tabletennis.UICallback;
 import cz.fmo.util.Config;
 import helper.OnSwipeListener;
 
-public class DebugHandler extends android.os.Handler implements EventDetectionCallback, UICallback {
+public class DebugHandler extends android.os.Handler implements EventDetectionCallback, UICallback, DebugHandlerCallback {
     private static final int MAX_REFRESHING_TIME_MS = 500;
     final WeakReference<DebugActivity> mActivity;
     private EventDetector eventDetector;
@@ -54,6 +55,7 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     private Lib.Detection latestNearlyOutOfFrame;
     private Lib.Detection latestBounce;
     private Match match;
+    private MatchSettings matchSettings;
     private int newBounceCount;
     private ScoreManipulationCallback smc;
     private boolean useScreenForUICallback;
@@ -84,9 +86,11 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     }
 
     void initMatch(Side servingSide, MatchType matchType, Player playerLeft, Player playerRight) {
-        match = new Match(matchType, GameType.G11, ServeRules.S2, playerLeft, playerRight, uiCallback, servingSide);
+        this.matchSettings = new MatchSettings(matchType, GameType.G11, ServeRules.S2, playerLeft, playerRight, servingSide);
+        match = new Match(matchSettings, uiCallback);
         if (this.trackerPubNub != null) {
             this.trackerPubNub.setTrackerPubNubCallback(match);
+            this.trackerPubNub.setDebugHandlerCallback(this);
             this.trackerPubNub.sendStatusUpdate(playerLeft.getName(), playerRight.getName(), 0,0,0,0,servingSide);
         }
         startMatch();
@@ -199,6 +203,13 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     @Override
     public void onReadyToServe(Side server) {
         // do nothing for now
+    }
+
+    @Override
+    public void restartMatch() {
+        initMatch(this.matchSettings.getStartingServer(), this.matchSettings.getMatchType(), this.matchSettings.getPlayerLeft(), this.matchSettings.getPlayerRight());
+        startDetections();
+        refreshDebugTextViews();
     }
 
     public void refreshDebugTextViews() {
@@ -360,21 +371,26 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     private void setOnSwipeListener() {
         if(match != null) {
             setCallbackForNewGame();
-            mActivity.get().getmSurfaceView().setOnTouchListener(new OnSwipeListener(mActivity.get()) {
-                @Override
-                public void onSwipeDown(Side swipeSide) {
-                    if (smc != null) {
-                        smc.onPointDeduction(swipeSide);
-                    }
-                }
+            mActivity.get().runOnUiThread(new Runnable() {
+                public void run() {
+                    mActivity.get().getmSurfaceView().setOnTouchListener(new OnSwipeListener(mActivity.get()) {
+                        @Override
+                        public void onSwipeDown(Side swipeSide) {
+                            if (smc != null) {
+                                smc.onPointDeduction(swipeSide);
+                            }
+                        }
 
-                @Override
-                public void onSwipeUp(Side swipeSide) {
-                    if (smc != null) {
-                        smc.onPointAddition(swipeSide);
-                    }
+                        @Override
+                        public void onSwipeUp(Side swipeSide) {
+                            if (smc != null) {
+                                smc.onPointAddition(swipeSide);
+                            }
+                        }
+                    });
                 }
             });
+
         }
     }
 

@@ -55,7 +55,28 @@
                 android:elevation="8dp"
                 android:onClick="playAgain"
                 android:layout_marginBottom="8dp"
+                android:layout_gravity="center"
                 android:text="@string/mwStartNew"
+                android:textColor="#fff"
+                android:textSize="24sp"/>
+            <Button
+                android:id="@+id/back_to_menu"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/radius_background"
+                android:backgroundTint="@android:color/secondary_text_light"
+                android:layout_marginTop="40dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:paddingStart="72dp"
+                android:paddingEnd="72dp"
+                android:textAllCaps="false"
+                android:textStyle="normal"
+                android:layout_gravity="center"
+                android:elevation="8dp"
+                android:onClick="backToMenu"
+                android:layout_marginBottom="8dp"
+                android:text="@string/mwMenu"
                 android:textColor="#fff"
                 android:textSize="24sp"/>
         </GridLayout>

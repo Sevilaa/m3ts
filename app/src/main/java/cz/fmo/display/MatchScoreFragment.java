@@ -92,6 +92,7 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
         Intent intent = new Intent(getActivity(), MatchWonActivity.class);
         Bundle bundle = new Bundle();
         bundle.putString("winner", winnerName);
+        bundle.putString("room", ((MatchActivity)getActivity()).getPubNub().getRoomID());
         intent.putExtras(bundle);
         startActivity(intent);
         getActivity().finish();

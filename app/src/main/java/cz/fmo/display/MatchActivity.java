@@ -9,7 +9,6 @@ import android.support.v4.app.FragmentActivity;
 import android.widget.RelativeLayout;
 
 import com.android.grafika.Log;
-import com.pubnub.api.Pubnub;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,15 +25,25 @@ public class MatchActivity extends FragmentActivity implements FragmentReplaceCa
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_match);
-        initPubNub();
         RelativeLayout relativeLayout = findViewById(R.id.mainBackground);
         AnimationDrawable animationDrawable = (AnimationDrawable) relativeLayout.getBackground();
         animationDrawable.setEnterFadeDuration(2000);
         animationDrawable.setExitFadeDuration(4000);
         animationDrawable.start();
+
+        Bundle bundle = getIntent().getExtras();
+        boolean isRestartedMatch = bundle.getBoolean("isRestartedMatch");
+        Fragment nextFragment = new MatchSettingsFragment();
+        if(isRestartedMatch) {
+            initPubNub(bundle.getString("room"));
+            this.pubNub.onRestartMatch();
+            nextFragment = new MatchScoreFragment();
+        } else {
+            initPubNub(getRandomRoomID(8));
+        }
         FragmentManager manager = getFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
-        transaction.add(R.id.mainBackground, new MatchSettingsFragment());
+        transaction.add(R.id.mainBackground, nextFragment);
         transaction.commit();
     }
 
@@ -51,11 +60,11 @@ public class MatchActivity extends FragmentActivity implements FragmentReplaceCa
         return pubNub;
     }
 
-    private void initPubNub() {
+    private void initPubNub(String pubnubRoom) {
         Properties properties = new Properties();
         try (InputStream is = this.getAssets().open("app.properties")) {
             properties.load(is);
-            this.pubNub = new DisplayPubNub(getRandomRoomID(8), properties.getProperty("pub_key"), properties.getProperty("sub_key"));
+            this.pubNub = new DisplayPubNub(pubnubRoom, properties.getProperty("pub_key"), properties.getProperty("sub_key"));
         } catch (IOException ex) {
             Log.d("Failed to load pubnub keys");
         }

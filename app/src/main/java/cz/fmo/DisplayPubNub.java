@@ -78,6 +78,8 @@ public class DisplayPubNub extends Callback {
 
     public void onStartMatch() { send("onStartMatch", null, null, null); }
 
+    public void onRestartMatch() { send("onRestartMatch", null, null, null); }
+
     public void requestStatusUpdate() {
         send("requestStatus", null, null, null);
     }

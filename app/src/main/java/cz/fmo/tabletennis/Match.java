@@ -31,6 +31,11 @@ public class Match implements MatchCallback, TrackerPubNubCallback {
         startNewGame(true);
     }
 
+    public Match(MatchSettings settings, UICallback uiCallback) {
+        this(settings.getMatchType(), settings.getGameType(), settings.getServeRules(),
+                settings.getPlayerLeft(), settings.getPlayerRight(), uiCallback, settings.getStartingServer());
+    }
+
     void startNewGame(boolean firstInit) {
         if(!firstInit) switchServers();
         Game game = new Game(this, uiCallback, gameType, serveRules, this.serverSide);

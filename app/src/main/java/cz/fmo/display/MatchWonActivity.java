@@ -1,6 +1,7 @@
 package cz.fmo.display;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
 import android.view.View;
@@ -11,6 +12,7 @@ import cz.fmo.R;
 
 public class MatchWonActivity extends Activity {
     private AnimationDrawable animationDrawable;
+    private String pubnubRoom;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -18,6 +20,7 @@ public class MatchWonActivity extends Activity {
         setContentView(R.layout.activity_match_won);
         Bundle bundle = getIntent().getExtras();
         String winner = bundle.getString("winner");
+        this.pubnubRoom = bundle.getString("room");
         TextView txtView = findViewById(R.id.winner_name);
         txtView.setText(winner);
         RelativeLayout relativeLayout = findViewById(R.id.won_background);
@@ -31,6 +34,20 @@ public class MatchWonActivity extends Activity {
      * OnClick of the play again button
      */
     public void playAgain(View view) {
+        animationDrawable.stop();
+        Intent intent = new Intent(this, MatchActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putString("room", this.pubnubRoom);
+        bundle.putBoolean("isRestartedMatch", true);
+        intent.putExtras(bundle);
+        startActivity(intent);
+        this.finish();
+    }
+
+    /*
+     * OnClick of the main menu button
+     */
+    public void backToMenu(View view) {
         animationDrawable.stop();
         this.finish();
         onBackPressed();

@@ -109,6 +109,7 @@
 
     <!-- MatchWin Fragment -->
     <string name="mwStartNew">Play another Match</string>
+    <string name="mwMenu">Main Menu</string>
     <string name="mwWon">\u0020won!</string>
 
     <!-- MatchScore Fragment -->

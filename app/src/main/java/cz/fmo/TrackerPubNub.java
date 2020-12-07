@@ -1,5 +1,6 @@
 package cz.fmo;
 
+import com.android.grafika.DebugHandlerCallback;
 import com.android.grafika.Log;
 import com.android.grafika.tracker.InitTrackerCallback;
 import com.pubnub.api.Callback;
@@ -28,6 +29,7 @@ public class TrackerPubNub extends Callback implements UICallback {
     private TrackerPubNubCallback callback;
     private ScoreManipulationCallback scoreManipulationCallback;
     private InitTrackerCallback initTrackerCallback;
+    private DebugHandlerCallback debugHandlerCallback;
 
     public TrackerPubNub(final String roomID, String pubKey, String subKey) {
         this.pubnub = new Pubnub(pubKey, subKey);
@@ -68,6 +70,10 @@ public class TrackerPubNub extends Callback implements UICallback {
 
     public void setInitTrackerCallback(InitTrackerCallback initTrackerCallback) {
         this.initTrackerCallback = initTrackerCallback;
+    }
+
+    public void setDebugHandlerCallback(DebugHandlerCallback debugHandlerCallback) {
+        this.debugHandlerCallback = debugHandlerCallback;
     }
 
     @Override
@@ -238,6 +244,11 @@ public class TrackerPubNub extends Callback implements UICallback {
                         break;
                     case "onStartMatch":
                         this.initTrackerCallback.switchToDebugActivity();
+                        break;
+                    case "onRestartMatch":
+                        if(this.debugHandlerCallback != null) {
+                            this.debugHandlerCallback.restartMatch();
+                        }
                         break;
                     default:
                         Log.d("Invalid event received.\nevent:"+event);

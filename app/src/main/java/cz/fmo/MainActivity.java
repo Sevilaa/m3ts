@@ -29,7 +29,11 @@ public class MainActivity extends Activity {
     }
 
     public void onUseAsDisplay(View toggle) {
-        startActivity(new Intent(this, MatchActivity.class));
+        Intent intent = new Intent(this, MatchActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putBoolean("isRestartedMatch", false);
+        intent.putExtras(bundle);
+        startActivity(intent);
     }
 
     public void onUseAsTracker(View toggle) {
