@@ -225,13 +225,19 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
 
 
     @Override
-    public void onStatusUpdate(String playerNameLeft, String playerNameRight, int pointsLeft, int pointsRight, int gamesLeft, int gamesRight, Side nextServer) {
-        setTextInTextView(R.id.left_name, playerNameLeft);
-        setTextInTextView(R.id.right_name, playerNameRight);
-        setScoreOnTextView(Side.LEFT, pointsLeft);
-        setScoreOnTextView(Side.RIGHT, pointsRight);
-        setWinsOnTextView(Side.LEFT, gamesLeft);
-        setWinsOnTextView(Side.RIGHT, gamesRight);
-        updateIndicationNextServer(nextServer, true);
+    public void onStatusUpdate(final String playerNameLeft, final String playerNameRight, final int pointsLeft, final int pointsRight, final int gamesLeft, final int gamesRight, final Side nextServer) {
+        Activity activity = getActivity();
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                setTextInTextView(R.id.left_name, playerNameLeft);
+                setTextInTextView(R.id.right_name, playerNameRight);
+                setScoreOnTextView(Side.LEFT, pointsLeft);
+                setScoreOnTextView(Side.RIGHT, pointsRight);
+                setWinsOnTextView(Side.LEFT, gamesLeft);
+                setWinsOnTextView(Side.RIGHT, gamesRight);
+                updateIndicationNextServer(nextServer, true);
+            }
+        });
     }
 }

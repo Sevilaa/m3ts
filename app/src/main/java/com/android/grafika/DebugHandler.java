@@ -85,8 +85,10 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
 
     void initMatch(Side servingSide, MatchType matchType, Player playerLeft, Player playerRight) {
         match = new Match(matchType, GameType.G11, ServeRules.S2, playerLeft, playerRight, uiCallback, servingSide);
-        if (this.trackerPubNub != null)
+        if (this.trackerPubNub != null) {
             this.trackerPubNub.setTrackerPubNubCallback(match);
+            this.trackerPubNub.sendStatusUpdate(playerLeft.getName(), playerRight.getName(), 0,0,0,0,servingSide);
+        }
         startMatch();
         setTextInTextView(R.id.txtDebugPlayerNameLeft, playerLeft.getName());
         setTextInTextView(R.id.txtDebugPlayerNameRight, playerRight.getName());

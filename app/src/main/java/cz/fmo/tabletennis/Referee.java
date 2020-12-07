@@ -163,12 +163,12 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     public void onPointDeduction(Side side) {
         gameCallback.onPointDeduction(side);
         initPoint();
+        setTimeoutForNextServe();
     }
 
     @Override
     public void onPointAddition(Side side) {
-        gameCallback.onPoint(side);
-        initPoint();
+       pointBySide(side);
     }
 
     @Override
