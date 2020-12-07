@@ -1,5 +1,7 @@
 package cz.fmo;
 
+import android.graphics.ImageFormat;
+
 import com.android.grafika.Log;
 import com.android.grafika.tracker.InitTrackerCallback;
 import com.pubnub.api.Callback;
@@ -19,8 +21,10 @@ import cz.fmo.tabletennis.Side;
 import cz.fmo.tabletennis.TrackerPubNubCallback;
 import cz.fmo.tabletennis.UICallback;
 import cz.fmo.util.ByteToBase64Encoder;
+import helper.CameraBytesConversions;
 
 public class TrackerPubNub extends Callback implements UICallback {
+    private static final int CAMERA_FORMAT = ImageFormat.NV21;
     private static final String ROLE = "tracker";
     private static final int MAX_SIZE = 10000;
     private final Pubnub pubnub;
@@ -170,16 +174,16 @@ public class TrackerPubNub extends Callback implements UICallback {
     private void handleOnRequestTableFrame() {
         Log.d("onRequestTableFrame");
         byte[] frame = this.initTrackerCallback.onCaptureFrame();
-        Log.d("frame length: " + frame.length);
+        byte[] compressedJPGBytes = CameraBytesConversions.compressCameraImageBytes(frame, this.initTrackerCallback.getCameraWidth(), this.initTrackerCallback.getCameraHeight());
+        Log.d("frame length of compressed image: " + compressedJPGBytes.length + "Bytes");
         try {
-            String encodedFrame = ByteToBase64Encoder.encodeToString(frame);
+            String encodedFrame = ByteToBase64Encoder.encodeToString(compressedJPGBytes);
             Log.d("encodedFrame length: " + encodedFrame.length());
             sendTableFrame(encodedFrame);
         } catch (Exception ex) {
             Log.d("UNSUPPORTED ENCODING EXCEPTION:");
             Log.d(ex.getMessage());
         }
-
     }
 
     private void sendTableFrame(String encodedFrame) {
