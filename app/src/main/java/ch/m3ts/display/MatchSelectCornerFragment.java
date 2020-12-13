@@ -101,15 +101,6 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
         layout.setLayoutParams(params);
     }
 
-    private void drawTableFrame() {
-        Canvas canvas = this.tableFrameSurface.getHolder().lockCanvas();
-        if (canvas != null) {
-            Bitmap bitmap = BitmapFactory.decodeByteArray(this.tableFrame, 0, this.tableFrame.length);
-            canvas.drawBitmap(bitmap, null, new Rect(0,0,this.displaySize.x, this.displaySize.y), null);
-            this.tableFrameSurface.getHolder().unlockCanvasAndPost(canvas);
-        }
-    }
-
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -133,6 +124,19 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
         this.txtSelectedCorners.setText(selectedCorners);
         this.txtMaxCorners.setText(maxCorners);
         drawLines();
+    }
+
+    public Point[] getTableCorners() {
+        return tableCorners;
+    }
+
+    private void drawTableFrame() {
+        Canvas canvas = this.tableFrameSurface.getHolder().lockCanvas();
+        if (canvas != null) {
+            Bitmap bitmap = BitmapFactory.decodeByteArray(this.tableFrame, 0, this.tableFrame.length);
+            canvas.drawBitmap(bitmap, null, new Rect(0,0,this.displaySize.x, this.displaySize.y), null);
+            this.tableFrameSurface.getHolder().unlockCanvasAndPost(canvas);
+        }
     }
 
     private void setZoomLayoutListener() {
@@ -252,7 +256,8 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Log.d(e.getMessage());
+            Thread.currentThread().interrupt();
         }
         ((MatchActivity) getActivity()).getPubNub().onStartMatch();
         Fragment fragment = new MatchScoreFragment();
@@ -277,11 +282,11 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-
+         // do nothing in here
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-
+        // do nothing in here
     }
 }

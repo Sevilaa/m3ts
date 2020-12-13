@@ -1,7 +1,9 @@
-package ch.m3ts.initialize;
+package ch.m3ts.display;
 
 import android.Manifest;
+import android.content.Intent;
 import android.graphics.Point;
+import android.os.Bundle;
 import android.test.InstrumentationTestCase;
 import android.view.View;
 import android.widget.TextView;
@@ -12,12 +14,15 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Random;
+
 import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.action.CoordinatesProvider;
 import androidx.test.espresso.action.GeneralClickAction;
 import androidx.test.espresso.action.Press;
 import androidx.test.espresso.action.Tap;
 import androidx.test.filters.LargeTest;
+import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.rule.GrantPermissionRule;
 import androidx.test.runner.AndroidJUnit4;
@@ -25,7 +30,6 @@ import ch.m3ts.tabletennis.helper.Side;
 import cz.fmo.R;
 import helper.GrantPermission;
 
-import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
@@ -33,19 +37,29 @@ import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
-public class InitializeActivityTest extends InstrumentationTestCase {
+public class MatchActivityTest extends InstrumentationTestCase {
     private TextView txtSelectedCorners;
     private TextView txtMaxCorners;
-    private InitializeActivity initializeActivity;
+    private MatchActivity matchActivity;
+    private MatchSelectCornerFragment matchSelectCornerFragment;
+    private Random random = new Random();
 
     @Rule
-    public ActivityTestRule<InitializeActivity> initActivityRule = new ActivityTestRule<>(InitializeActivity.class);
+    public ActivityTestRule<MatchActivity> initActivityRule = new ActivityTestRule<MatchActivity>(MatchActivity.class) {
+        @Override
+        protected Intent getActivityIntent() {
+            // add data to intend as this activity is only called with a int array
+            // (representing corner points of the table)
+            Intent intent = new Intent(Intent.ACTION_MAIN);
+            Bundle bundle = new Bundle();
+            bundle.putBoolean("isRestartedMatch", false);
+            intent.putExtras(bundle);
+            return intent;
+        }
+    };
 
     @Rule
     public GrantPermissionRule grantPermissionRuleCamera = GrantPermissionRule.grant(Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE);
@@ -56,24 +70,40 @@ public class InitializeActivityTest extends InstrumentationTestCase {
     }
 
     @Before
-    public void setUp() throws Exception {
-        initializeActivity = initActivityRule.getActivity();
-        txtSelectedCorners = initializeActivity.findViewById(R.id.init_cornersSelectedTxt);
-        txtMaxCorners = initializeActivity.findViewById(R.id.init_cornersSelectedMaxTxt);
+    public void setUp() {
+        injectInstrumentation(InstrumentationRegistry.getInstrumentation());
+        matchActivity = initActivityRule.getActivity();
+    }
+
+    private void switchToCornerSelection() throws Exception {
+        byte[] randomBytes = new byte[200];
+        new Random().nextBytes(randomBytes);
+        matchSelectCornerFragment = new MatchSelectCornerFragment();
+        Bundle bundle = new Bundle();
+        bundle.putByteArray("tableFrame", randomBytes);
+        bundle.putInt("width", 20);
+        bundle.putInt("height", 10);
+        matchSelectCornerFragment.setArguments(bundle);
+        matchActivity.replaceFragment(matchSelectCornerFragment, "MATCH_SELECT_CORNERS");
+        Thread.sleep(1000);
+        txtSelectedCorners = matchActivity.findViewById(R.id.init_cornersSelectedTxt);
+        txtMaxCorners = matchActivity.findViewById(R.id.init_cornersSelectedMaxTxt);
     }
 
     @After
-    public void tearDown() throws Exception {
-        //initializeActivity.finish();
-        //initializeActivity = null;
+    public void tearDown() {
+        matchActivity.finish();
+        matchSelectCornerFragment = null;
+        matchActivity = null;
     }
 
     @Test
-    public void testSelectFourCorners() {
-        findAllViewsOnStartup();
+    public void testSelectFourCorners() throws Exception {
+        switchToCornerSelection();
+        findAllViewsOfCornerSelection();
         final int[] xLocations = new int[4];
         final int[] yLocations = new int[4];
-        Point[] corners = initializeActivity.getTableCorners();
+        Point[] corners = matchSelectCornerFragment.getTableCorners();
         assertEquals(4, corners.length);
         for (Point corner : corners) {
             assertNull(corner);
@@ -96,24 +126,12 @@ public class InitializeActivityTest extends InstrumentationTestCase {
         // long click some more
         testLongClickingScreenTooManyTimes(xLocations, yLocations);
 
-        // fragment should have changed, we should now be able to specify the match
-        assertNotNull(initializeActivity.findViewById(R.id.init_spinnerSelectMatchType));
-        assertNotNull(initializeActivity.findViewById(R.id.init_spinnerSelectServingSide));
-        assertNotNull(initializeActivity.findViewById(R.id.init_sideAndMatchTypeDoneBtn));
-
-        // select right side
-        onView(withId(R.id.init_spinnerSelectServingSide))
-                .perform(click());
-        onData(allOf(is(instanceOf(String.class)))).atPosition(1).perform(click());
-        onView(withId(R.id.init_sideAndMatchTypeDoneBtn))
-                .perform(click());
-
         // now de-select all corners by hitting the revert button 4 times
         for (int i=3; i>=0; i--) {
             onView(withId(R.id.init_revertButton))
                     .perform(click());
             assertNull(corners[i]);
-            assertNull(initializeActivity.findViewById(R.id.init_startGameBtn));
+            assertNull(matchActivity.findViewById(R.id.init_startGameBtn));
         }
 
         // hit revert button some more
@@ -121,43 +139,75 @@ public class InitializeActivityTest extends InstrumentationTestCase {
     }
 
     @Test
-    public void testStartingGame() {
+    public void testStartingGame() throws Exception {
+        switchToCornerSelection();
         for (int i = 0; i<4; i++) {
             int x = Math.round(100 * (float) Math.random());
             int y = Math.round(100 * (float) Math.random());
             onView(withId(R.id.init_zoomLayout))
                     .perform(longClickXY(x,y));
         }
-        // select right side
-        onView(withId(R.id.init_spinnerSelectServingSide))
-                .perform(click());
-        onData(allOf(is(instanceOf(String.class)))).atPosition(1).perform(click());
 
-
-        // select BO5
-        onView(withId(R.id.init_spinnerSelectMatchType))
-                .perform(click());
-        onData(allOf(is(instanceOf(String.class)))).atPosition(2).perform(click());
-
-        // hit done
-        onView(withId(R.id.init_sideAndMatchTypeDoneBtn))
-                .perform(click());
-
-        // enter some room
-        onView(withId(R.id.init_createRoomBtn))
-                .perform(click());
-
-        onView(withId(R.id.init_startGameBtn))
+        // click on "Start Game"
+        onView(withId(R.id.init_startMatch))
                 .perform(click());
 
         // check if we switched activity by checking if some views are displayed
-        onView(withId(R.id.txtPlayMovieScoreLeft))
+        onView(withId(R.id.left_score))
                 .check(matches(isDisplayed()));
-        onView(withId(R.id.playMovie_debugGrid))
+        onView(withId(R.id.right_score))
                 .check(matches(isDisplayed()));
+        onView(withId(R.id.right_score))
+                .check(matches(withText("00")));
+        onView(withId(R.id.btnPauseResumeReferee))
+                .check(matches(isDisplayed()));
+    }
 
-        // check if correct match type and side are there
-        onView(allOf(withId(R.id.txtPlayMovieServing), withText(Side.RIGHT.toString())));
+    @Test
+    public void testMatchScoreFragment() throws Exception {
+        // switch to matchScoreFragment
+        final MatchScoreFragment matchScoreFragment = new MatchScoreFragment();
+        matchActivity.replaceFragment(matchScoreFragment, "MATCH_SCORE");
+        Thread.sleep(1000);
+
+        final int scoreRight = random.nextInt(10);
+        final int winsLeft = random.nextInt(10);
+        final int winsRight = random.nextInt(10);
+
+        // invoke onScore and check if value matches
+        getInstrumentation().runOnMainSync(new Runnable(){
+            public void run(){
+                matchScoreFragment.onScore(Side.RIGHT, scoreRight, Side.LEFT);
+            }
+        });
+        TextView textView = matchActivity.findViewById(R.id.right_score);
+        assertEquals("0"+scoreRight, textView.getText());
+
+        // invoke onWin and check if values match (need to separate onScore and onWin as onWin clears the score points)
+        getInstrumentation().runOnMainSync(new Runnable(){
+            public void run(){
+                matchScoreFragment.onWin(Side.LEFT, winsLeft);
+                matchScoreFragment.onWin(Side.RIGHT, winsRight);
+            }
+        });
+        textView = matchActivity.findViewById(R.id.left_games);
+        assertEquals("0"+winsLeft, textView.getText());
+        textView = matchActivity.findViewById(R.id.right_games);
+        assertEquals("0"+winsRight, textView.getText());
+        getInstrumentation().runOnMainSync(new Runnable(){
+            public void run(){
+                matchScoreFragment.onMatchEnded(Side.LEFT.toString());
+            }
+        });
+        try{
+            Thread.sleep(100);
+        } catch (InterruptedException ex) {
+            // Unfortunately need to wait for a moment otherwise it won't find the textView
+        }
+        onView(withText(Side.LEFT.toString()))
+                .check(matches(isDisplayed()));
+        onView(withText(R.string.mwWon))
+                .check(matches(isDisplayed()));
     }
 
     private void testClickingRevertTooManyTimes() {
@@ -166,7 +216,7 @@ public class InitializeActivityTest extends InstrumentationTestCase {
             onView(withId(R.id.init_revertButton))
                     .perform(click());
 
-            Point[] corners = initializeActivity.getTableCorners();
+            Point[] corners = matchSelectCornerFragment.getTableCorners();
             assertEquals(4, corners.length);
             for (Point corner : corners) {
                 assertNull(corner);
@@ -184,7 +234,7 @@ public class InitializeActivityTest extends InstrumentationTestCase {
                     .perform(longClickXY(x,y));
         }
 
-        Point[] corners = initializeActivity.getTableCorners();
+        Point[] corners = matchSelectCornerFragment.getTableCorners();
         assertEquals(4, corners.length);
         for (int i=0; i<4; i++) {
             assertEquals(xLocations[i], corners[i].x);
@@ -192,13 +242,12 @@ public class InitializeActivityTest extends InstrumentationTestCase {
         }
     }
 
-    public static ViewAction longClickXY(final int x, final int y){
+    private static ViewAction longClickXY(final int x, final int y){
         return new GeneralClickAction(
                 Tap.LONG,
                 new CoordinatesProvider() {
                     @Override
                     public float[] calculateCoordinates(View view) {
-
                         final int[] screenPos = new int[2];
                         view.getLocationOnScreen(screenPos);
 
@@ -210,18 +259,16 @@ public class InitializeActivityTest extends InstrumentationTestCase {
                 Press.FINGER);
     }
 
-    private void findAllViewsOnStartup() {
+    private void findAllViewsOfCornerSelection() {
         onView(withId(R.id.init_zoomLayout))
                 .check(matches(isDisplayed()));
         onView(withId(R.id.init_revertButton))
-                .check(matches(isDisplayed()));
-        onView(withId(R.id.playMovie_surface))
                 .check(matches(isDisplayed()));
         onView(withId(R.id.init_cornersSelectedTxt))
                 .check(matches(isDisplayed()));
         onView(withId(R.id.init_cornersSelectedMaxTxt))
                 .check(matches(isDisplayed()));
-        assertEquals(String.valueOf(initializeActivity.getTableCorners().length), txtMaxCorners.getText());
+        assertEquals(String.valueOf(matchSelectCornerFragment.getTableCorners().length), txtMaxCorners.getText());
         // we shouldn't see the "Start Game" button - as no corners have been selected
         onView(withId(R.id.init_startGameBtn))
                 .check(doesNotExist());

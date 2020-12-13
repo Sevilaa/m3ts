@@ -4,6 +4,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import ch.m3ts.Log;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.game.Game;
 import cz.fmo.Lib;
@@ -68,7 +69,7 @@ public class RefereeTest {
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Log.d(e.getMessage());
         }
         referee.onStrikeFound(realTrackSet.getTracks().get(0));
         verify(gameMock, times(1)).onPoint(STARTING_SIDE);
@@ -86,7 +87,7 @@ public class RefereeTest {
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Log.d(e.getMessage());
         }
         referee.onStrikeFound(realTrackSet.getTracks().get(0));
         referee.onSideChange(Side.RIGHT);
@@ -153,7 +154,7 @@ public class RefereeTest {
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Log.d(e.getMessage());
         }
         referee.onStrikeFound(realTrackSet.getTracks().get(0));
         verify(gameMock, times(1)).onPoint(Side.LEFT);

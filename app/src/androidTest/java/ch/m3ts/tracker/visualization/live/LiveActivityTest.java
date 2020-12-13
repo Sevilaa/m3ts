@@ -1,10 +1,8 @@
-package cz.fmo;
+package ch.m3ts.tracker.visualization.live;
 
 import android.Manifest;
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.GridLayout;
-import android.widget.ImageButton;
 
 import org.junit.After;
 import org.junit.Before;
@@ -16,23 +14,22 @@ import androidx.test.filters.LargeTest;
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.rule.GrantPermissionRule;
 import androidx.test.runner.AndroidJUnit4;
-import ch.m3ts.tracker.visualization.live.LiveActivity;
+import cz.fmo.R;
 import helper.GrantPermission;
 
 import static androidx.test.espresso.Espresso.onView;
-import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
-import static androidx.test.espresso.matcher.ViewMatchers.withText;
-import static org.junit.Assert.assertNotNull;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
 public class LiveActivityTest {
     private LiveActivity liveDebugActivity;
-    private ImageButton settingsButton;
-    private GridLayout debugGridLayout;
+    private static final String CORNERS_PARAM = "CORNERS_UNSORTED";
+    private static final String MATCH_TYPE_PARAM = "MATCH_TYPE";
+    private static final String SERVING_SIDE_PARAM = "SERVING_SIDE";
+    private static final String MATCH_ID = "MATCH_ID";
 
     @Rule
     public GrantPermissionRule grantPermissionRuleCamera = GrantPermissionRule.grant(Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE);
@@ -45,7 +42,10 @@ public class LiveActivityTest {
             // (representing corner points of the table)
             Intent intent = new Intent(Intent.ACTION_MAIN);
             Bundle bundle = new Bundle();
-            bundle.putIntArray("CORNERS_UNSORTED", new int[] {0,0,0,0,0,0,0,0});
+            bundle.putIntArray(CORNERS_PARAM, new int[] {0,0,0,0,0,0,0,0});
+            bundle.putInt(MATCH_TYPE_PARAM, 0);
+            bundle.putInt(SERVING_SIDE_PARAM, 0);
+            bundle.putString(MATCH_ID, "test");
             intent.putExtras(bundle);
             return intent;
         }
@@ -59,8 +59,6 @@ public class LiveActivityTest {
     @Before
     public void setUp() {
         liveDebugActivity = recordingActivityActivityTestRule.getActivity();
-        settingsButton = liveDebugActivity.findViewById(R.id.live_settings_button);
-        debugGridLayout = liveDebugActivity.findViewById(R.id.playMovie_debugGrid);
     }
 
     @After
@@ -70,24 +68,12 @@ public class LiveActivityTest {
     }
 
     @Test
-    public void goToSettings() {
-        findAllViews();
-        onView(withId(R.id.live_settings_button))
-                .perform(click());
-
-        // check if we switched to settings by checking if some views are displayed
-        onView(withText(R.string.prefHeaderCapture))
+    public void testFindAllViews() {
+        onView(withId(R.id.debugScoreLayoutWrapper))
                 .check(matches(isDisplayed()));
-        onView(withText(R.string.prefHeaderDetection))
+        onView(withId(R.id.playMovie_surfaceTracks))
                 .check(matches(isDisplayed()));
-        onView(withText(R.string.prefHeaderVelocity))
+        onView(withId(R.id.playMovie_surfaceTable))
                 .check(matches(isDisplayed()));
-        onView(withText(R.string.prefHeaderAdvanced))
-                .check(matches(isDisplayed()));
-    }
-
-    private void findAllViews() {
-        assertNotNull(settingsButton);
-        assertNotNull(debugGridLayout);
     }
 }

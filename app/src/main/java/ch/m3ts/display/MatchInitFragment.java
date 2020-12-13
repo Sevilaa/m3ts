@@ -18,10 +18,11 @@ import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 
+import ch.m3ts.Log;
 import cz.fmo.R;
 
 public class MatchInitFragment extends Fragment implements DisplayConnectCallback, View.OnClickListener {
-    private static final String TAG_MATCH_SCORE = "MATCH_SCORE";
+    private static final String TAG_MATCH_SELECT_CORNERS = "MATCH_SELECT_CORNERS";
     private FragmentReplaceCallback callback;
 
     @Override
@@ -56,7 +57,7 @@ public class MatchInitFragment extends Fragment implements DisplayConnectCallbac
         bundle.putInt("width", imageWidth);
         bundle.putInt("height", imageHeight);
         fragment.setArguments(bundle);
-        callback.replaceFragment(fragment, TAG_MATCH_SCORE);
+        callback.replaceFragment(fragment, TAG_MATCH_SELECT_CORNERS);
     }
 
     @Override
@@ -112,7 +113,7 @@ public class MatchInitFragment extends Fragment implements DisplayConnectCallbac
             }
             imageView.setImageBitmap(bmp);
         } catch (WriterException e) {
-            e.printStackTrace();
+            Log.d(e.getMessage());
         }
     }
 }

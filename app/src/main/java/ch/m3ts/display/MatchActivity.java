@@ -10,6 +10,7 @@ import android.widget.RelativeLayout;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.SecureRandom;
 import java.util.Properties;
 import java.util.Random;
 
@@ -19,6 +20,7 @@ import cz.fmo.R;
 
 public class MatchActivity extends FragmentActivity implements FragmentReplaceCallback {
     private DisplayPubNub pubNub;
+    private Random random = new SecureRandom();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,7 +72,6 @@ public class MatchActivity extends FragmentActivity implements FragmentReplaceCa
     }
 
     private String getRandomRoomID(int length) {
-        Random random = new Random();
         int leftLimit = 97; // letter 'a'
         int rightLimit = 122; // letter 'z'
         StringBuilder buffer = new StringBuilder(length);

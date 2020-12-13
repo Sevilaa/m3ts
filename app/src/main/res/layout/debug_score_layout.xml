@@ -10,7 +10,8 @@
     android:columnCount="7"
     android:background="@drawable/radius_background"
     android:paddingVertical="4dp"
-    android:paddingHorizontal="24dp">
+    android:paddingHorizontal="24dp"
+    android:id="@+id/debugScoreLayoutWrapper">
 
     <TextView
         android:id="@+id/txtDebugPlayerNameLeft"

@@ -1,4 +1,4 @@
-package com.android.grafika;
+package ch.m3ts.tracker.visualization.replay;
 
 import android.Manifest;
 import android.view.View;
@@ -42,9 +42,6 @@ public class ReplayActivityTest {
     @Rule
     public GrantPermissionRule grantPermissionRuleCamera = GrantPermissionRule.grant(android.Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE);
 
-    //@Rule
-    //public ActivityTestRule<PlayMovieSurfaceActivity> pmsActivityRule = new ActivityTestRule<PlayMovieSurfaceActivity>(PlayMovieSurfaceActivity.class);
-
     @Rule
     public ActivityTestRule<MainActivity> pmsMainActivityRule = new ActivityTestRule<>(MainActivity.class);
 
@@ -56,7 +53,7 @@ public class ReplayActivityTest {
     @Test
     // plays a video for a couple of seconds (with bounces in it), and then checks if there was a bounce
     public void testPlayMovieAndFindBounces() {
-        pmsMainActivityRule.getActivity();
+        MainActivity activity = pmsMainActivityRule.getActivity();
         onView(withId(R.id.live_settings_button))
                 .perform(click());
         onView(withText("Advanced"))
@@ -64,12 +61,12 @@ public class ReplayActivityTest {
         onView(withText("Run video player"))
                 .perform(click());
         findAllViewsInActivity();
-        verifyIfSwipeScoreManipulationWorks();
         onView(withId(R.id.playMovieFile_spinner))
                 .perform(click());
         onData(anything()).atPosition(0).perform(click());
         onView(withId(R.id.play_stop_button))
                 .perform(click());
+        verifyIfSwipeScoreManipulationWorks();
         onView(isRoot()).perform(waitFor(10000));
         onView(allOf(withId(R.id.txtBounce), not(withText("0"))));
         onView(allOf(withId(R.id.txtSide), not(withText("None"))));

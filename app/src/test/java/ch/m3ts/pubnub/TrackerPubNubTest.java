@@ -41,7 +41,6 @@ public class TrackerPubNubTest {
             jsonObject = makeJSONObject("onPointAddition", Side.RIGHT);
             trackerPubNub.successCallback("test", jsonObject);
             verify(spyCallback, times(1)).onPointAddition(Side.RIGHT);
-
             // test onPointDeduction
             jsonObject = makeJSONObject("onPointDeduction", Side.LEFT);
             trackerPubNub.successCallback("test", jsonObject);

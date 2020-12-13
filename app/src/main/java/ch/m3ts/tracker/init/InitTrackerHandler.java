@@ -70,7 +70,7 @@ public class InitTrackerHandler extends android.os.Handler implements CameraThre
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                activity.findViewById(R.id.tracker_loading).setVisibility(View.VISIBLE);;
+                activity.findViewById(R.id.tracker_loading).setVisibility(View.VISIBLE);
             }
         });
         return this.currentFrame;
@@ -140,7 +140,7 @@ public class InitTrackerHandler extends android.os.Handler implements CameraThre
             stringResult = result.getText();
         } catch (NotFoundException | ChecksumException | FormatException e) {
             Log.d("QR-Code not found");
-            e.printStackTrace();
+            Log.d(e.getMessage());
         }
         return stringResult;
     }
@@ -159,7 +159,7 @@ public class InitTrackerHandler extends android.os.Handler implements CameraThre
                 }
             } catch (Exception e) {
                 Log.d("Data of QR-Code is incorrect");
-                e.printStackTrace();
+                Log.d(e.getMessage());
             }
         }
     }
