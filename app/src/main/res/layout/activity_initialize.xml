@@ -2,7 +2,7 @@
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context="com.android.grafika.LiveDebugActivity">
+    tools:context="ch.m3ts.tracker.visualization.live.LiveActivity">
 
     <com.otaliastudios.zoom.ZoomLayout
         android:id="@+id/init_zoomLayout"

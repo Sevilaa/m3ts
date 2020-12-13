@@ -20,11 +20,11 @@ import androidx.test.rule.GrantPermissionRule;
 import androidx.test.runner.AndroidJUnit4;
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
 import androidx.test.runner.lifecycle.Stage;
-import cz.fmo.MainActivity;
+import ch.m3ts.MainActivity;
+import ch.m3ts.display.MatchActivity;
+import ch.m3ts.display.MatchScoreFragment;
+import ch.m3ts.tabletennis.helper.Side;
 import cz.fmo.R;
-import cz.fmo.display.MatchActivity;
-import cz.fmo.display.MatchScoreFragment;
-import cz.fmo.tabletennis.Side;
 import helper.GrantPermission;
 
 import static androidx.test.espresso.Espresso.onView;

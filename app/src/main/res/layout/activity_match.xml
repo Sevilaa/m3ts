@@ -9,6 +9,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@drawable/background_list"
-        tools:context=".display.MatchActivity">
+        tools:context="ch.m3ts.display.MatchActivity">
     </RelativeLayout>
 </RelativeLayout>

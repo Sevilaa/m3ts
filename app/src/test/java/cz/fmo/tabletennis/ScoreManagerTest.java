@@ -5,6 +5,9 @@ import org.junit.Test;
 
 import java.util.Random;
 
+import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.tabletennis.match.game.ScoreManager;
+
 import static org.junit.Assert.assertEquals;
 
 public class ScoreManagerTest {

@@ -8,7 +8,7 @@
         android:id="@+id/won_background"
         android:layout_width="match_parent"
         android:background="@drawable/background_list"
-        tools:context=".display.MatchWonActivity"
+        tools:context="ch.m3ts.display.MatchWonActivity"
         android:layout_height="match_parent">
         <GridLayout
             android:layout_width="wrap_content"

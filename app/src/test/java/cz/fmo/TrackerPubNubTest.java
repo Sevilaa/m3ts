@@ -12,8 +12,9 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.Random;
 
-import cz.fmo.tabletennis.ScoreManipulationCallback;
-import cz.fmo.tabletennis.Side;
+import ch.m3ts.pubnub.TrackerPubNub;
+import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.tabletennis.match.game.ScoreManipulationCallback;
 
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.times;

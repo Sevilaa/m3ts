@@ -12,9 +12,11 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.Random;
 
-import cz.fmo.display.DisplayScoreEventCallback;
-import cz.fmo.tabletennis.Side;
-import cz.fmo.tabletennis.UICallback;
+import ch.m3ts.display.DisplayScoreEventCallback;
+import ch.m3ts.pubnub.DisplayPubNub;
+import ch.m3ts.pubnub.JSONInfo;
+import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.tabletennis.match.UICallback;
 
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;

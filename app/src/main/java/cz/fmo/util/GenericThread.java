@@ -2,6 +2,8 @@ package cz.fmo.util;
 
 import android.os.Looper;
 
+import ch.m3ts.Log;
+
 /**
  * Universal base class for a thread with an Android event loop. Every thread is required to provide
  * its own message handler class, which serves as a gateway through which this thread receives
@@ -58,7 +60,7 @@ public abstract class GenericThread<H extends android.os.Handler> extends Thread
                     mLock.wait();
                 } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();
-                    com.android.grafika.Log.e(ie.getMessage(), ie);
+                    Log.e(ie.getMessage(), ie);
                 }
             }
         }

@@ -4,6 +4,14 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.tabletennis.match.Match;
+import ch.m3ts.tabletennis.match.MatchType;
+import ch.m3ts.tabletennis.match.Player;
+import ch.m3ts.tabletennis.match.ServeRules;
+import ch.m3ts.tabletennis.match.UICallback;
+import ch.m3ts.tabletennis.match.game.GameType;
+
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;

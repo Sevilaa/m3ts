@@ -4,6 +4,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.tabletennis.match.MatchCallback;
+import ch.m3ts.tabletennis.match.ServeRules;
+import ch.m3ts.tabletennis.match.UICallback;
+import ch.m3ts.tabletennis.match.game.Game;
+import ch.m3ts.tabletennis.match.game.GameType;
+
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
