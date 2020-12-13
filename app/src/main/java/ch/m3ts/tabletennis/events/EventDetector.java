@@ -192,7 +192,7 @@ public class EventDetector implements Lib.Callback {
         if ((detection.directionX == DirectionX.LEFT && currentStrikerSide != Side.RIGHT) ||
                 (detection.directionX == DirectionX.RIGHT && currentStrikerSide != Side.LEFT)) {
             Side striker = Side.RIGHT;
-            if(currentStrikerSide == Side.RIGHT) striker = Side.LEFT;
+            if (detection.directionX == DirectionX.RIGHT) striker = Side.LEFT;
             currentStrikerSide = striker;
             callAllOnSideChange(striker);
             hasSideChanged = true;

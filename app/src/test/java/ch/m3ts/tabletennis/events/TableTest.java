@@ -1,4 +1,4 @@
-package cz.fmo.tabletennis;
+package ch.m3ts.tabletennis.events;
 
 import android.graphics.Point;
 

@@ -1,10 +1,8 @@
-package cz.fmo.tabletennis;
+package ch.m3ts.tabletennis.match;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import ch.m3ts.tabletennis.match.Player;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;

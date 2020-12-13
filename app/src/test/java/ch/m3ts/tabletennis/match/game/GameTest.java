@@ -1,4 +1,4 @@
-package cz.fmo.tabletennis;
+package ch.m3ts.tabletennis.match.game;
 
 import org.junit.After;
 import org.junit.Before;
@@ -8,8 +8,6 @@ import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.MatchCallback;
 import ch.m3ts.tabletennis.match.ServeRules;
 import ch.m3ts.tabletennis.match.UICallback;
-import ch.m3ts.tabletennis.match.game.Game;
-import ch.m3ts.tabletennis.match.game.GameType;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;

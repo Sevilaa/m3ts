@@ -1,4 +1,4 @@
-package cz.fmo.tabletennis;
+package ch.m3ts.tabletennis.match.referee;
 
 import org.junit.After;
 import org.junit.Before;
@@ -6,8 +6,6 @@ import org.junit.Test;
 
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.game.Game;
-import ch.m3ts.tabletennis.match.referee.Referee;
-import ch.m3ts.tabletennis.match.referee.State;
 import cz.fmo.Lib;
 import cz.fmo.data.TrackSet;
 import cz.fmo.util.Config;

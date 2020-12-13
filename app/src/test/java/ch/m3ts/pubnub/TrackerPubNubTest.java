@@ -1,4 +1,4 @@
-package cz.fmo;
+package ch.m3ts.pubnub;
 
 import com.pubnub.api.Pubnub;
 
@@ -12,7 +12,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.Random;
 
-import ch.m3ts.pubnub.TrackerPubNub;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.game.ScoreManipulationCallback;
 
