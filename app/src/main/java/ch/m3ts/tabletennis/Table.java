@@ -130,14 +130,14 @@ public class Table {
         return horizontalSide;
     }
 
-    static class NotFourCornersException extends RuntimeException {
+    public static class NotFourCornersException extends RuntimeException {
         private static final String MESSAGE = "Table needs 4 points as corners, you provided: ";
         NotFourCornersException(int amountOfCorners) {
             super(MESSAGE + amountOfCorners);
         }
     }
 
-    static class NotTwoNetEndsException extends RuntimeException {
+    public static class NotTwoNetEndsException extends RuntimeException {
         private static final String MESSAGE = "Net needs 2 points which mark the end and start of the net, you provided: ";
         NotTwoNetEndsException(int amountOfPoints) {
             super(MESSAGE + amountOfPoints);
