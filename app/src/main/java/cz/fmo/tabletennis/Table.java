@@ -106,7 +106,7 @@ public class Table {
         double leftThreshold = this.getCornerDownLeft().x;
         double rightThreshold = this.getCornerDownRight().x;
         double bottomThreshold = this.getCloseNetEnd().y;
-        double topThreshold = this.getFarNetEnd().y * 0.9;
+        double topThreshold = this.getFarNetEnd().y * 0.85;
         return (x >= leftThreshold && x <= rightThreshold && y <= bottomThreshold && y >= topThreshold);
     }
 
@@ -119,6 +119,13 @@ public class Table {
 
     public int getWidth() {
         return getCornerDownRight().x - getCornerDownLeft().x;
+    }
+
+    public Side getHorizontalSideOfDetection(int centerX) {
+        Side horizontalSide = null;
+        if(centerX < this.getCloseNetEnd().x * 0.95) horizontalSide = Side.LEFT;
+        else if (centerX > this.getCloseNetEnd().x * 1.05) horizontalSide = Side.RIGHT;
+        return horizontalSide;
     }
 
     static class NotFourCornersException extends RuntimeException {

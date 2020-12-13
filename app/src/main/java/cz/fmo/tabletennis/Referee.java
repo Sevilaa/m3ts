@@ -14,7 +14,7 @@ import helper.DirectionX;
 
 public class Referee implements EventDetectionCallback, ScoreManipulationCallback {
     private static final int OUT_OF_FRAME_MAX_DELAY = 1500;
-    private static final int PAUSE_DELAY = 2000;
+    private static final int PAUSE_DELAY = 1000;
     private Timer outOfFrameTimer;
     private Timer timeOutNextServeTimer;
     private GameCallback gameCallback;
@@ -22,6 +22,7 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     private Side currentStriker;
     private Side currentBallSide;
     private GameState state;
+    // TODO change bounces from int to Map as bounces get delivered with Side Info now
     private int bounces;
     private int serveCounter;
 
@@ -49,15 +50,19 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     }
 
     @Override
-    public void onBounce(Lib.Detection detection) {
+    public void onBounce(Lib.Detection detection, Side ballBouncedOnSide) {
         switch (this.state) {
             case SERVING:
-                bounces++;
-                applyRuleSetServing();
+                if (ballBouncedOnSide == currentBallSide) {
+                    bounces++;
+                    applyRuleSetServing();
+                }
                 break;
             case PLAY:
-                bounces++;
-                applyRuleSet();
+                if (ballBouncedOnSide == currentBallSide) {
+                    bounces++;
+                    applyRuleSet();
+                }
                 break;
             default:
                 break;
@@ -78,7 +83,9 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
                 if (side != getServer()) {
                     bounces = 0;
                 }
-                currentStriker = side;
+                if (currentBallSide == side) {
+                    currentStriker = side;
+                }
                 break;
             default:
                 currentStriker = side;
@@ -118,14 +125,12 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
 
     @Override
     public void onTableSideChange(Side side) {
-        Log.d("Table side change: "+side.toString());
+        // set the currentStriker in case the tracker didn't find any detections
+        Side oppositeSide = Side.RIGHT;
+        if(side == Side.RIGHT) oppositeSide = Side.LEFT;
+        this.currentStriker = oppositeSide;
         switch (this.state) {
             case SERVING:
-                if(bounces == 0) {
-                    //Log.d("Server fault: No Bounce on own Side");
-                    //faultBySide(getServer());
-                    //break;
-                }
             case PLAY:
                 this.state = GameState.PLAY;
                 this.currentBallSide = side;
@@ -154,8 +159,7 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
 
     @Override
     public void onTimeout() {
-        Log.d("Timeout (2 seconds since last valid detection)");
-        if (this.state == GameState.PLAY)
+        if (this.state == GameState.PLAY || this.state == GameState.SERVING)
             handleOutOfFrame();
     }
 
@@ -187,11 +191,14 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
 
     public void onOutOfFrameForTooLong() {
         if (this.state == GameState.OUT_OF_FRAME) {
-            if(this.bounces == 1) {
+            if (currentBallSide == currentStriker) {
+                Log.d("Out of Frame for too long - Striker most likely shot the ball into the net");
+                faultBySide(currentStriker);
+            } else if(this.bounces == 1) {
                 Log.d("Out of Frame for too long - Strike received no return");
                 pointBySide(currentStriker);
             } else {
-                Log.d("Out of Frame for too long - Striker did not bounce");
+                Log.d("Out of Frame for too long - Strike did not bounce");
                 faultBySide(currentStriker);
             }
         } else {

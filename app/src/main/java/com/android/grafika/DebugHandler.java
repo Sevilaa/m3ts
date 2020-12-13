@@ -101,7 +101,7 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     }
 
     @Override
-    public void onBounce(Lib.Detection detection) {
+    public void onBounce(Lib.Detection detection, Side ballBouncedOnSide) {
         // update game logic
         // then display game state to some views
         latestBounce = detection;
@@ -113,7 +113,7 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     @Override
     public void onSideChange(final Side side) {
         // use the referees current striker (might be different then side in parameter!)
-        setTextInTextView(R.id.txtSide, match.getReferee().getCurrentStriker().toString());
+        if(match.getReferee().getCurrentStriker() != null) setTextInTextView(R.id.txtSide, match.getReferee().getCurrentStriker().toString());
     }
 
     @Override
@@ -122,36 +122,41 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
     }
 
     @Override
-    public void onStrikeFound(Track track) {
-        DebugActivity activity = mActivity.get();
+    public void onStrikeFound(final Track track) {
+        final DebugActivity activity = mActivity.get();
         if (activity == null) {
             return;
         }
-        if (activity.ismSurfaceHolderReady()) {
-            SurfaceHolder surfaceHolder = activity.getmSurfaceTrack().getHolder();
-            Canvas canvas = surfaceHolder.lockCanvas();
-            if (canvas == null) {
-                return;
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (activity.ismSurfaceHolderReady()) {
+                    SurfaceHolder surfaceHolder = activity.getmSurfaceTrack().getHolder();
+                    Canvas canvas = surfaceHolder.lockCanvas();
+                    if (canvas == null) {
+                        return;
+                    }
+                    if (canvasWidth == 0 || canvasHeight == 0) {
+                        canvasWidth = canvas.getWidth();
+                        canvasHeight = canvas.getHeight();
+                    }
+                    canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+                    if (hasNewTable) {
+                        drawTable();
+                        hasNewTable = false;
+                    }
+                    drawTrack(canvas, track);
+                    drawLatestBounce(canvas);
+                    drawLatestOutOfFrameDetection(canvas);
+                    surfaceHolder.unlockCanvasAndPost(canvas);
+                }
+                setTextInTextView(R.id.txtPlayMovieState, match.getReferee().getState().toString());
+                setTextInTextView(R.id.txtPlayMovieServing, match.getReferee().getServer().toString());
+                if(match.getReferee().getCurrentBallSide() != null) {
+                    setTextInTextView(R.id.txtBounce, String.valueOf(newBounceCount));
+                }
             }
-            if (this.canvasWidth == 0 || this.canvasHeight == 0) {
-                canvasWidth = canvas.getWidth();
-                canvasHeight = canvas.getHeight();
-            }
-            canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-            if (hasNewTable) {
-                drawTable();
-                hasNewTable = false;
-            }
-            drawTrack(canvas, track);
-            drawLatestBounce(canvas);
-            drawLatestOutOfFrameDetection(canvas);
-            surfaceHolder.unlockCanvasAndPost(canvas);
-        }
-        setTextInTextView(R.id.txtPlayMovieState, match.getReferee().getState().toString());
-        setTextInTextView(R.id.txtPlayMovieServing, match.getReferee().getServer().toString());
-        if(match.getReferee().getCurrentBallSide() != null) {
-            setTextInTextView(R.id.txtBounce, String.valueOf(this.newBounceCount));
-        }
+        });
     }
 
     @Override
@@ -300,7 +305,7 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
         p.setStrokeWidth(pre.radius);
         int count = 0;
         while (pre != null && count < 2) {
-            canvas.drawCircle(scaleX(pre.centerX), scaleY(pre.centerY), pre.radius, p);
+            canvas.drawCircle(scaleX(pre.centerX), scaleY(pre.centerY), scaleY(pre.radius), p);
             if (pre.predecessor != null) {
                 int x1 = scaleX(pre.centerX);
                 int x2 = scaleX(pre.predecessor.centerX);
@@ -331,6 +336,11 @@ public class DebugHandler extends android.os.Handler implements EventDetectionCa
 
     private int scaleY(int value) {
         float relPercentage = ((float) value) / ((float) this.videoHeight);
+        return Math.round(relPercentage * this.canvasHeight);
+    }
+
+    private int scaleY(float value) {
+        float relPercentage = (value) / ((float) this.videoHeight);
         return Math.round(relPercentage * this.canvasHeight);
     }
 

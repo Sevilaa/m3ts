@@ -20,6 +20,7 @@ import helper.DirectionY;
 public class EventDetector implements Lib.Callback {
     private static final double PERCENTAGE_OF_NEARLY_OUT_OF_FRAME = 0.07;
     private static final int MILLISECONDS_TILL_TIMEOUT = 1000;
+    private final Object mLock = new Object();
     private final TrackSet tracks;
     private final List<EventDetectionCallback> callbacks;
     private final int[] nearlyOutOfFrameThresholds;
@@ -66,33 +67,37 @@ public class EventDetector implements Lib.Callback {
     }
 
     public void onObjectsDetected(Lib.Detection[] detections, long detectionTime) {
-        tracks.addDetections(detections, this.srcWidth, this.srcHeight, detectionTime); // after this, object direction is up to date
-        if (!tracks.getTracks().isEmpty()) {
-            Track track = selectTrack(tracks.getTracks());
-            if (track != null && track.getLatest() != previousDetection) {
-                Lib.Detection latestDetection = track.getLatest();
-                calcDirectionY(latestDetection);
-                calcDirectionX(latestDetection);
-                numberOfDetections++;
-                if (hasBallFallenOffSideWays(latestDetection)){
-                    callAllOnBallDroppedSideWays();
+        synchronized (mLock) {
+            tracks.addDetections(detections, this.srcWidth, this.srcHeight, detectionTime); // after this, object direction is up to date
+            if (!tracks.getTracks().isEmpty()) {
+                Track track = selectTrack(tracks.getTracks());
+                if (track != null && track.getLatest() != previousDetection) {
+                    numberOfDetections++;
+                    Lib.Detection latestDetection = track.getLatest();
+                    calcDirectionY(latestDetection);
+                    calcDirectionX(latestDetection);
+                    callAllOnStrikeFound(track);
+                    if (hasBallFallenOffSideWays(latestDetection)){
+                        callAllOnBallDroppedSideWays();
+                    }
+                    // todo ev. if has table side changed, then no bounce check
+                    hasTableSideChanged(latestDetection.centerX);
+                    boolean tableSideChanged = hasSideChanged(latestDetection);
+                    hasBouncedOnTable(latestDetection, tableSideChanged);
+                    Side nearlyOutOfFrameSide = getNearlyOutOfFrameSide(latestDetection);
+                    if (nearlyOutOfFrameSide != null) {
+                        callAllOnNearlyOutOfFrame(latestDetection, nearlyOutOfFrameSide);
+                    }
+                    savePreviousDetection(latestDetection);
+                    setTimeoutTimer(numberOfDetections);
                 }
-                hasTableSideChanged(latestDetection.centerX);
-                callAllOnStrikeFound(track);
-                hasBouncedOnTable(latestDetection);
-                hasSideChanged(latestDetection);
-                Side nearlyOutOfFrameSide = getNearlyOutOfFrameSide(latestDetection);
-                if (nearlyOutOfFrameSide != null) {
-                    callAllOnNearlyOutOfFrame(latestDetection, nearlyOutOfFrameSide);
-                }
-                savePreviousDetection(latestDetection);
-                setTimeoutTimer(numberOfDetections);
             }
         }
     }
 
     public Track selectTrack(List<Track> tracks) {
         // first tag all tracks which have crossed the table once
+        // TODO remove detections which are unrealistically large or small (only use close edge)
         for(Track t : tracks) {
             Lib.Detection latestDetection = t.getLatest();
             if (table.isOnOrAbove(latestDetection.centerX, latestDetection.centerY)) {
@@ -152,9 +157,9 @@ public class EventDetector implements Lib.Callback {
         }
     }
 
-    private void callAllOnBounce(Lib.Detection latestDetection) {
+    private void callAllOnBounce(Lib.Detection detection, Side side) {
         for (EventDetectionCallback callback : callbacks) {
-            callback.onBounce(latestDetection);
+            callback.onBounce(detection, side);
         }
     }
 
@@ -182,22 +187,26 @@ public class EventDetector implements Lib.Callback {
         }
     }
 
-    private void hasSideChanged(Lib.Detection detection) {
-        Side otherBallSide = Side.RIGHT;
-        if(detection.directionX == DirectionX.RIGHT) otherBallSide = Side.LEFT;
+    private boolean hasSideChanged(Lib.Detection detection) {
+        boolean hasSideChanged = false;
         if ((detection.directionX == DirectionX.LEFT && currentStrikerSide != Side.RIGHT) ||
-                (detection.directionX == 1.0 && currentStrikerSide != Side.LEFT) && detection.predecessor != null) {
-            currentStrikerSide = otherBallSide;
-            callAllOnSideChange(otherBallSide);
+                (detection.directionX == DirectionX.RIGHT && currentStrikerSide != Side.LEFT)) {
+            Side striker = Side.RIGHT;
+            if(currentStrikerSide == Side.RIGHT) striker = Side.LEFT;
+            currentStrikerSide = striker;
+            callAllOnSideChange(striker);
+            hasSideChanged = true;
         }
+        return hasSideChanged;
     }
 
-    private void hasBouncedOnTable(Lib.Detection detection) {
-        if (previousDirectionY != detection.directionY &&
+    private void hasBouncedOnTable(Lib.Detection detection, boolean hasSideChanged) {
+        if (!hasSideChanged && previousDirectionY != detection.directionY &&
                 (previousDirectionX == detection.directionX) &&
                 (table.isBounceOn(previousCenterX, previousCenterY) || table.isBounceOn(detection.centerX, detection.centerY)) &&
                 ((previousDirectionY == DirectionY.DOWN) && (detection.directionY == DirectionY.UP))) {
-            callAllOnBounce(detection);
+            Side ballBouncedOnSide = table.getHorizontalSideOfDetection(previousDetection.centerX);
+            callAllOnBounce(previousDetection, ballBouncedOnSide);
         }
     }
 

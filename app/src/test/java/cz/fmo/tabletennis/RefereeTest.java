@@ -46,11 +46,11 @@ public class RefereeTest {
         assertEquals(referee.getState(), GameState.WAIT_FOR_SERVE);
         simulateServe();
         assertEquals(referee.getState(), GameState.SERVING);
-        referee.onBounce(detection);
+        referee.onBounce(detection, Side.LEFT);
         referee.onTableSideChange(Side.RIGHT);
         assertEquals(referee.getState(), GameState.PLAY);
-        referee.onBounce(detection);
-        referee.onBounce(detection);
+        referee.onBounce(detection, Side.RIGHT);
+        referee.onBounce(detection, Side.RIGHT);
         verify(gameMock, times(1)).onPoint(STARTING_SIDE);
         verify(gameMock, times(0)).onPoint(Side.RIGHT);
         assertEquals(referee.getState(), GameState.PAUSE);
@@ -59,9 +59,9 @@ public class RefereeTest {
     @Test
     public void onServingAceOutOfFrame() {
         simulateServe();
-        referee.onBounce(detection);
+        referee.onBounce(detection, Side.LEFT);
         referee.onTableSideChange(Side.RIGHT);
-        referee.onBounce(detection);
+        referee.onBounce(detection, Side.RIGHT);
         referee.onNearlyOutOfFrame(detection, Side.RIGHT);
         try {
             Thread.sleep(2000);
@@ -77,9 +77,9 @@ public class RefereeTest {
     @Test
     public void onServingValidOutOfFrame() {
         simulateServe();
-        referee.onBounce(detection);
+        referee.onBounce(detection, Side.LEFT);
         referee.onTableSideChange(Side.RIGHT);
-        referee.onBounce(detection);
+        referee.onBounce(detection, Side.RIGHT);
         referee.onNearlyOutOfFrame(detection, Side.RIGHT);
         try {
             Thread.sleep(1000);
@@ -89,7 +89,7 @@ public class RefereeTest {
         referee.onStrikeFound(realTrackSet.getTracks().get(0));
         referee.onSideChange(Side.RIGHT);
         referee.onTableSideChange(Side.LEFT);
-        referee.onBounce(detection);
+        referee.onBounce(detection, Side.LEFT);
         verify(gameMock, times(0)).onPoint(STARTING_SIDE);
         verify(gameMock, times(0)).onPoint(Side.RIGHT);
         assertEquals(referee.getState(), GameState.PLAY);
@@ -98,8 +98,8 @@ public class RefereeTest {
     @Test
     public void onServingDoubleBounceOnOwnSideFault() {
         simulateServe();
-        referee.onBounce(detection);
-        referee.onBounce(detection);
+        referee.onBounce(detection, Side.LEFT);
+        referee.onBounce(detection, Side.LEFT);
         verify(gameMock, times(1)).onPoint(Side.RIGHT);
         verify(gameMock, times(0)).onPoint(Side.LEFT);
         assertEquals(referee.getState(), GameState.PAUSE);
@@ -110,7 +110,7 @@ public class RefereeTest {
         // will be ignored at the moment
         simulateServe();
         referee.onTableSideChange(Side.RIGHT);
-        referee.onBounce(detection);
+        referee.onBounce(detection, Side.RIGHT);
         verify(gameMock, times(0)).onPoint(Side.RIGHT);
         verify(gameMock, times(0)).onPoint(Side.LEFT);
         assertEquals(referee.getState(), GameState.PLAY);
@@ -119,9 +119,9 @@ public class RefereeTest {
     @Test
     public void onServingValid() {
         simulateServe();
-        referee.onBounce(detection);
+        referee.onBounce(detection, Side.LEFT);
         referee.onTableSideChange(Side.RIGHT);
-        referee.onBounce(detection);
+        referee.onBounce(detection, Side.RIGHT);
         referee.onSideChange(Side.RIGHT);
         verify(gameMock, times(0)).onPoint(Side.RIGHT);
         verify(gameMock, times(0)).onPoint(Side.LEFT);
@@ -131,10 +131,10 @@ public class RefereeTest {
     @Test
     public void onReturnFaultBounceOnOwnSide() {
         simulateServe();
-        referee.onBounce(detection);
+        referee.onBounce(detection, Side.LEFT);
         referee.onTableSideChange(Side.RIGHT);
         referee.onSideChange(Side.RIGHT);
-        referee.onBounce(detection);
+        referee.onBounce(detection, Side.RIGHT);
         verify(gameMock, times(1)).onPoint(Side.LEFT);
         verify(gameMock, times(0)).onPoint(Side.RIGHT);
     }
@@ -142,9 +142,9 @@ public class RefereeTest {
     @Test
     public void onReturnFaultNoBounceAndTooLongOutOfFrame() {
         simulateServe();
-        referee.onBounce(detection);
+        referee.onBounce(detection, Side.LEFT);
         referee.onTableSideChange(Side.RIGHT);
-        referee.onBounce(detection);
+        referee.onBounce(detection, Side.RIGHT);
         referee.onSideChange(Side.RIGHT);
         referee.onTableSideChange(Side.LEFT);
         referee.onNearlyOutOfFrame(detection, Side.LEFT);
@@ -161,14 +161,14 @@ public class RefereeTest {
     @Test
     public void onReturnFaultNoBounceAndOutOfFrameButInstantBack() {
         simulateServe();
-        referee.onBounce(detection);
+        referee.onBounce(detection, Side.LEFT);
         referee.onTableSideChange(Side.RIGHT);
-        referee.onBounce(detection);
+        referee.onBounce(detection, Side.RIGHT);
         referee.onSideChange(Side.RIGHT);
         referee.onTableSideChange(Side.LEFT);
         referee.onNearlyOutOfFrame(detection, Side.LEFT);
         referee.onStrikeFound(realTrackSet.getTracks().get(0));
-        verify(gameMock, times(1)).onPoint(Side.LEFT);
+        verify(gameMock, times(0)).onPoint(Side.LEFT);
         verify(gameMock, times(0)).onPoint(Side.RIGHT);
     }
 
