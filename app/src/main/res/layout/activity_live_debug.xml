@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="ch.m3ts.tracker.visualization.live.LiveActivity">
-
+    tools:context="ch.m3ts.tracker.visualization.live.LiveActivity"
+    android:keepScreenOn="true">
     <include layout="@layout/camera_and_tracks_surface_views" />
 
     <RelativeLayout
         android:id="@+id/relativeLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:keepScreenOn="true">
         <GridLayout
             android:id="@+id/playMovie_debugGrid"
             android:layout_width="wrap_content"

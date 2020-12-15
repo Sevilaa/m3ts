@@ -140,7 +140,6 @@ public class InitTrackerHandler extends android.os.Handler implements CameraThre
             stringResult = result.getText();
         } catch (NotFoundException | ChecksumException | FormatException e) {
             Log.d("QR-Code not found");
-            Log.d(e.getMessage());
         }
         return stringResult;
     }
