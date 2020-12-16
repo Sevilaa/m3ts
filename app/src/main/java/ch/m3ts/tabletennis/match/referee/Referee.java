@@ -17,7 +17,8 @@ import cz.fmo.data.Track;
 
 public class Referee implements EventDetectionCallback, ScoreManipulationCallback {
     private static final int OUT_OF_FRAME_MAX_DELAY = 1500;
-    private static final int PAUSE_DELAY = 1000;
+    private static final int PAUSE_DELAY = 1500;
+    private static final int PAUSE_SCORE_MANIPULATION_DELAY = 3000;
     private Timer outOfFrameTimer;
     private Timer timeOutNextServeTimer;
     private GameCallback gameCallback;
@@ -170,12 +171,14 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     public void onPointDeduction(Side side) {
         gameCallback.onPointDeduction(side);
         initPoint();
-        setTimeoutForNextServe();
+        setTimeoutForNextServe(PAUSE_SCORE_MANIPULATION_DELAY);
     }
 
     @Override
     public void onPointAddition(Side side) {
-       pointBySide(side);
+        gameCallback.onPoint(side);
+        initPoint();
+        setTimeoutForNextServe(PAUSE_SCORE_MANIPULATION_DELAY);
     }
 
     @Override
@@ -238,17 +241,17 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
         this.state = State.OUT_OF_FRAME;
     }
 
-    private void setTimeoutForNextServe() {
+    private void setTimeoutForNextServe(int timeoutTime) {
         this.state = State.PAUSE;
         TimerTask outOfFrameTask = new PauseTimerTask(this);
         this.timeOutNextServeTimer = new Timer("timeOutNextServeTimer");
-        this.timeOutNextServeTimer.schedule(outOfFrameTask, PAUSE_DELAY);
+        this.timeOutNextServeTimer.schedule(outOfFrameTask, timeoutTime);
     }
 
     private void pointBySide(Side side) {
         gameCallback.onPoint(side);
         initPoint();
-        setTimeoutForNextServe();
+        setTimeoutForNextServe(PAUSE_DELAY);
     }
 
     private void faultBySide(Side side) {
@@ -258,7 +261,7 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
             gameCallback.onPoint(Side.RIGHT);
         }
         initPoint();
-        setTimeoutForNextServe();
+        setTimeoutForNextServe(PAUSE_DELAY);
     }
 
     private void initPoint() {
