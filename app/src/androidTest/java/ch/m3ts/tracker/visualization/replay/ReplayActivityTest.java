@@ -90,15 +90,13 @@ public class ReplayActivityTest {
                 .perform(swipeDown());
         onView(withId(R.id.playMovie_surface))
                 .perform(swipeDown());
-        onView(withText("1"))
-                .check(matches(isDisplayed()));
+        onView(allOf(withId(R.id.txtPlayMovieScoreRight), withText("1")));
         // no score changes on left or right swipe
         onView(withId(R.id.playMovie_surface))
                 .perform(swipeLeft());
         onView(withId(R.id.playMovie_surface))
                 .perform(swipeRight());
-        onView(withText("1"))
-                .check(matches(isDisplayed()));
+        onView(allOf(withId(R.id.txtPlayMovieScoreRight), withText("1")));
     }
 
     private void findAllViewsInActivity() {

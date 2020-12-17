@@ -4,25 +4,26 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.test.InstrumentationTestCase;
 
-import androidx.test.filters.LargeTest;
-import androidx.test.platform.app.InstrumentationRegistry;
-import androidx.test.rule.ActivityTestRule;
-import androidx.test.runner.AndroidJUnit4;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import androidx.test.filters.LargeTest;
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.rule.ActivityTestRule;
+import androidx.test.runner.AndroidJUnit4;
 import cz.fmo.R;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static ch.m3ts.tracker.visualization.replay.ReplayActivityTest.waitFor;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
@@ -66,6 +67,7 @@ public class MatchWonActivityTest extends InstrumentationTestCase {
     public void onClickPlayAgain() {
         onView(withId(R.id.play_again))
                 .perform(click());
+        onView(isRoot()).perform(waitFor(1000));
         onView(withId(R.id.left_score))
                 .check(matches(isDisplayed()));
         onView(withId(R.id.right_score))
