@@ -89,7 +89,7 @@ public final class InitTrackerActivity extends CameraPreviewActivity {
         }
     }
 
-    void switchToDebugActivity(String selectedMatchId, int selectedMatchType, int selectedServingSide, int[] tableCorners) {
+    void switchToLiveActivity(String selectedMatchId, int selectedMatchType, int selectedServingSide, int[] tableCorners) {
         this.trackerPubNub.unsubscribe();
         Intent intent = new Intent(this, LiveActivity.class);
         Bundle bundle = new Bundle();
@@ -100,15 +100,5 @@ public final class InitTrackerActivity extends CameraPreviewActivity {
         intent.putExtras(bundle);
         startActivity(intent);
         this.finish();
-    }
-
-    private static int[] pointsToIntArray(Point[] points) {
-        int[] ints = new int[points.length*2];
-        for(int i = 0; i<points.length; i++) {
-            Point point = points[i];
-            ints[i*2] = point.x;
-            ints[i*2+1] = point.y;
-        }
-        return ints;
     }
 }

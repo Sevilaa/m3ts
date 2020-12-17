@@ -77,9 +77,9 @@ public class InitTrackerHandler extends android.os.Handler implements CameraThre
     }
 
     @Override
-    public void switchToDebugActivity() {
+    public void switchToLiveActivity() {
         if(this.tableCorners != null) {
-            mActivity.get().switchToDebugActivity(this.selectedMatchId, this.selectedMatchType, this.selectedServingSide, this.tableCorners);
+            mActivity.get().switchToLiveActivity(this.selectedMatchId, this.selectedMatchType, this.selectedServingSide, this.tableCorners);
         }
     }
 
@@ -168,7 +168,7 @@ public class InitTrackerHandler extends android.os.Handler implements CameraThre
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                activity.findViewById(R.id.scan_overlay).setVisibility(View.GONE);;
+                activity.findViewById(R.id.scan_overlay).setVisibility(View.GONE);
             }
         });
     }
