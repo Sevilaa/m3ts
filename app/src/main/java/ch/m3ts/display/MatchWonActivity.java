@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import ch.m3ts.MainActivity;
 import cz.fmo.R;
 
 public class MatchWonActivity extends Activity {
@@ -49,7 +50,9 @@ public class MatchWonActivity extends Activity {
      */
     public void backToMenu(View view) {
         animationDrawable.stop();
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK |Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
         this.finish();
-        onBackPressed();
     }
 }

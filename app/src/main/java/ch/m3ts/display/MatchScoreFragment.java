@@ -30,7 +30,6 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
     private String ttsSide;
     private String ttsReadyToServe;
     private TextToSpeech tts;
-    private FragmentReplaceCallback callback;
     private DisplayPubNub pubNub;
     private boolean isPaused = false;
 
@@ -51,14 +50,17 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
         });
 
         final ImageButton pauseResumeButton = v.findViewById(R.id.btnPauseResumeReferee);
+        pauseResumeButton.setTag("Play");
         pauseResumeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (isPaused) {
                     pubNub.onResume();
+                    pauseResumeButton.setTag("Play");
                     pauseResumeButton.setImageResource(android.R.drawable.ic_media_pause);
                 } else {
                     pubNub.onPause();
+                    pauseResumeButton.setTag("Pause");
                     pauseResumeButton.setImageResource(android.R.drawable.ic_media_play);
                 }
                 isPaused = !isPaused;
@@ -66,20 +68,6 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
         });
         setOnSwipeListener(v);
         return v;
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-
-        // This makes sure that the container activity has implemented
-        // the callback interface. If not, it throws an exception
-        try {
-            callback = (FragmentReplaceCallback) context;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString()
-                    + " must implement FragmentReplaceListener");
-        }
     }
 
     @Override

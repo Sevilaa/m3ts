@@ -6,6 +6,8 @@ import android.graphics.Point;
 import android.os.Bundle;
 import android.test.InstrumentationTestCase;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import org.junit.After;
@@ -26,6 +28,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.rule.GrantPermissionRule;
 import androidx.test.runner.AndroidJUnit4;
+
 import ch.m3ts.tabletennis.helper.Side;
 import cz.fmo.R;
 import helper.GrantPermission;
@@ -34,9 +37,12 @@ import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.hasTextColor;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertNotEquals;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
@@ -57,6 +63,7 @@ public class MatchActivityTest extends InstrumentationTestCase {
             Bundle bundle = new Bundle();
             bundle.putBoolean("isRestartedMatch", false);
             intent.putExtras(bundle);
+
             return intent;
         }
     };
@@ -173,6 +180,37 @@ public class MatchActivityTest extends InstrumentationTestCase {
         final int scoreRight = random.nextInt(10);
         final int winsLeft = random.nextInt(10);
         final int winsRight = random.nextInt(10);
+        final String playerLeft = "left";
+        final String playerRight = "right";
+
+        // invoke onReadyToServe and check if ui updated
+        getInstrumentation().runOnMainSync(new Runnable(){
+            public void run(){
+                matchScoreFragment.onReadyToServe(Side.RIGHT);
+            }
+        });
+        onView(withId(R.id.right_name)).check(matches(hasTextColor(R.color.display_serving)));
+        onView(withId(R.id.left_name)).check(matches(hasTextColor(android.R.color.secondary_text_light)));
+        getInstrumentation().runOnMainSync(new Runnable(){
+            public void run(){
+                matchScoreFragment.onReadyToServe(Side.LEFT);
+            }
+        });
+        onView(withId(R.id.left_name)).check(matches(hasTextColor(R.color.display_serving)));
+        onView(withId(R.id.right_name)).check(matches(hasTextColor(android.R.color.secondary_text_light)));
+
+        // invoke onStatusUpdate and check if value matches
+        getInstrumentation().runOnMainSync(new Runnable(){
+            public void run(){
+                matchScoreFragment.onStatusUpdate(playerLeft, playerRight, scoreRight, scoreRight, winsLeft, winsRight, Side.LEFT);
+            }
+        });
+        assertEquals("0"+winsLeft, ((TextView)matchActivity.findViewById(R.id.left_games)).getText());
+        assertEquals("0"+winsRight, ((TextView)matchActivity.findViewById(R.id.right_games)).getText());
+        assertEquals("0"+scoreRight, ((TextView)matchActivity.findViewById(R.id.right_score)).getText());
+        assertEquals("0"+scoreRight, ((TextView)matchActivity.findViewById(R.id.left_score)).getText());
+        assertEquals(playerLeft, ((TextView)matchActivity.findViewById(R.id.left_name)).getText().toString());
+        assertEquals(playerRight, ((TextView)matchActivity.findViewById(R.id.right_name)).getText().toString());
 
         // invoke onScore and check if value matches
         getInstrumentation().runOnMainSync(new Runnable(){
@@ -208,6 +246,93 @@ public class MatchActivityTest extends InstrumentationTestCase {
                 .check(matches(isDisplayed()));
         onView(withText(R.string.mwWon))
                 .check(matches(isDisplayed()));
+    }
+
+    @Test
+    public void testMatchScoreFragmentPause() throws Exception {
+        // switch to matchScoreFragment
+        final MatchScoreFragment matchScoreFragment = new MatchScoreFragment();
+        matchActivity.replaceFragment(matchScoreFragment, "MATCH_SCORE");
+        Thread.sleep(1000);
+        assertEquals(matchActivity.findViewById(R.id.btnPauseResumeReferee).getTag(), "Play");
+        onView(withId(R.id.btnPauseResumeReferee)).perform(click());
+        assertEquals(matchActivity.findViewById(R.id.btnPauseResumeReferee).getTag(), "Pause");
+        assertNotEquals("Play", matchActivity.findViewById(R.id.btnPauseResumeReferee).getTag());
+    }
+
+    @Test
+    public void testMatchInitFragment() throws Exception {
+        // switch to matchInitFragment
+        final MatchInitFragment matchInitFragment = new MatchInitFragment();
+        Bundle bundle = new Bundle();
+        bundle.putString("type", Integer.toString(0));
+        bundle.putString("server", Integer.toString(0));
+        matchInitFragment.setArguments(bundle);
+        matchActivity.replaceFragment(matchInitFragment, "MATCH_INIT");
+        Thread.sleep(1000);
+        assertNotNull(((ImageView)matchActivity.findViewById(R.id.qr_code)).getDrawable());
+
+        // invoke onImageTransmissionStarted and check if LoadingBar is initialized
+        ProgressBar bar = matchActivity.findViewById(R.id.loading_bar);
+        final int parts = 50;
+        assertEquals(100, bar.getMax());
+        getInstrumentation().runOnMainSync(new Runnable(){
+            public void run(){
+                matchInitFragment.onImageTransmissionStarted(parts);
+            }
+        });
+        assertEquals(parts, bar.getMax());
+
+        // invoke onImagePartReceived and check if LoadingBar is updated
+        final int partNumber = 10;
+        assertEquals(0, bar.getProgress());
+        getInstrumentation().runOnMainSync(new Runnable(){
+            public void run(){
+                matchInitFragment.onImagePartReceived(partNumber);
+            }
+        });
+        assertEquals(partNumber, bar.getProgress());
+
+
+        // invoke onConnected and check if ui is updated
+        getInstrumentation().runOnMainSync(new Runnable(){
+            public void run(){
+                matchInitFragment.onConnected();
+            }
+        });
+        onView(withText(R.string.miConnectedTitle)).check(matches(isDisplayed()));
+        onView(withText(R.string.miConnectedSubTitle)).check(matches(isDisplayed()));
+        onView(withId(R.id.miPictureBtn)).check(matches(isDisplayed()));
+        onView(withId(R.id.qr_code)).check(matches(not(isDisplayed())));
+
+        // invoke onClick and check if ui is updated
+        final View onClickView = new View(matchActivity);
+        getInstrumentation().runOnMainSync(new Runnable(){
+            public void run(){
+
+                onClickView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // Empty Listener just to check if onclick is deactivated
+                    }
+                });
+                matchInitFragment.onClick(onClickView);
+            }
+
+        });
+        onView(withText(R.string.miPictureLoadingSubTitle)).check(matches(isDisplayed()));
+        onView(withId(R.id.display_loading)).check(matches(isDisplayed()));
+        onView(withId(R.id.miPictureBtn)).check(matches(not(isDisplayed())));
+        assertFalse(onClickView.hasOnClickListeners());
+
+        // invoke onImageReceived and check if fragment changes
+        getInstrumentation().runOnMainSync(new Runnable(){
+            public void run(){
+                matchInitFragment.onImageReceived(new byte[]{}, 100, 100);
+            }
+        });
+        onView(withId(R.id.miTitle)).check(doesNotExist());
+        onView(withId(R.id.init_description)).check(matches(isDisplayed()));
     }
 
     private void testClickingRevertTooManyTimes() {
