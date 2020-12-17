@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ch.m3ts.tracker.visualization.replay;
+package ch.m3ts.tracker.visualization.replay.lib;
 
 import android.media.MediaCodec;
 import android.media.MediaExtractor;
@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import ch.m3ts.Log;
+import ch.m3ts.tracker.visualization.replay.ReplayDetectionCallback;
 
 
 /**
@@ -37,6 +38,7 @@ import ch.m3ts.Log;
  * TODO: needs more advanced shuttle controls (pause/resume, skip)
  */
 @SuppressWarnings({"FieldCanBeLocal", "deprecation", "ConstantConditions", "UnusedAssignment"})
+public
 class VideoPlayer {
     private static final boolean VERBOSE = false;
     private final FrameCallback mFrameCallback;

@@ -35,6 +35,8 @@ import ch.m3ts.Log;
 import ch.m3ts.tabletennis.Table;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tracker.visualization.MatchVisualizeActivity;
+import ch.m3ts.tracker.visualization.replay.lib.SpeedControlCallback;
+import ch.m3ts.tracker.visualization.replay.lib.VideoPlayer;
 import cz.fmo.R;
 import cz.fmo.graphics.EGL;
 import cz.fmo.util.Config;
