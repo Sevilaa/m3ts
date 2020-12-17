@@ -33,8 +33,8 @@ public class TrackerPubNub extends Callback implements UICallback {
     private InitTrackerCallback initTrackerCallback;
     private MatchVisualizeHandlerCallback matchVisualizeHandlerCallback;
 
-    public TrackerPubNub(final String roomID, String pubKey, String subKey) {
-        this.pubnub = new Pubnub(pubKey, subKey);
+    public TrackerPubNub(final Pubnub pubnub, final String roomID) {
+        this.pubnub = pubnub;
         this.roomID = roomID;
         try {
             pubnub.setUUID(UUID.randomUUID());
@@ -120,7 +120,7 @@ public class TrackerPubNub extends Callback implements UICallback {
                     public void successCallback(String channel, Object message) {
                         boolean doContinue = true;
                         initTrackerCallback.updateLoadingBar(index+2);
-                        if (index == numberOfPackages-2) {
+                        if (index >= numberOfPackages-2) {
                             doContinue = false;
                             initTrackerCallback.frameSent();
                         }

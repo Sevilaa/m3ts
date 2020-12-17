@@ -8,11 +8,7 @@ import android.view.Display;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-
-import ch.m3ts.Log;
+import ch.m3ts.pubnub.PubNubFactory;
 import ch.m3ts.pubnub.TrackerPubNub;
 import ch.m3ts.tracker.visualization.CameraPreviewActivity;
 import ch.m3ts.tracker.visualization.live.LiveActivity;
@@ -77,16 +73,8 @@ public final class InitTrackerActivity extends CameraPreviewActivity {
     }
 
     void createPubNubRoom(String matchId) {
-        try {
-            Properties properties = new Properties();
-            try (InputStream is = this.getAssets().open("app.properties")) {
-                properties.load(is);
-                this.trackerPubNub = new TrackerPubNub(matchId, properties.getProperty("pub_key"), properties.getProperty("sub_key"));
-                this.trackerPubNub.setInitTrackerCallback((InitTrackerCallback) this.cameraCallback);
-            }
-        } catch (IOException ex) {
-            Log.d("No properties file found, using display of this device...");
-        }
+        this.trackerPubNub = PubNubFactory.createTrackerPubNub(this, matchId);
+        this.trackerPubNub.setInitTrackerCallback((InitTrackerCallback) this.cameraCallback);
     }
 
     void switchToDebugActivity(String selectedMatchId, int selectedMatchType, int selectedServingSide, int[] tableCorners) {

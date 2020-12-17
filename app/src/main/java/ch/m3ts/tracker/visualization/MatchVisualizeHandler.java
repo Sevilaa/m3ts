@@ -10,17 +10,15 @@ import android.support.annotation.NonNull;
 import android.view.SurfaceHolder;
 import android.widget.TextView;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 import java.util.Timer;
 
 import ch.m3ts.Log;
 import ch.m3ts.display.OnSwipeListener;
+import ch.m3ts.pubnub.PubNubFactory;
 import ch.m3ts.pubnub.TrackerPubNub;
 import ch.m3ts.tabletennis.Table;
 import ch.m3ts.tabletennis.events.EventDetectionCallback;
@@ -73,13 +71,9 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         uiCallback = this;
         if (!useScreenForUICallback) {
             try {
-                Properties properties = new Properties();
-                try (InputStream is = activity.getAssets().open("app.properties")) {
-                    properties.load(is);
-                    this.trackerPubNub = new TrackerPubNub(matchID, properties.getProperty("pub_key"), properties.getProperty("sub_key"));
-                    uiCallback = this.trackerPubNub;
-                }
-            } catch (IOException ex) {
+                this.trackerPubNub = PubNubFactory.createTrackerPubNub(activity.getApplicationContext(), matchID);
+                uiCallback = this.trackerPubNub;
+            } catch (PubNubFactory.NoPropertiesFileFound ex) {
                 Log.d("No properties file found, using display of this device...");
                 this.useScreenForUICallback = true;
             }
