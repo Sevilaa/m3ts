@@ -9,30 +9,30 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import androidx.test.filters.LargeTest;
-import androidx.test.platform.app.InstrumentationRegistry;
-import androidx.test.rule.ActivityTestRule;
-import androidx.test.runner.AndroidJUnit4;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 
+import androidx.test.filters.LargeTest;
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.rule.ActivityTestRule;
+import androidx.test.runner.AndroidJUnit4;
 import ch.m3ts.tracker.visualization.CameraPreviewActivity;
 import cz.fmo.R;
+import helper.GrantPermission;
 
 import static androidx.test.espresso.Espresso.onView;
-import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static org.hamcrest.CoreMatchers.not;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
 public class InitTrackerActivityTest extends InstrumentationTestCase {
     private InitTrackerActivity activity;
-    private String QR_CODE_PATH = "test_qr_code.yuv";
+    private String QR_CODE_PATH = "yuvimg.yuv";
     private String SCAN_OVERLAY_TEXT = "Scan the QR code from the display";
     private String WAIT_FOR_PICTURE_TEXT = "Sending Frame...";
 
@@ -48,6 +48,7 @@ public class InitTrackerActivityTest extends InstrumentationTestCase {
     public void setUp() {
         injectInstrumentation(InstrumentationRegistry.getInstrumentation());
         activity = initActivityRule.getActivity();
+        GrantPermission.grantAllPermissions();
     }
 
     @After
@@ -68,9 +69,10 @@ public class InitTrackerActivityTest extends InstrumentationTestCase {
         cameraCallbackField.setAccessible(true);
         InitTrackerHandler cameraCallback = (InitTrackerHandler) cameraCallbackField.get(activity);
         cameraCallback.onCameraFrame(loadQRCodeBytes());
-        onView(withId(R.id.scan_overlay)).check(doesNotExist());
-        //onView(withId(R.id.tracker_loading)).check(matches(isDisplayed()));
-        //onView(withText(WAIT_FOR_PICTURE_TEXT)).check(matches(isDisplayed()));
+        onView(withId(R.id.scan_overlay)).check(matches(not(isDisplayed())));
+        cameraCallback.onCaptureFrame();
+        onView(withId(R.id.tracker_loading)).check(matches(isDisplayed()));
+        onView(withId(R.id.tracker_info)).check(matches(isDisplayed()));
     }
 
     private byte[] loadQRCodeBytes() throws IOException {
