@@ -37,10 +37,6 @@ public class VideoScaling {
         this.canvasHeight = canvasHeight;
     }
 
-    public int scaleY(int value) {
-        return scaleY((float) value);
-    }
-
     public int scaleY(float value) {
         float relPercentage = (value) / ((float) this.videoHeight);
         return Math.round(relPercentage * this.canvasHeight);
