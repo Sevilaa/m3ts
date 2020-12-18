@@ -246,7 +246,7 @@ public class TrackerPubNub extends Callback implements UICallback {
                         handleOnSelectTableCorner(tableCorners);
                         break;
                     case "onStartMatch":
-                        this.initTrackerCallback.switchToDebugActivity();
+                        this.initTrackerCallback.switchToLiveActivity();
                         break;
                     case "onRestartMatch":
                         if(this.matchVisualizeHandlerCallback != null) {

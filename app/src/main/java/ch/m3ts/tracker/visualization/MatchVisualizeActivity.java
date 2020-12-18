@@ -12,13 +12,7 @@ public abstract class MatchVisualizeActivity extends CameraPreviewActivity imple
     private SurfaceView mSurfaceView;
     private SurfaceView mSurfaceTrack;
     private SurfaceView mSurfaceTable;
-    private TextView mShotSideText;
     private TextView mBounceCountText;
-    private TextView mScoreLeftText;
-    private TextView mScoreRightText;
-    private TextView mPlayerNameLeft;
-    private TextView mPlayerNameRight;
-    private boolean mSurfaceTrackReady;
 
     /**
      * In this method the inherited class must set the content view.
@@ -30,10 +24,7 @@ public abstract class MatchVisualizeActivity extends CameraPreviewActivity imple
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.setCurrentContentView();
-        mShotSideText = findViewById(R.id.txtSide);
         mBounceCountText = findViewById(R.id.txtBounce);
-        mScoreLeftText = findViewById(R.id.txtDebugPlayerNameLeft);
-        mScoreRightText = findViewById(R.id.txtDebugPlayerNameRight);
         mSurfaceView = findViewById(R.id.playMovie_surface);
         mSurfaceView.getHolder().addCallback(this);
         mSurfaceTrack = findViewById(R.id.playMovie_surfaceTracks);
@@ -55,27 +46,7 @@ public abstract class MatchVisualizeActivity extends CameraPreviewActivity imple
         return mSurfaceTable;
     }
 
-    public TextView getmShotSideText() {
-        return mShotSideText;
-    }
-
     public TextView getmBounceCountText() {
         return mBounceCountText;
-    }
-
-    public TextView getmScoreLeftText() {
-        return mScoreLeftText;
-    }
-
-    public TextView getmScoreRightText() {
-        return mScoreRightText;
-    }
-
-    protected TextView getmPlayerNameLeft() {
-        return mPlayerNameLeft;
-    }
-
-    protected TextView getmPlayerNameRight() {
-        return mPlayerNameRight;
     }
 }

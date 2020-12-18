@@ -42,11 +42,8 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     private static final int MAX_REFRESHING_TIME_MS = 500;
     final WeakReference<MatchVisualizeActivity> mActivity;
     private EventDetector eventDetector;
-    private int canvasWidth;
-    private int canvasHeight;
     private Paint p;
-    private int videoWidth;
-    private int videoHeight;
+    private VideoScaling videoScaling;
     private Config config;
     private TrackSet tracks;
     private Table table;
@@ -131,9 +128,9 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
                     if (canvas == null) {
                         return;
                     }
-                    if (canvasWidth == 0 || canvasHeight == 0) {
-                        canvasWidth = canvas.getWidth();
-                        canvasHeight = canvas.getHeight();
+                    if (videoScaling.getCanvasWidth() == 0 || videoScaling.getCanvasHeight() == 0) {
+                        videoScaling.setCanvasWidth(canvas.getWidth());
+                        videoScaling.setCanvasHeight(canvas.getHeight());
                     }
                     canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
                     if (hasNewTable) {
@@ -221,8 +218,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     }
 
     public void init(Config config, int srcWidth, int srcHeight) {
-        this.videoWidth = srcWidth;
-        this.videoHeight = srcHeight;
+        this.videoScaling = new VideoScaling(srcWidth, srcHeight);
         this.config = config;
         List<EventDetectionCallback> callbacks = new ArrayList<>();
         callbacks.add(this);
@@ -231,7 +227,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     }
 
     public void startDetections() {
-        Lib.detectionStart(this.videoWidth, this.videoHeight, this.config.getProcRes(), this.config.isGray(), eventDetector);
+        Lib.detectionStart(this.videoScaling.getVideoWidth(), this.videoScaling.getVideoHeight(), this.config.getProcRes(), this.config.isGray(), eventDetector);
     }
 
     public void stopDetections() {
@@ -273,14 +269,14 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
             } else {
                 c2 = corners[0];
             }
-            c1 = scalePoint(c1);
-            c2 = scalePoint(c2);
+            c1 = this.videoScaling.scalePoint(c1);
+            c2 = this.videoScaling.scalePoint(c2);
             p.setColor(Color.CYAN);
             p.setStrokeWidth(5f);
             canvas.drawLine(c1.x, c1.y, c2.x, c2.y, p);
         }
-        Point closeNetEnd = scalePoint(table.getCloseNetEnd());
-        Point farNetEnd = scalePoint(table.getFarNetEnd());
+        Point closeNetEnd = this.videoScaling.scalePoint(table.getCloseNetEnd());
+        Point farNetEnd = this.videoScaling.scalePoint(table.getFarNetEnd());
         canvas.drawLine(closeNetEnd.x, closeNetEnd.y, farNetEnd.x, farNetEnd.y, p);
         surfaceHolderTable.unlockCanvasAndPost(canvas);
     }
@@ -300,12 +296,12 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         p.setStrokeWidth(pre.radius);
         int count = 0;
         while (pre != null && count < 2) {
-            canvas.drawCircle(scaleX(pre.centerX), scaleY(pre.centerY), scaleY(pre.radius), p);
+            canvas.drawCircle(this.videoScaling.scaleX(pre.centerX), this.videoScaling.scaleY(pre.centerY), this.videoScaling.scaleY(pre.radius), p);
             if (pre.predecessor != null) {
-                int x1 = scaleX(pre.centerX);
-                int x2 = scaleX(pre.predecessor.centerX);
-                int y1 = scaleY(pre.centerY);
-                int y2 = scaleY(pre.predecessor.centerY);
+                int x1 = this.videoScaling.scaleX(pre.centerX);
+                int x2 = this.videoScaling.scaleX(pre.predecessor.centerX);
+                int y1 = this.videoScaling.scaleY(pre.centerY);
+                int y2 = this.videoScaling.scaleY(pre.predecessor.centerY);
                 canvas.drawLine(x1, y1, x2, y2, p);
             }
             pre = pre.predecessor;
@@ -317,7 +313,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         if (latestNearlyOutOfFrame != null) {
             p.setColor(Color.rgb(255, 165, 0));
             p.setStrokeWidth(latestNearlyOutOfFrame.radius);
-            canvas.drawCircle(scaleX(latestNearlyOutOfFrame.centerX), scaleY(latestNearlyOutOfFrame.centerY), latestNearlyOutOfFrame.radius, p);
+            canvas.drawCircle(this.videoScaling.scaleX(latestNearlyOutOfFrame.centerX), this.videoScaling.scaleY(latestNearlyOutOfFrame.centerY), latestNearlyOutOfFrame.radius, p);
         }
     }
 
@@ -325,27 +321,8 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         if(latestBounce != null) {
             p.setColor(Color.rgb(255,0,0));
             p.setStrokeWidth(latestBounce.radius * 2);
-            canvas.drawCircle(scaleX(latestBounce.centerX), scaleY(latestBounce.centerY), latestBounce.radius * 2, p);
+            canvas.drawCircle(this.videoScaling.scaleX(latestBounce.centerX), this.videoScaling.scaleY(latestBounce.centerY), latestBounce.radius * 2, p);
         }
-    }
-
-    private int scaleY(int value) {
-        float relPercentage = ((float) value) / ((float) this.videoHeight);
-        return Math.round(relPercentage * this.canvasHeight);
-    }
-
-    private int scaleY(float value) {
-        float relPercentage = (value) / ((float) this.videoHeight);
-        return Math.round(relPercentage * this.canvasHeight);
-    }
-
-    private int scaleX(int value) {
-        float relPercentage = ((float) value) / ((float) this.videoWidth);
-        return Math.round(relPercentage * this.canvasWidth);
-    }
-
-    private Point scalePoint(Point p) {
-        return new Point(scaleX(p.x), scaleY(p.y));
     }
 
     private void resetScoreTextViews() {
@@ -395,7 +372,6 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
                     });
                 }
             });
-
         }
     }
 
