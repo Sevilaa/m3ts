@@ -60,8 +60,7 @@ public class DisplayPubNub extends Callback {
         try {
             int[] corners = new int[tableCorners.length*2];
             for(int i = 0; i < tableCorners.length; i++) {
-                System.out.println("Point"+ i+ ": "+ tableCorners[i].x + ", " + tableCorners[i].y);
-
+                Log.d("Point"+ i+ ": "+ tableCorners[i].x + ", " + tableCorners[i].y);
                 corners[2*i] = tableCorners[i].x;
                 corners[2*i+1] = tableCorners[i].y;
             }

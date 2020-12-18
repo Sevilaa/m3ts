@@ -131,6 +131,39 @@ public class RefereeTest {
         assertEquals(referee.getState(), State.PLAY);
     }
 
+
+    @Test
+    public void onServingWithTimeout() {
+        // simulates a serve which gets shot into the net -> fault by server
+        simulateServe();
+        referee.onBounce(detection, Side.LEFT);
+        referee.onTimeout();
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            Log.d(e.getMessage());
+        }
+        verify(gameMock, times(1)).onPoint(Side.RIGHT);
+        verify(gameMock, times(0)).onPoint(Side.LEFT);
+    }
+
+    @Test
+    public void onShootingTheBallIntoNet() {
+        simulateServe();
+        referee.onBounce(detection, Side.LEFT);
+        referee.onTableSideChange(Side.RIGHT);
+        referee.onBounce(detection, Side.RIGHT);
+        referee.onSideChange(Side.RIGHT);
+        referee.onTimeout();
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            Log.d(e.getMessage());
+        }
+        verify(gameMock, times(0)).onPoint(Side.RIGHT);
+        verify(gameMock, times(1)).onPoint(Side.LEFT);
+    }
+
     @Test
     public void onReturnFaultBounceOnOwnSide() {
         simulateServe();
@@ -172,6 +205,18 @@ public class RefereeTest {
         referee.onNearlyOutOfFrame(detection, Side.LEFT);
         referee.onStrikeFound(realTrackSet.getTracks().get(0));
         verify(gameMock, times(0)).onPoint(Side.LEFT);
+        verify(gameMock, times(0)).onPoint(Side.RIGHT);
+    }
+
+    @Test
+    public void onFallingOffSideWays() {
+        simulateServe();
+        referee.onBounce(detection, Side.LEFT);
+        referee.onTableSideChange(Side.RIGHT);
+        referee.onBounce(detection, Side.RIGHT);
+        referee.onSideChange(Side.RIGHT);
+        referee.onBallDroppedSideWays();
+        verify(gameMock, times(1)).onPoint(Side.LEFT);
         verify(gameMock, times(0)).onPoint(Side.RIGHT);
     }
 
