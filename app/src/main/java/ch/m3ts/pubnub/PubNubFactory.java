@@ -13,12 +13,22 @@ public class PubNubFactory {
 
     private PubNubFactory() {}
 
-    public static TrackerPubNub createTrackerPubNub(Context context, String roomId) throws NoPropertiesFileFound {
+    public static TrackerPubNub createTrackerPubNub(Context context, String roomId) throws NoPropertiesFileFoundException {
         Properties properties = findProperties(context);
+        Pubnub pubnub = createPubNub(properties);
+        return new TrackerPubNub(pubnub, roomId);
+    }
+
+    public static DisplayPubNub createDisplayPubNub(Context context, String roomId) throws NoPropertiesFileFoundException {
+        Properties properties = findProperties(context);
+        Pubnub pubnub = createPubNub(properties);
+        return new DisplayPubNub(pubnub, roomId);
+    }
+
+    private static Pubnub createPubNub(Properties properties) {
         String pub = properties.getProperty("pub_key");
         String sub = properties.getProperty("sub_key");
-        Pubnub pubnub = new Pubnub(pub, sub);
-        return new TrackerPubNub(pubnub, roomId);
+        return new Pubnub(pub, sub);
     }
 
 
@@ -27,14 +37,14 @@ public class PubNubFactory {
         try (InputStream is = context.getAssets().open(PROP_FILE_NAME)) {
             properties.load(is);
         } catch (IOException ex) {
-            throw new NoPropertiesFileFound();
+            throw new NoPropertiesFileFoundException();
         }
         return properties;
     }
 
-    public static class NoPropertiesFileFound extends RuntimeException {
+    public static class NoPropertiesFileFoundException extends RuntimeException {
         private static final String MESSAGE = "No "+PROP_FILE_NAME+ " file has been found in the assets directory!";
-        NoPropertiesFileFound() {
+        NoPropertiesFileFoundException() {
             super(MESSAGE);
         }
     }

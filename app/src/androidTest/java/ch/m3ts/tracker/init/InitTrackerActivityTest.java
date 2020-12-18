@@ -81,6 +81,7 @@ public class InitTrackerActivityTest extends InstrumentationTestCase {
         cameraCallback.onCaptureFrame();
         onView(withId(R.id.tracker_loading)).check(matches(isDisplayed()));
         onView(withId(R.id.tracker_info)).check(matches(isDisplayed()));
+        onView(withId(R.id.loading_bar)).check(matches(isDisplayed()));
     }
 
     @Test

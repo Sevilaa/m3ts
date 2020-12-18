@@ -16,6 +16,7 @@ import java.util.Random;
 
 import ch.m3ts.Log;
 import ch.m3ts.pubnub.DisplayPubNub;
+import ch.m3ts.pubnub.PubNubFactory;
 import cz.fmo.R;
 
 public class MatchActivity extends FragmentActivity implements FragmentReplaceCallback {
@@ -65,7 +66,7 @@ public class MatchActivity extends FragmentActivity implements FragmentReplaceCa
         Properties properties = new Properties();
         try (InputStream is = this.getAssets().open("app.properties")) {
             properties.load(is);
-            this.pubNub = new DisplayPubNub(pubnubRoom, properties.getProperty("pub_key"), properties.getProperty("sub_key"));
+            this.pubNub = PubNubFactory.createDisplayPubNub(this.getApplicationContext(), pubnubRoom);
         } catch (IOException ex) {
             Log.d("Failed to load pubnub keys");
         }
