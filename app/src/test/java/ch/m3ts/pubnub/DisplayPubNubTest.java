@@ -86,7 +86,6 @@ public class DisplayPubNubTest {
     @Test
     public void testOnWin() throws JSONException {
         UICallback spyCallback = spy(mock(UICallback.class));
-        DisplayScoreEventCallback deCallback = spy(mock(DisplayScoreEventCallback.class));
         DisplayPubNub displayPubNub = new DisplayPubNub(pubnub, ROOM_ID);
         displayPubNub.setUiCallback(spyCallback);
         final Side winner = Side.LEFT;
@@ -100,9 +99,8 @@ public class DisplayPubNubTest {
     }
 
     @Test
-    public void testOnReadyToServe() throws JSONException {
+    public void testOnReadyToServe() {
         UICallback spyCallback = spy(mock(UICallback.class));
-        DisplayScoreEventCallback deCallback = spy(mock(DisplayScoreEventCallback.class));
         DisplayPubNub displayPubNub = new DisplayPubNub(pubnub, ROOM_ID);
         displayPubNub.setUiCallback(spyCallback);
         final Side server = Side.RIGHT;
@@ -111,6 +109,46 @@ public class DisplayPubNubTest {
         verify(spyCallback, times(0)).onReadyToServe(server);
         displayPubNub.successCallback(ROOM_ID, jsonReadyToServe);
         verify(spyCallback, times(1)).onReadyToServe(server);
+    }
+
+    @Test
+    public void testOnStatusUpdate() throws JSONException {
+        DisplayScoreEventCallback spyCallback = spy(mock(DisplayScoreEventCallback.class));
+        DisplayPubNub displayPubNub = new DisplayPubNub(pubnub, ROOM_ID);
+        displayPubNub.setDisplayScoreEventCallback(spyCallback);
+        String pL = "leftDude";
+        String pR = "rightDude";
+        int sL = random.nextInt(999);
+        int sR = random.nextInt(999);
+        int wL = random.nextInt(999);
+        int wR = random.nextInt(999);
+        Side nextServer = Side.RIGHT;
+        JSONObject jsonStatus = new JSONObject();
+        jsonStatus.put(JSONInfo.EVENT_PROPERTY, "onStatusUpdate");
+        jsonStatus.put(JSONInfo.PLAYER_NAME_LEFT_PROPERTY, pL);
+        jsonStatus.put(JSONInfo.PLAYER_NAME_RIGHT_PROPERTY, pR);
+        jsonStatus.put(JSONInfo.SCORE_LEFT_PROPERTY, sL);
+        jsonStatus.put(JSONInfo.SCORE_RIGHT_PROPERTY, sR);
+        jsonStatus.put(JSONInfo.WINS_LEFT_PROPERTY, wL);
+        jsonStatus.put(JSONInfo.WINS_RIGHT_PROPERTY, wR);
+        jsonStatus.put(JSONInfo.NEXT_SERVER_PROPERTY, nextServer);
+        displayPubNub.connectCallback(ROOM_ID, jsonStatus);
+        verify(spyCallback, times(0)).onStatusUpdate(pL, pR, sL, sR, wL, wR, nextServer);
+        displayPubNub.successCallback(ROOM_ID, jsonStatus);
+        verify(spyCallback, times(1)).onStatusUpdate(pL, pR, sL, sR, wL, wR, nextServer);
+    }
+
+    @Test
+    public void testOnConnected() throws JSONException {
+        DisplayConnectCallback spyCallback = spy(mock(DisplayConnectCallback.class));
+        DisplayPubNub displayPubNub = new DisplayPubNub(pubnub, ROOM_ID);
+        JSONObject jsonStatus = new JSONObject();
+        jsonStatus.put(JSONInfo.EVENT_PROPERTY, "onConnected");
+        displayPubNub.successCallback(ROOM_ID, jsonStatus);
+        verify(spyCallback, times(0)).onConnected();
+        displayPubNub.setDisplayConnectCallback(spyCallback);
+        displayPubNub.successCallback(ROOM_ID, jsonStatus);
+        verify(spyCallback, times(1)).onConnected();
     }
 
     @Test
