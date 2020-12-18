@@ -159,9 +159,9 @@ public class TrackerPubNubTest {
 
         // last, the display will tell "start the match"
         jsonObject = makeJSONObject("onStartMatch");
-        verify(spyCallback, times(0)).switchToDebugActivity();
+        verify(spyCallback, times(0)).switchToLiveActivity();
         trackerPubNub.successCallback("test", jsonObject);
-        verify(spyCallback, times(1)).switchToDebugActivity();
+        verify(spyCallback, times(1)).switchToLiveActivity();
     }
 
     @Test
