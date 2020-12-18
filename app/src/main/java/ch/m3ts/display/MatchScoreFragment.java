@@ -107,9 +107,7 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
         Activity activity = getActivity();
         if (activity == null) return;
 
-        Side otherSide = Side.RIGHT;
-        if (server == Side.RIGHT) otherSide = Side.LEFT;
-
+        Side otherSide = Side.getOpposite(server);
         TextView txtView = getServerLabelTextView(activity, server);
         colorTextViewAsActive(txtView);
         txtView = getServerLabelTextView(activity, otherSide);
@@ -134,9 +132,7 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
         Activity activity = getActivity();
         if (activity == null) return;
 
-        Side otherSide = Side.RIGHT;
-        if (nextServer == Side.RIGHT) otherSide = Side.LEFT;
-
+        Side otherSide = Side.getOpposite(nextServer);
         TextView txtView = getServerLabelTextView(activity, nextServer);
         SpannableString content = new SpannableString(txtView.getText());
         content.setSpan(new UnderlineSpan(), 0, content.length(), 0);

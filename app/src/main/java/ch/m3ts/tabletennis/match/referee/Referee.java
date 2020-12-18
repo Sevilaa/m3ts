@@ -255,11 +255,7 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     }
 
     private void faultBySide(Side side) {
-        if (side == Side.RIGHT) {
-            gameCallback.onPoint(Side.LEFT);
-        } else {
-            gameCallback.onPoint(Side.RIGHT);
-        }
+        gameCallback.onPoint(Side.getOpposite(side));
         initPoint();
         setTimeoutForNextServe(PAUSE_DELAY);
     }
