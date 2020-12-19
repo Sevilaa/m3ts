@@ -74,6 +74,7 @@ import cz.fmo.util.FileManager;
  * The actual playback of the video -- sending frames to a Surface -- is the same for
  * TextureView and SurfaceView.
  */
+@SuppressWarnings("squid:S110")
 public class ReplayActivity extends MatchVisualizeActivity implements OnItemSelectedListener, VideoPlayer.PlayerFeedback {
     private final FileManager mFileMan = new FileManager(this);
     private String[] mMovieFiles;
@@ -81,7 +82,6 @@ public class ReplayActivity extends MatchVisualizeActivity implements OnItemSele
     private boolean mShowStopLabel;
     private VideoPlayer.PlayTask mPlayTask;
     private ReplayHandler mHandler;
-    private String currentMovie;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,14 +104,11 @@ public class ReplayActivity extends MatchVisualizeActivity implements OnItemSele
     /**
      * onClick handler for "play"/"stop" button.
      */
+    @SuppressWarnings("squid:S1172")
     public void clickPlayStop(@SuppressWarnings("UnusedParameters") View unused) {
         if (mShowStopLabel) {
             Log.d("stopping movie");
             stopPlayback();
-            // Don't update the controls here -- let the task thread do it after the movie has
-            // actually stopped.
-            //mShowStopLabel = false;
-            //updateControls();
         } else {
             if (mPlayTask != null) {
                 Log.w("movie already playing");
@@ -133,7 +130,6 @@ public class ReplayActivity extends MatchVisualizeActivity implements OnItemSele
             try {
                 Side servingSide = tryGettingServingSideFromXML(mMovieFiles[mSelectedMovie]);
                 mHandler.initMatch(servingSide);
-                currentMovie = mMovieFiles[mSelectedMovie];
                 player = new VideoPlayer(mFileMan.open(mMovieFiles[mSelectedMovie]), surface,
                         callback, mHandler);
                 Config mConfig = new Config(this);
