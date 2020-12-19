@@ -3,11 +3,11 @@ package ch.m3ts.display;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.text.SpannableString;
 import android.text.style.UnderlineSpan;
 import android.view.LayoutInflater;
@@ -153,11 +153,11 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
     }
 
     private void colorTextViewAsInactive(TextView txtView) {
-        txtView.setTextColor(getResources().getColor(android.R.color.secondary_text_light));
+        txtView.setTextColor(ContextCompat.getColor(getContext() ,android.R.color.secondary_text_light));
     }
 
     private void colorTextViewAsActive(TextView txtView) {
-        txtView.setTextColor(getResources().getColor(R.color.display_serving));
+        txtView.setTextColor(ContextCompat.getColor(getContext() ,R.color.display_serving));
     }
 
     private void setTextInTextView(int id, final String text) {

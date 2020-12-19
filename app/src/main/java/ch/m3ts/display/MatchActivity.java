@@ -18,6 +18,7 @@ import ch.m3ts.Log;
 import ch.m3ts.pubnub.DisplayPubNub;
 import cz.fmo.R;
 
+@SuppressWarnings("squid:S110")
 public class MatchActivity extends FragmentActivity implements FragmentReplaceCallback {
     private DisplayPubNub pubNub;
     private Random random = new SecureRandom();
@@ -76,8 +77,7 @@ public class MatchActivity extends FragmentActivity implements FragmentReplaceCa
         int rightLimit = 122; // letter 'z'
         StringBuilder buffer = new StringBuilder(length);
         for (int i = 0; i < length; i++) {
-            int randomLimitedInt = leftLimit + (int)
-                    (random.nextFloat() * (rightLimit - leftLimit + 1));
+            int randomLimitedInt = leftLimit + random.nextInt(rightLimit - leftLimit + 1);
             buffer.append((char) randomLimitedInt);
         }
         return buffer.toString();

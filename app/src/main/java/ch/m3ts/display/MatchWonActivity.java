@@ -34,7 +34,7 @@ public class MatchWonActivity extends Activity {
     /*
      * OnClick of the play again button
      */
-    public void playAgain(View view) {
+    public void playAgain() {
         animationDrawable.stop();
         Intent intent = new Intent(this, MatchActivity.class);
         Bundle bundle = new Bundle();
@@ -48,7 +48,7 @@ public class MatchWonActivity extends Activity {
     /*
      * OnClick of the main menu button
      */
-    public void backToMenu(View view) {
+    public void backToMenu() {
         animationDrawable.stop();
         Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK |Intent.FLAG_ACTIVITY_CLEAR_TOP);

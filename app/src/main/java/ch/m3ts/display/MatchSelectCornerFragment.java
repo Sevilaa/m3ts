@@ -48,8 +48,6 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
     private SurfaceView cornerSurface;
     private SurfaceView tableFrameSurface;
     private byte[] tableFrame;
-    private int tableFrameWidth;
-    private int tableFrameHeight;
     private Point displaySize;
 
     public MatchSelectCornerFragment() {
@@ -81,8 +79,6 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
         view.findViewById(R.id.init_startMatch).setOnClickListener(this);
         this.tableFrameSurface.getHolder().addCallback(this);
         this.tableFrame = getArguments().getByteArray("tableFrame");
-        this.tableFrameWidth = getArguments().getInt("width");
-        this.tableFrameHeight = getArguments().getInt("height");
         setupOnLongTouchListener();
         setupOnRevertClickListener(view);
         return view;
@@ -91,14 +87,14 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
     @Override
     public void onStart() {
         super.onStart();
-        FrameLayout layout = getActivity().findViewById(R.id.frameLayoutCorners);
-        ViewGroup.LayoutParams params = layout.getLayoutParams();
+        FrameLayout frameLayout = getActivity().findViewById(R.id.frameLayoutCorners);
+        ViewGroup.LayoutParams params = frameLayout.getLayoutParams();
         Display display = getActivity().getWindowManager().getDefaultDisplay();
         this.displaySize = new Point();
         display.getSize(this.displaySize);
         params.height = this.displaySize.y;
         params.width = this.displaySize.x;
-        layout.setLayoutParams(params);
+        frameLayout.setLayoutParams(params);
     }
 
     @Override
@@ -148,14 +144,15 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
 
             @Override
             public void onIdle(@NotNull ZoomEngine zoomEngine) {
-
+                // do nothing in here because onIdle nothing changes
             }
         });
     }
 
     @SuppressLint("ClickableViewAccessibility")
     private void setupOnLongTouchListener() {
-        final GestureDetector gestureDetector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
+        final GestureDetector gestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
+            @Override
             public void onLongPress(MotionEvent e) {
                 if (currentCornerIndex >= tableCorners.length) return;
                 float x = e.getX();
@@ -210,7 +207,7 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
 
     private void drawLines() {
         Canvas canvas = this.cornerSurface.getHolder().lockCanvas();
-        ZoomLayout zoomLayout = this.zoomLayout;
+        ZoomLayout tempZoomLayout = this.zoomLayout;
         if (canvas != null) {
             canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
             Paint paint = new Paint();
@@ -220,9 +217,9 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
                 Point p = this.tableCorners[i];
                 if(p != null) {
                     paint.setStrokeWidth(15f);
-                    Point relP = makeRelPoint(p.x, p.y, zoomLayout.getZoom(), zoomLayout.getPanX(), zoomLayout.getPanY());
+                    Point relP = makeRelPoint(p.x, p.y, tempZoomLayout.getZoom(), tempZoomLayout.getPanX(), tempZoomLayout.getPanY());
                     canvas.drawCircle(relP.x, relP.y, 20f, paint);
-                    drawLineIfPossible(i, paint, canvas, this.tableCorners, relP, zoomLayout);
+                    drawLineIfPossible(i, paint, canvas, this.tableCorners, relP, tempZoomLayout);
                 }
             }
             this.cornerSurface.getHolder().unlockCanvasAndPost(canvas);

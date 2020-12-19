@@ -15,7 +15,7 @@ import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.MatchType;
 import cz.fmo.R;
 
-public class MatchSettingsFragment extends android.app.Fragment implements AdapterView.OnItemSelectedListener, Button.OnClickListener {
+public class MatchSettingsFragment extends android.app.Fragment implements AdapterView.OnItemSelectedListener, View.OnClickListener {
     private static final String[] MATCH_TYPE = {MatchType.BO1.toString(), MatchType.BO3.toString(), MatchType.BO5.toString()};
     private static final String[] SERVING_SIDES = {Side.LEFT.toString(), Side.RIGHT.toString()};
     private int selectedMatchType;
@@ -76,7 +76,7 @@ public class MatchSettingsFragment extends android.app.Fragment implements Adapt
     }
 
     private void setArrayAdapter(String[] items, Spinner spinner) {
-        ArrayAdapter<CharSequence> aaMatchType = new ArrayAdapter(this.getContext(), R.layout.spinner_item, items);
+        ArrayAdapter<CharSequence> aaMatchType = new ArrayAdapter<CharSequence>(this.getContext(), R.layout.spinner_item, items);
         aaMatchType.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(aaMatchType);
     }

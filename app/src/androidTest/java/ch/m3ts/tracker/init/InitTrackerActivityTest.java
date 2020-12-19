@@ -42,7 +42,6 @@ public class InitTrackerActivityTest extends InstrumentationTestCase {
     private InitTrackerActivity activity;
     private String QR_CODE_PATH = "yuvimg.yuv";
     private String SCAN_OVERLAY_TEXT = "Scan the QR code from the display";
-    private String WAIT_FOR_PICTURE_TEXT = "Sending Frame...";
 
     @Rule
     public ActivityTestRule<InitTrackerActivity> initActivityRule = new ActivityTestRule<InitTrackerActivity>(InitTrackerActivity.class) {

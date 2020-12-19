@@ -35,7 +35,7 @@ public class DisplayPubNub extends Callback {
             pubnub.setUUID(UUID.randomUUID());
             pubnub.subscribe(roomID, this);
         } catch (PubnubException e) {
-            System.out.println(e.toString());
+            Log.d(e.toString());
         }
     }
 
@@ -74,32 +74,32 @@ public class DisplayPubNub extends Callback {
         }
     }
 
-    public void onStartMatch() { send("onStartMatch", null, null, null); }
+    public void onStartMatch() { send("onStartMatch", null); }
 
-    public void onRestartMatch() { send("onRestartMatch", null, null, null); }
+    public void onRestartMatch() { send("onRestartMatch", null); }
 
     public void requestStatusUpdate() {
-        send("requestStatus", null, null, null);
+        send("requestStatus", null);
     }
 
     public void onPointDeduction(Side side) {
-        send("onPointDeduction", side.toString(), null,null);
+        send("onPointDeduction", side.toString());
     }
 
     public void onPointAddition(Side side) {
-        send("onPointAddition", side.toString(), null,null);
+        send("onPointAddition", side.toString());
     }
 
     public void onRequestTableFrame() {
-        send("onRequestTableFrame", null, null, null);
+        send("onRequestTableFrame", null);
     }
 
     public void onPause() {
-        send("onPause", null, null, null);
+        send("onPause", null);
     }
 
     public void onResume() {
-        send("onResume", null, null, null);
+        send("onResume", null);
     }
 
     public void setUiCallback(UICallback uiCallback) {
@@ -118,7 +118,7 @@ public class DisplayPubNub extends Callback {
         return roomID;
     }
 
-    private void send(String event, String side, Integer score, Integer wins) {
+    private void send(String event, String side) {
         try {
             JSONObject json = new JSONObject();
             json.put(JSONInfo.SENDER_PROPERTY, pubnub.getUUID());

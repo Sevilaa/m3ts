@@ -24,10 +24,12 @@ public class MainActivity extends Activity {
         animationDrawable.start();
     }
 
+    @SuppressWarnings("squid:S1172")
     public void onOpenMenu(View toggle) {
         startActivity(new Intent(this, SettingsActivity.class));
     }
 
+    @SuppressWarnings("squid:S1172")
     public void onUseAsDisplay(View toggle) {
         Intent intent = new Intent(this, MatchActivity.class);
         Bundle bundle = new Bundle();
@@ -36,6 +38,7 @@ public class MainActivity extends Activity {
         startActivity(intent);
     }
 
+    @SuppressWarnings("squid:S1172")
     public void onUseAsTracker(View toggle) {
         startActivity(new Intent(this, InitTrackerActivity.class));
     }

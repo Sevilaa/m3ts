@@ -17,6 +17,7 @@ import java.util.List;
 
 import cz.fmo.R;
 
+@SuppressWarnings("squid:S110")
 public class SettingsActivity extends PreferenceActivity {
     private static SummaryUpdater sSummaryUpdater = new SummaryUpdater();
 
@@ -65,6 +66,7 @@ public class SettingsActivity extends PreferenceActivity {
         loadHeadersFromResource(R.xml.pref_headers, target);
     }
 
+    @Override
     protected boolean isValidFragment(String fragmentName) {
         return PreferenceFragment.class.getName().equals(fragmentName)
                 || CapturePreferenceFragment.class.getName().equals(fragmentName)
