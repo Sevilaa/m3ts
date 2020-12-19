@@ -34,7 +34,8 @@ public class MatchWonActivity extends Activity {
     /*
      * OnClick of the play again button
      */
-    public void playAgain() {
+    @SuppressWarnings("squid:S1172")
+    public void playAgain(View view) {
         animationDrawable.stop();
         Intent intent = new Intent(this, MatchActivity.class);
         Bundle bundle = new Bundle();
@@ -48,7 +49,8 @@ public class MatchWonActivity extends Activity {
     /*
      * OnClick of the main menu button
      */
-    public void backToMenu() {
+    @SuppressWarnings("squid:S1172")
+    public void backToMenu(View view) {
         animationDrawable.stop();
         Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK |Intent.FLAG_ACTIVITY_CLEAR_TOP);
