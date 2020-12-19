@@ -46,17 +46,17 @@ public class RefereeTest {
 
     @Test
     public void onServingAceDoubleBounce() {
-        assertEquals(referee.getState(), State.WAIT_FOR_SERVE);
+        assertEquals(State.WAIT_FOR_SERVE, referee.getState());
         simulateServe();
-        assertEquals(referee.getState(), State.SERVING);
+        assertEquals(State.SERVING, referee.getState());
         referee.onBounce(detection, Side.LEFT);
         referee.onTableSideChange(Side.RIGHT);
-        assertEquals(referee.getState(), State.PLAY);
+        assertEquals(State.PLAY, referee.getState());
         referee.onBounce(detection, Side.RIGHT);
         referee.onBounce(detection, Side.RIGHT);
         verify(gameMock, times(1)).onPoint(STARTING_SIDE);
         verify(gameMock, times(0)).onPoint(Side.RIGHT);
-        assertEquals(referee.getState(), State.PAUSE);
+        assertEquals(State.PAUSE, referee.getState());
     }
 
     @Test
@@ -74,7 +74,7 @@ public class RefereeTest {
         referee.onStrikeFound(realTrackSet.getTracks().get(0));
         verify(gameMock, times(1)).onPoint(STARTING_SIDE);
         verify(gameMock, times(0)).onPoint(Side.RIGHT);
-        assertEquals(referee.getState(), State.PAUSE);
+        assertEquals(State.PAUSE, referee.getState());
     }
 
     @Test
@@ -95,7 +95,7 @@ public class RefereeTest {
         referee.onBounce(detection, Side.LEFT);
         verify(gameMock, times(0)).onPoint(STARTING_SIDE);
         verify(gameMock, times(0)).onPoint(Side.RIGHT);
-        assertEquals(referee.getState(), State.PLAY);
+        assertEquals(State.PLAY, referee.getState());
     }
 
     @Test
@@ -105,7 +105,7 @@ public class RefereeTest {
         referee.onBounce(detection, Side.LEFT);
         verify(gameMock, times(1)).onPoint(Side.RIGHT);
         verify(gameMock, times(0)).onPoint(Side.LEFT);
-        assertEquals(referee.getState(), State.PAUSE);
+        assertEquals(State.PAUSE, referee.getState());
     }
 
     @Test
@@ -116,7 +116,7 @@ public class RefereeTest {
         referee.onBounce(detection, Side.RIGHT);
         verify(gameMock, times(0)).onPoint(Side.RIGHT);
         verify(gameMock, times(0)).onPoint(Side.LEFT);
-        assertEquals(referee.getState(), State.PLAY);
+        assertEquals(State.PLAY, referee.getState());
     }
 
     @Test
@@ -128,7 +128,7 @@ public class RefereeTest {
         referee.onSideChange(Side.RIGHT);
         verify(gameMock, times(0)).onPoint(Side.RIGHT);
         verify(gameMock, times(0)).onPoint(Side.LEFT);
-        assertEquals(referee.getState(), State.PLAY);
+        assertEquals(State.PLAY, referee.getState());
     }
 
 
