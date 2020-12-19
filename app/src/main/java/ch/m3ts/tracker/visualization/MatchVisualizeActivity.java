@@ -8,6 +8,7 @@ import android.widget.TextView;
 
 import cz.fmo.R;
 
+@SuppressWarnings("squid:S110")
 public abstract class MatchVisualizeActivity extends CameraPreviewActivity implements SurfaceHolder.Callback {
     private SurfaceView mSurfaceView;
     private SurfaceView mSurfaceTrack;
@@ -34,6 +35,7 @@ public abstract class MatchVisualizeActivity extends CameraPreviewActivity imple
         mSurfaceTable.getHolder().setFormat(PixelFormat.TRANSPARENT);
     }
 
+    @Override
     public SurfaceView getmSurfaceView() {
         return mSurfaceView;
     }

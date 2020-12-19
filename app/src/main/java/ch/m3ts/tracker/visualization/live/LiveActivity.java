@@ -17,6 +17,7 @@ import cz.fmo.util.Config;
 /**
  * The main activity, facilitating video preview, encoding and saving.
  */
+@SuppressWarnings("squid:S110")
 public final class LiveActivity extends MatchVisualizeActivity {
     private static final String CORNERS_PARAM = "CORNERS_UNSORTED";
     private static final String MATCH_TYPE_PARAM = "MATCH_TYPE";

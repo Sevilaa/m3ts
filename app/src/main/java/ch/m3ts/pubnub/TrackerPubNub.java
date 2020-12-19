@@ -23,7 +23,7 @@ import ch.m3ts.tracker.init.InitTrackerCallback;
 import ch.m3ts.tracker.visualization.MatchVisualizeHandlerCallback;
 
 public class TrackerPubNub extends Callback implements UICallback {
-    private static final int CAMERA_FORMAT = ImageFormat.NV21;
+    private static final String JSON_SEND_EXCEPTION_MESSAGE = "Unable to send JSON to channel ";
     private static final String ROLE = "tracker";
     private static final int MAX_SIZE = 10000;
     private final Pubnub pubnub;
@@ -40,7 +40,7 @@ public class TrackerPubNub extends Callback implements UICallback {
             pubnub.setUUID(UUID.randomUUID());
             pubnub.subscribe(roomID, this);
         } catch (PubnubException e) {
-            System.out.println(e.toString());
+            Log.d(e.toString());
         }
     }
 
@@ -136,7 +136,7 @@ public class TrackerPubNub extends Callback implements UICallback {
                 pubnub.publish(this.roomID, json, new Callback() {});
             }
         } catch (JSONException ex) {
-            Log.d("Unable to send JSON to channel "+this.roomID+"\n"+ex.getMessage());
+            Log.d(JSON_SEND_EXCEPTION_MESSAGE+this.roomID+"\n"+ex.getMessage());
         }
     }
 
@@ -152,7 +152,7 @@ public class TrackerPubNub extends Callback implements UICallback {
             json.put(JSONInfo.NEXT_SERVER_PROPERTY, nextServer);
             pubnub.publish(this.roomID, json, new Callback() {});
         } catch (JSONException ex) {
-            Log.d("Unable to send JSON to channel "+this.roomID+"\n"+ex.getMessage());
+            Log.d(JSON_SEND_EXCEPTION_MESSAGE+this.roomID+"\n"+ex.getMessage());
         }
     }
 
@@ -171,7 +171,7 @@ public class TrackerPubNub extends Callback implements UICallback {
             json.put(JSONInfo.NEXT_SERVER_PROPERTY, nextServer);
             pubnub.publish(this.roomID, json, new Callback() {});
         } catch (JSONException ex) {
-            Log.d("Unable to send JSON to channel "+this.roomID+"\n"+ex.getMessage());
+            Log.d(JSON_SEND_EXCEPTION_MESSAGE+this.roomID+"\n"+ex.getMessage());
         }
     }
 

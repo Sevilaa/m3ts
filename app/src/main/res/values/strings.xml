@@ -190,7 +190,6 @@
         <item>Floorball</item>
         <item>Custom object size</item>
     </string-array>
-    <!-- TODO: Remove or change this placeholder text -->
     <string-array name="prefObjectDiameterPickerValues">
         <item>0.040</item>
         <item>0.067</item>

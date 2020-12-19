@@ -28,12 +28,10 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     private State state;
     // TODO change bounces from int to Map as bounces get delivered with Side Info now
     private int bounces;
-    private int serveCounter;
 
     public Referee(Side servingSide) {
         this.currentStriker = servingSide;
         this.currentBallSide = servingSide;
-        this.serveCounter = 0;
         this.bounces = 0;
         this.state = State.WAIT_FOR_SERVE;
     }
@@ -158,6 +156,8 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
                     pointBySide(currentStriker);
                 }
                 break;
+            default:
+                break;
         }
     }
 
@@ -274,11 +274,9 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
                 Log.d("Bounce on same Side");
                 faultBySide(this.currentStriker);
             }
-        } else if (bounces >= 2) {
-            if (this.currentStriker != this.currentBallSide) {
-                Log.d("Double Bounce");
-                pointBySide(this.currentStriker);
-            }
+        } else if (bounces >= 2 && this.currentStriker != this.currentBallSide) {
+            Log.d("Double Bounce");
+            pointBySide(this.currentStriker);
         }
     }
 

@@ -33,7 +33,6 @@ public class EventDetector implements Lib.Callback {
     private int previousCenterY;
     private Side currentStrikerSide;
     private Table table;
-    private Timer timeoutTimer;
     private int numberOfDetections;
 
     public EventDetector(Config config, int srcWidth, int srcHeight, EventDetectionCallback callback, TrackSet tracks, @NonNull Table table) {
@@ -136,8 +135,8 @@ public class EventDetector implements Lib.Callback {
 
     private void setTimeoutTimer(int currentNumberOfDetections) {
         TimerTask timeoutTimerTask = new TimeoutTimerTask(this, currentNumberOfDetections);
-        this.timeoutTimer = new Timer("timeoutTimer");
-        this.timeoutTimer.schedule(timeoutTimerTask, MILLISECONDS_TILL_TIMEOUT);
+        Timer timeoutTimer = new Timer("timeoutTimer");
+        timeoutTimer.schedule(timeoutTimerTask, MILLISECONDS_TILL_TIMEOUT);
     }
 
     private void callAllOnStrikeFound(Track track) {

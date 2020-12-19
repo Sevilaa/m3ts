@@ -18,6 +18,7 @@ import cz.fmo.R;
  * Activity to initialize a table tennis game
  * I.e. Select Table corners, settings, ...
  */
+@SuppressWarnings("squid:S110")
 public final class InitTrackerActivity extends CameraPreviewActivity {
     private static final String CORNERS_PARAM = "CORNERS_UNSORTED";
     private static final String MATCH_TYPE_PARAM = "MATCH_TYPE";

@@ -17,10 +17,6 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
         super(activity, matchID, false);
     }
 
-    public void initMatch(Side servingSide,  MatchType matchType, Player playerLeft, Player playerRight) {
-        super.initMatch(servingSide, matchType, playerLeft, playerRight);
-    }
-
     @Override
     public void onCameraRender() {
         // no implementation

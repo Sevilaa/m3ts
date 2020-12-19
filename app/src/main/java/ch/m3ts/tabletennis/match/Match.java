@@ -1,6 +1,6 @@
 package ch.m3ts.tabletennis.match;
 
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
 
 import ch.m3ts.tabletennis.helper.Side;
@@ -22,11 +22,11 @@ public class Match implements MatchCallback, MatchStatusCallback {
     public Match(MatchType type, GameType gameType, ServeRules serveRules, Player playerLeft, Player playerRight, UICallback uiCallback, Side startingServer) {
         this.type = type;
         this.gameType = gameType;
-        this.wins = new HashMap<>();
+        this.wins = new EnumMap<>(Side.class);
         this.wins.put(Side.LEFT, 0);
         this.wins.put(Side.RIGHT,0);
         this.games = new Game[type.amountOfGames];
-        this.players = new HashMap<>();
+        this.players = new EnumMap<>(Side.class);
         this.players.put(Side.LEFT, playerLeft);
         this.players.put(Side.RIGHT, playerRight);
         this.uiCallback = uiCallback;
