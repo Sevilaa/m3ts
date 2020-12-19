@@ -2,9 +2,6 @@ package ch.m3ts.tracker.visualization.live;
 
 import android.support.annotation.NonNull;
 
-import ch.m3ts.tabletennis.helper.Side;
-import ch.m3ts.tabletennis.match.MatchType;
-import ch.m3ts.tabletennis.match.Player;
 import ch.m3ts.tracker.visualization.MatchVisualizeActivity;
 import ch.m3ts.tracker.visualization.MatchVisualizeHandler;
 import cz.fmo.Lib;

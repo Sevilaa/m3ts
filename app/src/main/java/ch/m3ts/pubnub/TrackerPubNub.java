@@ -1,7 +1,5 @@
 package ch.m3ts.pubnub;
 
-import android.graphics.ImageFormat;
-
 import com.pubnub.api.Callback;
 import com.pubnub.api.Pubnub;
 import com.pubnub.api.PubnubError;

@@ -75,6 +75,7 @@ public class MatchSettingsFragment extends android.app.Fragment implements Adapt
         setArrayAdapter(SERVING_SIDES, spinnerServingSide);
     }
 
+    @SuppressWarnings("squid:S2293")
     private void setArrayAdapter(String[] items, Spinner spinner) {
         ArrayAdapter<CharSequence> aaMatchType = new ArrayAdapter<CharSequence>(this.getContext(), R.layout.spinner_item, items);
         aaMatchType.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
