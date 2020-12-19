@@ -28,8 +28,8 @@ public class DisplayPubNub extends Callback {
     private String encodedFrameComplete;
     private int numberOfEncodedFrameParts;
 
-    public DisplayPubNub(final String roomID, String pubKey, String subKey) {
-        this.pubnub = new Pubnub(pubKey, subKey);
+    public DisplayPubNub(final Pubnub pubnub, final String roomID) {
+        this.pubnub = pubnub;
         this.roomID = roomID;
         try {
             pubnub.setUUID(UUID.randomUUID());
@@ -132,7 +132,6 @@ public class DisplayPubNub extends Callback {
     }
 
     private void handleOnTableFrame(JSONObject json) throws JSONException {
-        Log.d("onTableFrame");
         int encodedFramePartIndex = json.getInt(JSONInfo.TABLE_FRAME_INDEX);
         int numberOfFramePartsSent = json.getInt(JSONInfo.TABLE_FRAME_NUMBER_OF_PARTS);
         String encodedFramePart = json.getString(JSONInfo.TABLE_FRAME);

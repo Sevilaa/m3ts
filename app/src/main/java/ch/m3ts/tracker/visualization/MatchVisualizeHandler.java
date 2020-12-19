@@ -70,7 +70,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
             try {
                 this.trackerPubNub = PubNubFactory.createTrackerPubNub(activity.getApplicationContext(), matchID);
                 uiCallback = this.trackerPubNub;
-            } catch (PubNubFactory.NoPropertiesFileFound ex) {
+            } catch (PubNubFactory.NoPropertiesFileFoundException ex) {
                 Log.d("No properties file found, using display of this device...");
                 this.useScreenForUICallback = true;
             }
