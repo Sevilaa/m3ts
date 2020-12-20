@@ -7,6 +7,10 @@ import java.util.Map;
 
 import ch.m3ts.tabletennis.helper.Side;
 
+/**
+ * Helper class of Game.
+ * Keeps track of the current score and server, allows manual manipulation by the players.
+ */
 public class ScoreManager {
     private Map<Side, Integer> pointsMap;
     private Deque<Side> servers;

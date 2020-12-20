@@ -5,6 +5,13 @@ import ch.m3ts.tabletennis.match.MatchCallback;
 import ch.m3ts.tabletennis.match.ServeRules;
 import ch.m3ts.tabletennis.match.UICallback;
 
+/**
+ * Represents a game inside of a table tennis match.
+ * Provides information on the current score and the current server.
+ *
+ * A game usually ends when one player has reached eleven points.
+ * However, there is an overtime mechanism when both players reach ten points.
+ */
 public class Game implements GameCallback {
     private int maxScore;
     private ScoreManager scoreManager;

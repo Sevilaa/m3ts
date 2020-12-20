@@ -4,6 +4,9 @@ import ch.m3ts.tabletennis.helper.Side;
 import cz.fmo.Lib;
 import cz.fmo.data.Track;
 
+/**
+ * Represent the events interpreted by the EventDetector.
+ */
 public interface EventDetectionCallback {
     void onBounce(Lib.Detection detection, Side side);
     void onSideChange(Side side);

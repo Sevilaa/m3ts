@@ -7,6 +7,13 @@ import java.util.Properties;
 
 import ch.m3ts.tabletennis.helper.Side;
 
+/**
+ * Representation of a table tennis table.
+ * Contains arrays to pinpoint the location of each table corner as well as the net.
+ *
+ * Can be created either by an int[] containing four table corners or by an XML file inside the
+ * assets folder.
+ */
 public class Table {
     private Point[] corners;
     private Point[] net;
@@ -82,21 +89,6 @@ public class Table {
         return new Table(points, netPoints);
     }
 
-    private static Point calcNetPoint(Point oneCorner, Point oppositeCornerHorizontally) {
-        return new Point(Math.abs((oneCorner.x+oppositeCornerHorizontally.x)/2), Math.abs((oneCorner.y+oppositeCornerHorizontally.y)/2));
-    }
-
-    private static Point[] intToPointArray(int[] ints) {
-        Point[] points = new Point[ints.length/2];
-        for (int i = 0; i<points.length; i++) {
-            Point point = new Point();
-            point.x = ints[i*2];
-            point.y = ints[i*2+1];
-            points[i] = point;
-        }
-        return points;
-    }
-
     public boolean isOnOrAbove(int x, int y) {
         double leftThreshold = this.getCornerTopLeft().x * 0.95;
         double rightThreshold = this.getCornerTopRight().x * 1.05;
@@ -130,7 +122,23 @@ public class Table {
         return horizontalSide;
     }
 
+    private static Point calcNetPoint(Point oneCorner, Point oppositeCornerHorizontally) {
+        return new Point(Math.abs((oneCorner.x+oppositeCornerHorizontally.x)/2), Math.abs((oneCorner.y+oppositeCornerHorizontally.y)/2));
+    }
+
+    private static Point[] intToPointArray(int[] ints) {
+        Point[] points = new Point[ints.length/2];
+        for (int i = 0; i<points.length; i++) {
+            Point point = new Point();
+            point.x = ints[i*2];
+            point.y = ints[i*2+1];
+            points[i] = point;
+        }
+        return points;
+    }
+
     public static class NotFourCornersException extends RuntimeException {
+
         private static final String MESSAGE = "Table needs 4 points as corners, you provided: ";
         NotFourCornersException(int amountOfCorners) {
             super(MESSAGE + amountOfCorners);

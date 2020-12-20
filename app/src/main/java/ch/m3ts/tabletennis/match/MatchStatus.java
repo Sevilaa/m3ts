@@ -2,6 +2,9 @@ package ch.m3ts.tabletennis.match;
 
 import ch.m3ts.tabletennis.helper.Side;
 
+/**
+ * Represents the status of a match.
+ */
 public class MatchStatus {
     private String playerLeft;
     private String playerRight;

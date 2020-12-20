@@ -3,6 +3,9 @@ package ch.m3ts.tabletennis.match;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.game.GameType;
 
+/**
+ * Parameter Class containing all necessary information to instantiate a match.
+ */
 public class MatchSettings {
     private final MatchType matchType;
     private final Player playerLeft;

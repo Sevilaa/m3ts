@@ -8,6 +8,11 @@ import ch.m3ts.tabletennis.match.game.Game;
 import ch.m3ts.tabletennis.match.game.GameType;
 import ch.m3ts.tabletennis.match.referee.Referee;
 
+
+/**
+ * Represents a match of table tennis.
+ * Notifies when a game or a match is over and provides information about the current match status.
+ */
 public class Match implements MatchCallback, MatchStatusCallback {
     private Game[] games;
     private MatchType type;
