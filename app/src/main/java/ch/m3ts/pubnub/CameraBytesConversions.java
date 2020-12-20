@@ -8,6 +8,9 @@ import android.graphics.YuvImage;
 
 import java.io.ByteArrayOutputStream;
 
+/**
+ * Class which formats bytes received from the Camera API to a Bitmap or RGB Bytes.
+ */
 public class CameraBytesConversions {
     private static final int CAMERA_IMAGE_FORMAT = ImageFormat.NV21;
     private static final int PICTURE_QUALITY = 70;

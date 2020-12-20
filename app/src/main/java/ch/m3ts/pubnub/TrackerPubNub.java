@@ -179,7 +179,7 @@ public class TrackerPubNub extends Callback implements UICallback {
         byte[] compressedJPGBytes = CameraBytesConversions.compressCameraImageBytes(frame, this.initTrackerCallback.getCameraWidth(), this.initTrackerCallback.getCameraHeight());
         Log.d("frame length of compressed image: " + compressedJPGBytes.length + "Bytes");
         try {
-            String encodedFrame = ByteToBase64Encoder.encodeToString(compressedJPGBytes);
+            String encodedFrame = ByteToBase64.encodeToString(compressedJPGBytes);
             Log.d("encodedFrame length: " + encodedFrame.length());
             sendTableFrame(encodedFrame);
         } catch (Exception ex) {

@@ -8,18 +8,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+/**
+ * PubNub Factory, use the static methods in here to instantiate the TrackerPubNub or DisplayPubNub
+ * from an activity or fragment.
+ */
 public class PubNubFactory {
     private static final String PROP_FILE_NAME = "app.properties";
 
     private PubNubFactory() {}
 
-    public static TrackerPubNub createTrackerPubNub(Context context, String roomId) throws NoPropertiesFileFoundException {
+    public static TrackerPubNub createTrackerPubNub(Context context, String roomId) {
         Properties properties = findProperties(context);
         Pubnub pubnub = createPubNub(properties);
         return new TrackerPubNub(pubnub, roomId);
     }
 
-    public static DisplayPubNub createDisplayPubNub(Context context, String roomId) throws NoPropertiesFileFoundException {
+    public static DisplayPubNub createDisplayPubNub(Context context, String roomId) {
         Properties properties = findProperties(context);
         Pubnub pubnub = createPubNub(properties);
         return new DisplayPubNub(pubnub, roomId);

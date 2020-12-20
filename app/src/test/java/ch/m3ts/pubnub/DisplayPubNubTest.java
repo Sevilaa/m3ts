@@ -238,7 +238,7 @@ public class DisplayPubNubTest {
                 int tableHeight = (int) invocation.getArguments()[2];
                 assertEquals(w, tableWidth);
                 assertEquals(h, tableHeight);
-                String res = ByteToBase64Encoder.encodeToString(baseBytes);
+                String res = ByteToBase64.encodeToString(baseBytes);
                 assertEquals(baseImg, res);
                 return null;
             }
