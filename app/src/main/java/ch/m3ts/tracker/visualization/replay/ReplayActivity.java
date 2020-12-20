@@ -43,7 +43,7 @@ import cz.fmo.util.Config;
 import cz.fmo.util.FileManager;
 
 /**
- * Play a movie from a file on disk.  Output goes to a SurfaceView.
+ * Play a video from a file on disk.  Output goes to a SurfaceView.
  * <p>
  * This is very similar to PlayMovieActivity, but the output goes to a SurfaceView instead of
  * a TextureView.  There are some important differences:

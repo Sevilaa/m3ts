@@ -38,6 +38,12 @@ import cz.fmo.data.Track;
 import cz.fmo.data.TrackSet;
 import cz.fmo.util.Config;
 
+/**
+ * Renders the images received by any video source onto the screen and also passes them to FMO.
+ *
+ * FMO then finds detections and tracks and forwards them to the EventDetector, which then calls
+ * for events on this Handler.
+ **/
 public class MatchVisualizeHandler extends android.os.Handler implements EventDetectionCallback, UICallback, MatchVisualizeHandlerCallback {
     private static final int MAX_REFRESHING_TIME_MS = 500;
     final WeakReference<MatchVisualizeActivity> mActivity;

@@ -17,6 +17,9 @@ import java.util.List;
 
 import cz.fmo.R;
 
+/**
+ * Settings Activity, loads the settings from XML values.
+ */
 @SuppressWarnings("squid:S110")
 public class SettingsActivity extends PreferenceActivity {
     private static SummaryUpdater sSummaryUpdater = new SummaryUpdater();

@@ -11,6 +11,10 @@ import ch.m3ts.display.MatchActivity;
 import ch.m3ts.tracker.init.InitTrackerActivity;
 import cz.fmo.R;
 
+/**
+ * Starting Activity of the App.
+ * A player can here specify whether to use his/her device as a Display or Tracker.
+ */
 public class MainActivity extends Activity {
 
     @Override

@@ -26,6 +26,10 @@ import ch.m3ts.tracker.visualization.CameraPreviewActivity;
 import cz.fmo.R;
 import cz.fmo.camera.CameraThread;
 
+
+/**
+ * Handler of the InitTrackerActivity, does the processing work for the activity on a separate thread.
+ */
 public class InitTrackerHandler extends android.os.Handler implements CameraThread.Callback, InitTrackerCallback {
     private static final int CAMERA_ERROR = 2;
     private final WeakReference<InitTrackerActivity> mActivity;
@@ -152,7 +156,7 @@ public class InitTrackerHandler extends android.os.Handler implements CameraThre
                     this.selectedMatchId = resultArray[0];
                     this.selectedMatchType = Integer.parseInt(resultArray[1]);
                     this.selectedServingSide = Integer.parseInt(resultArray[2]);
-                    mActivity.get().createPubNubRoom(this.selectedMatchId);
+                    mActivity.get().enterPubNubRoom(this.selectedMatchId);
                     this.isReadingQRCode = false;
                     hideScanOverlay();
                 }

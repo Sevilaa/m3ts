@@ -90,4 +90,16 @@ public class VideoScalingTest {
         assertEquals(calculatedScaledPoint.x, expectedScaledXValue);
         assertEquals(calculatedScaledPoint.y, expectedScaledYValue);
     }
+
+    @Test(expected = VideoScaling.NoDestinationResolutionSpecifiedException.class)
+    public void testScalingWithNoDestinationResX() {
+        this.videoScaling = new VideoScaling(this.videoWidth, this.videoHeight);
+        this.videoScaling.scaleX(123);
+    }
+
+    @Test(expected = VideoScaling.NoDestinationResolutionSpecifiedException.class)
+    public void testScalingWithNoDestinationResY() {
+        this.videoScaling = new VideoScaling(this.videoWidth, this.videoHeight);
+        this.videoScaling.scaleY(321);
+    }
 }

@@ -10,6 +10,12 @@ import ch.m3ts.tracker.visualization.MatchVisualizeActivity;
 import ch.m3ts.tracker.visualization.MatchVisualizeHandler;
 import cz.fmo.Lib;
 
+/**
+ * Renders the images received by a mp4 file (see ./lib/VideoPlayer) onto the screen and also passes them to FMO.
+ *
+ * FMO then finds detections and tracks and forwards them to the EventDetector, which then calls
+ * for events on this Handler.
+ **/
 public class ReplayHandler extends MatchVisualizeHandler implements ReplayDetectionCallback {
     public ReplayHandler(@NonNull MatchVisualizeActivity activity) {
         super(activity, "bruh_2", true);

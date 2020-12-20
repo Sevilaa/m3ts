@@ -15,7 +15,8 @@ import cz.fmo.R;
 import cz.fmo.util.Config;
 
 /**
- * The main activity, facilitating video preview, encoding and saving.
+ * Activity which reads the ball movement of the table tennis ball and updates the table tennis match
+ * when relevant events occur.
  */
 @SuppressWarnings("squid:S110")
 public final class LiveActivity extends MatchVisualizeActivity {
