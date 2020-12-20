@@ -135,7 +135,6 @@ public class ReplayActivity extends MatchVisualizeActivity implements OnItemSele
                 Config mConfig = new Config(this);
                 mHandler.init(mConfig, player.getVideoWidth(), player.getVideoHeight());
                 trySettingTableLocationFromXML(mMovieFiles[mSelectedMovie]);
-                mHandler.drawTable();
                 mHandler.startDetections();
             } catch (IOException ioe) {
                 Log.e("Unable to play movie", ioe);
