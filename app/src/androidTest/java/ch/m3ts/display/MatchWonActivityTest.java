@@ -67,7 +67,7 @@ public class MatchWonActivityTest extends InstrumentationTestCase {
     public void onClickPlayAgain() {
         onView(withId(R.id.play_again))
                 .perform(click());
-        onView(isRoot()).perform(waitFor(2000));
+        onView(isRoot()).perform(waitFor(4000));
         onView(withId(R.id.left_score))
                 .check(matches(isDisplayed()));
         onView(withId(R.id.right_score))
