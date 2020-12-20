@@ -15,6 +15,11 @@ import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.MatchType;
 import cz.fmo.R;
 
+/**
+ * Fragment which implements the selection of the match settings. Currently the match type (length)
+ * and the starting side can be selected. Both of these selected settings will be passed over to the
+ * next fragment via Intent.
+ */
 public class MatchSettingsFragment extends android.app.Fragment implements AdapterView.OnItemSelectedListener, View.OnClickListener {
     private static final String[] MATCH_TYPE = {MatchType.BO1.toString(), MatchType.BO3.toString(), MatchType.BO5.toString()};
     private static final String[] SERVING_SIDES = {Side.LEFT.toString(), Side.RIGHT.toString()};

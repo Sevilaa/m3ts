@@ -23,6 +23,10 @@ import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.UICallback;
 import cz.fmo.R;
 
+/**
+ * Fragment which implements the features of a digital table tennis scoreboard.
+ * Displays f.e. the current score, current amount of games won by each sides, the current servers.
+ */
 public class MatchScoreFragment extends Fragment implements UICallback, DisplayScoreEventCallback {
     private String ttsWin;
     private String ttsPoints;

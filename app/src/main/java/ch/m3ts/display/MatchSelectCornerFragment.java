@@ -34,6 +34,11 @@ import org.jetbrains.annotations.NotNull;
 import ch.m3ts.Log;
 import cz.fmo.R;
 
+/**
+ * Fragment which is used to select four table corners based off an image.
+ * The image is sent by the tracking device (already inside the Intent), the table corners
+ * get sent back to the tracking device after selection.
+ */
 public class MatchSelectCornerFragment extends android.app.Fragment implements View.OnClickListener, SurfaceHolder.Callback {
     private static final String TAG_MATCH_SCORE = "MATCH_SCORE";
     private TextView txtMaxCorners;

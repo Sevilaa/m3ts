@@ -19,6 +19,11 @@ import ch.m3ts.pubnub.DisplayPubNub;
 import ch.m3ts.pubnub.PubNubFactory;
 import cz.fmo.R;
 
+/**
+ * Activity which implements main the features of the device used as a display.
+ * Features include such as initialising a match, selecting table corners and displaying the
+ * current match state as a scoreboard.
+ */
 @SuppressWarnings("squid:S110")
 public class MatchActivity extends FragmentActivity implements FragmentReplaceCallback {
     private DisplayPubNub pubNub;

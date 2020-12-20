@@ -8,6 +8,10 @@ import android.view.View;
 
 import ch.m3ts.tabletennis.helper.Side;
 
+/**
+ * Custom SwipeListener View which implements calls events on vertical and horizontal swipes.
+ * Needed by the MatchScoreFragment to allow manual score manipulation.
+ */
 public class OnSwipeListener implements View.OnTouchListener {
     private final GestureDetector gestureDetector;
 

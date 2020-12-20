@@ -21,6 +21,11 @@ import com.google.zxing.qrcode.QRCodeWriter;
 import ch.m3ts.Log;
 import cz.fmo.R;
 
+/**
+ * Fragment which generates and displays a QR-Code based on the selected table tennis
+ * match settings and a randomly generated PubNub room id. The QR-Code is displayed for the
+ * tracking device.
+ */
 public class MatchInitFragment extends Fragment implements DisplayConnectCallback, View.OnClickListener {
     private static final String TAG_MATCH_SELECT_CORNERS = "MATCH_SELECT_CORNERS";
     private FragmentReplaceCallback callback;

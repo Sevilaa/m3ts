@@ -11,6 +11,11 @@ import android.widget.TextView;
 import ch.m3ts.MainActivity;
 import cz.fmo.R;
 
+/**
+ * Activity which displays the winner of a table tennis match (info in Intent).
+ * Represents the "End State" of the display device where a user needs to decide whether to exit
+ * the app or to play another match.
+ */
 public class MatchWonActivity extends Activity {
     private AnimationDrawable animationDrawable;
     private String pubnubRoom;
