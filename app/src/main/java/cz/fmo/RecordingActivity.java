@@ -18,6 +18,7 @@ import android.widget.TextView;
 import java.io.File;
 import java.lang.ref.WeakReference;
 
+import ch.m3ts.SettingsActivity;
 import cz.fmo.camera.CameraThread;
 import cz.fmo.camera.PreviewCameraTarget;
 import cz.fmo.camera.RecordingCameraTarget;
@@ -210,7 +211,7 @@ public class RecordingActivity extends Activity {
                 mCamera.join();
             } catch (InterruptedException ie) {
                 Thread.currentThread().interrupt();
-                com.android.grafika.Log.e("Interrupted when closing CameraThread", ie);
+                ch.m3ts.Log.e("Interrupted when closing CameraThread", ie);
             }
             mCamera = null;
         }
@@ -223,7 +224,7 @@ public class RecordingActivity extends Activity {
                 mSaveMovie.join();
             } catch (InterruptedException ie) {
                 Thread.currentThread().interrupt();
-                com.android.grafika.Log.e("Interrupted when closing SaveThread", ie);
+                ch.m3ts.Log.e("Interrupted when closing SaveThread", ie);
             }
             mSaveMovie = null;
         }
@@ -234,7 +235,7 @@ public class RecordingActivity extends Activity {
                 mEncode.join();
             } catch (InterruptedException ie) {
                 Thread.currentThread().interrupt();
-                com.android.grafika.Log.e("Interrupted when closing EncodeThread", ie);
+                ch.m3ts.Log.e("Interrupted when closing EncodeThread", ie);
             }
             mEncode = null;
         }

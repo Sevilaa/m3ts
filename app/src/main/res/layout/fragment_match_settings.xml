@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <GridLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:columnCount="1"
+        android:rowCount="5">
+        <TextView
+            android:id="@+id/initMTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:textAlignment="center"
+            android:textStyle="bold"
+            android:textSize="50sp"
+            android:textColor="@android:color/secondary_text_light"
+            android:text="@string/msTitle" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:textStyle="normal"
+            android:textAlignment="center"
+            android:textSize="30sp"
+            android:textColor="@android:color/secondary_text_light"
+            android:text="@string/msType"
+            android:paddingTop="12dp"
+            android:paddingBottom="5dp"/>
+
+        <Spinner
+            android:id="@+id/init_spinnerSelectMatchType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:spinnerMode="dialog"
+            android:textColor="@android:color/secondary_text_light"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:background="@drawable/radius_small_background"
+            android:elevation="8dp"
+            android:textAllCaps="false"
+            android:textStyle="normal"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:textSize="24sp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:textStyle="normal"
+            android:textAlignment="center"
+            android:textSize="30sp"
+            android:textColor="@android:color/secondary_text_light"
+            android:text="@string/msServer"
+            android:paddingTop="12dp"
+            android:paddingBottom="5dp"/>
+
+        <Spinner
+            android:id="@+id/init_spinnerSelectServingSide"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:spinnerMode="dialog"
+            android:textColor="@android:color/secondary_text_light"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:background="@drawable/radius_small_background"
+            android:elevation="8dp"
+            android:textAllCaps="false"
+            android:textStyle="normal"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:textSize="24sp"/>
+
+        <Button
+            android:id="@+id/init_sideAndMatchTypeDoneBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/radius_background"
+            android:backgroundTint="@android:color/secondary_text_light"
+            android:layout_marginTop="20dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:paddingStart="72dp"
+            android:paddingEnd="72dp"
+            android:textAllCaps="false"
+            android:textStyle="normal"
+            android:elevation="8dp"
+            android:layout_marginBottom="8dp"
+            android:text="@string/msBtn"
+            android:textColor="#fff"
+            android:textSize="24sp"
+            android:layout_gravity="center"
+            android:padding="8dp" />
+    </GridLayout>
+</RelativeLayout>

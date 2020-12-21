@@ -1,0 +1,8 @@
+TODO:
+- Timer erhöhen
+- WaitForServe Ballwurf zum Server gibt Punkt (Sidechange min. 2 Detections)
+- Point Deduction (richtiger Server)
+- Point Manipulation Ready to Serve
+- Feedback Take Picture
+- Loading Bar Picture send
+- Timer beenden bei OnScore

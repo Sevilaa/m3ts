@@ -4,8 +4,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import helper.DirectionX;
-import helper.DirectionY;
+import ch.m3ts.tabletennis.helper.DirectionX;
+import ch.m3ts.tabletennis.helper.DirectionY;
 
 import static org.junit.Assert.assertTrue;
 

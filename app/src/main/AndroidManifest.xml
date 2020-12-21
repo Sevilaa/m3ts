@@ -10,7 +10,7 @@
         android:supportsRtl="true"
         android:theme="@style/Main">
         <activity
-            android:name=".MainActivity"
+            android:name="ch.m3ts.MainActivity"
             android:label="@string/app_name"
             android:screenOrientation="landscape">
             <intent-filter>
@@ -19,46 +19,58 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".display.MatchActivity"
+            android:name="ch.m3ts.display.MatchActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape">
+            <intent-filter>
+                <action android:name="android.intent.action.TTS_SERVICE" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="ch.m3ts.display.MatchWonActivity"
             android:label="@string/app_name"
             android:screenOrientation="landscape">
         </activity>
         <activity
-            android:name="com.android.grafika.initialize.InitializeActivity"
+            android:name="ch.m3ts.initialize.InitializeActivity"
             android:label="@string/app_name"
             android:screenOrientation="landscape"
             android:theme="@style/Recording">
         </activity>
         <activity
-            android:name="com.android.grafika.LiveDebugActivity"
+            android:name="ch.m3ts.tracker.init.InitTrackerActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape"
+            android:theme="@style/Recording">
+        </activity>
+        <activity
+            android:name="ch.m3ts.tracker.visualization.live.LiveActivity"
             android:configChanges=""
             android:label="@string/app_name"
             android:screenOrientation="landscape"
             android:theme="@style/Recording">
             <intent-filter>
                 <action android:name="com.android.grafika.LiveDebugActivity" />
-                <action android:name="android.intent.action.TTS_SERVICE" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
         <activity
-            android:name=".SettingsActivity"
+            android:name="ch.m3ts.SettingsActivity"
             android:label="@string/app_name"
-            android:parentActivityName="com.android.grafika.LiveDebugActivity"
+            android:parentActivityName="ch.m3ts.tracker.visualization.live.LiveActivity"
             android:screenOrientation="landscape">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.android.grafika.LiveDebugActivity" />
+                android:value="ch.m3ts.tracker.visualization.live.LiveActivity" />
         </activity>
         <activity
-            android:name="com.android.grafika.PlayMovieSurfaceActivity"
+            android:name="ch.m3ts.tracker.visualization.replay.ReplayActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/app_name"
             android:screenOrientation="landscape"
             android:theme="@style/PlayMovieSurfaceActivity">
             <intent-filter>
                 <action android:name="com.android.grafika.PlayMovieSurfaceActivity" />
-                <action android:name="android.intent.action.TTS_SERVICE" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>

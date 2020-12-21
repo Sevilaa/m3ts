@@ -2,7 +2,7 @@ package helper;
 
 import android.graphics.Point;
 
-import cz.fmo.tabletennis.Table;
+import ch.m3ts.tabletennis.Table;
 
 public class TableGenerator {
 
