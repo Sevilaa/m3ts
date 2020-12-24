@@ -160,6 +160,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     @Override
     public void onTableSideChange(Side side) {
         // do nothing
+        setTextInTextView(R.id.txtPlayMovieServing, side.toString());
     }
 
     @Override
@@ -227,8 +228,8 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         this.videoScaling = new VideoScaling(srcWidth, srcHeight);
         this.config = config;
         List<EventDetectionCallback> callbacks = new ArrayList<>();
-        callbacks.add(this);
         callbacks.add(this.match.getReferee());
+        callbacks.add(this);
         eventDetector = new EventDetector(config, srcWidth, srcHeight, callbacks, tracks, this.table);
     }
 
