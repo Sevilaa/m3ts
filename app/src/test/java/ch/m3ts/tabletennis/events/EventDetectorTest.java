@@ -90,8 +90,8 @@ public class EventDetectorTest {
         verify(mockCallback, times(1)).onSideChange(Side.LEFT);
         // object again getting shot from right to left side (same direction "edge" case) - no more side change call
         invokeOnObjectDetectedWithDelay(strikeDetectionsLeft, ev, strikeDetectionsLeft.length+strikeDetectionsRight.length);
-        verify(mockCallback, times(2)).onSideChange(Side.RIGHT);
-        verify(mockCallback, times(2)).onSideChange(Side.LEFT);
+        verify(mockCallback, times(1)).onSideChange(Side.RIGHT);
+        verify(mockCallback, times(1)).onSideChange(Side.LEFT);
     }
 
     @Test

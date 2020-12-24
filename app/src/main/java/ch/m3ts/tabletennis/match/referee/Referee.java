@@ -141,18 +141,15 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     @Override
     public void onTableSideChange(Side side) {
         // set the currentStriker in case the tracker didn't find any detections
-        Side oppositeSide = Side.RIGHT;
-        if(side == Side.RIGHT) oppositeSide = Side.LEFT;
-        this.currentStriker = oppositeSide;
+        this.currentStriker = Side.getOpposite(side);
+        this.currentBallSide = side;
         switch (this.state) {
             case SERVING:
             case PLAY:
                 this.state = State.PLAY;
-                this.currentBallSide = side;
                 this.bounces = 0;
                 break;
             default:
-                this.currentBallSide = side;
                 break;
         }
     }

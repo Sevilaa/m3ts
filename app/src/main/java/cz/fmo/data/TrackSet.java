@@ -54,7 +54,6 @@ public class TrackSet {
             }
 
             mCurrentTrackMap.clear();
-            this.filterOutOldTracks(detectionTime);
             for (Lib.Detection detection : detections) {
                 if (detection.id < 0) {
                     throw new RuntimeException("ID of a detection not specified");
@@ -74,6 +73,7 @@ public class TrackSet {
                 track.setLatest(detection, detectionTime);
                 mCurrentTrackMap.put(detection.id, track);
             }
+            this.filterOutOldTracks(detectionTime);
         }
     }
 

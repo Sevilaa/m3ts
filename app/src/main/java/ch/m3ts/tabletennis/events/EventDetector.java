@@ -45,7 +45,6 @@ public class EventDetector implements Lib.Callback {
     private int previousDirectionX;
     private int previousCenterX;
     private int previousCenterY;
-    private Side currentStrikerSide;
     private Table table;
     private int numberOfDetections;
 
@@ -118,12 +117,12 @@ public class EventDetector implements Lib.Callback {
             }
         }
 
-        // now select a track which has crossed the table, preferably oldest one (index low), if there are none return null
+        // now select a track which has crossed the table, preferably the newer one (index high), if there are none return null
         Track selectedTrack = null;
-        for(Track t : tracks) {
-            if (isOnTable(t)) {
-               selectedTrack = t;
-               break;
+        for(int i = tracks.size()-1; i>=0; i--) {
+            if(isOnTable(tracks.get(i))) {
+                selectedTrack = tracks.get(i);
+                break;
             }
         }
         return selectedTrack;
@@ -202,10 +201,8 @@ public class EventDetector implements Lib.Callback {
 
     private boolean hasSideChanged(Lib.Detection detection) {
         boolean hasSideChanged = false;
-        if ((detection.directionX == DirectionX.LEFT && currentStrikerSide != Side.RIGHT) ||
-                (detection.directionX == DirectionX.RIGHT && currentStrikerSide != Side.LEFT)) {
+        if (detection.directionX != previousDirectionX) {
             Side striker = Side.getOppositeX(detection.directionX);
-            currentStrikerSide = striker;
             callAllOnSideChange(striker);
             hasSideChanged = true;
         }
@@ -247,7 +244,8 @@ public class EventDetector implements Lib.Callback {
     }
 
     private void calcDirectionX(Lib.Detection detection) {
-        detection.directionX = Integer.compare(detection.centerX, previousCenterX);
+        if (detection.predecessor != null) detection.directionX = Integer.compare(detection.centerX, detection.predecessor.centerX);
+        else detection.directionX = Integer.compare(detection.centerX, previousCenterX);
     }
 
     private void hasTableSideChanged(int currentXPosition) {
