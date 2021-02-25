@@ -23,6 +23,8 @@ import ch.m3ts.pubnub.TrackerPubNub;
 import ch.m3ts.tabletennis.Table;
 import ch.m3ts.tabletennis.events.EventDetectionCallback;
 import ch.m3ts.tabletennis.events.EventDetector;
+import ch.m3ts.tabletennis.events.GestureCallback;
+import ch.m3ts.tabletennis.events.ReadyToServeDetector;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.Match;
 import ch.m3ts.tabletennis.match.MatchSettings;
@@ -44,10 +46,11 @@ import cz.fmo.util.Config;
  * FMO then finds detections and tracks and forwards them to the EventDetector, which then calls
  * for events on this Handler.
  **/
-public class MatchVisualizeHandler extends android.os.Handler implements EventDetectionCallback, UICallback, MatchVisualizeHandlerCallback {
+public class MatchVisualizeHandler extends android.os.Handler implements EventDetectionCallback, UICallback, MatchVisualizeHandlerCallback, GestureCallback {
     private static final int MAX_REFRESHING_TIME_MS = 500;
     final WeakReference<MatchVisualizeActivity> mActivity;
     private EventDetector eventDetector;
+    private ReadyToServeDetector serveDetector;
     private Paint p;
     private VideoScaling videoScaling;
     private Config config;
@@ -61,6 +64,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     private int newBounceCount;
     private ScoreManipulationCallback smc;
     private boolean useScreenForUICallback;
+    private boolean waitingForGesture = false;
     private TrackerPubNub trackerPubNub;
     private UICallback uiCallback;
 
@@ -85,7 +89,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
 
     public void initMatch(Side servingSide, MatchType matchType, Player playerLeft, Player playerRight) {
         this.matchSettings = new MatchSettings(matchType, GameType.G11, ServeRules.S2, playerLeft, playerRight, servingSide);
-        match = new Match(matchSettings, uiCallback);
+        match = new Match(matchSettings, uiCallback, this);
         if (this.trackerPubNub != null) {
             this.trackerPubNub.setTrackerPubNubCallback(match);
             this.trackerPubNub.setMatchVisualizeHandlerCallback(this);
@@ -286,6 +290,23 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         Point farNetEnd = this.videoScaling.scalePoint(table.getFarNetEnd());
         canvas.drawLine(closeNetEnd.x, closeNetEnd.y, farNetEnd.x, farNetEnd.y, p);
         surfaceHolderTable.unlockCanvasAndPost(canvas);
+    }
+
+    @Override
+    public void onWaitingForGesture(Side server) {
+        serveDetector = new ReadyToServeDetector(table, server, this.videoScaling.getVideoWidth(), this.videoScaling.getVideoHeight(), this.match.getReferee());
+        this.waitingForGesture = true;
+    }
+
+    public boolean isWaitingForGesture() {
+        return this.waitingForGesture;
+    }
+    public void setWaitingForGesture(boolean isWaitingForGesture) {
+        this.waitingForGesture = isWaitingForGesture;
+    }
+
+    public ReadyToServeDetector getServeDetector() {
+        return this.serveDetector;
     }
 
     private void startMatch() {
