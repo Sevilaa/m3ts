@@ -8,6 +8,7 @@ import android.media.MediaFormat;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import ch.m3ts.Log;
 import cz.fmo.util.Config;
 
 /**
@@ -59,8 +60,14 @@ class CameraCapture implements Camera.PreviewCallback {
             if (mCb != null) mCb.onCameraError();
             return;
         }
+        Log.d("Camera Viewing Angle: "+getCameraHorizontalViewAngle());
 
         configureCamera();
+    }
+
+    double getCameraHorizontalViewAngle() {
+        Camera.Parameters p = mCamera.getParameters();
+        return p.getHorizontalViewAngle();
     }
 
     /**

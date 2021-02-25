@@ -2,6 +2,7 @@ package ch.m3ts.tracker.visualization.live;
 
 import android.support.annotation.NonNull;
 
+import ch.m3ts.Log;
 import ch.m3ts.tracker.visualization.MatchVisualizeActivity;
 import ch.m3ts.tracker.visualization.MatchVisualizeHandler;
 import cz.fmo.Lib;

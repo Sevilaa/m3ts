@@ -55,9 +55,8 @@ public final class LiveActivity extends MatchVisualizeActivity {
     public void init() {
         super.init();
         if (!mConfig.isDisableDetection() && ismSurfaceHolderReady()) {
-            // C++ initialization
-            mHandler.init(mConfig, this.getCameraWidth(), this.getCameraHeight());
-            trySettingTableLocationFromIntent();
+            Table table = trySettingTableLocationFromIntent();
+            mHandler.init(mConfig, this.getCameraWidth(), this.getCameraHeight(), table);
             mHandler.startDetections();
         }
     }
@@ -87,9 +86,9 @@ public final class LiveActivity extends MatchVisualizeActivity {
         super.onPause();
     }
 
-    private void trySettingTableLocationFromIntent() {
+    private Table trySettingTableLocationFromIntent() {
         scaleCornerIntsToSelectedCamera();
-        mHandler.setTable(Table.makeTableFromIntArray(tableCorners));
+        return Table.makeTableFromIntArray(tableCorners);
     }
 
     private void getDataFromIntent() {

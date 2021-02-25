@@ -32,6 +32,7 @@ import ch.m3ts.tabletennis.match.ServeRules;
 import ch.m3ts.tabletennis.match.UICallback;
 import ch.m3ts.tabletennis.match.game.GameType;
 import ch.m3ts.tabletennis.match.game.ScoreManipulationCallback;
+import ch.m3ts.tracker.ZPositionCalc;
 import cz.fmo.Lib;
 import cz.fmo.R;
 import cz.fmo.data.Track;
@@ -40,6 +41,7 @@ import cz.fmo.util.Config;
 
 /**
  * Renders the images received by any video source onto the screen and also passes them to FMO.
+ * Use this Handler for tasks which need to be done on Replay AND live.
  *
  * FMO then finds detections and tracks and forwards them to the EventDetector, which then calls
  * for events on this Handler.
@@ -48,10 +50,10 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     private static final int MAX_REFRESHING_TIME_MS = 500;
     final WeakReference<MatchVisualizeActivity> mActivity;
     private EventDetector eventDetector;
-    private Paint p;
+    private final Paint p;
     private VideoScaling videoScaling;
     private Config config;
-    private TrackSet tracks;
+    private final TrackSet tracks;
     private Table table;
     private boolean hasNewTable;
     private Lib.Detection latestNearlyOutOfFrame;
@@ -63,6 +65,8 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     private boolean useScreenForUICallback;
     private TrackerPubNub trackerPubNub;
     private UICallback uiCallback;
+    private ZPositionCalc calc;
+    private final double viewingAngle;
 
     public MatchVisualizeHandler(@NonNull MatchVisualizeActivity activity, String matchID, boolean useScreenForUICallback) {
         mActivity = new WeakReference<>(activity);
@@ -81,6 +85,8 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
                 this.useScreenForUICallback = true;
             }
         }
+        viewingAngle = activity.getCameraHorizontalViewAngle();
+        Log.d("Camera Viewing Angle: "+activity.getCameraHorizontalViewAngle());
     }
 
     public void initMatch(Side servingSide, MatchType matchType, Player playerLeft, Player playerRight) {
@@ -224,13 +230,16 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         }
     }
 
-    public void init(Config config, int srcWidth, int srcHeight) {
+    public void init(Config config, int srcWidth, int srcHeight, Table table) {
+        hasNewTable = true;
         this.videoScaling = new VideoScaling(srcWidth, srcHeight);
         this.config = config;
+        this.table = table;
         List<EventDetectionCallback> callbacks = new ArrayList<>();
         callbacks.add(this.match.getReferee());
         callbacks.add(this);
-        eventDetector = new EventDetector(config, srcWidth, srcHeight, callbacks, tracks, this.table);
+        calc = new ZPositionCalc(this.viewingAngle, table.getWidth(), videoScaling.getVideoWidth());
+        eventDetector = new EventDetector(config, srcWidth, srcHeight, callbacks, tracks, table, calc);
     }
 
     public void startDetections() {
@@ -243,9 +252,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
 
     public void setTable(Table table) {
         if (table != null) {
-            hasNewTable = true;
-            this.table = table;
-            eventDetector.setTable(table);
+
         }
     }
 
@@ -320,15 +327,15 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         if (latestNearlyOutOfFrame != null) {
             p.setColor(Color.rgb(255, 165, 0));
             p.setStrokeWidth(latestNearlyOutOfFrame.radius);
-            canvas.drawCircle(this.videoScaling.scaleX(latestNearlyOutOfFrame.centerX), this.videoScaling.scaleY(latestNearlyOutOfFrame.centerY), latestNearlyOutOfFrame.radius, p);
+            canvas.drawCircle(this.videoScaling.scaleX(latestNearlyOutOfFrame.centerX), this.videoScaling.scaleY(latestNearlyOutOfFrame.centerY), this.videoScaling.scaleY(latestNearlyOutOfFrame.radius), p);
         }
     }
 
     private void drawLatestBounce(Canvas canvas) {
         if(latestBounce != null) {
             p.setColor(Color.rgb(255,0,0));
-            p.setStrokeWidth(latestBounce.radius * 2);
-            canvas.drawCircle(this.videoScaling.scaleX(latestBounce.centerX), this.videoScaling.scaleY(latestBounce.centerY), latestBounce.radius * 2, p);
+            p.setStrokeWidth(latestBounce.radius);
+            canvas.drawCircle(this.videoScaling.scaleX(latestBounce.centerX), this.videoScaling.scaleY(latestBounce.centerY), this.videoScaling.scaleY(latestBounce.radius), p);
         }
     }
 

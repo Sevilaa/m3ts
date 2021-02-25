@@ -25,6 +25,7 @@ public abstract class CameraPreviewActivity extends Activity implements SurfaceH
     private CameraStatus mStatus = CameraStatus.STOPPED;
     private CameraThread mCamera;
     private boolean mSurfaceHolderReady = false;
+    private double cameraHorizontalAngle;
     protected CameraThread.Callback cameraCallback;
 
     /**
@@ -63,6 +64,7 @@ public abstract class CameraPreviewActivity extends Activity implements SurfaceH
 
         // create a dedicated camera input thread
         mCamera = new CameraThread(this.cameraCallback, mConfig);
+        this.cameraHorizontalAngle = mCamera.getCameraHorizontalViewAngle();
 
         // add preview as camera target
         SurfaceView cameraView = getmSurfaceView();
@@ -81,7 +83,9 @@ public abstract class CameraPreviewActivity extends Activity implements SurfaceH
         mCamera.start();
     }
 
-
+    public double getCameraHorizontalViewAngle() {
+        return this.cameraHorizontalAngle;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

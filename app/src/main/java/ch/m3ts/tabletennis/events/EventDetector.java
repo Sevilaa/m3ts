@@ -7,11 +7,13 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import ch.m3ts.Log;
 import ch.m3ts.tabletennis.Table;
 import ch.m3ts.tabletennis.events.timeouts.TimeoutTimerTask;
 import ch.m3ts.tabletennis.helper.DirectionX;
 import ch.m3ts.tabletennis.helper.DirectionY;
 import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.tracker.ZPositionCalc;
 import cz.fmo.Lib;
 import cz.fmo.data.Track;
 import cz.fmo.data.TrackSet;
@@ -47,12 +49,13 @@ public class EventDetector implements Lib.Callback {
     private int previousCenterY;
     private Table table;
     private int numberOfDetections;
+    private ZPositionCalc zPositionCalc;
 
-    public EventDetector(Config config, int srcWidth, int srcHeight, EventDetectionCallback callback, TrackSet tracks, @NonNull Table table) {
-        this(config, srcWidth, srcHeight, Collections.singletonList(callback), tracks, table);
+    public EventDetector(Config config, int srcWidth, int srcHeight, EventDetectionCallback callback, TrackSet tracks, @NonNull Table table, ZPositionCalc calc) {
+        this(config, srcWidth, srcHeight, Collections.singletonList(callback), tracks, table, calc);
     }
 
-    public EventDetector(Config config, int srcWidth, int srcHeight, List<EventDetectionCallback> callbacks, TrackSet tracks, @NonNull Table table) {
+    public EventDetector(Config config, int srcWidth, int srcHeight, List<EventDetectionCallback> callbacks, TrackSet tracks, @NonNull Table table, ZPositionCalc calc) {
         this.srcHeight = srcHeight;
         this.srcWidth = srcWidth;
         this.tracks = tracks;
@@ -65,6 +68,7 @@ public class EventDetector implements Lib.Callback {
         this.callbacks = callbacks;
         this.table = table;
         this.numberOfDetections = 0;
+        this.zPositionCalc = calc;
         tracks.setConfig(config);
     }
 
@@ -109,12 +113,28 @@ public class EventDetector implements Lib.Callback {
 
     public Track selectTrack(List<Track> tracks) {
         // first tag all tracks which have crossed the table once
-        // TODO remove detections which are unrealistically large or small (only use close edge)
         for(Track t : tracks) {
             Lib.Detection latestDetection = t.getLatest();
-            if (table.isOnOrAbove(latestDetection.centerX, latestDetection.centerY)) {
+            if (table.isOnOrAbove(latestDetection.centerX, latestDetection.centerY) && zPositionCalc.isBallZPositionOnTable(latestDetection.radius)) {
                 t.setTableCrossed();
             }
+        }
+
+        if(tracks.size()>1) {
+            // check if the distance between the two latest detections is humanly possible
+            Lib.Detection d0 = tracks.get(tracks.size()-1).getLatest();
+            Lib.Detection d1 = tracks.get(tracks.size()-2).getLatest();
+            double mmPerPixelOnFrontPlane = zPositionCalc.getMmPerPixelFrontEdge();
+            int dx = Math.abs(d0.centerX-d1.centerX);
+            int dy = Math.abs(d0.centerY-d1.centerY);
+            double distanceInMm = Math.sqrt(Math.pow(dx,2)+Math.pow(dy,2)) * mmPerPixelOnFrontPlane;
+            double dTime = (double) Math.abs(tracks.get(tracks.size()-1).getLastDetectionTime() - tracks.get(tracks.size()-2).getLastDetectionTime()) / 1_000_000_000;
+            if(dTime == 0) dTime = 1.0/30.0;
+            if((distanceInMm/1000)/(1.0/30.0) >= 32) {
+                Log.d("removos senioros: "+distanceInMm+"mm with "+dx+"px and "+dTime);
+                tracks.remove(1);
+            }
+
         }
 
         // now select a track which has crossed the table, preferably the newer one (index high), if there are none return null
@@ -126,10 +146,6 @@ public class EventDetector implements Lib.Callback {
             }
         }
         return selectedTrack;
-    }
-
-    public void setTable(Table table) {
-        this.table = table;
     }
 
     public int[] getNearlyOutOfFrameThresholds() {

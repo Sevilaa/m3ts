@@ -23,6 +23,7 @@ public class Track {
     private float mMaxVelocity;
     private int mVelocityNumFrames = 0;
     private boolean hasCrossedTable = false;
+    private boolean isZPosOnTable = false;
 
     Track(Config config) {
         mConfig = config;
@@ -42,10 +43,11 @@ public class Track {
 
     public void setTableCrossed() {
         this.hasCrossedTable = true;
+        this.isZPosOnTable = true;
     }
 
     public boolean hasCrossedTable() {
-        return this.hasCrossedTable;
+        return this.hasCrossedTable && this.isZPosOnTable;
     }
 
     void setLatest(Lib.Detection latest, long detectionTime) {

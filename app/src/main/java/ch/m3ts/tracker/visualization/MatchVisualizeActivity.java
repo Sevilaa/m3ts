@@ -1,18 +1,21 @@
 package ch.m3ts.tracker.visualization;
 
 import android.graphics.PixelFormat;
+import android.hardware.Camera;
 import android.os.Bundle;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.TextView;
 
 import cz.fmo.R;
+import cz.fmo.graphics.EGL;
 
 @SuppressWarnings("squid:S110")
 public abstract class MatchVisualizeActivity extends CameraPreviewActivity implements SurfaceHolder.Callback {
     private SurfaceView mSurfaceView;
     private SurfaceView mSurfaceTrack;
     private SurfaceView mSurfaceTable;
+    private SurfaceView mSurfaceReplay;
     private TextView mBounceCountText;
 
     /**
@@ -33,6 +36,8 @@ public abstract class MatchVisualizeActivity extends CameraPreviewActivity imple
         mSurfaceTrack.getHolder().setFormat(PixelFormat.TRANSPARENT);
         mSurfaceTable = findViewById(R.id.playMovie_surfaceTable);
         mSurfaceTable.getHolder().setFormat(PixelFormat.TRANSPARENT);
+        mSurfaceReplay = findViewById(R.id.playMovie_replaySurface);
+        mSurfaceReplay.getHolder().setFormat(PixelFormat.TRANSPARENT);
     }
 
     @Override
@@ -46,6 +51,10 @@ public abstract class MatchVisualizeActivity extends CameraPreviewActivity imple
 
     public SurfaceView getmSurfaceTable() {
         return mSurfaceTable;
+    }
+
+    public SurfaceView getmSurfaceReplay() {
+        return mSurfaceReplay;
     }
 
     public TextView getmBounceCountText() {
