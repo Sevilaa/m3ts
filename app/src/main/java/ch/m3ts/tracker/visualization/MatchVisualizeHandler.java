@@ -234,13 +234,15 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         }
     }
 
-    public void init(Config config, int srcWidth, int srcHeight) {
+    public void init(Config config, int srcWidth, int srcHeight, Table table) {
+        this.table = table;
         this.videoScaling = new VideoScaling(srcWidth, srcHeight);
         this.config = config;
         List<EventDetectionCallback> callbacks = new ArrayList<>();
         callbacks.add(this.match.getReferee());
         callbacks.add(this);
-        eventDetector = new EventDetector(config, srcWidth, srcHeight, callbacks, tracks, this.table);
+        this.calc = new ZPositionCalc(this.viewingAngle, table.getWidth(), this.videoScaling.getVideoWidth());
+        eventDetector = new EventDetector(config, srcWidth, srcHeight, callbacks, tracks, this.table, this.calc);
     }
 
     public void startDetections() {
@@ -249,14 +251,6 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
 
     public void stopDetections() {
         Lib.detectionStop();
-    }
-
-    public void setTable(Table table) {
-        if (table != null) {
-            hasNewTable = true;
-            this.table = table;
-            eventDetector.setTable(table);
-        }
     }
 
     public void clearCanvas(SurfaceHolder surfaceHolder) {

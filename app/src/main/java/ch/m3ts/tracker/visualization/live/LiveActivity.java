@@ -4,6 +4,7 @@ import android.graphics.Point;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.view.Display;
+import android.widget.Toast;
 
 import ch.m3ts.Log;
 import ch.m3ts.tabletennis.Table;

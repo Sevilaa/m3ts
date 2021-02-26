@@ -26,6 +26,7 @@ import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -143,6 +144,8 @@ public class ReplayActivity extends MatchVisualizeActivity implements OnItemSele
                 if(table != null) {
                     mHandler.init(mConfig, player.getVideoWidth(), player.getVideoHeight(), table);
                     mHandler.startDetections();
+                } else {
+                    Toast.makeText(this, "unable to initialize, please select the table again", Toast.LENGTH_LONG).show();
                 }
             } catch (IOException ioe) {
                 Log.e("Unable to play movie", ioe);
