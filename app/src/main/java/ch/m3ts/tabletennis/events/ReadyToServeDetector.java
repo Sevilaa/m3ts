@@ -1,0 +1,155 @@
+package ch.m3ts.tabletennis.events;
+
+import android.graphics.Point;
+
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.core.Rect;
+import org.opencv.core.Scalar;
+import org.opencv.imgproc.Imgproc;
+
+import ch.m3ts.helper.OpenCVHelper;
+import ch.m3ts.tabletennis.Table;
+import ch.m3ts.tabletennis.helper.Side;
+
+import static org.opencv.core.Core.inRange;
+
+/**
+ * Takes a frame in YUV format and checks if a player held his racket in the ready to serve area.
+ **/
+public class ReadyToServeDetector {
+    private Table table;
+    private int cameraWidth;
+    private int cameraHeight;
+    private ReadyToServeCallback callback;
+    private Side server;
+    private int gestureFrameCounter = 0;
+    private boolean invertedSegmentationOn = true;
+    private final double PERCENTAGE_THRESHOLD = 0.15;
+    private final int GESTURE_HOLD_TIME_IN_FRAMES = 15;
+    private final double GESTURE_AREA_PERCENTAGE_RELATIVE_TO_TABLE = 0.1;
+
+    public ReadyToServeDetector(Table table, Side server, int cameraWidth, int cameraHeight, ReadyToServeCallback callback) {
+        this.table = table;
+        this.server = server;
+        this.cameraWidth = cameraWidth;
+        this.cameraHeight = cameraHeight;
+        this.callback = callback;
+    }
+
+    /**
+     * Checks every three frames if the player held his racket into the ready for serve area,
+     * If the gesture was active for 15 frames (0.5s on a 30 FPS camera) it returns true and
+     * triggers an event
+     * @param  frameYUVBytes  frame in YUV format
+     * @return true if gesture was active for 15 frames and false otherwise
+     */
+    public boolean isReadyToServe(byte[] frameYUVBytes) {
+        boolean isReady = false;
+        gestureFrameCounter++;
+        if(gestureFrameCounter % 3 == 0) {
+            if(isRacketInArea(frameYUVBytes)) {
+                if(gestureFrameCounter >= GESTURE_HOLD_TIME_IN_FRAMES) {
+                    this.callback.onGestureDetected();
+                    isReady = true;
+                }
+            } else {
+                gestureFrameCounter = 0;
+            }
+        }
+        return isReady;
+    }
+
+    private boolean isRacketInArea(byte[] frameYUVBytes) {
+        return getRedPercentage(frameYUVBytes) > PERCENTAGE_THRESHOLD;
+    }
+
+    private double getRedPercentage(byte [] frameYUVBytes) {
+        Mat yuv = new Mat(getYUVMatHeight(), this.cameraWidth, CvType.CV_8UC1);
+        yuv.put( 0, 0, frameYUVBytes);
+
+        //OpenCVHelper.saveImage(yuv, "yuv");
+        Mat bgr = convertYUVToBGRInAreaSize(yuv);
+
+        Mat mask;
+        // TODO determine best variant
+        if(invertedSegmentationOn) {
+            mask = segmentRedColorViaInverting(bgr);
+        } else {
+            mask = segmentRedColor(bgr);
+        }
+        double test = Core.countNonZero(mask) / (double)mask.total();
+        return Core.countNonZero(mask) / (double)mask.total();
+    }
+
+    private Mat convertYUVToBGRInAreaSize(Mat yuv) {
+        Mat bgr = new Mat();
+        Imgproc.cvtColor(yuv, bgr, Imgproc.COLOR_YUV2BGR_NV21, 3);
+        //OpenCVHelper.saveImage(bgr, "bgr");
+        bgr = bgr.submat(getGestureArea());
+        //OpenCVHelper.saveImage(bgr, "bgrCropped");
+        return bgr;
+    }
+
+    /**
+     * Calculates square around table corner of server
+     * @return  rect with with sides in the size of 10% of the table
+     */
+    private Rect getGestureArea() {
+        int width = (int) (this.table.getWidth() * GESTURE_AREA_PERCENTAGE_RELATIVE_TO_TABLE);
+
+        Point position = this.table.getCornerDownLeft();
+        if(this.server == Side.RIGHT) {
+            position = this.table.getCornerDownRight();
+        }
+        return new Rect(position.x - width/2, position.y - width/2, width, width);
+    }
+
+    /**
+     * Segments red color from image with two color ranges.
+     * Needs more resources than segmentation with inversion.
+     * @param  bgr  mat with bgr color space
+     * @return      image where red pixels in original images are 255 and others 0
+     */
+    private Mat segmentRedColor(Mat bgr) {
+        Mat mask1 = new Mat();
+        Mat mask2 = new Mat();
+        Mat normal = new Mat();
+        Mat hsv = new Mat();
+        Imgproc.cvtColor(bgr, hsv, Imgproc.COLOR_BGR2HSV, 3);
+        inRange(hsv, new Scalar(0,120,70), new Scalar(10,255,255), mask1);
+        // evtl. Maske 2 weglassen? Muss getestet werden
+        inRange(hsv, new Scalar(170,120,70), new Scalar(180,255,255), mask2);
+        Core.bitwise_or(mask1, mask2, normal);
+        /*OpenCVHelper.saveImage(hsv, "hsv");
+        OpenCVHelper.saveImage(mask1, "mask1");
+        OpenCVHelper.saveImage(mask2, "mask2");
+        OpenCVHelper.saveImage(normal, "normal");*/
+        return mask1;
+    }
+
+
+    /**
+     * Segments red color from image by inverting first and then looking for cyan parts in image.
+     * Needs less resources than segmentRedColor.
+     * @param  bgr  mat with bgr color space
+     * @return      image where red pixels in original images are 255 and others 0
+     */
+    private Mat segmentRedColorViaInverting(Mat bgr) {
+        Mat bgrInverted = new Mat();
+        Mat hsvInverted = new Mat();
+        Mat maskInv = new Mat();
+        Core.bitwise_not(bgr, bgrInverted);
+        Imgproc.cvtColor(bgrInverted, hsvInverted, Imgproc.COLOR_BGR2HSV);
+        inRange(hsvInverted, new Scalar(90 - 10, 70, 50), new Scalar(90 + 10, 255, 255), maskInv);
+        OpenCVHelper.saveImage(bgrInverted, "bgrinverted");
+        OpenCVHelper.saveImage(maskInv, "inverted");
+        return maskInv;
+    }
+
+    private int getYUVMatHeight() {
+        return this.cameraHeight + this.cameraHeight/2;
+    }
+
+}

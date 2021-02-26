@@ -19,9 +19,6 @@ import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.qrcode.QRCodeReader;
 
 import org.opencv.android.OpenCVLoader;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfByte;
-import org.opencv.imgcodecs.Imgcodecs;
 
 import java.lang.ref.WeakReference;
 
@@ -142,9 +139,6 @@ public class InitTrackerHandler extends android.os.Handler implements CameraThre
 
     private BinaryBitmap convertBytesToBinaryBitmap(byte[] bytes) {
         Bitmap bitmap = CameraBytesConversions.compressAndConvertCameraImageBytes(bytes, this.getCameraWidth(), this.getCameraHeight());
-        Mat frame = Imgcodecs.imdecode(new MatOfByte(CameraBytesConversions.compressCameraImageBytes(bytes, this.getCameraWidth(), this.getCameraHeight())), Imgcodecs.CV_LOAD_IMAGE_UNCHANGED);
-        Log.d("FRAME:");
-        Log.d(frame.toString());
         LuminanceSource source = new PlanarYUVLuminanceSource(bytes, bitmap.getWidth(), bitmap.getHeight(), 0, 0, bitmap.getWidth(), bitmap.getHeight(), false);
         return new BinaryBitmap(new HybridBinarizer(source));
     }

@@ -29,6 +29,9 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
     @Override
     public void onCameraFrame(byte[] dataYUV420SP) {
         Lib.detectionFrame(dataYUV420SP);
+        if(isWaitingForGesture()) {
+            setWaitingForGesture(!getServeDetector().isReadyToServe(dataYUV420SP));
+        }
     }
 
     @Override

@@ -5,6 +5,8 @@ import java.util.TimerTask;
 
 import ch.m3ts.Log;
 import ch.m3ts.tabletennis.events.EventDetectionCallback;
+import ch.m3ts.tabletennis.events.GestureCallback;
+import ch.m3ts.tabletennis.events.ReadyToServeCallback;
 import ch.m3ts.tabletennis.helper.DirectionX;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.game.Game;
@@ -28,13 +30,14 @@ import cz.fmo.data.Track;
  *   - OUT_OF_FRAME -> the ball is not inside the frame anymore, the referee needs to wait and see
  *   if a player can shoot the ball back onto the table.
  */
-public class Referee implements EventDetectionCallback, ScoreManipulationCallback {
+public class Referee implements EventDetectionCallback, ScoreManipulationCallback, ReadyToServeCallback {
     private static final int OUT_OF_FRAME_MAX_DELAY = 1500;
     private static final int PAUSE_DELAY = 1500;
     private static final int PAUSE_SCORE_MANIPULATION_DELAY = 3000;
     private Timer outOfFrameTimer;
     private Timer timeOutNextServeTimer;
     private GameCallback gameCallback;
+    private GestureCallback gestureCallback;
     private Game currentGame;
     private Side currentStriker;
     private Side currentBallSide;
@@ -42,11 +45,12 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     // TODO change bounces from int to Map as bounces get delivered with Side Info now
     private int bounces;
 
-    public Referee(Side servingSide) {
+    public Referee(Side servingSide, GestureCallback gestureCallback) {
         this.currentStriker = servingSide;
         this.currentBallSide = servingSide;
         this.bounces = 0;
         this.state = State.WAIT_FOR_SERVE;
+        this.gestureCallback = gestureCallback;
     }
 
     public void setGame(Game game) {
@@ -181,14 +185,18 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     public void onPointDeduction(Side side) {
         gameCallback.onPointDeduction(side);
         initPoint();
-        setTimeoutForNextServe(PAUSE_SCORE_MANIPULATION_DELAY);
+        this.state = State.PAUSE;
+        gestureCallback.onWaitingForGesture(getServer());
+        //setTimeoutForNextServe(PAUSE_SCORE_MANIPULATION_DELAY);
     }
 
     @Override
     public void onPointAddition(Side side) {
         gameCallback.onPoint(side);
         initPoint();
-        setTimeoutForNextServe(PAUSE_SCORE_MANIPULATION_DELAY);
+        this.state = State.PAUSE;
+        gestureCallback.onWaitingForGesture(getServer());
+        //setTimeoutForNextServe(PAUSE_SCORE_MANIPULATION_DELAY);
     }
 
     @Override
@@ -261,13 +269,17 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     private void pointBySide(Side side) {
         gameCallback.onPoint(side);
         initPoint();
-        setTimeoutForNextServe(PAUSE_DELAY);
+        this.state = State.PAUSE;
+        gestureCallback.onWaitingForGesture(getServer());
+        //setTimeoutForNextServe(PAUSE_DELAY);
     }
 
     private void faultBySide(Side side) {
         gameCallback.onPoint(Side.getOpposite(side));
         initPoint();
-        setTimeoutForNextServe(PAUSE_DELAY);
+        this.state = State.PAUSE;
+        gestureCallback.onWaitingForGesture(getServer());
+        //setTimeoutForNextServe(PAUSE_DELAY);
     }
 
     private void initPoint() {
@@ -295,5 +307,10 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
             Log.d("Server Fault: Multiple Bounces on same Side");
             faultBySide(getServer());
         }
+    }
+
+    @Override
+    public void onGestureDetected() {
+        this.state = State.WAIT_FOR_SERVE;
     }
 }

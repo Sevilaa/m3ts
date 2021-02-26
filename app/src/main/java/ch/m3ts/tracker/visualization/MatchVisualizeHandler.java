@@ -23,6 +23,8 @@ import ch.m3ts.pubnub.TrackerPubNub;
 import ch.m3ts.tabletennis.Table;
 import ch.m3ts.tabletennis.events.EventDetectionCallback;
 import ch.m3ts.tabletennis.events.EventDetector;
+import ch.m3ts.tabletennis.events.GestureCallback;
+import ch.m3ts.tabletennis.events.ReadyToServeDetector;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.Match;
 import ch.m3ts.tabletennis.match.MatchSettings;
@@ -46,14 +48,15 @@ import cz.fmo.util.Config;
  * FMO then finds detections and tracks and forwards them to the EventDetector, which then calls
  * for events on this Handler.
  **/
-public class MatchVisualizeHandler extends android.os.Handler implements EventDetectionCallback, UICallback, MatchVisualizeHandlerCallback {
+public class MatchVisualizeHandler extends android.os.Handler implements EventDetectionCallback, UICallback, MatchVisualizeHandlerCallback, GestureCallback {
     private static final int MAX_REFRESHING_TIME_MS = 500;
     final WeakReference<MatchVisualizeActivity> mActivity;
     private EventDetector eventDetector;
-    private final Paint p;
+    private ReadyToServeDetector serveDetector;
+    private Paint p;
     private VideoScaling videoScaling;
     private Config config;
-    private final TrackSet tracks;
+    private TrackSet tracks;
     private Table table;
     private boolean hasNewTable;
     private Lib.Detection latestNearlyOutOfFrame;
@@ -63,6 +66,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     private int newBounceCount;
     private ScoreManipulationCallback smc;
     private boolean useScreenForUICallback;
+    private boolean waitingForGesture = false;
     private TrackerPubNub trackerPubNub;
     private UICallback uiCallback;
     private ZPositionCalc calc;
@@ -91,7 +95,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
 
     public void initMatch(Side servingSide, MatchType matchType, Player playerLeft, Player playerRight) {
         this.matchSettings = new MatchSettings(matchType, GameType.G11, ServeRules.S2, playerLeft, playerRight, servingSide);
-        match = new Match(matchSettings, uiCallback);
+        match = new Match(matchSettings, uiCallback, this);
         if (this.trackerPubNub != null) {
             this.trackerPubNub.setTrackerPubNubCallback(match);
             this.trackerPubNub.setMatchVisualizeHandlerCallback(this);
@@ -230,16 +234,13 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         }
     }
 
-    public void init(Config config, int srcWidth, int srcHeight, Table table) {
-        hasNewTable = true;
+    public void init(Config config, int srcWidth, int srcHeight) {
         this.videoScaling = new VideoScaling(srcWidth, srcHeight);
         this.config = config;
-        this.table = table;
         List<EventDetectionCallback> callbacks = new ArrayList<>();
         callbacks.add(this.match.getReferee());
         callbacks.add(this);
-        calc = new ZPositionCalc(this.viewingAngle, table.getWidth(), videoScaling.getVideoWidth());
-        eventDetector = new EventDetector(config, srcWidth, srcHeight, callbacks, tracks, table, calc);
+        eventDetector = new EventDetector(config, srcWidth, srcHeight, callbacks, tracks, this.table);
     }
 
     public void startDetections() {
@@ -252,7 +253,9 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
 
     public void setTable(Table table) {
         if (table != null) {
-
+            hasNewTable = true;
+            this.table = table;
+            eventDetector.setTable(table);
         }
     }
 
@@ -295,6 +298,23 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         surfaceHolderTable.unlockCanvasAndPost(canvas);
     }
 
+    @Override
+    public void onWaitingForGesture(Side server) {
+        serveDetector = new ReadyToServeDetector(table, server, this.videoScaling.getVideoWidth(), this.videoScaling.getVideoHeight(), this.match.getReferee());
+        this.waitingForGesture = true;
+    }
+
+    public boolean isWaitingForGesture() {
+        return this.waitingForGesture;
+    }
+    public void setWaitingForGesture(boolean isWaitingForGesture) {
+        this.waitingForGesture = isWaitingForGesture;
+    }
+
+    public ReadyToServeDetector getServeDetector() {
+        return this.serveDetector;
+    }
+
     private void startMatch() {
         setOnSwipeListener();
         refreshDebugTextViews();
@@ -327,15 +347,15 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         if (latestNearlyOutOfFrame != null) {
             p.setColor(Color.rgb(255, 165, 0));
             p.setStrokeWidth(latestNearlyOutOfFrame.radius);
-            canvas.drawCircle(this.videoScaling.scaleX(latestNearlyOutOfFrame.centerX), this.videoScaling.scaleY(latestNearlyOutOfFrame.centerY), this.videoScaling.scaleY(latestNearlyOutOfFrame.radius), p);
+            canvas.drawCircle(this.videoScaling.scaleX(latestNearlyOutOfFrame.centerX), this.videoScaling.scaleY(latestNearlyOutOfFrame.centerY), latestNearlyOutOfFrame.radius, p);
         }
     }
 
     private void drawLatestBounce(Canvas canvas) {
         if(latestBounce != null) {
             p.setColor(Color.rgb(255,0,0));
-            p.setStrokeWidth(latestBounce.radius);
-            canvas.drawCircle(this.videoScaling.scaleX(latestBounce.centerX), this.videoScaling.scaleY(latestBounce.centerY), this.videoScaling.scaleY(latestBounce.radius), p);
+            p.setStrokeWidth(latestBounce.radius * 2);
+            canvas.drawCircle(this.videoScaling.scaleX(latestBounce.centerX), this.videoScaling.scaleY(latestBounce.centerY), latestBounce.radius * 2, p);
         }
     }
 

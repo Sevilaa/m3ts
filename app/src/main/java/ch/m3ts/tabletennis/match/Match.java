@@ -3,6 +3,7 @@ package ch.m3ts.tabletennis.match;
 import java.util.EnumMap;
 import java.util.Map;
 
+import ch.m3ts.tabletennis.events.GestureCallback;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.game.Game;
 import ch.m3ts.tabletennis.match.game.GameType;
@@ -24,7 +25,7 @@ public class Match implements MatchCallback, MatchStatusCallback {
     private ServeRules serveRules;
     private GameType gameType;
 
-    public Match(MatchType type, GameType gameType, ServeRules serveRules, Player playerLeft, Player playerRight, UICallback uiCallback, Side startingServer) {
+    public Match(MatchType type, GameType gameType, ServeRules serveRules, Player playerLeft, Player playerRight, UICallback uiCallback, Side startingServer, GestureCallback gestureCallback) {
         this.type = type;
         this.gameType = gameType;
         this.wins = new EnumMap<>(Side.class);
@@ -36,14 +37,14 @@ public class Match implements MatchCallback, MatchStatusCallback {
         this.players.put(Side.RIGHT, playerRight);
         this.uiCallback = uiCallback;
         this.serveRules = serveRules;
-        this.referee = new Referee(startingServer);
+        this.referee = new Referee(startingServer, gestureCallback);
         this.serverSide = startingServer;
         startNewGame(true);
     }
 
-    public Match(MatchSettings settings, UICallback uiCallback) {
+    public Match(MatchSettings settings, UICallback uiCallback, GestureCallback gestureCallback) {
         this(settings.getMatchType(), settings.getGameType(), settings.getServeRules(),
-                settings.getPlayerLeft(), settings.getPlayerRight(), uiCallback, settings.getStartingServer());
+                settings.getPlayerLeft(), settings.getPlayerRight(), uiCallback, settings.getStartingServer(), gestureCallback);
     }
 
     void startNewGame(boolean firstInit) {
