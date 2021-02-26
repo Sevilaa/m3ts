@@ -5,10 +5,19 @@
     android:layout_margin="40dp"
     android:background="@android:color/transparent"
     android:id="@+id/scan_overlay">
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:src="@drawable/tilt_left"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"
+    />
     <TextView
+        android:id="@+id/scan_text"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
+        android:layout_marginTop="100dp"
         android:text="@string/scanText"
         android:textColor="@color/primary_light"/>
     <View

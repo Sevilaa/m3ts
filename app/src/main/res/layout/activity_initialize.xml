@@ -48,6 +48,35 @@
             android:id="@+id/init_tableSurface"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="roll: "
+            android:textSize="20dp"
+            android:id="@+id/roll"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:textColor="@color/display_serving"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="pitch: "
+            android:textSize="20dp"
+            android:id="@+id/pitch"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="30dp"
+            android:layout_alignParentRight="true"
+            android:textColor="@color/display_serving"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="az: "
+            android:textSize="20dp"
+            android:layout_marginTop="60dp"
+            android:id="@+id/az"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:textColor="@color/display_serving"/>
     </RelativeLayout>
     <FrameLayout
         android:id="@+id/init_fragmentPlaceholder"
