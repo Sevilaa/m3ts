@@ -53,6 +53,10 @@ public class InitTrackerHandler extends android.os.Handler implements CameraThre
         }
     }
 
+    public void setIsReadingQRCode(boolean isReadingQRCode) {
+        this.isReadingQRCode = isReadingQRCode;
+    }
+
     @Override
     public void onCameraRender() {
         // no implementation

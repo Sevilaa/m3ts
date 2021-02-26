@@ -122,6 +122,12 @@
     <!-- Tracker Init -->
     <string name="tiLoadingText">Sending Frame…</string>
     <string name="tiWaitingText">Selecting corners…</string>
+    <string name="adjustDeviceTiltLeftText">Tilt the device to the left</string>
+    <string name="adjustDeviceTiltRightText">Tilt the device to the right</string>
+    <string name="adjustDeviceRollTopText">Roll the device down from the top</string>
+    <string name="adjustDeviceRollBottomText">Roll the device up from the bottom</string>
+    <string name="adjustDeviceRollDegreeText">Roll: %1$d°</string>
+    <string name="adjustDeviceTiltDegreeText">Tilt: %1$d°</string>
 
     <!-- Movie Player Activity -->
     <string-array name="prefCameraFacingNames">
