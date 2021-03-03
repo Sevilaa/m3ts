@@ -57,7 +57,7 @@ public final class LiveActivity extends MatchVisualizeActivity {
         super.init();
         if (!mConfig.isDisableDetection() && ismSurfaceHolderReady()) {
             Table table = trySettingTableLocationFromIntent();
-            mHandler.init(mConfig, this.getCameraWidth(), this.getCameraHeight(), table);
+            mHandler.init(mConfig, this.getCameraWidth(), this.getCameraHeight(), table, this.getCameraHorizontalViewAngle());
             mHandler.startDetections();
         }
     }

@@ -311,6 +311,6 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
 
     @Override
     public void onGestureDetected() {
-        this.state = State.WAIT_FOR_SERVE;
+        resume();
     }
 }

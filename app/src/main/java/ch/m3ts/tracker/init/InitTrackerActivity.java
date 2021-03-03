@@ -118,6 +118,7 @@ public final class InitTrackerActivity extends CameraPreviewActivity implements 
     }
 
     void enterPubNubRoom(String roomId) {
+        mSensorManager.unregisterListener(this);
         this.trackerPubNub = PubNubFactory.createTrackerPubNub(this, roomId);
         this.trackerPubNub.setInitTrackerCallback((InitTrackerCallback) this.cameraCallback);
     }

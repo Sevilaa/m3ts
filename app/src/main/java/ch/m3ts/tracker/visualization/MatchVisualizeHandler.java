@@ -70,7 +70,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     private TrackerPubNub trackerPubNub;
     private UICallback uiCallback;
     private ZPositionCalc calc;
-    private final double viewingAngle;
+    private double viewingAngle;
 
     public MatchVisualizeHandler(@NonNull MatchVisualizeActivity activity, String matchID, boolean useScreenForUICallback) {
         mActivity = new WeakReference<>(activity);
@@ -89,8 +89,8 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
                 this.useScreenForUICallback = true;
             }
         }
-        viewingAngle = activity.getCameraHorizontalViewAngle();
-        Log.d("Camera Viewing Angle: "+activity.getCameraHorizontalViewAngle());
+        this.viewingAngle = activity.getCameraHorizontalViewAngle();
+        Log.d("Camera Viewing Angle: "+this.viewingAngle);
     }
 
     public void initMatch(Side servingSide, MatchType matchType, Player playerLeft, Player playerRight) {
@@ -234,14 +234,14 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         }
     }
 
-    public void init(Config config, int srcWidth, int srcHeight, Table table) {
+    public void init(Config config, int srcWidth, int srcHeight, Table table, double viewingAngle) {
         this.table = table;
         this.videoScaling = new VideoScaling(srcWidth, srcHeight);
         this.config = config;
         List<EventDetectionCallback> callbacks = new ArrayList<>();
         callbacks.add(this.match.getReferee());
         callbacks.add(this);
-        this.calc = new ZPositionCalc(this.viewingAngle, table.getWidth(), this.videoScaling.getVideoWidth());
+        this.calc = new ZPositionCalc(viewingAngle, table.getWidth(), srcWidth);
         eventDetector = new EventDetector(config, srcWidth, srcHeight, callbacks, tracks, this.table, this.calc);
     }
 

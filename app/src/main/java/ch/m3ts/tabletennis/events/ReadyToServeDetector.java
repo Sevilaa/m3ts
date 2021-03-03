@@ -9,6 +9,7 @@ import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
+import ch.m3ts.Log;
 import ch.m3ts.helper.OpenCVHelper;
 import ch.m3ts.tabletennis.Table;
 import ch.m3ts.tabletennis.helper.Side;
@@ -25,7 +26,6 @@ public class ReadyToServeDetector {
     private ReadyToServeCallback callback;
     private Side server;
     private int gestureFrameCounter = 0;
-    private boolean invertedSegmentationOn = true;
     private final double PERCENTAGE_THRESHOLD = 0.15;
     private final int GESTURE_HOLD_TIME_IN_FRAMES = 15;
     private final double GESTURE_AREA_PERCENTAGE_RELATIVE_TO_TABLE = 0.1;
@@ -72,14 +72,10 @@ public class ReadyToServeDetector {
         //OpenCVHelper.saveImage(yuv, "yuv");
         Mat bgr = convertYUVToBGRInAreaSize(yuv);
 
-        Mat mask;
-        // TODO determine best variant
-        if(invertedSegmentationOn) {
-            mask = segmentRedColorViaInverting(bgr);
-        } else {
-            mask = segmentRedColor(bgr);
-        }
-        double test = Core.countNonZero(mask) / (double)mask.total();
+        Mat maskWithInvert = segmentRedColorViaInverting(bgr);
+        Mat maskWithTwoThresh = segmentRedColor(bgr);
+        Mat mask = new Mat();
+        Core.bitwise_or(maskWithInvert, maskWithTwoThresh, mask);
         return Core.countNonZero(mask) / (double)mask.total();
     }
 
@@ -100,10 +96,12 @@ public class ReadyToServeDetector {
         int width = (int) (this.table.getWidth() * GESTURE_AREA_PERCENTAGE_RELATIVE_TO_TABLE);
 
         Point position = this.table.getCornerDownLeft();
+        int positionX = position.x;
         if(this.server == Side.RIGHT) {
             position = this.table.getCornerDownRight();
+            positionX = position.x - width;
         }
-        return new Rect(position.x - width/2, position.y - width/2, width, width);
+        return new Rect(positionX, position.y - width/2, width, width);
     }
 
     /**

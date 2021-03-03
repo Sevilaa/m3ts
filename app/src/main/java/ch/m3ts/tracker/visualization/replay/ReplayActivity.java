@@ -142,7 +142,7 @@ public class ReplayActivity extends MatchVisualizeActivity implements OnItemSele
                 Config mConfig = new Config(this);
                 Table table = trySettingTableLocationFromXML(mMovieFiles[mSelectedMovie]);
                 if(table != null) {
-                    mHandler.init(mConfig, player.getVideoWidth(), player.getVideoHeight(), table);
+                    mHandler.init(mConfig, player.getVideoWidth(), player.getVideoHeight(), table, VIEWING_ANGLE_HORIZONTAL);
                     mHandler.startDetections();
                 } else {
                     Toast.makeText(this, "unable to initialize, please select the table again", Toast.LENGTH_LONG).show();
