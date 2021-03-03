@@ -39,6 +39,7 @@ public final class InitTrackerActivity extends CameraPreviewActivity implements 
     private static final String SERVING_SIDE_PARAM = "SERVING_SIDE";
     private static final String MATCH_ID = "MATCH_ID";
     private static final int MAX_ALLOWED_ADJUSTMENT_OFFSET = 3;
+    private static final int MAX_ALLOWED_ADJUSTMENT_OFFSET_TOP = 20;
     private TrackerPubNub trackerPubNub;
     private SensorManager mSensorManager;
     private Sensor accelerometer;
@@ -159,7 +160,7 @@ public final class InitTrackerActivity extends CameraPreviewActivity implements 
                         changeAdjustmentInfo(R.drawable.tilt_right, R.string.adjustDeviceTiltRightText);
                     } else if (pitchDegrees < -1 * MAX_ALLOWED_ADJUSTMENT_OFFSET) {
                         changeAdjustmentInfo(R.drawable.tilt_left, R.string.adjustDeviceTiltLeftText);
-                    } else if (rollDegrees < -90 - MAX_ALLOWED_ADJUSTMENT_OFFSET) {
+                    } else if (rollDegrees < -90 - MAX_ALLOWED_ADJUSTMENT_OFFSET_TOP) {
                         changeAdjustmentInfo(R.drawable.roll_back, R.string.adjustDeviceRollBottomText);
                     } else if (rollDegrees > -90 + MAX_ALLOWED_ADJUSTMENT_OFFSET) {
                         changeAdjustmentInfo(R.drawable.roll_front, R.string.adjustDeviceRollTopText);
