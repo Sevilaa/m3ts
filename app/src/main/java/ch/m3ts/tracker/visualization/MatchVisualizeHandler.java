@@ -69,8 +69,6 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     private boolean waitingForGesture = false;
     private TrackerPubNub trackerPubNub;
     private UICallback uiCallback;
-    private ZPositionCalc calc;
-    private double viewingAngle;
 
     public MatchVisualizeHandler(@NonNull MatchVisualizeActivity activity, String matchID, boolean useScreenForUICallback) {
         mActivity = new WeakReference<>(activity);
@@ -89,8 +87,8 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
                 this.useScreenForUICallback = true;
             }
         }
-        this.viewingAngle = activity.getCameraHorizontalViewAngle();
-        Log.d("Camera Viewing Angle: "+this.viewingAngle);
+        double viewingAngle = activity.getCameraHorizontalViewAngle();
+        Log.d("Camera Viewing Angle: "+ viewingAngle);
     }
 
     public void initMatch(Side servingSide, MatchType matchType, Player playerLeft, Player playerRight) {
@@ -241,8 +239,8 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         List<EventDetectionCallback> callbacks = new ArrayList<>();
         callbacks.add(this.match.getReferee());
         callbacks.add(this);
-        this.calc = new ZPositionCalc(viewingAngle, table.getWidth(), srcWidth);
-        eventDetector = new EventDetector(config, srcWidth, srcHeight, callbacks, tracks, this.table, this.calc);
+        ZPositionCalc calc = new ZPositionCalc(viewingAngle, table.getWidth(), srcWidth);
+        eventDetector = new EventDetector(config, srcWidth, srcHeight, callbacks, tracks, this.table, calc);
     }
 
     public void startDetections() {

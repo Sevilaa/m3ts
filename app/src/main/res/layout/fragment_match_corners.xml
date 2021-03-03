@@ -55,8 +55,8 @@
         android:layout_marginEnd="16dp"
         android:background="@drawable/radius_background"
         android:contentDescription="@string/contentDescRevert"
-        android:padding="4dp"
-        android:src="@android:drawable/ic_menu_revert"
+        android:padding="8dp"
+        android:src="@drawable/undo"
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"/>
     <include layout="@layout/corner_selection_views" />
@@ -71,20 +71,20 @@
         android:elevation="8dp"
         android:text="@string/initStartGameButtonLabel"
         android:textColor="@android:color/secondary_text_light"
-        android:textSize="30sp"
+        android:textSize="18sp"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
         android:visibility="gone"/>
+
     <GridLayout
         android:id="@+id/init_description"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/radius_background"
-        android:padding="16dp"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
+        android:layout_marginTop="8dp"
         android:columnCount="1"
+        android:padding="16dp"
         android:rowCount="2">
 
         <TextView
@@ -92,8 +92,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/initMarkTableLabel"
-            android:textColor="@android:color/secondary_text_light"
-            android:textSize="24sp"/>
+            android:textColor="@color/primary_light"
+            android:textSize="30sp" />
 
         <TextView
             android:id="@+id/init_txtMarkTableLabelExplanation"
@@ -101,8 +101,8 @@
             android:layout_height="wrap_content"
             android:text="@string/initMarkTableLabelExplanation"
             android:textAlignment="center"
-            android:textColor="@android:color/secondary_text_light"
-            android:textSize="12sp" />
+            android:textColor="@color/primary_light"
+            android:textSize="18sp" />
     </GridLayout>
 
 </RelativeLayout>

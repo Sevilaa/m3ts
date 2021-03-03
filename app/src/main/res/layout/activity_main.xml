@@ -36,7 +36,7 @@
                 android:text="@string/appNameLong"
                 android:textStyle="normal"
                 android:textAlignment="center"
-                android:textSize="16sp"
+                android:textSize="18sp"
                 android:textColor="@android:color/secondary_text_light"/>
             <Button
                 android:id="@+id/mainUseAsTrackerBtn"
@@ -55,7 +55,7 @@
                 android:layout_marginStart="4dp"
                 android:layout_marginEnd="4dp"
                 android:textColor="#fff"
-                android:textSize="24sp"/>
+                android:textSize="18sp"/>
             <Button
                 android:id="@+id/mainUseAsDisplayBtn"
                 android:onClick="onUseAsDisplay"
@@ -74,7 +74,7 @@
                 android:layout_marginBottom="8dp"
                 android:text="@string/mainDisplayBtnLabel"
                 android:textColor="#fff"
-                android:textSize="24sp"/>
+                android:textSize="18sp"/>
         </GridLayout>
 
         <ImageButton

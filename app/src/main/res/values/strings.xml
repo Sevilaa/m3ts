@@ -103,8 +103,8 @@
 
     <!-- MatchSettings Fragment -->
     <string name="msTitle">Match Settings</string>
-    <string name="msType">Match Type</string>
-    <string name="msServer">Starting Server Side</string>
+    <string name="msType">Choose Match Length</string>
+    <string name="msServer">Choose Server</string>
     <string name="msBtn">Create Match</string>
 
     <!-- MatchWin Fragment -->

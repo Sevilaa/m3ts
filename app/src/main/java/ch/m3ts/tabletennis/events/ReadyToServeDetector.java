@@ -100,6 +100,7 @@ public class ReadyToServeDetector {
         if(this.server == Side.RIGHT) {
             position = this.table.getCornerDownRight();
             positionX = position.x - width;
+            if(positionX<0) positionX = 0;
         }
         return new Rect(positionX, position.y - width/2, width, width);
     }

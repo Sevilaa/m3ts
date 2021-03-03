@@ -59,7 +59,7 @@
                 android:layout_gravity="center"
                 android:text="@string/mwStartNew"
                 android:textColor="#fff"
-                android:textSize="24sp"/>
+                android:textSize="18sp"/>
             <Button
                 android:id="@+id/back_to_menu"
                 android:layout_width="wrap_content"
@@ -79,7 +79,7 @@
                 android:layout_marginBottom="8dp"
                 android:text="@string/mwMenu"
                 android:textColor="#fff"
-                android:textSize="24sp"/>
+                android:textSize="18sp"/>
         </GridLayout>
     </RelativeLayout>
 </RelativeLayout>

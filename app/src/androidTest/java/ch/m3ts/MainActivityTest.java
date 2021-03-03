@@ -55,9 +55,9 @@ public class MainActivityTest {
                 .perform(click());
 
         // check if we are at the MatchActivity
-        onView(withId(R.id.init_spinnerSelectMatchType))
+        onView(withId(R.id.match_type_bo1))
                 .check(matches(isDisplayed()));
-        onView(withId(R.id.init_spinnerSelectServingSide))
+        onView(withId(R.id.right_side_server_icon))
                 .check(matches(isDisplayed()));
         onView(withId(R.id.init_sideAndMatchTypeDoneBtn))
                 .check(matches(isDisplayed()));
@@ -83,24 +83,18 @@ public class MainActivityTest {
 
     private void checkMatchSettingsAndQRCode() {
         // check if all components are there
-        onView(withId(R.id.init_spinnerSelectMatchType))
+        onView(withId(R.id.match_type_bo3))
                 .check(matches(isDisplayed()));
-        onView(withId(R.id.init_spinnerSelectServingSide))
+        onView(withId(R.id.right_side_server_icon))
                 .check(matches(isDisplayed()));
         onView(withId(R.id.init_sideAndMatchTypeDoneBtn))
                 .check(matches(isDisplayed()));
 
         // perform some match setting selections...
-        onView(withId(R.id.init_spinnerSelectMatchType))
+        onView(withId(R.id.match_type_bo3))
                 .perform(click());
-        onData(anything()).atPosition(1).perform(click());
-        onView(withId(R.id.init_spinnerSelectMatchType))
-                .check(matches(withSpinnerText("BO3")));
-        onView(withId(R.id.init_spinnerSelectServingSide))
+        onView(withId(R.id.right_side_server_icon))
                 .perform(click());
-        onData(anything()).atPosition(1).perform(click());
-        onView(withId(R.id.init_spinnerSelectServingSide))
-                .check(matches(withSpinnerText("RIGHT")));
         onView(withId(R.id.init_sideAndMatchTypeDoneBtn))
                 .perform(click());
 

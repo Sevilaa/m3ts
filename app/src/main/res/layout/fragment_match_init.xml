@@ -11,29 +11,31 @@
         android:layout_centerVertical="true"
         android:columnCount="1"
         android:rowCount="4">
+
         <TextView
             android:id="@+id/miTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
             android:layout_marginEnd="4dp"
+            android:text="@string/miTitle"
             android:textAlignment="center"
-            android:textStyle="bold"
-            android:textSize="50sp"
             android:textColor="@android:color/secondary_text_light"
-            android:text="@string/miTitle" />
+            android:textSize="30sp"
+            android:textStyle="bold" />
+
         <TextView
             android:id="@+id/miSubTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
             android:layout_marginEnd="4dp"
-            android:textStyle="normal"
-            android:textAlignment="center"
-            android:textSize="16sp"
-            android:textColor="@android:color/secondary_text_light"
+            android:paddingBottom="40dp"
             android:text="@string/miSubTitle"
-            android:paddingBottom="40dp"/>
+            android:textAlignment="center"
+            android:textColor="@android:color/secondary_text_light"
+            android:textSize="18sp"
+            android:textStyle="normal" />
         <ImageView
             android:id="@+id/qr_code"
             android:layout_width="wrap_content"
