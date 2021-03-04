@@ -43,10 +43,19 @@
     <string name="prefSlowPreviewSummary">Update only once in 2 seconds</string>
     <string name="prefHeaderDetection">Detection</string>
     <string name="prefColorSpace">Color space</string>
-    <string name="prefColorSpaceDefault">yuv</string>
+    <string name="prefColorSpaceDefault">gray</string>
     <string name="prefProcRes">Processing resolution</string>
-    <string name="prefProcResDefault">300</string>
+    <string name="prefProcResDefault">600</string>
     <string name="prefHeaderVelocity">Velocity estimation</string>
+
+    <!-- Game settings -->
+    <string name="prefGame">Game</string>
+    <string name="prefPlayer1Name">Name Player 1</string>
+    <string name="prefPlayer1NameDefault">Hans</string>
+    <string name="prefPlayer1Key">player_1</string>
+    <string name="prefPlayer2Name">Name Player 2</string>
+    <string name="prefPlayer2NameDefault">Peter</string>
+    <string name="prefPlayer2Key">player_2</string>
 
     <!-- Detection settings -->
     <string name="prefVelocityEstimationMode">Velocity estimation mode</string>
@@ -118,6 +127,12 @@
 
     <!-- Scan Overlay -->
     <string name="scanText">Scan the QR code from the display</string>
+
+    <!-- Quitting Match Messages -->
+    <string name="quitMatchTitle">Quit match</string>
+    <string name="quitMatchMessage">Are you sure you want to quit the ongoing match?\nYou will be sent back to the main screen.</string>
+    <string name="quitMatchProceed">Quit Match</string>
+    <string name="quitMatchCancel">Cancel</string>
 
     <!-- Tracker Init -->
     <string name="tiLoadingText">Sending Frame…</string>

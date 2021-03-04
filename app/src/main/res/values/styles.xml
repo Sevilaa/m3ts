@@ -1,15 +1,40 @@
 <resources>
+    <style name="Main" parent="@android:style/Theme.Material.NoActionBar.Fullscreen">
+        <item name="android:colorAccent">@color/player_left_background</item>
+    </style>
 
-    <style name="Main" parent="@android:style/Theme.Material.NoActionBar.Fullscreen" />
+    <style name="Menu" parent="@android:style/Theme.Material.Light.NoActionBar.Fullscreen">
+        <item name="android:colorAccent">@color/player_left_background</item>
+    </style>
 
-    <style name="Menu" parent="@android:style/Theme.Material.Light.NoActionBar.Fullscreen" />
+    <style name="PlayMovieSurfaceActivity" parent="@android:style/Theme.NoTitleBar.Fullscreen">
+        <item name="android:colorAccent">@color/player_left_background</item>
+    </style>
 
-    <style name="PlayMovieSurfaceActivity" parent="@android:style/Theme.NoTitleBar.Fullscreen" />
+    <style name="Benchmarking" parent="@android:style/Theme.Material.NoActionBar.Fullscreen">
+        <item name="android:colorAccent">@color/player_left_background</item>
+    </style>
 
-    <style name="Benchmarking" parent="@android:style/Theme.Material.NoActionBar.Fullscreen" />
+    <style name="Recording" parent="@android:style/Theme.Material.NoActionBar.Fullscreen">
+        <item name="android:colorAccent">@color/player_left_background</item>
+    </style>
 
-    <style name="Recording" parent="@android:style/Theme.Material.NoActionBar.Fullscreen" />
+    <style name="Playback" parent="@android:style/Theme.Material.NoActionBar.Fullscreen" >
+        <item name="android:colorAccent">@color/player_left_background</item>
+    </style>
 
-    <style name="Playback" parent="@android:style/Theme.Material.NoActionBar.Fullscreen" />
+    <style name="Settings" parent="@android:style/Theme.Material.NoActionBar.Fullscreen">
+        <item name="android:windowBackground">@color/primary_dark</item>
+        <item name="android:textColor">@color/primary_light</item>
+        <item name="android:colorAccent">@color/player_left_background</item>
+        <item name="android:textColorHighlight">@color/primary_light</item>
+        <item name="android:listViewStyle">@style/listViewPrefs</item>
+    </style>
+
+    <style name="listViewPrefs" parent="@android:style/Widget.ListView">
+        <item name="android:background">@color/primary_dark</item>
+        <item name="android:cacheColorHint">@color/primary_dark</item>
+        <item name="android:textColor">@color/primary_light</item>
+    </style>
 
 </resources>

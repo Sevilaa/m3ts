@@ -75,7 +75,8 @@ public class SettingsActivity extends PreferenceActivity {
                 || CapturePreferenceFragment.class.getName().equals(fragmentName)
                 || DetectionPreferenceFragment.class.getName().equals(fragmentName)
                 || VelocityPreferenceFragment.class.getName().equals(fragmentName)
-                || AdvancedPreferenceFragment.class.getName().equals(fragmentName);
+                || AdvancedPreferenceFragment.class.getName().equals(fragmentName)
+                || GamePreferenceFragment.class.getName().equals(fragmentName);
     }
 
     private static class SummaryUpdater implements Preference.OnPreferenceChangeListener {
@@ -152,6 +153,16 @@ public class SettingsActivity extends PreferenceActivity {
             bindToSummaryUpdater(findPreference("objectDiameterPicker"), sSummaryUpdater);
             bindToSummaryUpdater(findPreference("objectDiameterCustom"), sSummaryUpdater);
             bindToSummaryUpdater(findPreference("frameRate"), sSummaryUpdater);
+        }
+    }
+
+    public static class GamePreferenceFragment extends PreferenceFragmentBase {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.setXmlResourceId(R.xml.pref_game);
+            super.onCreate(savedInstanceState);
+            bindToSummaryUpdater(findPreference(getString(R.string.prefPlayer1Key)), sSummaryUpdater);
+            bindToSummaryUpdater(findPreference(getString(R.string.prefPlayer2Key)), sSummaryUpdater);
         }
     }
 

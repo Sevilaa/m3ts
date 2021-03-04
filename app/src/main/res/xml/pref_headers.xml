@@ -1,5 +1,9 @@
 <preference-headers xmlns:android="http://schemas.android.com/apk/res/android">
     <header
+        android:fragment="ch.m3ts.SettingsActivity$GamePreferenceFragment"
+        android:icon="@drawable/game_settings_icon"
+        android:title="@string/prefGame"/>
+    <header
         android:fragment="ch.m3ts.SettingsActivity$CapturePreferenceFragment"
         android:icon="@drawable/settings_capture"
         android:title="@string/prefHeaderCapture"/>

@@ -32,12 +32,6 @@
             android:screenOrientation="landscape">
         </activity>
         <activity
-            android:name="ch.m3ts.initialize.InitializeActivity"
-            android:label="@string/app_name"
-            android:screenOrientation="landscape"
-            android:theme="@style/Recording">
-        </activity>
-        <activity
             android:name="ch.m3ts.tracker.init.InitTrackerActivity"
             android:label="@string/app_name"
             android:screenOrientation="landscape"
@@ -57,11 +51,8 @@
         <activity
             android:name="ch.m3ts.SettingsActivity"
             android:label="@string/app_name"
-            android:parentActivityName="ch.m3ts.tracker.visualization.live.LiveActivity"
+            android:theme="@style/Settings"
             android:screenOrientation="landscape">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="ch.m3ts.tracker.visualization.live.LiveActivity" />
         </activity>
         <activity
             android:name="ch.m3ts.tracker.visualization.replay.ReplayActivity"

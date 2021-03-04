@@ -41,7 +41,7 @@
             <Button
                 android:id="@+id/mainUseAsTrackerBtn"
                 android:onClick="onUseAsTracker"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/radius_background"
                 android:backgroundTint="@android:color/secondary_text_light"
@@ -59,7 +59,7 @@
             <Button
                 android:id="@+id/mainUseAsDisplayBtn"
                 android:onClick="onUseAsDisplay"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/radius_background"
                 android:backgroundTint="@android:color/secondary_text_light"
