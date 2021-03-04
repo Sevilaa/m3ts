@@ -75,6 +75,12 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
     }
 
     @Override
+    public void onPause() {
+        this.tts.shutdown();
+        super.onPause();
+    }
+
+    @Override
     public void onMatchEnded(String winnerName) {
         tts.stop();
         tts.shutdown();

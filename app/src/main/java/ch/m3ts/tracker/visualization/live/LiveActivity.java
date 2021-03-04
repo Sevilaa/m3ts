@@ -1,5 +1,8 @@
 package ch.m3ts.tracker.visualization.live;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -7,6 +10,8 @@ import android.view.Display;
 import android.widget.Toast;
 
 import ch.m3ts.Log;
+import ch.m3ts.MainActivity;
+import ch.m3ts.helper.QuitAlertDialogHelper;
 import ch.m3ts.tabletennis.Table;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.MatchType;
@@ -31,17 +36,19 @@ public final class LiveActivity extends MatchVisualizeActivity {
     private MatchType matchType;
     private Side servingSide;
     private String matchId;
+    private AlertDialog alertDialog;
 
     @Override
     protected void onCreate(android.os.Bundle savedBundle) {
         super.onCreate(savedBundle);
+        this.mConfig = new Config(this);
         getDataFromIntent();
-        Player playerLeft = new Player("Hannes");
-        Player playerRight = new Player("Kannes");
+        Player playerLeft = new Player(mConfig.getPlayer1Name());
+        Player playerRight = new Player(mConfig.getPlayer2Name());
         this.mHandler = new LiveHandler(this, this.matchId);
         this.mHandler.initMatch(this.servingSide, this.matchType, playerLeft, playerRight);
         cameraCallback = this.mHandler;
-        this.mConfig = new Config(this);
+        this.alertDialog = QuitAlertDialogHelper.makeDialog(this);
         Log.d("Found match: " +matchId);
         this.onPause();
     }
@@ -84,7 +91,13 @@ public final class LiveActivity extends MatchVisualizeActivity {
     @Override
     protected void onPause() {
         mHandler.stopDetections();
+        alertDialog.dismiss();
         super.onPause();
+    }
+
+    @Override
+    public void onBackPressed() {
+        alertDialog.show();
     }
 
     private Table trySettingTableLocationFromIntent() {

@@ -62,4 +62,11 @@ public class MatchWonActivity extends Activity {
         startActivity(intent);
         this.finish();
     }
+
+    @Override
+    public void onBackPressed() {
+        animationDrawable.stop();
+        startActivity(new Intent(getApplicationContext(), MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+        this.finish();
+    }
 }
