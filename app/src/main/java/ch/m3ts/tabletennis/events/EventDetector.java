@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import ch.m3ts.Log;
 import ch.m3ts.tabletennis.Table;
 import ch.m3ts.tabletennis.events.timeouts.TimeoutTimerTask;
 import ch.m3ts.tabletennis.helper.DirectionX;
@@ -130,8 +129,7 @@ public class EventDetector implements Lib.Callback {
             double distanceInMm = Math.sqrt(Math.pow(dx,2)+Math.pow(dy,2)) * mmPerPixelOnFrontPlane;
             double dTime = (double) Math.abs(tracks.get(tracks.size()-1).getLastDetectionTime() - tracks.get(tracks.size()-2).getLastDetectionTime()) / 1_000_000_000;
             if(dTime == 0) dTime = 1.0/30.0;
-            if((distanceInMm/1000)/(1.0/30.0) >= 32) {
-                Log.d("removos senioros: "+distanceInMm+"mm with "+dx+"px and "+dTime);
+            if((distanceInMm/1000)/(dTime) >= 32) {
                 tracks.remove(1);
             }
 
