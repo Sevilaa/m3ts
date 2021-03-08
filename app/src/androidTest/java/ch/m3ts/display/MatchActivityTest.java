@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.test.InstrumentationTestCase;
+import android.view.Display;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -108,38 +109,42 @@ public class MatchActivityTest extends InstrumentationTestCase {
     public void testSelectFourCorners() throws Exception {
         switchToCornerSelection();
         findAllViewsOfCornerSelection();
-        final int[] xLocations = new int[4];
-        final int[] yLocations = new int[4];
+        final int[] xLocations = new int[2];
+        final int[] yLocations = new int[2];
         Point[] corners = matchSelectCornerFragment.getTableCorners();
-        assertEquals(4, corners.length);
+        assertEquals(2, corners.length);
         for (Point corner : corners) {
             assertNull(corner);
         }
 
-        // long click 4 times on random locations on the screen
-        for (int i = 0; i<4; i++) {
-            int x = Math.round(100 * (float) Math.random());
-            int y = Math.round(100 * (float) Math.random());
-            xLocations[i] = x;
-            yLocations[i] = y;
-            onView(withId(R.id.init_zoomLayout))
-                    .perform(longClickXY(x,y));
-            assertNotNull(corners[i]);
-            assertEquals(x, corners[i].x);
-            assertEquals(y, corners[i].y);
-            assertEquals(String.valueOf(i+1), txtSelectedCorners.getText());
-        }
+        // long click once on a random location on the screen, the other corner should appear
+        // mirrored to the first one (y-axis mirror)
+        int x = Math.round(100 * (float) Math.random());
+        int y = Math.round(100 * (float) Math.random());
+        xLocations[0] = x;
+        yLocations[0] = y;
+        Display display = matchActivity.getWindowManager().getDefaultDisplay();
+        Point displaySize = new Point();
+        display.getSize(displaySize);
+        xLocations[1] = displaySize.x - x;
+        yLocations[1] = y;
+
+        onView(withId(R.id.init_zoomLayout))
+                .perform(longClickXY(x,y));
+        assertNotNull(corners[0]);
+        assertEquals(x, corners[0].x);
+        assertEquals(y, corners[0].y);
+        assertEquals(String.valueOf(2), txtSelectedCorners.getText());
 
         // long click some more
         testLongClickingScreenTooManyTimes(xLocations, yLocations);
 
-        // now de-select all corners by hitting the revert button 4 times
-        for (int i=3; i>=0; i--) {
-            onView(withId(R.id.init_revertButton))
-                    .perform(click());
-            assertNull(corners[i]);
-            assertNull(matchActivity.findViewById(R.id.init_startGameBtn));
-        }
+        // now de-select all corners by hitting the revert button
+        onView(withId(R.id.init_revertButton))
+                .perform(click());
+        assertNull(corners[0]);
+        assertNull(corners[1]);
+        assertNull(matchActivity.findViewById(R.id.init_startGameBtn));
 
         // hit revert button some more
         testClickingRevertTooManyTimes();
@@ -342,7 +347,7 @@ public class MatchActivityTest extends InstrumentationTestCase {
                     .perform(click());
 
             Point[] corners = matchSelectCornerFragment.getTableCorners();
-            assertEquals(4, corners.length);
+            assertEquals(2, corners.length);
             for (Point corner : corners) {
                 assertNull(corner);
             }
@@ -360,8 +365,8 @@ public class MatchActivityTest extends InstrumentationTestCase {
         }
 
         Point[] corners = matchSelectCornerFragment.getTableCorners();
-        assertEquals(4, corners.length);
-        for (int i=0; i<4; i++) {
+        assertEquals(2, corners.length);
+        for (int i=0; i<2; i++) {
             assertEquals(xLocations[i], corners[i].x);
             assertEquals(yLocations[i], corners[i].y);
         }

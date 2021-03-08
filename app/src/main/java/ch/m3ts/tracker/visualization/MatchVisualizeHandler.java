@@ -1,6 +1,7 @@
 package ch.m3ts.tracker.visualization;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -54,6 +55,9 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     private EventDetector eventDetector;
     private ReadyToServeDetector serveDetector;
     private Paint p;
+    private Paint oofP;
+    private Paint bounceP;
+    private Paint trackP;
     private VideoScaling videoScaling;
     private Config config;
     private TrackSet tracks;
@@ -71,13 +75,13 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     private UICallback uiCallback;
 
     public MatchVisualizeHandler(@NonNull MatchVisualizeActivity activity, String matchID, boolean useScreenForUICallback) {
-        mActivity = new WeakReference<>(activity);
+        this.mActivity = new WeakReference<>(activity);
         this.useScreenForUICallback = useScreenForUICallback;
-        tracks = TrackSet.getInstance();
-        tracks.clear();
-        hasNewTable = true;
-        p = new Paint();
-        uiCallback = this;
+        this.tracks = TrackSet.getInstance();
+        this.tracks.clear();
+        this.hasNewTable = true;
+        this.uiCallback = this;
+        initColors(activity);
         if (!useScreenForUICallback) {
             try {
                 this.trackerPubNub = PubNubFactory.createTrackerPubNub(activity.getApplicationContext(), matchID);
@@ -87,8 +91,6 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
                 this.useScreenForUICallback = true;
             }
         }
-        double viewingAngle = activity.getCameraHorizontalViewAngle();
-        Log.d("Camera Viewing Angle: "+ viewingAngle);
     }
 
     public void initMatch(Side servingSide, MatchType matchType, Player playerLeft, Player playerRight) {
@@ -280,8 +282,6 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
             }
             c1 = this.videoScaling.scalePoint(c1);
             c2 = this.videoScaling.scalePoint(c2);
-            p.setColor(Color.CYAN);
-            p.setStrokeWidth(5f);
             canvas.drawLine(c1.x, c1.y, c2.x, c2.y, p);
         }
         Point closeNetEnd = this.videoScaling.scalePoint(table.getCloseNetEnd());
@@ -312,6 +312,17 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         return this.serveDetector;
     }
 
+    private void initColors(Activity activity) {
+        this.p = new Paint();
+        this.p.setColor(activity.getColor(R.color.accent_color));
+        this.p.setStrokeWidth(5f);
+        this.oofP = new Paint();
+        oofP.setColor(Color.rgb(255, 165, 0));
+        this.bounceP = new Paint();
+        bounceP.setColor(Color.RED);
+        this.trackP = new Paint();
+    }
+
     private void startMatch() {
         setOnSwipeListener();
         refreshDebugTextViews();
@@ -323,17 +334,17 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         Lib.Detection pre = t.getLatest();
         cz.fmo.util.Color.RGBA r = t.getColor();
         int c = Color.argb(255, Math.round(r.rgba[0] * 255), Math.round(r.rgba[1] * 255), Math.round(r.rgba[2] * 255));
-        p.setColor(c);
-        p.setStrokeWidth(pre.radius);
+        trackP.setColor(c);
+        trackP.setStrokeWidth(pre.radius);
         int count = 0;
         while (pre != null && count < 2) {
-            canvas.drawCircle(this.videoScaling.scaleX(pre.centerX), this.videoScaling.scaleY(pre.centerY), this.videoScaling.scaleY(pre.radius), p);
+            canvas.drawCircle(this.videoScaling.scaleX(pre.centerX), this.videoScaling.scaleY(pre.centerY), this.videoScaling.scaleY(pre.radius), trackP);
             if (pre.predecessor != null) {
                 int x1 = this.videoScaling.scaleX(pre.centerX);
                 int x2 = this.videoScaling.scaleX(pre.predecessor.centerX);
                 int y1 = this.videoScaling.scaleY(pre.centerY);
                 int y2 = this.videoScaling.scaleY(pre.predecessor.centerY);
-                canvas.drawLine(x1, y1, x2, y2, p);
+                canvas.drawLine(x1, y1, x2, y2, trackP);
             }
             pre = pre.predecessor;
             count++;
@@ -342,17 +353,15 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
 
     private void drawLatestOutOfFrameDetection(Canvas canvas) {
         if (latestNearlyOutOfFrame != null) {
-            p.setColor(Color.rgb(255, 165, 0));
-            p.setStrokeWidth(latestNearlyOutOfFrame.radius);
-            canvas.drawCircle(this.videoScaling.scaleX(latestNearlyOutOfFrame.centerX), this.videoScaling.scaleY(latestNearlyOutOfFrame.centerY), latestNearlyOutOfFrame.radius, p);
+            oofP.setStrokeWidth(latestNearlyOutOfFrame.radius);
+            canvas.drawCircle(this.videoScaling.scaleX(latestNearlyOutOfFrame.centerX), this.videoScaling.scaleY(latestNearlyOutOfFrame.centerY), latestNearlyOutOfFrame.radius, oofP);
         }
     }
 
     private void drawLatestBounce(Canvas canvas) {
         if(latestBounce != null) {
-            p.setColor(Color.rgb(255,0,0));
-            p.setStrokeWidth(latestBounce.radius * 2);
-            canvas.drawCircle(this.videoScaling.scaleX(latestBounce.centerX), this.videoScaling.scaleY(latestBounce.centerY), latestBounce.radius * 2, p);
+            bounceP.setStrokeWidth(latestBounce.radius * 2);
+            canvas.drawCircle(this.videoScaling.scaleX(latestBounce.centerX), this.videoScaling.scaleY(latestBounce.centerY), latestBounce.radius * 2, bounceP);
         }
     }
 
@@ -407,7 +416,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     }
 
     private void setCallbackForNewGame() {
-        if(match != null) {
+        if (match != null) {
             if (!useScreenForUICallback) {
                 this.trackerPubNub.setScoreManipulationCallback(match.getReferee());
             } else {
