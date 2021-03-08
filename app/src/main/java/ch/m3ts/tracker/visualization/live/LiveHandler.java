@@ -92,7 +92,6 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
 
     @Override
     public void onStrikeFound(Track track) {
-        Log.d("strike found!");
         if(doDrawDebugInfo) {
             super.onStrikeFound(track);
         }
