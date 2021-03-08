@@ -18,7 +18,7 @@ import cz.fmo.Lib;
  **/
 public class ReplayHandler extends MatchVisualizeHandler implements ReplayDetectionCallback {
     public ReplayHandler(@NonNull MatchVisualizeActivity activity) {
-        super(activity, "bruh_2", true);
+        super(activity);
     }
 
     public void initMatch(Side servingSide) {

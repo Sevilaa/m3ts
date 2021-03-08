@@ -26,11 +26,18 @@ public class SettingsActivity extends PreferenceActivity {
 
     private static void bindToSummaryUpdater(Preference preference, SummaryUpdater updater) {
         preference.setOnPreferenceChangeListener(updater);
-
         updater.onPreferenceChange(preference,
                 PreferenceManager
                         .getDefaultSharedPreferences(preference.getContext())
                         .getString(preference.getKey(), ""));
+    }
+
+    private static void bindToSummaryUpdaterBoolean(Preference preference, SummaryUpdater updater) {
+        preference.setOnPreferenceChangeListener(updater);
+        updater.onPreferenceChange(preference,
+                PreferenceManager
+                        .getDefaultSharedPreferences(preference.getContext())
+                        .getBoolean(preference.getKey(), false));
     }
 
     @Override
@@ -163,6 +170,7 @@ public class SettingsActivity extends PreferenceActivity {
             super.onCreate(savedInstanceState);
             bindToSummaryUpdater(findPreference(getString(R.string.prefPlayer1Key)), sSummaryUpdater);
             bindToSummaryUpdater(findPreference(getString(R.string.prefPlayer2Key)), sSummaryUpdater);
+            bindToSummaryUpdaterBoolean(findPreference(getString(R.string.prefDisplayDebugKey)), sSummaryUpdater);
         }
     }
 

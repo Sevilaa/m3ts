@@ -56,6 +56,10 @@
     <string name="prefPlayer2Name">Name Player 2</string>
     <string name="prefPlayer2NameDefault">Peter</string>
     <string name="prefPlayer2Key">player_2</string>
+    <string name="prefDisplayDebug">Display debug info</string>
+    <string name="prefDisplayDebugKey">display_debug</string>
+    <string name="prefDisplayDebugDefault">false</string>
+    <string name="prefDisplayDebugSummary">Shows debug information on the tracking device\'s display</string>
 
     <!-- Detection settings -->
     <string name="prefVelocityEstimationMode">Velocity estimation mode</string>
@@ -71,6 +75,7 @@
     <!-- Velocity estimation settings -->
     <string name="runVideoPlayer">Run video player</string>
     <string name="prefDisableDetection">Disable FMO detection</string>
+
     <string name="playerLeftDefaultName">Player 1</string>
     <string name="playerRightDefaultName">Player 2</string>
     <string name="gameScoreStart">0</string>
@@ -80,12 +85,16 @@
     <string name="debugBallShotStart">None</string>
     <string name="debugBallCountStart">0</string>
     <string name="contentDescRevert">reverts last selected corner</string>
-    <string name="initMarkTableLabel">Mark all four table corners</string>
+    <string name="initMarkTableLabel">Mark the left table corner</string>
+    <string name="trackerStatusConnectedWithDisplay">connected with display</string>
+    <string name="trackerStatusConnectedWithDisplayFail">unable to connect to display!</string>
+
     <!-- Main Activity -->
     <string name="appName">M3TS</string>
     <string name="appNameLong">mobile table tennis tracking system</string>
     <string name="mainTrackerBtnLabel">Use as Tracker</string>
     <string name="mainDisplayBtnLabel">Use as Display</string>
+
     <!-- Init Activity -->
     <string name="initMarkTableLabelExplanation">Long Press to select a corner</string>
     <string name="initCornersSelectedLabel">Corners selected: </string>
