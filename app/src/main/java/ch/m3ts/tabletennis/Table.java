@@ -16,29 +16,17 @@ import ch.m3ts.tabletennis.helper.Side;
  */
 public class Table {
     private Point[] corners;
-    private Point[] net;
+    private Point net;
 
-    public Table(@NonNull Point[] corners, @NonNull Point[] net) {
-        if (corners.length != 4) {
-           throw new NotFourCornersException(corners.length);
-        }
-
-        if (net.length != 2) {
-            throw new NotTwoNetEndsException(net.length);
+    public Table(@NonNull Point[] corners, @NonNull Point net) {
+        if (corners.length != 2) {
+           throw new NotTwoCornersException(corners.length);
         }
         this.corners = corners;
         this.net = net;
     }
 
-    public Point getFarNetEnd() {
-        return net[1];
-    }
-
     public Point getCloseNetEnd() {
-        return net[0];
-    }
-
-    public Point[] getNet() {
         return net;
     }
 
@@ -50,14 +38,6 @@ public class Table {
         return corners[1];
     }
 
-    public Point getCornerTopRight() {
-        return corners[2];
-    }
-
-    public Point getCornerTopLeft() {
-        return corners[3];
-    }
-
     public Point[] getCorners() {
         return corners;
     }
@@ -65,14 +45,12 @@ public class Table {
     public static Table makeTableFromProperties(Properties properties) {
         int x;
         int y;
-        Point[] corners = new Point[4];
-        Point[] net = new Point[2];
-        for (int i = 1; i<5; i++) {
-            if(i <= 2) {
-                x = Integer.parseInt(properties.getProperty("n"+i+"_x"));
-                y = Integer.parseInt(properties.getProperty("n"+i+"_y"));
-                net[i-1] = new Point(x,y);
-            }
+        Point net;
+        x = Integer.parseInt(properties.getProperty("n1_x"));
+        y = Integer.parseInt(properties.getProperty("n1_y"));
+        net = new Point(x,y);
+        Point[] corners = new Point[2];
+        for (int i = 1; i<3; i++) {
             x = Integer.parseInt(properties.getProperty("c"+i+"_x"));
             y = Integer.parseInt(properties.getProperty("c"+i+"_y"));
             corners[i-1] = new Point(x,y);
@@ -81,17 +59,15 @@ public class Table {
     }
 
     public static Table makeTableFromIntArray(int[] cornerInts) {
-        if (cornerInts.length < 8) throw new NotFourCornersException(cornerInts.length/2);
+        if (cornerInts.length < 4) throw new NotTwoCornersException(cornerInts.length/2);
         Point[] points = intToPointArray(cornerInts);
-        Point[] netPoints = new Point[2];
-        netPoints[0] = calcNetPoint(points[0], points[1]);
-        netPoints[1] = calcNetPoint(points[2], points[3]);
-        return new Table(points, netPoints);
+        Point net = calcNetPoint(points[0], points[1]);
+        return new Table(points, net);
     }
 
     public boolean isOnOrAbove(int x, int y) {
-        double leftThreshold = this.getCornerTopLeft().x * 0.95;
-        double rightThreshold = this.getCornerTopRight().x * 1.05;
+        double leftThreshold = this.getCornerDownLeft().x * 0.95;
+        double rightThreshold = this.getCornerDownRight().x * 1.05;
         double bottomThreshold = this.getCloseNetEnd().y;
         return (x >= leftThreshold && x <= rightThreshold && y <= bottomThreshold);
     }
@@ -100,7 +76,7 @@ public class Table {
         double leftThreshold = this.getCornerDownLeft().x;
         double rightThreshold = this.getCornerDownRight().x;
         double bottomThreshold = this.getCloseNetEnd().y;
-        double topThreshold = this.getFarNetEnd().y * 0.85;
+        double topThreshold = this.net.y * 0.85;    // 0.85 evaluated by play testing
         return (x >= leftThreshold && x <= rightThreshold && y <= bottomThreshold && y >= topThreshold);
     }
 
@@ -137,18 +113,11 @@ public class Table {
         return points;
     }
 
-    public static class NotFourCornersException extends RuntimeException {
+    public static class NotTwoCornersException extends RuntimeException {
 
-        private static final String MESSAGE = "Table needs 4 points as corners, you provided: ";
-        NotFourCornersException(int amountOfCorners) {
+        private static final String MESSAGE = "Table needs 2 points as corners, you provided: ";
+        NotTwoCornersException(int amountOfCorners) {
             super(MESSAGE + amountOfCorners);
-        }
-    }
-
-    public static class NotTwoNetEndsException extends RuntimeException {
-        private static final String MESSAGE = "Net needs 2 points which mark the end and start of the net, you provided: ";
-        NotTwoNetEndsException(int amountOfPoints) {
-            super(MESSAGE + amountOfPoints);
         }
     }
 }

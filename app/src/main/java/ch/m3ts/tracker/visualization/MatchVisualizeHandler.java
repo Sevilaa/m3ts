@@ -285,8 +285,13 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
             canvas.drawLine(c1.x, c1.y, c2.x, c2.y, p);
         }
         Point closeNetEnd = this.videoScaling.scalePoint(table.getCloseNetEnd());
-        Point farNetEnd = this.videoScaling.scalePoint(table.getFarNetEnd());
-        canvas.drawLine(closeNetEnd.x, closeNetEnd.y, farNetEnd.x, farNetEnd.y, p);
+        canvas.drawCircle(closeNetEnd.x, closeNetEnd.y, 10f, p);
+        canvas.drawLine(
+                closeNetEnd.x,
+                closeNetEnd.y,
+                closeNetEnd.x,
+                Math.round(closeNetEnd.y - 0.06 * this.videoScaling.scaleX(this.table.getWidth())), // 0.06 is relative length of a table tennis net to the table width
+                p);
         surfaceHolderTable.unlockCanvasAndPost(canvas);
     }
 

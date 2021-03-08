@@ -45,7 +45,7 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
     private TextView txtSelectedCorners;
     private String maxCorners;
     private String selectedCorners;
-    private final Point[] tableCorners = new Point[4];
+    private final Point[] tableCorners = new Point[2];
     private int currentCornerIndex;
     protected int layout;
     private ZoomLayout zoomLayout;

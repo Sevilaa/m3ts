@@ -18,7 +18,6 @@ public class MatchTest {
     private Match match;
     private GestureCallback gestureCallback;
     private UICallback uiCallback;
-    private GestureCallback gestureCallback;
     private final String PLAYER_1_NAME = "Testian";
     private final String PLAYER_2_NAME = "Mockian";
 
