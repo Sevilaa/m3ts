@@ -95,12 +95,11 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
     <!-- TTS -->
-    <string name="ttsPoints">points </string>
-    <string name="ttsPoint">point </string>
     <string name="ttsSide"> Side</string>
     <string name="ttsWin">Game Win </string>
-    <string name="ttsReadyServe"> ready to serve!</string>
+    <string name="ttsReadyServe"> Get ready, </string>
     <string name="ttsServe">Serve </string>
+    <string name="ttsTo"> to </string>
 
     <!-- MatchInit Fragment -->
     <string name="miTitle">Connect With Tracker</string>

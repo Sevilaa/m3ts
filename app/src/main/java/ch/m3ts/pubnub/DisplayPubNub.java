@@ -168,7 +168,7 @@ public class DisplayPubNub extends Callback {
                         break;
                     case "onScore":
                         this.uiCallback.onScore(Side.valueOf(json.getString(JSONInfo.SIDE_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.SCORE_PROPERTY)),
-                                Side.valueOf(json.getString(JSONInfo.NEXT_SERVER_PROPERTY)));
+                                Side.valueOf(json.getString(JSONInfo.NEXT_SERVER_PROPERTY)), Side.valueOf(json.getString(JSONInfo.LAST_SERVER_PROPERTY)));
                         break;
                     case "onWin":
                         this.uiCallback.onWin(Side.valueOf(json.getString(JSONInfo.SIDE_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.WINS_PROPERTY)));

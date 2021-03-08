@@ -30,9 +30,8 @@ import cz.fmo.R;
  */
 public class MatchScoreFragment extends Fragment implements UICallback, DisplayScoreEventCallback {
     private String ttsWin;
-    private String ttsPoints;
-    private String ttsPoint;
     private String ttsSide;
+    private String ttsTo;
     private String ttsReadyToServe;
     private TextToSpeech tts;
     private MediaPlayer mediaPlayer;
@@ -79,7 +78,9 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
 
     @Override
     public void onPause() {
-        this.tts.shutdown();
+        if(this.tts != null) {
+            this.tts.shutdown();
+        }
         super.onPause();
     }
 
@@ -98,11 +99,16 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
     }
 
     @Override
-    public void onScore(Side side, int score, Side nextServer) {
-        setScoreOnTextView(side, score);
-        updateIndicationNextServer(nextServer, false);
-        if (score == 1) tts.speak(score + ttsPoint +side.toString()+ ttsSide, TextToSpeech.QUEUE_FLUSH, null, null);
-        else tts.speak(score + ttsPoints +side.toString()+ ttsSide, TextToSpeech.QUEUE_FLUSH, null, null);
+    public void onScore(final Side side, final int score, final Side nextServer, final Side lastServer) {
+        Activity activity = getActivity();
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                setScoreOnTextView(side, score);
+                updateIndicationNextServer(nextServer, false);
+                playScoreTTS(nextServer, lastServer);
+            }
+        });
     }
 
     @Override
@@ -115,7 +121,6 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
 
     @Override
     public void onReadyToServe(Side server) {
-        //tts.speak(server.toString() + ttsSide + ttsReadyToServe, TextToSpeech.QUEUE_ADD, null, null);
         mediaPlayer.start();
         Activity activity = getActivity();
         if (activity == null) return;
@@ -127,11 +132,27 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
         colorTextViewAsInactive(txtView);
     }
 
+    private void playScoreTTS(Side nextServer, Side lastServer) {
+        String scoreLeft = String.valueOf(Integer.parseInt(((TextView)getActivity().findViewById(R.id.left_score)).getText().toString()));
+        String scoreRight = String.valueOf(Integer.parseInt(((TextView)getActivity().findViewById(R.id.right_score)).getText().toString()));
+        int nameId;
+        if(nextServer == Side.RIGHT) {
+            tts.speak(scoreRight + ttsTo + scoreLeft, TextToSpeech.QUEUE_FLUSH, null, null);
+            nameId = R.id.right_name;
+        } else {
+            tts.speak(scoreLeft + ttsTo + scoreRight, TextToSpeech.QUEUE_FLUSH, null, null);
+            nameId = R.id.left_name;
+        }
+        String name = ((TextView)getActivity().findViewById(nameId)).getText().toString();
+        if(nextServer != lastServer) {
+            tts.speak(ttsReadyToServe + name, TextToSpeech.QUEUE_ADD, null, null);
+        }
+    }
+
     private void initTTS() {
         ttsWin = getResources().getString(R.string.ttsWin);
-        ttsPoints = getResources().getString(R.string.ttsPoints);
-        ttsPoint = getResources().getString(R.string.ttsPoint);
         ttsSide = getResources().getString(R.string.ttsSide);
+        ttsTo = getResources().getString(R.string.ttsTo);
         ttsReadyToServe = getResources().getString(R.string.ttsReadyServe);
         this.tts = new TextToSpeech(getContext(), new TextToSpeech.OnInitListener() {
             @Override

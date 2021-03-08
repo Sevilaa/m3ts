@@ -76,11 +76,11 @@ public class DisplayPubNubTest {
         final Side scorer = Side.RIGHT;
         final Side server = Side.LEFT;
         final int score = random.nextInt(999);
-        JSONObject jsonScore = makeJSONObject("onScore", scorer, score, null, server);
+        JSONObject jsonScore = makeJSONObject("onScore", scorer, score, null, server, server);
         displayPubNub.connectCallback(ROOM_ID, jsonScore);
-        verify(spyCallback, times(0)).onScore(Side.RIGHT, jsonScore.getInt("score"), Side.LEFT);
+        verify(spyCallback, times(0)).onScore(Side.RIGHT, jsonScore.getInt("score"), Side.LEFT, server);
         displayPubNub.successCallback(ROOM_ID, jsonScore);
-        verify(spyCallback, times(1)).onScore(Side.RIGHT, jsonScore.getInt("score"), Side.LEFT);
+        verify(spyCallback, times(1)).onScore(Side.RIGHT, jsonScore.getInt("score"), Side.LEFT, server);
     }
 
     @Test
@@ -349,7 +349,7 @@ public class DisplayPubNubTest {
                 displayPubNub.connectCallback(ROOM_ID, invalidJSON);
                 displayPubNub.disconnectCallback(ROOM_ID, invalidJSON);
                 displayPubNub.successCallback(ROOM_ID, invalidJSON);
-                verify(spyCallback, times(0)).onScore(any(Side.class), anyInt(), any(Side.class));
+                verify(spyCallback, times(0)).onScore(any(Side.class), anyInt(), any(Side.class), any(Side.class));
                 verify(spyCallback, times(0)).onWin(any(Side.class), anyInt());
                 verify(spyCallback, times(0)).onMatchEnded(any(String.class));
             }
@@ -378,6 +378,21 @@ public class DisplayPubNubTest {
             json.put(JSONInfo.SCORE_PROPERTY, score);
             json.put(JSONInfo.WINS_PROPERTY, wins);
             json.put(JSONInfo.NEXT_SERVER_PROPERTY, nextServer);
+        } catch (JSONException ex) {
+            fail(ex.getMessage());
+        }
+        return json;
+    }
+
+    private JSONObject makeJSONObject(String event, Side side, Integer score, Integer wins, Side nextServer, Side lastServer) {
+        JSONObject json = new JSONObject();
+        try {
+            json.put(JSONInfo.EVENT_PROPERTY, event);
+            json.put(JSONInfo.SIDE_PROPERTY, side);
+            json.put(JSONInfo.SCORE_PROPERTY, score);
+            json.put(JSONInfo.WINS_PROPERTY, wins);
+            json.put(JSONInfo.NEXT_SERVER_PROPERTY, nextServer);
+            json.put(JSONInfo.LAST_SERVER_PROPERTY, lastServer);
         } catch (JSONException ex) {
             fail(ex.getMessage());
         }

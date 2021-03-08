@@ -194,7 +194,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     }
 
     @Override
-    public void onScore(Side side, int score, Side nextServer) {
+    public void onScore(Side side, int score, Side nextServer, Side lastServer) {
         if (side == Side.LEFT) {
             setTextInTextView(R.id.txtPlayMovieScoreLeft, String.valueOf(score));
         } else {

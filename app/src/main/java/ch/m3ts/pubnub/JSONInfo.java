@@ -17,6 +17,7 @@ public final class JSONInfo {
     public static final String PLAYER_NAME_LEFT_PROPERTY = "playerNameLeft";
     public static final String PLAYER_NAME_RIGHT_PROPERTY = "playerNameRight";
     public static final String NEXT_SERVER_PROPERTY = "nextServer";
+    public static final String LAST_SERVER_PROPERTY = "lastServer";
     public static final String TABLE_FRAME = "tableFrame";
     public static final String TABLE_FRAME_INDEX = "tableFrameIndex";
     public static final String TABLE_FRAME_NUMBER_OF_PARTS = "tableFrameNumberOfParts";

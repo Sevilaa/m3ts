@@ -82,8 +82,22 @@ public class TrackerPubNub extends Callback implements UICallback {
     }
 
     @Override
-    public void onScore(Side side, int score, Side nextServer) {
+    public void onScore(Side side, int score, Side nextServer, Side lastServer) {
         send("onScore", side.toString(), score,null, nextServer);
+            try {
+                JSONObject json = new JSONObject();
+                json.put(JSONInfo.SENDER_PROPERTY, pubnub.getUUID());
+                json.put(JSONInfo.SIDE_PROPERTY, side);
+                json.put(JSONInfo.SCORE_PROPERTY, score);
+                json.put(JSONInfo.LAST_SERVER_PROPERTY, lastServer);
+                json.put(JSONInfo.EVENT_PROPERTY, "onScore");
+                json.put(JSONInfo.ROLE_PROPERTY, ROLE);
+                json.put(JSONInfo.NEXT_SERVER_PROPERTY, nextServer);
+                pubnub.publish(this.roomID, json, new Callback() {});
+            } catch (JSONException ex) {
+                Log.d(JSON_SEND_EXCEPTION_MESSAGE+this.roomID+"\n"+ex.getMessage());
+            }
+
     }
 
     @Override

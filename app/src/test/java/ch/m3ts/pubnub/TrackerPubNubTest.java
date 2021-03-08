@@ -211,7 +211,7 @@ public class TrackerPubNubTest {
                 return null;
             }
         }).when(pubNub).publish(any(String.class), any(JSONObject.class), any(Callback.class));
-        trackerPubNub.onScore(scorer, score, server);
+        trackerPubNub.onScore(scorer, score, server, server);
     }
 
     @Test
