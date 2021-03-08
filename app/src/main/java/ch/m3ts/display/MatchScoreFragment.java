@@ -158,15 +158,15 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
     }
 
     private TextView getServerLabelTextView(@NonNull Activity activity, Side server) {
-        int idServer = R.id.right_name;
+        int idServer = R.id.right_score;
         if (server == Side.LEFT) {
-            idServer = R.id.left_name;
+            idServer = R.id.left_score;
         }
         return activity.findViewById(idServer);
     }
 
     private void colorTextViewAsInactive(TextView txtView) {
-        txtView.setTextColor(ContextCompat.getColor(getContext() ,android.R.color.secondary_text_light));
+        txtView.setTextColor(ContextCompat.getColor(getContext() , R.color.primary_light));
     }
 
     private void colorTextViewAsActive(TextView txtView) {

@@ -86,7 +86,7 @@
     <string name="debugBallCountStart">0</string>
     <string name="contentDescRevert">reverts last selected corner</string>
     <string name="initMarkTableLabel">Mark the left table corner</string>
-    <string name="trackerStatusConnectedWithDisplay">connected with display</string>
+    <string name="trackerStatusConnectedWithDisplay">connected to server</string>
     <string name="trackerStatusConnectedWithDisplayFail">unable to connect to display!</string>
 
     <!-- Main Activity -->
