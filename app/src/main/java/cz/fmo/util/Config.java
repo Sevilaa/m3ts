@@ -19,6 +19,7 @@ public class Config {
     private final boolean disableDetection;
     private final String player1Name;
     private final String player2Name;
+    private final boolean useDebug;
 
     public Config(Context ctx) {
         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(ctx);
@@ -34,6 +35,7 @@ public class Config {
         disableDetection = p.getBoolean("disableDetection", false);
         player1Name = getPlayer1Name(p, ctx);
         player2Name = getPlayer2Name(p, ctx);
+        useDebug = getDebug(p, ctx);
     }
 
     private boolean getFrontFacing(SharedPreferences p) {
@@ -98,6 +100,10 @@ public class Config {
         return p.getString(ctx.getString(R.string.prefPlayer2Key), "Peter");
     }
 
+    private boolean getDebug(SharedPreferences p, Context ctx) {
+        return p.getBoolean(ctx.getString(R.string.prefDisplayDebugKey), false);
+    }
+
     public float getFrameRate() {
         return frameRate;
     }
@@ -144,6 +150,10 @@ public class Config {
 
     public String getPlayer2Name() {
         return player2Name;
+    }
+
+    public boolean isUseDebug() {
+        return useDebug;
     }
 
     public enum RecordMode {

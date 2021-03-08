@@ -11,9 +11,9 @@ import android.support.annotation.NonNull;
 import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import ch.m3ts.pubnub.PubNubFactory;
@@ -49,6 +49,8 @@ public final class InitTrackerActivity extends CameraPreviewActivity implements 
     private TextView pitchText;
     private TextView rollText;
     private TextView adjustDeviceText;
+    private Button moveDeviceButton;
+    private boolean isDeviceCentered = false;
     private ImageView adjustDeviceIcon;
     private View adjustDeviceOverlay;
     private View qrCodeOverlay;
@@ -76,6 +78,7 @@ public final class InitTrackerActivity extends CameraPreviewActivity implements 
         adjustDeviceOverlay = findViewById(R.id.adjust_device_overlay);
         qrCodeOverlay = findViewById(R.id.scan_overlay);
         adjustDeviceIcon = findViewById(R.id.adjust_device_info_icon);
+        moveDeviceButton = findViewById(R.id.init_moveDeviceBtn);
         ViewGroup.LayoutParams params = layout.getLayoutParams();
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
@@ -83,6 +86,13 @@ public final class InitTrackerActivity extends CameraPreviewActivity implements 
         params.height = size.y;
         params.width = size.x;
         layout.setLayoutParams(params);
+        moveDeviceButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                isDeviceCentered = true;
+                moveDeviceButton.setVisibility(View.INVISIBLE);
+            }
+        });
     }
 
     @Override
@@ -139,6 +149,7 @@ public final class InitTrackerActivity extends CameraPreviewActivity implements 
 
     @Override
     public void onSensorChanged(SensorEvent event) {
+        if (!isDeviceCentered) return;
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
             mGravity = event.values;
         if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD)

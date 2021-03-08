@@ -14,4 +14,9 @@
         android:maxLines="1"
         android:singleLine="true"
         android:title="@string/prefPlayer2Name"/>
+    <SwitchPreference
+        android:defaultValue="@string/prefDisplayDebugDefault"
+        android:key="@string/prefDisplayDebugKey"
+        android:summary="@string/prefDisplayDebugSummary"
+        android:title="@string/prefDisplayDebug"/>
 </PreferenceScreen>

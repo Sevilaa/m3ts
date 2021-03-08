@@ -14,6 +14,7 @@ import helper.DetectionGenerator;
 import helper.TableGenerator;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.anyDouble;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -42,6 +43,8 @@ public class EventDetectorTest {
         when(mockConfig.getFrameRate()).thenReturn(30f);
         when(mockConfig.getVelocityEstimationMode()).thenReturn(Config.VelocityEstimationMode.PX_FR);
         when(mockConfig.getObjectRadius()).thenReturn(10f);
+        when(mockCalc.getMmPerPixelFrontEdge()).thenReturn(99999.9);
+        when(mockCalc.isBallZPositionOnTable(anyDouble())).thenReturn(true);
     }
 
     @Test
@@ -88,13 +91,13 @@ public class EventDetectorTest {
         verify(mockCallback, times(0)).onSideChange(Side.RIGHT);
         verify(mockCallback, times(1)).onSideChange(Side.LEFT);
         // object is getting shot from right to left side
-        invokeOnObjectDetectedWithDelay(strikeDetectionsLeft, ev, strikeDetectionsRight.length);
+        invokeOnObjectDetectedWithDelay(strikeDetectionsLeft, ev, strikeDetectionsRight.length*2);      // need to add additional lag so that the detection won't get filtered out as noise
         verify(mockCallback, times(1)).onSideChange(Side.RIGHT);
         verify(mockCallback, times(1)).onSideChange(Side.LEFT);
-        // object again getting shot from right to left side (same direction "edge" case) - no more side change call
-        invokeOnObjectDetectedWithDelay(strikeDetectionsLeft, ev, strikeDetectionsLeft.length+strikeDetectionsRight.length);
-        verify(mockCallback, times(1)).onSideChange(Side.RIGHT);
-        verify(mockCallback, times(1)).onSideChange(Side.LEFT);
+        // object again getting shot from right to left side (same direction "edge" case)
+        invokeOnObjectDetectedWithDelay(strikeDetectionsLeft, ev, strikeDetectionsRight.length*6);      // need to add additional lag so that the detection won't get filtered out as noise
+        verify(mockCallback, times(2)).onSideChange(Side.RIGHT);
+        verify(mockCallback, times(2)).onSideChange(Side.LEFT);
     }
 
     @Test

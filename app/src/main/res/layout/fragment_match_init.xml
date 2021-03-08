@@ -20,7 +20,7 @@
             android:layout_marginEnd="4dp"
             android:text="@string/miTitle"
             android:textAlignment="center"
-            android:textColor="@android:color/secondary_text_light"
+            android:textColor="@color/primary_light"
             android:textSize="30sp"
             android:textStyle="bold" />
 
@@ -33,7 +33,7 @@
             android:paddingBottom="40dp"
             android:text="@string/miSubTitle"
             android:textAlignment="center"
-            android:textColor="@android:color/secondary_text_light"
+            android:textColor="@color/primary_light"
             android:textSize="18sp"
             android:textStyle="normal" />
         <ImageView
@@ -41,6 +41,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:background="@color/primary_light"
             android:elevation="8dp"
             />
         <Button

@@ -1,16 +1,12 @@
 package ch.m3ts.tracker.visualization.live;
 
 import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.view.Display;
-import android.widget.Toast;
 
 import ch.m3ts.Log;
-import ch.m3ts.MainActivity;
 import ch.m3ts.helper.QuitAlertDialogHelper;
 import ch.m3ts.tabletennis.Table;
 import ch.m3ts.tabletennis.helper.Side;
@@ -54,19 +50,11 @@ public final class LiveActivity extends MatchVisualizeActivity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        init();
-    }
-
-    @Override
     public void init() {
         super.init();
-        if (!mConfig.isDisableDetection() && ismSurfaceHolderReady()) {
-            Table table = trySettingTableLocationFromIntent();
-            mHandler.init(mConfig, this.getCameraWidth(), this.getCameraHeight(), table, this.getCameraHorizontalViewAngle());
-            mHandler.startDetections();
-        }
+        Table table = trySettingTableLocationFromIntent();
+        mHandler.init(mConfig, this.getCameraWidth(), this.getCameraHeight(), table, this.getCameraHorizontalViewAngle());
+        mHandler.startDetections();
     }
 
     @Override

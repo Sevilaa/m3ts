@@ -17,10 +17,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 
-import ch.m3ts.Log;
 import ch.m3ts.display.OnSwipeListener;
-import ch.m3ts.pubnub.PubNubFactory;
-import ch.m3ts.pubnub.TrackerPubNub;
 import ch.m3ts.tabletennis.Table;
 import ch.m3ts.tabletennis.events.EventDetectionCallback;
 import ch.m3ts.tabletennis.events.EventDetector;
@@ -50,7 +47,7 @@ import cz.fmo.util.Config;
  * for events on this Handler.
  **/
 public class MatchVisualizeHandler extends android.os.Handler implements EventDetectionCallback, UICallback, MatchVisualizeHandlerCallback, GestureCallback {
-    private static final int MAX_REFRESHING_TIME_MS = 500;
+    protected static final int MAX_REFRESHING_TIME_MS = 500;
     final WeakReference<MatchVisualizeActivity> mActivity;
     private EventDetector eventDetector;
     private ReadyToServeDetector serveDetector;
@@ -65,42 +62,25 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     private boolean hasNewTable;
     private Lib.Detection latestNearlyOutOfFrame;
     private Lib.Detection latestBounce;
-    private Match match;
-    private MatchSettings matchSettings;
     private int newBounceCount;
     private ScoreManipulationCallback smc;
-    private boolean useScreenForUICallback;
     private boolean waitingForGesture = false;
-    private TrackerPubNub trackerPubNub;
-    private UICallback uiCallback;
+    protected Match match;
+    protected MatchSettings matchSettings;
+    protected UICallback uiCallback;
 
-    public MatchVisualizeHandler(@NonNull MatchVisualizeActivity activity, String matchID, boolean useScreenForUICallback) {
+    public MatchVisualizeHandler(@NonNull MatchVisualizeActivity activity) {
         this.mActivity = new WeakReference<>(activity);
-        this.useScreenForUICallback = useScreenForUICallback;
         this.tracks = TrackSet.getInstance();
         this.tracks.clear();
         this.hasNewTable = true;
         this.uiCallback = this;
         initColors(activity);
-        if (!useScreenForUICallback) {
-            try {
-                this.trackerPubNub = PubNubFactory.createTrackerPubNub(activity.getApplicationContext(), matchID);
-                uiCallback = this.trackerPubNub;
-            } catch (PubNubFactory.NoPropertiesFileFoundException ex) {
-                Log.d("No properties file found, using display of this device...");
-                this.useScreenForUICallback = true;
-            }
-        }
     }
 
     public void initMatch(Side servingSide, MatchType matchType, Player playerLeft, Player playerRight) {
         this.matchSettings = new MatchSettings(matchType, GameType.G11, ServeRules.S2, playerLeft, playerRight, servingSide);
         match = new Match(matchSettings, uiCallback, this);
-        if (this.trackerPubNub != null) {
-            this.trackerPubNub.setTrackerPubNubCallback(match);
-            this.trackerPubNub.setMatchVisualizeHandlerCallback(this);
-            this.trackerPubNub.sendStatusUpdate(playerLeft.getName(), playerRight.getName(), 0,0,0,0,servingSide);
-        }
         startMatch();
         setTextInTextView(R.id.txtDebugPlayerNameLeft, playerLeft.getName());
         setTextInTextView(R.id.txtDebugPlayerNameRight, playerRight.getName());
@@ -110,8 +90,6 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
 
     @Override
     public void onBounce(Lib.Detection detection, Side ballBouncedOnSide) {
-        // update game logic
-        // then display game state to some views
         latestBounce = detection;
         final MatchVisualizeActivity activity = mActivity.get();
         final TextView mBounceCountText = activity.getmBounceCountText();
@@ -138,33 +116,41 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (activity.ismSurfaceHolderReady()) {
-                    SurfaceHolder surfaceHolder = activity.getmSurfaceTrack().getHolder();
-                    Canvas canvas = surfaceHolder.lockCanvas();
-                    if (canvas == null) {
-                        return;
-                    }
-                    if (videoScaling.getCanvasWidth() == 0 || videoScaling.getCanvasHeight() == 0) {
-                        videoScaling.setCanvasWidth(canvas.getWidth());
-                        videoScaling.setCanvasHeight(canvas.getHeight());
-                    }
-                    canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-                    if (hasNewTable) {
-                        drawTable();
-                        hasNewTable = false;
-                    }
-                    drawTrack(canvas, track);
-                    drawLatestBounce(canvas);
-                    drawLatestOutOfFrameDetection(canvas);
-                    surfaceHolder.unlockCanvasAndPost(canvas);
+            if (activity.ismSurfaceHolderReady()) {
+                SurfaceHolder surfaceHolder = activity.getmSurfaceTrack().getHolder();
+                Canvas canvas = surfaceHolder.lockCanvas();
+                if (canvas == null) {
+                    return;
                 }
-                setTextInTextView(R.id.txtPlayMovieState, match.getReferee().getState().toString());
-                setTextInTextView(R.id.txtPlayMovieServing, match.getReferee().getServer().toString());
-                if(match.getReferee().getCurrentBallSide() != null) {
-                    setTextInTextView(R.id.txtBounce, String.valueOf(newBounceCount));
-                }
+                initVideoScaling(canvas);
+                drawDebugInfo(canvas, track);
+                surfaceHolder.unlockCanvasAndPost(canvas);
+            }
+            setTextInTextView(R.id.txtPlayMovieState, match.getReferee().getState().toString());
+            setTextInTextView(R.id.txtPlayMovieServing, match.getReferee().getServer().toString());
+            if(match.getReferee().getCurrentBallSide() != null) {
+                setTextInTextView(R.id.txtBounce, String.valueOf(newBounceCount));
+            }
             }
         });
+    }
+
+    void drawDebugInfo(Canvas canvas, Track track) {
+        canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+        if (hasNewTable) {
+            drawTable();
+            hasNewTable = false;
+        }
+        drawTrack(canvas, track);
+        drawLatestBounce(canvas);
+        drawLatestOutOfFrameDetection(canvas);
+    }
+
+    void initVideoScaling(Canvas canvas) {
+        if (videoScaling.getCanvasWidth() == 0 || videoScaling.getCanvasHeight() == 0) {
+            videoScaling.setCanvasWidth(canvas.getWidth());
+            videoScaling.setCanvasHeight(canvas.getHeight());
+        }
     }
 
     @Override
@@ -323,7 +309,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         this.trackP = new Paint();
     }
 
-    private void startMatch() {
+    protected void startMatch() {
         setOnSwipeListener();
         refreshDebugTextViews();
     }
@@ -375,7 +361,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         setTextInTextView(R.id.txtPlayMovieGameRight, String.valueOf(0));
     }
 
-    private void setTextInTextView(int id, final String text) {
+    protected void setTextInTextView(int id, final String text) {
         final MatchVisualizeActivity activity = mActivity.get();
         if (activity == null) {
             return;
@@ -415,13 +401,9 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         }
     }
 
-    private void setCallbackForNewGame() {
+    protected void setCallbackForNewGame() {
         if (match != null) {
-            if (!useScreenForUICallback) {
-                this.trackerPubNub.setScoreManipulationCallback(match.getReferee());
-            } else {
-                this.smc = match.getReferee();
-            }
+            this.smc = match.getReferee();
         }
     }
 }
