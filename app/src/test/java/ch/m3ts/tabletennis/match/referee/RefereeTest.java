@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import ch.m3ts.Log;
+import ch.m3ts.tabletennis.events.GestureCallback;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.game.Game;
 import cz.fmo.Lib;
@@ -28,6 +29,7 @@ public class RefereeTest {
     private Config mockConfig;
     private static final Side STARTING_SIDE = Side.LEFT;
     private Lib.Detection detection;
+    private GestureCallback mockGestureCallback;
 
     @Before
     public void setUp(){
@@ -36,8 +38,9 @@ public class RefereeTest {
         when(mockConfig.getFrameRate()).thenReturn(30f);
         when(mockConfig.getVelocityEstimationMode()).thenReturn(Config.VelocityEstimationMode.PX_FR);
         when(mockConfig.getObjectRadius()).thenReturn(10f);
+        mockGestureCallback = mock(GestureCallback.class);
         realTrackSet.setConfig(mockConfig);
-        referee = new Referee(STARTING_SIDE);
+        referee = new Referee(STARTING_SIDE, mockGestureCallback);
         gameMock = mock(Game.class);
         when(gameMock.getServer()).thenReturn(Side.LEFT);
         referee.setGame(gameMock);

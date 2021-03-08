@@ -7,7 +7,8 @@ import java.util.TreeSet;
 import ch.m3ts.Log;
 
 /**
- * Calculates the Z-Position of the Table Tennis Ball from the radius detected by FMO.
+ * Calculates the Z-Position of the Table Tennis Ball from the radius detected by FMO and
+ * the selected table by the user.
  */
 public class ZPositionCalc {
     private final double TABLE_TENNIS_TABLE_LENGTH_MM = 2740; // normed, see https://en.wikipedia.org/wiki/Table_tennis

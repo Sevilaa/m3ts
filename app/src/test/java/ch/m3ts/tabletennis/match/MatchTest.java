@@ -4,6 +4,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import ch.m3ts.tabletennis.events.GestureCallback;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.game.GameType;
 
@@ -15,6 +16,7 @@ import static org.mockito.Mockito.verify;
 
 public class MatchTest {
     private Match match;
+    private GestureCallback gestureCallback;
     private UICallback uiCallback;
     private final String PLAYER_1_NAME = "Testian";
     private final String PLAYER_2_NAME = "Mockian";
@@ -22,13 +24,15 @@ public class MatchTest {
     @Before
     public void setUp() {
         uiCallback = mock(UICallback.class);
-        match = new Match(MatchType.BO1, GameType.G11, ServeRules.S2, new Player(PLAYER_1_NAME), new Player(PLAYER_2_NAME), uiCallback, Side.LEFT);
+        gestureCallback = mock(GestureCallback.class);
+        match = new Match(MatchType.BO1, GameType.G11, ServeRules.S2, new Player(PLAYER_1_NAME), new Player(PLAYER_2_NAME), uiCallback, Side.LEFT, gestureCallback);
     }
 
     @After
     public void tearDown() {
         match = null;
         uiCallback = null;
+        gestureCallback = null;
     }
 
     @Test
@@ -52,7 +56,7 @@ public class MatchTest {
     }
 
     private void testWithMatchType(MatchType type) {
-        match = new Match(type, GameType.G11, ServeRules.S2, new Player(PLAYER_1_NAME), new Player(PLAYER_2_NAME), uiCallback, Side.LEFT);
+        match = new Match(type, GameType.G11, ServeRules.S2, new Player(PLAYER_1_NAME), new Player(PLAYER_2_NAME), uiCallback, Side.LEFT, gestureCallback);
         int winsToEnd = type.gamesNeededToWin;
         for(int i = 0; i<winsToEnd-1; i++) {
             match.onWin(Side.LEFT);

@@ -5,6 +5,7 @@ import org.junit.Test;
 
 import ch.m3ts.tabletennis.Table;
 import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.tracker.ZPositionCalc;
 import cz.fmo.Lib;
 import cz.fmo.data.Track;
 import cz.fmo.data.TrackSet;
@@ -13,6 +14,7 @@ import helper.DetectionGenerator;
 import helper.TableGenerator;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.anyDouble;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -24,6 +26,7 @@ public class EventDetectorTest {
     private Table table;
     private EventDetectionCallback mockCallback;
     private TrackSet mockTracks;
+    private ZPositionCalc mockZPositionCalc;
     private static final TrackSet realTrackSet = TrackSet.getInstance();
     private static final int SOME_WIDTH = 1920;
     private static final int SOME_HEIGHT = 1080;
@@ -34,22 +37,25 @@ public class EventDetectorTest {
         table = TableGenerator.makeTableFromGarageRecording();
         mockConfig = mock(Config.class);
         mockTracks = mock(TrackSet.class);
+        mockZPositionCalc = mock(ZPositionCalc.class);
         mockCallback = mock(EventDetectionCallback.class);
         when(mockConfig.isDisableDetection()).thenReturn(false);
         when(mockConfig.getFrameRate()).thenReturn(30f);
         when(mockConfig.getVelocityEstimationMode()).thenReturn(Config.VelocityEstimationMode.PX_FR);
         when(mockConfig.getObjectRadius()).thenReturn(10f);
+        when(mockZPositionCalc.isBallZPositionOnTable(anyDouble())).thenReturn(true);
+        when(mockZPositionCalc.getMmPerPixelFrontEdge()).thenReturn(999999.9);
     }
 
     @Test
     public void testUpdateTrackSetConfigOnConstruction() {
-        EventDetector ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT,mockCallback, mockTracks, table);
+        EventDetector ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT,mockCallback, mockTracks, table, mockZPositionCalc);
         verify(mockTracks, atLeastOnce()).setConfig(mockConfig);
     }
 
     @Test
     public void testUpdateTrackSetOnObjectsDetected() {
-        EventDetector ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT,mockCallback, mockTracks, table);
+        EventDetector ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT,mockCallback, mockTracks, table, mockZPositionCalc);
         Lib.Detection[] someDetections = new Lib.Detection[0];
         long detectionTime = System.nanoTime();
         ev.onObjectsDetected(someDetections, detectionTime);
@@ -58,7 +64,7 @@ public class EventDetectorTest {
 
     @Test
     public void testOnStrikeFound() {
-        EventDetector ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT, mockCallback, realTrackSet, table);
+        EventDetector ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT, mockCallback, realTrackSet, table, mockZPositionCalc);
         Lib.Detection[] strikeDetections = DetectionGenerator.makeDetectionsInXDirectionOnTable(true);
         invokeOnObjectDetectedWithDelay(strikeDetections, ev, 0);
 
@@ -77,7 +83,7 @@ public class EventDetectorTest {
 
     @Test
     public void testOnSideChange() {
-        EventDetector ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT, mockCallback, TrackSet.getInstance(), table);
+        EventDetector ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT, mockCallback, TrackSet.getInstance(), table, mockZPositionCalc);
         Lib.Detection[] strikeDetectionsRight = DetectionGenerator.makeDetectionsInXDirectionOnTable(true);
         Lib.Detection[] strikeDetectionsLeft = DetectionGenerator.makeDetectionsInXDirectionOnTable(false);
         // object is getting shot from left to right side
@@ -97,7 +103,7 @@ public class EventDetectorTest {
     @Test
     public void testOnNearlyOutOfFrame() {
         TrackSet ts = TrackSet.getInstance();
-        EventDetector ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT, mockCallback, ts, table);
+        EventDetector ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT, mockCallback, ts, table, mockZPositionCalc);
         Lib.Detection[] nearlyOutOfFrame;
         Lib.Detection predecessor = new Lib.Detection();
         predecessor.centerX = SOME_WIDTH / 2;
@@ -110,7 +116,7 @@ public class EventDetectorTest {
                 invokeOnObjectDetectedWithDelay(new Lib.Detection[]{predecessor}, ev, i);
                 invokeOnObjectDetectedWithDelay(new Lib.Detection[]{detection}, ev, i);
                 verify(mockCallback, times(1)).onNearlyOutOfFrame(detection, DetectionGenerator.getNearlyOutOfFrameSide(ev.getNearlyOutOfFrameThresholds(), detection));
-                ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT, mockCallback, ts, table);
+                ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT, mockCallback, ts, table, mockZPositionCalc);
             }
         }
         Lib.Detection[] detectionsInFrame = DetectionGenerator.makeDetectionsInXDirectionOnTable(true);
@@ -123,14 +129,14 @@ public class EventDetectorTest {
     @Test
     public void testNearlyOutOfFrameWithoutPredecessor() {
         TrackSet ts = TrackSet.getInstance();
-        EventDetector ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT, mockCallback, ts, table);
+        EventDetector ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT, mockCallback, ts, table, mockZPositionCalc);
         Lib.Detection[] nearlyOutOfFrame;
         for(int i = 0; i < 10; i++) {
             nearlyOutOfFrame = DetectionGenerator.makeNearlyOutOfFrameDetections(ev.getNearlyOutOfFrameThresholds(), SOME_WIDTH, SOME_HEIGHT);
             for(Lib.Detection detection : nearlyOutOfFrame) {
                 invokeOnObjectDetectedWithDelay(new Lib.Detection[]{detection}, ev, i);
                 verify(mockCallback, times(0)).onNearlyOutOfFrame(detection, DetectionGenerator.getNearlyOutOfFrameSide(ev.getNearlyOutOfFrameThresholds(), detection));
-                ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT, mockCallback, ts, table);
+                ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT, mockCallback, ts, table, mockZPositionCalc);
             }
         }
     }

@@ -15,7 +15,7 @@ public class ZPositionCalcTest {
     private final double HORIZONTAL_VIEW_ANGLE = 66.56780242919922;     // from mobile phone used for all recordings
     private final double BALL_RADIUS_FURTHEST_EDGE_PX = 5.09382053830555;   // calculated beforehand
     private final double BALL_RADIUS_CLOSEST_EDGE_PX = 8.467153284671532;   // calculated beforehand
-    private final double ACCURACY_OF_CALCULATIONS = 1;
+    private final double ACCURACY_OF_CALCULATIONS = 2;
     private final int MAX_OFFSET_MM = 100;  // from ZPositionCalc
 
     private ZPositionCalc calc;
@@ -37,9 +37,9 @@ public class ZPositionCalcTest {
     @Test
     public void testBallRadiusToZPos() {
         double zPosMm = calc.findZPosMmOfBall(BALL_RADIUS_FURTHEST_EDGE_PX);
-        assertEquals(TABLE_TENNIS_TABLE_WIDTH_MM, zPosMm, 1);
+        assertEquals(TABLE_TENNIS_TABLE_WIDTH_MM, zPosMm, ACCURACY_OF_CALCULATIONS);
         zPosMm = calc.findZPosMmOfBall(BALL_RADIUS_CLOSEST_EDGE_PX);
-        assertEquals(0, zPosMm, 1);
+        assertEquals(0, zPosMm, ACCURACY_OF_CALCULATIONS);
 
         // going over the table
         zPosMm = calc.findZPosMmOfBall(BALL_RADIUS_CLOSEST_EDGE_PX+0.03);
@@ -51,6 +51,6 @@ public class ZPositionCalcTest {
         zPosMm = calc.findZPosMmOfBall(BALL_RADIUS_CLOSEST_EDGE_PX*300);
         assertEquals(-MAX_OFFSET_MM, zPosMm, 1);
         zPosMm = calc.findZPosMmOfBall(BALL_RADIUS_FURTHEST_EDGE_PX*0.1);
-        assertEquals(TABLE_TENNIS_TABLE_WIDTH_MM+MAX_OFFSET_MM, zPosMm, 1);
+        assertEquals(TABLE_TENNIS_TABLE_WIDTH_MM+MAX_OFFSET_MM, zPosMm, ACCURACY_OF_CALCULATIONS);
     }
 }
