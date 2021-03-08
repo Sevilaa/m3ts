@@ -27,20 +27,20 @@ public class RefereeTest {
     private static final int SOME_HEIGHT = 1080;
     private TrackSet realTrackSet = TrackSet.getInstance();
     private Config mockConfig;
+    private GestureCallback mockGesture;
     private static final Side STARTING_SIDE = Side.LEFT;
     private Lib.Detection detection;
-    private GestureCallback mockGestureCallback;
 
     @Before
     public void setUp(){
         mockConfig = mock(Config.class);
+        mockGesture = mock(GestureCallback.class);
         when(mockConfig.isDisableDetection()).thenReturn(false);
         when(mockConfig.getFrameRate()).thenReturn(30f);
         when(mockConfig.getVelocityEstimationMode()).thenReturn(Config.VelocityEstimationMode.PX_FR);
         when(mockConfig.getObjectRadius()).thenReturn(10f);
-        mockGestureCallback = mock(GestureCallback.class);
         realTrackSet.setConfig(mockConfig);
-        referee = new Referee(STARTING_SIDE, mockGestureCallback);
+        referee = new Referee(STARTING_SIDE, mockGesture);
         gameMock = mock(Game.class);
         when(gameMock.getServer()).thenReturn(Side.LEFT);
         referee.setGame(gameMock);
