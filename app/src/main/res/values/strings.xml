@@ -105,8 +105,9 @@
 
     <!-- TTS -->
     <string name="ttsSide"> Side</string>
-    <string name="ttsWin">Game Win </string>
-    <string name="ttsReadyServe"> Get ready, </string>
+    <string name="ttsWin">Game </string>
+    <string name="ttsMatchWin"> wins the Match!</string>
+    <string name="ttsReadyServe"> Serve </string>
     <string name="ttsServe">Serve </string>
     <string name="ttsTo"> to </string>
 

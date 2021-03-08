@@ -112,11 +112,16 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
     }
 
     @Override
-    public void onWin(Side side, int wins) {
-        setWinsOnTextView(side, wins);
-        setScoreOnTextView(Side.LEFT, 0);
-        setScoreOnTextView(Side.RIGHT, 0);
-        tts.speak(ttsWin +side+ ttsSide, TextToSpeech.QUEUE_FLUSH, null, null);
+    public void onWin(final Side side, final int wins) {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                setWinsOnTextView(side, wins);
+                setScoreOnTextView(Side.LEFT, 0);
+                setScoreOnTextView(Side.RIGHT, 0);
+                tts.speak(ttsWin + " " + getPlayerNameBySide(side), TextToSpeech.QUEUE_FLUSH, null, null);
+            }
+        });
     }
 
     @Override
@@ -135,18 +140,28 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
     private void playScoreTTS(Side nextServer, Side lastServer) {
         String scoreLeft = String.valueOf(Integer.parseInt(((TextView)getActivity().findViewById(R.id.left_score)).getText().toString()));
         String scoreRight = String.valueOf(Integer.parseInt(((TextView)getActivity().findViewById(R.id.right_score)).getText().toString()));
-        int nameId;
+        String name;
         if(nextServer == Side.RIGHT) {
             tts.speak(scoreRight + ttsTo + scoreLeft, TextToSpeech.QUEUE_FLUSH, null, null);
-            nameId = R.id.right_name;
+            name = getPlayerNameBySide(Side.RIGHT);
         } else {
             tts.speak(scoreLeft + ttsTo + scoreRight, TextToSpeech.QUEUE_FLUSH, null, null);
+            name = getPlayerNameBySide(Side.LEFT);
+        }
+
+        if(nextServer != lastServer) {
+            tts.speak(ttsReadyToServe + " " + name, TextToSpeech.QUEUE_ADD, null, null);
+        }
+    }
+
+    private String getPlayerNameBySide(Side side) {
+        int nameId;
+        if(side == Side.RIGHT) {
+            nameId = R.id.right_name;
+        } else {
             nameId = R.id.left_name;
         }
-        String name = ((TextView)getActivity().findViewById(nameId)).getText().toString();
-        if(nextServer != lastServer) {
-            tts.speak(ttsReadyToServe + name, TextToSpeech.QUEUE_ADD, null, null);
-        }
+        return ((TextView)getActivity().findViewById(nameId)).getText().toString();
     }
 
     private void initTTS() {
