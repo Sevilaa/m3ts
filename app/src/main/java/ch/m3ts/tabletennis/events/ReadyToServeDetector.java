@@ -69,7 +69,6 @@ public class ReadyToServeDetector {
         Mat yuv = new Mat(getYUVMatHeight(), this.cameraWidth, CvType.CV_8UC1);
         yuv.put( 0, 0, frameYUVBytes);
 
-        //OpenCVHelper.saveImage(yuv, "yuv");
         Mat bgr = convertYUVToBGRInAreaSize(yuv);
 
         Mat maskWithInvert = segmentRedColorViaInverting(bgr);
@@ -82,9 +81,7 @@ public class ReadyToServeDetector {
     private Mat convertYUVToBGRInAreaSize(Mat yuv) {
         Mat bgr = new Mat();
         Imgproc.cvtColor(yuv, bgr, Imgproc.COLOR_YUV2BGR_NV21, 3);
-        //OpenCVHelper.saveImage(bgr, "bgr");
         bgr = bgr.submat(getGestureArea());
-        //OpenCVHelper.saveImage(bgr, "bgrCropped");
         return bgr;
     }
 
@@ -118,13 +115,8 @@ public class ReadyToServeDetector {
         Mat hsv = new Mat();
         Imgproc.cvtColor(bgr, hsv, Imgproc.COLOR_BGR2HSV, 3);
         inRange(hsv, new Scalar(0,120,70), new Scalar(10,255,255), mask1);
-        // evtl. Maske 2 weglassen? Muss getestet werden
         inRange(hsv, new Scalar(170,120,70), new Scalar(180,255,255), mask2);
         Core.bitwise_or(mask1, mask2, normal);
-        /*OpenCVHelper.saveImage(hsv, "hsv");
-        OpenCVHelper.saveImage(mask1, "mask1");
-        OpenCVHelper.saveImage(mask2, "mask2");
-        OpenCVHelper.saveImage(normal, "normal");*/
         return mask1;
     }
 
@@ -142,8 +134,6 @@ public class ReadyToServeDetector {
         Core.bitwise_not(bgr, bgrInverted);
         Imgproc.cvtColor(bgrInverted, hsvInverted, Imgproc.COLOR_BGR2HSV);
         inRange(hsvInverted, new Scalar(90 - 10, 70, 50), new Scalar(90 + 10, 255, 255), maskInv);
-        OpenCVHelper.saveImage(bgrInverted, "bgrinverted");
-        OpenCVHelper.saveImage(maskInv, "inverted");
         return maskInv;
     }
 

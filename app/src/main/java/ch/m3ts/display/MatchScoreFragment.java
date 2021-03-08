@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
@@ -34,6 +35,7 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
     private String ttsSide;
     private String ttsReadyToServe;
     private TextToSpeech tts;
+    private MediaPlayer mediaPlayer;
     private DisplayPubNub pubNub;
     private boolean isPaused = false;
 
@@ -45,6 +47,7 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
         pubNub.setDisplayScoreEventCallback(this);
         pubNub.setUiCallback(this);
         initTTS();
+        this.mediaPlayer = MediaPlayer.create(getContext(), R.raw.success);
         ImageButton refreshButton = v.findViewById(R.id.btnDisplayRefresh);
         refreshButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -112,7 +115,8 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
 
     @Override
     public void onReadyToServe(Side server) {
-        tts.speak(server.toString() + ttsSide + ttsReadyToServe, TextToSpeech.QUEUE_ADD, null, null);
+        //tts.speak(server.toString() + ttsSide + ttsReadyToServe, TextToSpeech.QUEUE_ADD, null, null);
+        mediaPlayer.start();
         Activity activity = getActivity();
         if (activity == null) return;
 

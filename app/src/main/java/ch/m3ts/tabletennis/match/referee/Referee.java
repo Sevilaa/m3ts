@@ -56,6 +56,7 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     public void setGame(Game game) {
         this.gameCallback = game;
         this.currentGame = game;
+        this.gameCallback.onReadyToServe(getServer());
     }
 
     public State getState() {
