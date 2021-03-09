@@ -75,6 +75,14 @@ public class MatchWonActivity extends Activity {
         this.finish();
     }
 
+    @Override
+    public void onPause() {
+        if(this.tts != null) {
+            this.tts.shutdown();
+        }
+        super.onPause();
+    }
+
     private void playMatchWonTTS(final String winner) {
         tts = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
             @Override
