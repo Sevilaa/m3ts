@@ -122,6 +122,7 @@ public class DisplayPubNubTest {
         int sR = random.nextInt(999);
         int wL = random.nextInt(999);
         int wR = random.nextInt(999);
+        int gN = random.nextInt(999);
         Side nextServer = Side.RIGHT;
         JSONObject jsonStatus = new JSONObject();
         jsonStatus.put(JSONInfo.EVENT_PROPERTY, "onStatusUpdate");
@@ -132,10 +133,11 @@ public class DisplayPubNubTest {
         jsonStatus.put(JSONInfo.WINS_LEFT_PROPERTY, wL);
         jsonStatus.put(JSONInfo.WINS_RIGHT_PROPERTY, wR);
         jsonStatus.put(JSONInfo.NEXT_SERVER_PROPERTY, nextServer);
+        jsonStatus.put(JSONInfo.GAMES_NEEDED_PROPERTY, gN);
         displayPubNub.connectCallback(ROOM_ID, jsonStatus);
-        verify(spyCallback, times(0)).onStatusUpdate(pL, pR, sL, sR, wL, wR, nextServer);
+        verify(spyCallback, times(0)).onStatusUpdate(pL, pR, sL, sR, wL, wR, nextServer, gN);
         displayPubNub.successCallback(ROOM_ID, jsonStatus);
-        verify(spyCallback, times(1)).onStatusUpdate(pL, pR, sL, sR, wL, wR, nextServer);
+        verify(spyCallback, times(1)).onStatusUpdate(pL, pR, sL, sR, wL, wR, nextServer, gN);
     }
 
     @Test

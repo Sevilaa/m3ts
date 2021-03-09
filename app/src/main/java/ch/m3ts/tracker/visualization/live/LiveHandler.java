@@ -80,7 +80,7 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
         this.match = new Match(matchSettings, uiCallback, this);
         this.trackerPubNub.setTrackerPubNubCallback(match);
         this.trackerPubNub.setMatchVisualizeHandlerCallback(this);
-        this.trackerPubNub.sendStatusUpdate(playerLeft.getName(), playerRight.getName(), 0,0,0,0,servingSide);
+        this.trackerPubNub.sendStatusUpdate(playerLeft.getName(), playerRight.getName(), 0,0,0,0,servingSide, matchType.gamesNeededToWin);
         startMatch();
         if(doDrawDebugInfo) {
             setTextInTextView(R.id.txtDebugPlayerNameLeft, playerLeft.getName());
@@ -113,6 +113,7 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
     @Override
     public void restartMatch() {
         this.match.restartMatch();
+        this.trackerPubNub.sendStatusUpdate(this.matchSettings.getPlayerLeft().getName(), this.matchSettings.getPlayerRight().getName(), 0,0,0,0,this.matchSettings.getStartingServer(), this.matchSettings.getMatchType().gamesNeededToWin);
         refreshDebugTextViews();
     }
 

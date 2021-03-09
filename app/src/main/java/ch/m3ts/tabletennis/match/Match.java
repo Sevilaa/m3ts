@@ -49,7 +49,7 @@ public class Match implements MatchCallback, MatchStatusCallback {
         if(!firstInit) switchServers();
         Game game = new Game(this, uiCallback, gameType, serveRules, this.serverSide);
         this.games[this.wins.get(Side.RIGHT) + this.wins.get(Side.LEFT)] = game;
-        this.referee.setGame(game);
+        this.referee.setGame(game, firstInit);
     }
 
     public void end(Side winner) {
@@ -104,6 +104,6 @@ public class Match implements MatchCallback, MatchStatusCallback {
     @Override
     public MatchStatus onRequestMatchStatus() {
         return new MatchStatus(players.get(Side.LEFT).getName(), players.get(Side.RIGHT).getName(), getCurrentGame().getScore(Side.LEFT),
-                getCurrentGame().getScore(Side.RIGHT), wins.get(Side.LEFT), wins.get(Side.RIGHT), getCurrentGame().getServer());
+                getCurrentGame().getScore(Side.RIGHT), wins.get(Side.LEFT), wins.get(Side.RIGHT), getCurrentGame().getServer(), this.type.gamesNeededToWin);
     }
 }

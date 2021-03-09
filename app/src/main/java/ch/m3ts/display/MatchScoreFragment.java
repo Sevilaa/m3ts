@@ -37,6 +37,10 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
     private MediaPlayer mediaPlayer;
     private DisplayPubNub pubNub;
     private boolean isPaused = false;
+    private int gamesNeededToWin;
+    private int scoreLeft;
+    private int scoreRight;
+    private final int MAX_SCORE = 11;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -77,23 +81,22 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
     }
 
     @Override
-    public void onPause() {
+    public void onDestroy() {
         if(this.tts != null) {
+            tts.stop();
             this.tts.shutdown();
         }
-        super.onPause();
+        super.onDestroy();
     }
 
     @Override
     public void onMatchEnded(String winnerName) {
-        tts.stop();
-        tts.shutdown();
-        tts = null;
         Intent intent = new Intent(getActivity(), MatchWonActivity.class);
         Bundle bundle = new Bundle();
         bundle.putString("winner", winnerName);
         bundle.putString("room", this.pubNub.getRoomID());
         intent.putExtras(bundle);
+        while(tts.isSpeaking()) {}
         startActivity(intent);
         getActivity().finish();
     }
@@ -101,11 +104,16 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
     @Override
     public void onScore(final Side side, final int score, final Side nextServer, final Side lastServer) {
         Activity activity = getActivity();
+        if(side == Side.LEFT) {
+            scoreLeft = score;
+        } else {
+            scoreRight = score;
+        }
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 setScoreOnTextView(side, score);
-                updateIndicationNextServer(nextServer, false);
+                updateIndicationNextServer(nextServer);
                 playScoreTTS(nextServer, lastServer);
             }
         });
@@ -117,9 +125,12 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
             @Override
             public void run() {
                 setWinsOnTextView(side, wins);
-                setScoreOnTextView(Side.LEFT, 0);
-                setScoreOnTextView(Side.RIGHT, 0);
-                tts.speak(ttsWin + " " + getPlayerNameBySide(side), TextToSpeech.QUEUE_FLUSH, null, null);
+                if(gamesNeededToWin != wins) {
+                    pubNub.requestStatusUpdate();
+                    setScoreOnTextView(Side.LEFT, 0);
+                    setScoreOnTextView(Side.RIGHT, 0);
+                    tts.speak(ttsWin + " " + getPlayerNameBySide(side), TextToSpeech.QUEUE_FLUSH, null, null);
+                }
             }
         });
     }
@@ -149,9 +160,13 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
             name = getPlayerNameBySide(Side.LEFT);
         }
 
-        if(nextServer != lastServer) {
+        if(nextServer != lastServer && !isWinningPoint()) {
             tts.speak(ttsReadyToServe + " " + name, TextToSpeech.QUEUE_ADD, null, null);
         }
+    }
+
+    private boolean isWinningPoint() {
+        return Math.abs(scoreRight-scoreLeft) > 1 && (scoreLeft >= MAX_SCORE || scoreRight > MAX_SCORE);
     }
 
     private String getPlayerNameBySide(Side side) {
@@ -177,7 +192,7 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
         });
     }
 
-    private void updateIndicationNextServer(Side nextServer, boolean init) {
+    private void updateIndicationNextServer(Side nextServer) {
         Activity activity = getActivity();
         if (activity == null) return;
 
@@ -186,8 +201,7 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
         SpannableString content = new SpannableString(txtView.getText());
         content.setSpan(new UnderlineSpan(), 0, content.length(), 0);
         txtView.setText(content);
-        if (init) colorTextViewAsActive(txtView);
-        else colorTextViewAsInactive(txtView);
+        colorTextViewAsInactive(txtView);
         txtView = getServerLabelTextView(activity, otherSide);
         txtView.setText(txtView.getText().toString());
         colorTextViewAsInactive(txtView);
@@ -258,7 +272,7 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
 
 
     @Override
-    public void onStatusUpdate(final String playerNameLeft, final String playerNameRight, final int pointsLeft, final int pointsRight, final int gamesLeft, final int gamesRight, final Side nextServer) {
+    public void onStatusUpdate(final String playerNameLeft, final String playerNameRight, final int pointsLeft, final int pointsRight, final int gamesLeft, final int gamesRight, final Side nextServer, final int gamesNeeded) {
         Activity activity = getActivity();
         activity.runOnUiThread(new Runnable() {
             @Override
@@ -269,7 +283,8 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
                 setScoreOnTextView(Side.RIGHT, pointsRight);
                 setWinsOnTextView(Side.LEFT, gamesLeft);
                 setWinsOnTextView(Side.RIGHT, gamesRight);
-                updateIndicationNextServer(nextServer, true);
+                updateIndicationNextServer(nextServer);
+                gamesNeededToWin = gamesNeeded;
             }
         });
     }

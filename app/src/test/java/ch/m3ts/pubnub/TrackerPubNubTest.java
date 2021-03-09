@@ -166,7 +166,7 @@ public class TrackerPubNubTest {
 
     @Test
     public void testRequestMatchStatus() {
-        final MatchStatus matchStatus = new MatchStatus("pl","pr",1,0,0,1, Side.RIGHT);
+        final MatchStatus matchStatus = new MatchStatus("pl","pr",1,0,0,1, Side.RIGHT, 1);
         MatchStatusCallback spyCallback = PowerMockito.spy(PowerMockito.mock(MatchStatusCallback.class));
         PowerMockito.doAnswer(new Answer() {
             @Override

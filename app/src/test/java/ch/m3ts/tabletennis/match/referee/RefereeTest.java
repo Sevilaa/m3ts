@@ -43,7 +43,7 @@ public class RefereeTest {
         referee = new Referee(STARTING_SIDE, mockGesture);
         gameMock = mock(Game.class);
         when(gameMock.getServer()).thenReturn(Side.LEFT);
-        referee.setGame(gameMock);
+        referee.setGame(gameMock, true);
         detection = new Lib.Detection();
     }
 

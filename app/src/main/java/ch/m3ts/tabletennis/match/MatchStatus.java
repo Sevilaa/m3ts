@@ -11,6 +11,7 @@ public class MatchStatus {
     private int scoreLeft;
     private int scoreRight;
     private Side nextServer;
+    private int gamesNeededToWin;
 
     public Side getNextServer() {
         return nextServer;
@@ -40,10 +41,14 @@ public class MatchStatus {
         return winsRight;
     }
 
+    public int getGamesNeededToWin() {
+        return this.gamesNeededToWin;
+    }
+
     private int winsLeft;
     private int winsRight;
 
-    public MatchStatus(String playerLeft, String playerRight, int scoreLeft, int scoreRight, int winsLeft, int winsRight, Side nextServer) {
+    public MatchStatus(String playerLeft, String playerRight, int scoreLeft, int scoreRight, int winsLeft, int winsRight, Side nextServer, int gamesNeededToWin) {
         this.playerLeft = playerLeft;
         this.playerRight = playerRight;
         this.scoreLeft = scoreLeft;
@@ -51,5 +56,6 @@ public class MatchStatus {
         this.winsLeft = winsLeft;
         this.winsRight = winsRight;
         this.nextServer = nextServer;
+        this.gamesNeededToWin = gamesNeededToWin;
     }
 }

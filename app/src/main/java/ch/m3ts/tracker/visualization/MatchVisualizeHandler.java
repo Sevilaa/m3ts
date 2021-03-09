@@ -227,6 +227,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         callbacks.add(this);
         ZPositionCalc calc = new ZPositionCalc(viewingAngle, table.getWidth(), srcWidth);
         eventDetector = new EventDetector(config, srcWidth, srcHeight, callbacks, tracks, this.table, calc);
+        this.match.getReferee().initWaitingForGesture();
     }
 
     public void startDetections() {
