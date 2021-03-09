@@ -22,23 +22,21 @@ public class Match implements MatchCallback, MatchStatusCallback {
     private UICallback uiCallback;
     private Referee referee;
     private Side serverSide;
+    private Side startingServer;
     private ServeRules serveRules;
     private GameType gameType;
 
     public Match(MatchType type, GameType gameType, ServeRules serveRules, Player playerLeft, Player playerRight, UICallback uiCallback, Side startingServer, GestureCallback gestureCallback) {
         this.type = type;
         this.gameType = gameType;
-        this.wins = new EnumMap<>(Side.class);
-        this.wins.put(Side.LEFT, 0);
-        this.wins.put(Side.RIGHT,0);
-        this.games = new Game[type.amountOfGames];
+        this.startingServer = startingServer;
+        init();
         this.players = new EnumMap<>(Side.class);
         this.players.put(Side.LEFT, playerLeft);
         this.players.put(Side.RIGHT, playerRight);
         this.uiCallback = uiCallback;
         this.serveRules = serveRules;
         this.referee = new Referee(startingServer, gestureCallback);
-        this.serverSide = startingServer;
         startNewGame(true);
     }
 
@@ -72,6 +70,19 @@ public class Match implements MatchCallback, MatchStatusCallback {
 
     public Referee getReferee() {
         return referee;
+    }
+
+    public void restartMatch() {
+        init();
+        startNewGame(true);
+    }
+
+    private void init() {
+        this.wins = new EnumMap<>(Side.class);
+        this.wins.put(Side.LEFT, 0);
+        this.wins.put(Side.RIGHT,0);
+        this.games = new Game[type.amountOfGames];
+        this.serverSide = startingServer;
     }
 
     private boolean isMatchOver(int wins) {

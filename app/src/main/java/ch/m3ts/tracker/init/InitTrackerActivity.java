@@ -99,6 +99,8 @@ public final class InitTrackerActivity extends CameraPreviewActivity implements 
     protected void onResume() {
         super.onResume();
         init();
+        moveDeviceButton.setVisibility(View.VISIBLE);
+        ((InitTrackerHandler) cameraCallback).setIsReadingQRCode(false);
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         accelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         magnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
@@ -190,7 +192,6 @@ public final class InitTrackerActivity extends CameraPreviewActivity implements 
         adjustDeviceIcon.setImageDrawable(getDrawable(iconId));
         adjustDeviceText.setText(this.getString(messageId));
         qrCodeOverlay.setVisibility(View.INVISIBLE);
-        ((InitTrackerHandler) cameraCallback).setIsReadingQRCode(false);
         adjustDeviceOverlay.setVisibility(View.VISIBLE);
     }
 

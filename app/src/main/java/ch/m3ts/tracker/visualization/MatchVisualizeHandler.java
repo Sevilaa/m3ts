@@ -207,9 +207,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
 
     @Override
     public void restartMatch() {
-        initMatch(this.matchSettings.getStartingServer(), this.matchSettings.getMatchType(), this.matchSettings.getPlayerLeft(), this.matchSettings.getPlayerRight());
-        startDetections();
-        refreshDebugTextViews();
+        // no implementation needed in here
     }
 
     public void refreshDebugTextViews() {

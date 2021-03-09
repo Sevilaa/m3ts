@@ -110,4 +110,10 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
         this.trackerPubNub.setScoreManipulationCallback(match.getReferee());
     }
 
+    @Override
+    public void restartMatch() {
+        this.match.restartMatch();
+        refreshDebugTextViews();
+    }
+
 }
