@@ -112,6 +112,10 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
                     currentStriker = side;
                 }
                 break;
+            case PAUSE:
+                if(side == getServer()) {
+                    this.gameCallback.onNotReadyButPlaying();
+                }
             default:
                 currentStriker = side;
                 break;

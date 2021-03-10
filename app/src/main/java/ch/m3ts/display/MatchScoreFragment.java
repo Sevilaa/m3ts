@@ -137,7 +137,7 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
 
     @Override
     public void onReadyToServe(Side server) {
-        mediaPlayer.start();
+        playSound(R.raw.success);
         Activity activity = getActivity();
         if (activity == null) return;
 
@@ -146,6 +146,20 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
         colorTextViewAsActive(txtView);
         txtView = getServerLabelTextView(activity, otherSide);
         colorTextViewAsInactive(txtView);
+    }
+
+    @Override
+    public void onNotReadyButPlaying() {
+        playSound(R.raw.error);
+    }
+
+    private void playSound(int audioFileID) {
+        if (mediaPlayer.isPlaying()) {
+            mediaPlayer.stop();
+            mediaPlayer.release();
+        }
+        mediaPlayer = MediaPlayer.create(getContext(), audioFileID);
+        mediaPlayer.start();
     }
 
     private void playScoreTTS(Side nextServer, Side lastServer) {

@@ -206,6 +206,11 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     }
 
     @Override
+    public void onNotReadyButPlaying() {
+        // do nothing for now
+    }
+
+    @Override
     public void restartMatch() {
         // no implementation needed in here
     }

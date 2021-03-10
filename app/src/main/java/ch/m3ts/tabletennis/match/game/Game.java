@@ -62,6 +62,11 @@ public class Game implements GameCallback {
         uiCallback.onReadyToServe(side);
     }
 
+    @Override
+    public void onNotReadyButPlaying() {
+        uiCallback.onNotReadyButPlaying();
+    }
+
     public Side getServer() {
         return this.server;
     }

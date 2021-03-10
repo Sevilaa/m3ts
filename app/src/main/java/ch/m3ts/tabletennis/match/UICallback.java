@@ -10,4 +10,5 @@ public interface UICallback {
     void onScore (Side side, int score, Side nextServer, Side lastServer);
     void onWin (Side side, int wins);
     void onReadyToServe(Side server);
+    void onNotReadyButPlaying();
 }
