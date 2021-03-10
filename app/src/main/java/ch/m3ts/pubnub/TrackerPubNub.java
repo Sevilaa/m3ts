@@ -110,6 +110,11 @@ public class TrackerPubNub extends Callback implements UICallback {
         send("onReadyToServe", server.toString(), null, null, null);
     }
 
+    @Override
+    public void onNotReadyButPlaying() {
+        send("onNotReadyButPlaying", null, null, null, null);
+    }
+
     private void sendTableFramePart(final String encodedFrame, final int index, final int numberOfPackages, boolean doContinue) {
         String encodedFramePart;
         if (index == numberOfPackages-1) {

@@ -176,6 +176,9 @@ public class DisplayPubNub extends Callback {
                     case "onReadyToServe":
                         this.uiCallback.onReadyToServe(Side.valueOf(json.getString(JSONInfo.SIDE_PROPERTY)));
                         break;
+                    case "onNotReadyButPlaying":
+                        this.uiCallback.onNotReadyButPlaying();
+                        break;
                     case "onStatusUpdate":
                         this.scoreCallback.onStatusUpdate(json.getString(JSONInfo.PLAYER_NAME_LEFT_PROPERTY), json.getString(JSONInfo.PLAYER_NAME_RIGHT_PROPERTY),
                                 Integer.parseInt(json.getString(JSONInfo.SCORE_LEFT_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.SCORE_RIGHT_PROPERTY)),
