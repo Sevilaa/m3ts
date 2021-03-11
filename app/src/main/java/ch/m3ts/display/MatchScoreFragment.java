@@ -180,7 +180,7 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
     }
 
     private boolean isWinningPoint() {
-        return Math.abs(scoreRight-scoreLeft) > 1 && (scoreLeft >= MAX_SCORE || scoreRight > MAX_SCORE);
+        return Math.abs(scoreRight-scoreLeft) > 1 && (scoreLeft >= MAX_SCORE || scoreRight >= MAX_SCORE);
     }
 
     private String getPlayerNameBySide(Side side) {

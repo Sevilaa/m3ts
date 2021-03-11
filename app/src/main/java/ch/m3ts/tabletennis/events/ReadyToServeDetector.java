@@ -2,6 +2,7 @@ package ch.m3ts.tabletennis.events;
 
 import android.graphics.Point;
 
+import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -9,8 +10,6 @@ import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
-import ch.m3ts.Log;
-import ch.m3ts.helper.OpenCVHelper;
 import ch.m3ts.tabletennis.Table;
 import ch.m3ts.tabletennis.helper.Side;
 
@@ -48,7 +47,7 @@ public class ReadyToServeDetector {
     public boolean isReadyToServe(byte[] frameYUVBytes) {
         boolean isReady = false;
         gestureFrameCounter++;
-        if(gestureFrameCounter % 3 == 0) {
+        if(gestureFrameCounter % 3 == 0 && OpenCVLoader.initDebug()) {
             if(isRacketInArea(frameYUVBytes)) {
                 if(gestureFrameCounter >= GESTURE_HOLD_TIME_IN_FRAMES) {
                     this.callback.onGestureDetected();
@@ -114,8 +113,8 @@ public class ReadyToServeDetector {
         Mat normal = new Mat();
         Mat hsv = new Mat();
         Imgproc.cvtColor(bgr, hsv, Imgproc.COLOR_BGR2HSV, 3);
-        inRange(hsv, new Scalar(0,120,70), new Scalar(10,255,255), mask1);
-        inRange(hsv, new Scalar(170,120,70), new Scalar(180,255,255), mask2);
+        inRange(hsv, new Scalar(0,120,50), new Scalar(10,255,255), mask1);
+        inRange(hsv, new Scalar(170,120,50), new Scalar(180,255,255), mask2);
         Core.bitwise_or(mask1, mask2, normal);
         return mask1;
     }

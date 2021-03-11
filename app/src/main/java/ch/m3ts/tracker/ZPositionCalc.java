@@ -81,7 +81,7 @@ public class ZPositionCalc {
         }
     }
     public boolean isBallZPositionOnTable(double ballRadiusPx) {
-        return (ballRadiusPx <= ballRadiusFrontEdgePx * 1.05) && (ballRadiusPx >= ballRadiusBackEdgePx);
+        return (ballRadiusPx <= ballRadiusFrontEdgePx * 1.05);
     }
 
     public double findZPosMmOfBall(double ballRadiusPx) {

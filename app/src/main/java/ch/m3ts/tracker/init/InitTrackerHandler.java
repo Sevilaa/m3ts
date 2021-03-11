@@ -18,8 +18,6 @@ import com.google.zxing.Result;
 import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.qrcode.QRCodeReader;
 
-import org.opencv.android.OpenCVLoader;
-
 import java.lang.ref.WeakReference;
 
 import ch.m3ts.Log;
@@ -46,11 +44,6 @@ public class InitTrackerHandler extends android.os.Handler implements CameraThre
 
     public InitTrackerHandler(@NonNull InitTrackerActivity activity) {
         mActivity = new WeakReference<>(activity);
-        if(!OpenCVLoader.initDebug()) {
-            Log.d("OpenCV not loaded!");
-        } else {
-            Log.d("OpenCV loaded!");
-        }
     }
 
     public void setIsReadingQRCode(boolean isReadingQRCode) {

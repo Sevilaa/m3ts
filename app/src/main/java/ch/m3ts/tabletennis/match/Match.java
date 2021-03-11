@@ -75,6 +75,7 @@ public class Match implements MatchCallback, MatchStatusCallback {
     public void restartMatch() {
         init();
         startNewGame(true);
+        this.referee.initWaitingForGesture();
     }
 
     private void init() {
