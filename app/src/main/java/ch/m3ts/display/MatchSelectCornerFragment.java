@@ -159,21 +159,22 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
         final GestureDetector gestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
             @Override
             public void onLongPress(MotionEvent e) {
-                if (currentCornerIndex >= 1) return;
+                if (currentCornerIndex >= 2) return;
                 float x = e.getX();
                 float y = e.getY();
                 float zoom = zoomLayout.getZoom();
                 float panX = zoomLayout.getPanX();
                 float panY = zoomLayout.getPanY();
                 Point p = makeAbsPoint(x,y,zoom,panX,panY);
-                tableCorners[0] = p;
-                tableCorners[1] = new Point(displaySize.x-p.x, p.y);
-                currentCornerIndex = 2;
+                tableCorners[currentCornerIndex] = p;
+                currentCornerIndex++;
                 onStateChanged();
                 updateViews();
-                final Activity activity = getActivity();
-                activity.findViewById(R.id.init_description).setVisibility(View.GONE);
-                activity.findViewById(R.id.init_startMatch).setVisibility(View.VISIBLE);
+                if(currentCornerIndex == 2) {
+                    final Activity activity = getActivity();
+                    activity.findViewById(R.id.init_description).setVisibility(View.GONE);
+                    activity.findViewById(R.id.init_startMatch).setVisibility(View.VISIBLE);
+                }
             }
         });
 
@@ -189,9 +190,9 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
         v.findViewById(R.id.init_revertButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                currentCornerIndex = 0;
-                tableCorners[0] = null;
-                tableCorners[1] = null;
+                if (currentCornerIndex <= 0) return;
+                --currentCornerIndex;
+                tableCorners[currentCornerIndex] = null;
                 final Activity activity = getActivity();
                 activity.findViewById(R.id.init_description).setVisibility(View.VISIBLE);
                 activity.findViewById(R.id.init_startMatch).setVisibility(View.GONE);

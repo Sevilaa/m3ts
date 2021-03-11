@@ -11,6 +11,8 @@ import android.support.annotation.NonNull;
 import android.view.SurfaceHolder;
 import android.widget.TextView;
 
+import org.opencv.android.OpenCVLoader;
+
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Date;
@@ -76,6 +78,9 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         this.hasNewTable = true;
         this.uiCallback = this;
         initColors(activity);
+        if (!OpenCVLoader.initDebug()) {
+            // init async here
+        }
     }
 
     public void initMatch(Side servingSide, MatchType matchType, Player playerLeft, Player playerRight) {
