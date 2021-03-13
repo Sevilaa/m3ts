@@ -171,6 +171,7 @@ public class SettingsActivity extends PreferenceActivity {
             bindToSummaryUpdater(findPreference(getString(R.string.prefPlayer1Key)), sSummaryUpdater);
             bindToSummaryUpdater(findPreference(getString(R.string.prefPlayer2Key)), sSummaryUpdater);
             bindToSummaryUpdaterBoolean(findPreference(getString(R.string.prefDisplayDebugKey)), sSummaryUpdater);
+            bindToSummaryUpdaterBoolean(findPreference(getString(R.string.prefRecordKey)), sSummaryUpdater);
         }
     }
 

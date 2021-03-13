@@ -20,6 +20,7 @@ public class Config {
     private final String player1Name;
     private final String player2Name;
     private final boolean useDebug;
+    private final boolean doRecordMatches;
 
     public Config(Context ctx) {
         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(ctx);
@@ -36,6 +37,7 @@ public class Config {
         player1Name = getPlayer1Name(p, ctx);
         player2Name = getPlayer2Name(p, ctx);
         useDebug = getDebug(p, ctx);
+        doRecordMatches = getRecordMatches(p, ctx);
     }
 
     private boolean getFrontFacing(SharedPreferences p) {
@@ -104,6 +106,10 @@ public class Config {
         return p.getBoolean(ctx.getString(R.string.prefDisplayDebugKey), false);
     }
 
+    private boolean getRecordMatches(SharedPreferences p, Context ctx) {
+        return p.getBoolean(ctx.getString(R.string.prefRecordKey), false);
+    }
+
     public float getFrameRate() {
         return frameRate;
     }
@@ -154,6 +160,10 @@ public class Config {
 
     public boolean isUseDebug() {
         return useDebug;
+    }
+
+    public boolean doRecordMatches() {
+        return doRecordMatches;
     }
 
     public enum RecordMode {

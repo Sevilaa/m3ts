@@ -19,4 +19,8 @@
         android:key="@string/prefDisplayDebugKey"
         android:summary="@string/prefDisplayDebugSummary"
         android:title="@string/prefDisplayDebug"/>
+    <SwitchPreference
+        android:defaultValue="@string/prefRecordDefault"
+        android:key="@string/prefRecordKey"
+        android:title="@string/prefRecord" />
 </PreferenceScreen>

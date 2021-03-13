@@ -60,6 +60,9 @@
     <string name="prefDisplayDebugKey">display_debug</string>
     <string name="prefDisplayDebugDefault">false</string>
     <string name="prefDisplayDebugSummary">Shows debug information on the tracking device\'s display</string>
+    <string name="prefRecord">Record matches</string>
+    <string name="prefRecordKey">record_matches</string>
+    <string name="prefRecordDefault">false</string>
 
     <!-- Detection settings -->
     <string name="prefVelocityEstimationMode">Velocity estimation mode</string>

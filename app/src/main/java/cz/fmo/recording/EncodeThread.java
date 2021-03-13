@@ -14,16 +14,14 @@ import cz.fmo.util.GenericThread;
  */
 public class EncodeThread extends GenericThread<EncodeThreadHandler> {
     private final CyclicBuffer mBuf;
-    private final Callback mCb;
     private final MediaCodec.BufferInfo mInfo;
     private final MediaCodec mCodec;
     private final Surface mInputSurface;
     private boolean mReleased = false;
 
-    public EncodeThread(MediaFormat format, CyclicBuffer buf, Callback cb) {
+    public EncodeThread(MediaFormat format, CyclicBuffer buf) {
         super("EncodeThread");
         mBuf = buf;
-        mCb = cb;
         mInfo = new MediaCodec.BufferInfo();
 
         try {
@@ -73,7 +71,6 @@ public class EncodeThread extends GenericThread<EncodeThreadHandler> {
             mCodec.releaseOutputBuffer(status, false);
             if ((mInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) break;
         }
-        mCb.flushCompleted(this);
     }
 
     @Override
@@ -108,9 +105,5 @@ public class EncodeThread extends GenericThread<EncodeThreadHandler> {
         synchronized (mBuf) {
             mBuf.clear();
         }
-    }
-
-    public interface Callback {
-        void flushCompleted(EncodeThread thread);
     }
 }

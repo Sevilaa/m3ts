@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.TextView;
 
+import java.lang.ref.WeakReference;
 import java.util.Date;
 import java.util.Timer;
 
@@ -36,10 +37,12 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
     private static final int CAMERA_ERROR = 2;
     private TrackerPubNub trackerPubNub;
     private final boolean doDrawDebugInfo;
+    private final WeakReference<LiveActivity> mActivity;
 
     public LiveHandler(@NonNull MatchVisualizeActivity activity, String matchID) {
         super(activity);
         this.doDrawDebugInfo = new Config(activity).isUseDebug();
+        this.mActivity = new WeakReference<>((LiveActivity) activity);
         TextView displayConnectedText = (TextView) activity.findViewById(R.id.display_connected_status);
         try {
             this.trackerPubNub = PubNubFactory.createTrackerPubNub(activity.getApplicationContext(), matchID);
@@ -57,7 +60,10 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
 
     @Override
     public void onCameraRender() {
-        // no implementation
+        LiveActivity liveActivity = mActivity.get();
+        if (liveActivity == null) return;
+        if (liveActivity.getmEncode() == null) return;
+        liveActivity.getmEncode().getHandler().sendFlush();
     }
 
     @Override
