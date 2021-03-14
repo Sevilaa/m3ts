@@ -8,6 +8,7 @@ import ch.m3ts.tabletennis.events.GestureCallback;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.game.GameType;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -18,14 +19,15 @@ public class MatchTest {
     private Match match;
     private GestureCallback gestureCallback;
     private UICallback uiCallback;
-    private final String PLAYER_1_NAME = "Testian";
-    private final String PLAYER_2_NAME = "Mockian";
+    private final String PLAYER_1_NAME = "Test_Spieler";
+    private final String PLAYER_2_NAME = "Test_Spieler_Der_Zweite";
+    private final Side startingServerSide = Side.LEFT;
 
     @Before
     public void setUp() {
         uiCallback = mock(UICallback.class);
         gestureCallback = mock(GestureCallback.class);
-        match = new Match(MatchType.BO1, GameType.G11, ServeRules.S2, new Player(PLAYER_1_NAME), new Player(PLAYER_2_NAME), uiCallback, Side.LEFT, gestureCallback);
+        match = new Match(MatchType.BO1, GameType.G11, ServeRules.S2, new Player(PLAYER_1_NAME), new Player(PLAYER_2_NAME), uiCallback, startingServerSide, gestureCallback);
     }
 
     @After
@@ -33,6 +35,53 @@ public class MatchTest {
         match = null;
         uiCallback = null;
         gestureCallback = null;
+    }
+
+    @Test
+    public void testRestartOfAMatch() {
+        match.restartMatch();
+        assertEquals(startingServerSide, match.getReferee().getServer());
+
+        // check server side on restart matches in different scenarios
+        // Scenario 1: One Player still ends the match with a serve left
+        for (int i = 0; i<11; i++) {
+            match.getReferee().onPointAddition(Side.LEFT);
+        }
+        checkStartingServerAfterAMatchRestart();
+
+        // Scenario 2: One Player still ends the match with no serve left
+        match.getReferee().onPointAddition(Side.RIGHT);
+        for (int i = 0; i<11; i++) {
+            match.getReferee().onPointAddition(Side.LEFT);
+        }
+        checkStartingServerAfterAMatchRestart();
+
+        // Scenario 3: Same as Scenario 1 but for other player
+        match.getReferee().onPointAddition(Side.RIGHT);
+        match.getReferee().onPointAddition(Side.RIGHT);
+        for (int i = 0; i<11; i++) {
+            match.getReferee().onPointAddition(Side.LEFT);
+        }
+        checkStartingServerAfterAMatchRestart();
+
+        // Scenario 4: Same as Scenario 2 but for other player
+        match.getReferee().onPointAddition(Side.RIGHT);
+        match.getReferee().onPointAddition(Side.RIGHT);
+        match.getReferee().onPointAddition(Side.RIGHT);
+        for (int i = 0; i<11; i++) {
+            match.getReferee().onPointAddition(Side.LEFT);
+        }
+        checkStartingServerAfterAMatchRestart();
+    }
+
+    private void checkStartingServerAfterAMatchRestart() {
+        match.restartMatch();
+        assertEquals(startingServerSide, match.getReferee().getServer());
+        match.getReferee().onPointAddition(Side.LEFT);
+        assertEquals(startingServerSide, match.getReferee().getServer());
+        match.getReferee().onPointAddition(Side.LEFT);
+        assertEquals(Side.getOpposite(startingServerSide), match.getReferee().getServer());
+        match.restartMatch();
     }
 
     @Test

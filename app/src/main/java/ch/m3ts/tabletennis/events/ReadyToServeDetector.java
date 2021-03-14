@@ -25,10 +25,10 @@ public class ReadyToServeDetector {
     private ReadyToServeCallback callback;
     private Side server;
     private int gestureFrameCounter = 0;
-    private final double PERCENTAGE_THRESHOLD = 0.15;
-    private final int GESTURE_HOLD_TIME_IN_FRAMES = 15;
-    private final double GESTURE_AREA_PERCENTAGE_RELATIVE_TO_TABLE = 0.1;
-    private final static double MAX_COLOR_CHANNEL_OFFSET = 10;
+    private static final double PERCENTAGE_THRESHOLD = 0.15;
+    private static final int GESTURE_HOLD_TIME_IN_FRAMES = 15;
+    private static final double GESTURE_AREA_PERCENTAGE_RELATIVE_TO_TABLE = 0.1;
+    private static final double MAX_COLOR_CHANNEL_OFFSET = 10;
 
     public ReadyToServeDetector(Table table, Side server, int cameraWidth, int cameraHeight, ReadyToServeCallback callback) {
         this.table = table;
