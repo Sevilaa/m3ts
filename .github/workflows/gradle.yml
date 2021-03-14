@@ -27,6 +27,6 @@ jobs:
     - name: Install NDK
       run: echo "y" | sudo /usr/local/lib/android/sdk/tools/bin/sdkmanager --install "ndk;16.1.4479499" --sdk_root=${ANDROID_SDK_ROOT}
     - name: Build with Gradle
-      run: ./gradlew build -x lint
+      run: ./gradlew build
     - name: Run Unit Tests
       run: ./gradlew test
