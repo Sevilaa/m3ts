@@ -14,17 +14,22 @@ import androidx.test.rule.ActivityTestRule;
 import androidx.test.rule.GrantPermissionRule;
 import androidx.test.runner.AndroidJUnit4;
 import cz.fmo.R;
+import cz.fmo.util.Config;
 import helper.GrantPermission;
 
-import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.Espresso.pressBack;
 import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.action.ViewActions.replaceText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withClassName;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
-import static androidx.test.espresso.matcher.ViewMatchers.withSpinnerText;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
-import static org.hamcrest.CoreMatchers.anything;
+import static junit.framework.Assert.assertEquals;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.endsWith;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
@@ -65,9 +70,9 @@ public class MainActivityTest {
         // test the fragments of MatchActivity
         checkMatchSettingsAndQRCode();
         mDevice.pressBack();
-        mDevice.pressBack();
+        onView(withText(activity.getString(R.string.quitMatchProceed))).perform(click());
 
-        // should be back now
+        // should be back in main activity
         onView(withId(R.id.mainUseAsDisplayBtn))
                 .check(matches(isDisplayed()));
         onView(withId(R.id.mainUseAsTrackerBtn))
@@ -75,10 +80,41 @@ public class MainActivityTest {
         GrantPermission.grantAllPermissions();
 
         // should be in init activity
-        onView(withId(R.id.scan_overlay))
+        onView(withId(R.id.adjust_device_overlay))
                 .check(matches(isDisplayed()));
         mDevice.pressBack();
         activity.finish();
+    }
+
+    @Test
+    public void checkAppSettings() {
+        Activity activity = pmsMainActivityRule.getActivity();
+        Config config = new Config(activity);
+        String newPlayer1Name = "Some Player 1";
+        String newPlayer2Name = "My other Player";
+        onView(withId(R.id.live_settings_button)).perform(click());
+        onView(withText(R.string.prefPlayer1Name)).perform(click());
+        onView(allOf(withClassName(endsWith("EditText"))))
+                .perform(replaceText(newPlayer1Name));
+        onView(withText("OK")).perform(click());
+        onView(withText(R.string.prefPlayer2Name)).perform(click());
+        onView(allOf(withClassName(endsWith("EditText"))))
+                .perform(replaceText(newPlayer2Name));
+        onView(withText("OK")).perform(click());
+
+        boolean isUseDebug = config.isUseDebug();
+        boolean recordMatches = config.doRecordMatches();
+        onView(withText(R.string.prefDisplayDebug)).perform(click());
+        onView(withText(R.string.prefRecord)).perform(click());
+
+        // now check the edited settings in main activity
+        pressBack();
+        config = new Config(activity);
+        assertEquals(!isUseDebug, config.isUseDebug());
+        assertEquals(!recordMatches, config.doRecordMatches());
+        assertEquals(newPlayer1Name, config.getPlayer1Name());
+        assertEquals(newPlayer2Name, config.getPlayer2Name());
+
     }
 
     private void checkMatchSettingsAndQRCode() {

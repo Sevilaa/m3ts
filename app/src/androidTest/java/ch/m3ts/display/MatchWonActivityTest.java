@@ -49,6 +49,7 @@ public class MatchWonActivityTest extends InstrumentationTestCase {
     public void setUp() {
         injectInstrumentation(InstrumentationRegistry.getInstrumentation());
         activity = initActivityRule.getActivity();
+        onView(isRoot()).perform(waitFor(1000));
     }
 
     @After

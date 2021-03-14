@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.test.InstrumentationTestCase;
-import android.view.Display;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -29,7 +28,6 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.rule.GrantPermissionRule;
 import androidx.test.runner.AndroidJUnit4;
-
 import ch.m3ts.tabletennis.helper.Side;
 import cz.fmo.R;
 import helper.GrantPermission;
@@ -42,6 +40,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.hasTextColor;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertNotEquals;
 
@@ -117,24 +116,19 @@ public class MatchActivityTest extends InstrumentationTestCase {
             assertNull(corner);
         }
 
-        // long click once on a random location on the screen, the other corner should appear
-        // mirrored to the first one (y-axis mirror)
-        int x = Math.round(100 * (float) Math.random());
-        int y = Math.round(100 * (float) Math.random());
-        xLocations[0] = x;
-        yLocations[0] = y;
-        Display display = matchActivity.getWindowManager().getDefaultDisplay();
-        Point displaySize = new Point();
-        display.getSize(displaySize);
-        xLocations[1] = displaySize.x - x;
-        yLocations[1] = y;
-
-        onView(withId(R.id.init_zoomLayout))
-                .perform(longClickXY(x,y));
-        assertNotNull(corners[0]);
-        assertEquals(x, corners[0].x);
-        assertEquals(y, corners[0].y);
-        assertEquals(String.valueOf(2), txtSelectedCorners.getText());
+        // long click 2 times on random locations on the screen and check if table corners have been selected
+        for (int i = 0; i<2; i++) {
+            int x = Math.round(100 * (float) Math.random());
+            int y = Math.round(100 * (float) Math.random());
+            xLocations[i] = x;
+            yLocations[i] = y;
+            onView(withId(R.id.init_zoomLayout))
+                    .perform(longClickXY(x,y));
+            assertNotNull(corners[i]);
+            assertEquals(x, corners[i].x);
+            assertEquals(y, corners[i].y);
+            assertEquals(String.valueOf(i+1), txtSelectedCorners.getText());
+        }
 
         // long click some more
         testLongClickingScreenTooManyTimes(xLocations, yLocations);
@@ -142,9 +136,11 @@ public class MatchActivityTest extends InstrumentationTestCase {
         // now de-select all corners by hitting the revert button
         onView(withId(R.id.init_revertButton))
                 .perform(click());
+        onView(withId(R.id.init_revertButton))
+                .perform(click());
         assertNull(corners[0]);
         assertNull(corners[1]);
-        assertNull(matchActivity.findViewById(R.id.init_startGameBtn));
+        onView(withId(R.id.init_startMatch)).check(matches(not(isDisplayed())));
 
         // hit revert button some more
         testClickingRevertTooManyTimes();
@@ -153,7 +149,7 @@ public class MatchActivityTest extends InstrumentationTestCase {
     @Test
     public void testStartingGame() throws Exception {
         switchToCornerSelection();
-        for (int i = 0; i<4; i++) {
+        for (int i = 0; i<2; i++) {
             int x = Math.round(100 * (float) Math.random());
             int y = Math.round(100 * (float) Math.random());
             onView(withId(R.id.init_zoomLayout))
@@ -183,6 +179,7 @@ public class MatchActivityTest extends InstrumentationTestCase {
         Thread.sleep(1000);
 
         final int scoreRight = random.nextInt(10);
+        final int scoreLeft = random.nextInt(10);
         final int winsLeft = random.nextInt(10);
         final int winsRight = random.nextInt(10);
         final String playerLeft = "left";
@@ -194,33 +191,33 @@ public class MatchActivityTest extends InstrumentationTestCase {
                 matchScoreFragment.onReadyToServe(Side.RIGHT);
             }
         });
-        onView(withId(R.id.right_name)).check(matches(hasTextColor(R.color.display_serving)));
-        onView(withId(R.id.left_name)).check(matches(hasTextColor(android.R.color.secondary_text_light)));
+        onView(withId(R.id.right_score)).check(matches(hasTextColor(R.color.display_serving)));
+        onView(withId(R.id.left_score)).check(matches(hasTextColor(R.color.primary_light)));
         getInstrumentation().runOnMainSync(new Runnable(){
             public void run(){
                 matchScoreFragment.onReadyToServe(Side.LEFT);
             }
         });
-        onView(withId(R.id.left_name)).check(matches(hasTextColor(R.color.display_serving)));
-        onView(withId(R.id.right_name)).check(matches(hasTextColor(android.R.color.secondary_text_light)));
+        onView(withId(R.id.left_score)).check(matches(hasTextColor(R.color.display_serving)));
+        onView(withId(R.id.right_score)).check(matches(hasTextColor(R.color.primary_light)));
 
         // invoke onStatusUpdate and check if value matches
         getInstrumentation().runOnMainSync(new Runnable(){
             public void run(){
-                matchScoreFragment.onStatusUpdate(playerLeft, playerRight, scoreRight, scoreRight, winsLeft, winsRight, Side.LEFT);
+                matchScoreFragment.onStatusUpdate(playerLeft, playerRight, scoreLeft, scoreRight, winsLeft, winsRight, Side.LEFT, 2);
             }
         });
-        assertEquals("0"+winsLeft, ((TextView)matchActivity.findViewById(R.id.left_games)).getText());
-        assertEquals("0"+winsRight, ((TextView)matchActivity.findViewById(R.id.right_games)).getText());
-        assertEquals("0"+scoreRight, ((TextView)matchActivity.findViewById(R.id.right_score)).getText());
-        assertEquals("0"+scoreRight, ((TextView)matchActivity.findViewById(R.id.left_score)).getText());
+        onView(withId(R.id.left_games)).check(matches(withText(containsString("0"+winsLeft))));
+        onView(withId(R.id.right_games)).check(matches(withText(containsString("0"+winsRight))));
+        onView(withId(R.id.right_score)).check(matches(withText(containsString("0"+scoreRight))));
+        onView(withId(R.id.left_score)).check(matches(withText(containsString("0"+scoreLeft))));
         assertEquals(playerLeft, ((TextView)matchActivity.findViewById(R.id.left_name)).getText().toString());
         assertEquals(playerRight, ((TextView)matchActivity.findViewById(R.id.right_name)).getText().toString());
 
         // invoke onScore and check if value matches
         getInstrumentation().runOnMainSync(new Runnable(){
             public void run(){
-                matchScoreFragment.onScore(Side.RIGHT, scoreRight, Side.LEFT);
+                matchScoreFragment.onScore(Side.RIGHT, scoreRight, Side.LEFT, Side.LEFT);
             }
         });
         TextView textView = matchActivity.findViewById(R.id.right_score);
@@ -400,7 +397,7 @@ public class MatchActivityTest extends InstrumentationTestCase {
                 .check(matches(isDisplayed()));
         assertEquals(String.valueOf(matchSelectCornerFragment.getTableCorners().length), txtMaxCorners.getText());
         // we shouldn't see the "Start Game" button - as no corners have been selected
-        onView(withId(R.id.init_startGameBtn))
-                .check(doesNotExist());
+        onView(withId(R.id.init_startMatch))
+                .check(matches(not(isDisplayed())));
     }
 }
