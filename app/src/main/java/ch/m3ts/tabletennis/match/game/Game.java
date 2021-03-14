@@ -35,8 +35,9 @@ public class Game implements GameCallback {
     public void onPoint(Side side) {
         scoreManager.score(side, server);
         int score = scoreManager.getScore(side);
+        Side lastServer = server;
         changeServer();
-        uiCallback.onScore(side, score, this.server);
+        uiCallback.onScore(side, score, this.server, lastServer);
         if (hasReachedMax(score)) {
             matchCallback.onWin(side);
         }
@@ -49,7 +50,7 @@ public class Game implements GameCallback {
             Side lastServer = scoreManager.revertLastScore(side);
             score = scoreManager.getScore(side);
             this.server = lastServer;
-            uiCallback.onScore(side, score, this.server);
+            uiCallback.onScore(side, score, lastServer, scoreManager.getLastServer());
             if (hasReachedMax(score)) {
                 matchCallback.onWin(side);
             }
@@ -59,6 +60,11 @@ public class Game implements GameCallback {
     @Override
     public void onReadyToServe(Side side) {
         uiCallback.onReadyToServe(side);
+    }
+
+    @Override
+    public void onNotReadyButPlaying() {
+        uiCallback.onNotReadyButPlaying();
     }
 
     public Side getServer() {

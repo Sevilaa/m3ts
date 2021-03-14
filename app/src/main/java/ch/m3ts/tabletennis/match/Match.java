@@ -22,23 +22,21 @@ public class Match implements MatchCallback, MatchStatusCallback {
     private UICallback uiCallback;
     private Referee referee;
     private Side serverSide;
+    private Side startingServer;
     private ServeRules serveRules;
     private GameType gameType;
 
     public Match(MatchType type, GameType gameType, ServeRules serveRules, Player playerLeft, Player playerRight, UICallback uiCallback, Side startingServer, GestureCallback gestureCallback) {
         this.type = type;
         this.gameType = gameType;
-        this.wins = new EnumMap<>(Side.class);
-        this.wins.put(Side.LEFT, 0);
-        this.wins.put(Side.RIGHT,0);
-        this.games = new Game[type.amountOfGames];
+        this.startingServer = startingServer;
+        init();
         this.players = new EnumMap<>(Side.class);
         this.players.put(Side.LEFT, playerLeft);
         this.players.put(Side.RIGHT, playerRight);
         this.uiCallback = uiCallback;
         this.serveRules = serveRules;
         this.referee = new Referee(startingServer, gestureCallback);
-        this.serverSide = startingServer;
         startNewGame(true);
     }
 
@@ -51,7 +49,7 @@ public class Match implements MatchCallback, MatchStatusCallback {
         if(!firstInit) switchServers();
         Game game = new Game(this, uiCallback, gameType, serveRules, this.serverSide);
         this.games[this.wins.get(Side.RIGHT) + this.wins.get(Side.LEFT)] = game;
-        this.referee.setGame(game);
+        this.referee.setGame(game, firstInit);
     }
 
     public void end(Side winner) {
@@ -74,6 +72,20 @@ public class Match implements MatchCallback, MatchStatusCallback {
         return referee;
     }
 
+    public void restartMatch() {
+        init();
+        startNewGame(true);
+        this.referee.initWaitingForGesture();
+    }
+
+    private void init() {
+        this.wins = new EnumMap<>(Side.class);
+        this.wins.put(Side.LEFT, 0);
+        this.wins.put(Side.RIGHT,0);
+        this.games = new Game[type.amountOfGames];
+        this.serverSide = startingServer;
+    }
+
     private boolean isMatchOver(int wins) {
         return (wins >= this.type.gamesNeededToWin);
     }
@@ -93,6 +105,6 @@ public class Match implements MatchCallback, MatchStatusCallback {
     @Override
     public MatchStatus onRequestMatchStatus() {
         return new MatchStatus(players.get(Side.LEFT).getName(), players.get(Side.RIGHT).getName(), getCurrentGame().getScore(Side.LEFT),
-                getCurrentGame().getScore(Side.RIGHT), wins.get(Side.LEFT), wins.get(Side.RIGHT), getCurrentGame().getServer());
+                getCurrentGame().getScore(Side.RIGHT), wins.get(Side.LEFT), wins.get(Side.RIGHT), getCurrentGame().getServer(), this.type.gamesNeededToWin);
     }
 }

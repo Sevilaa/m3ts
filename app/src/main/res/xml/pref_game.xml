@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <EditTextPreference
+        android:defaultValue="@string/prefPlayer1NameDefault"
+        android:inputType="textPersonName"
+        android:key="@string/prefPlayer1Key"
+        android:maxLines="1"
+        android:singleLine="true"
+        android:title="@string/prefPlayer1Name"/>
+    <EditTextPreference
+        android:defaultValue="@string/prefPlayer2NameDefault"
+        android:inputType="textPersonName"
+        android:key="@string/prefPlayer2Key"
+        android:maxLines="1"
+        android:singleLine="true"
+        android:title="@string/prefPlayer2Name"/>
+    <SwitchPreference
+        android:defaultValue="@string/prefDisplayDebugDefault"
+        android:key="@string/prefDisplayDebugKey"
+        android:summary="@string/prefDisplayDebugSummary"
+        android:title="@string/prefDisplayDebug"/>
+    <SwitchPreference
+        android:defaultValue="@string/prefRecordDefault"
+        android:key="@string/prefRecordKey"
+        android:title="@string/prefRecord" />
+</PreferenceScreen>

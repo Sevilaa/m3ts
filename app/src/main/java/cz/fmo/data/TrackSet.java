@@ -77,7 +77,7 @@ public class TrackSet {
         }
     }
 
-    public List<Track> getTracks() {return Collections.unmodifiableList(mTracks);}
+    public List<Track> getTracks() {return mTracks;}
 
     public Track getTrackWithLatestDetection() {
         int index = 0;

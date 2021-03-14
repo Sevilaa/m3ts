@@ -2,6 +2,7 @@ package ch.m3ts.tabletennis.events;
 
 import android.graphics.Point;
 
+import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -9,7 +10,6 @@ import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
-import ch.m3ts.helper.OpenCVHelper;
 import ch.m3ts.tabletennis.Table;
 import ch.m3ts.tabletennis.helper.Side;
 
@@ -25,10 +25,10 @@ public class ReadyToServeDetector {
     private ReadyToServeCallback callback;
     private Side server;
     private int gestureFrameCounter = 0;
-    private boolean invertedSegmentationOn = true;
-    private final double PERCENTAGE_THRESHOLD = 0.15;
-    private final int GESTURE_HOLD_TIME_IN_FRAMES = 15;
-    private final double GESTURE_AREA_PERCENTAGE_RELATIVE_TO_TABLE = 0.1;
+    private static final double PERCENTAGE_THRESHOLD = 0.15;
+    private static final int GESTURE_HOLD_TIME_IN_FRAMES = 15;
+    private static final double GESTURE_AREA_PERCENTAGE_RELATIVE_TO_TABLE = 0.1;
+    private static final double MAX_COLOR_CHANNEL_OFFSET = 10;
 
     public ReadyToServeDetector(Table table, Side server, int cameraWidth, int cameraHeight, ReadyToServeCallback callback) {
         this.table = table;
@@ -48,7 +48,7 @@ public class ReadyToServeDetector {
     public boolean isReadyToServe(byte[] frameYUVBytes) {
         boolean isReady = false;
         gestureFrameCounter++;
-        if(gestureFrameCounter % 3 == 0) {
+        if(gestureFrameCounter % 3 == 0 && OpenCVLoader.initDebug()) {
             if(isRacketInArea(frameYUVBytes)) {
                 if(gestureFrameCounter >= GESTURE_HOLD_TIME_IN_FRAMES) {
                     this.callback.onGestureDetected();
@@ -69,26 +69,19 @@ public class ReadyToServeDetector {
         Mat yuv = new Mat(getYUVMatHeight(), this.cameraWidth, CvType.CV_8UC1);
         yuv.put( 0, 0, frameYUVBytes);
 
-        //OpenCVHelper.saveImage(yuv, "yuv");
         Mat bgr = convertYUVToBGRInAreaSize(yuv);
 
-        Mat mask;
-        // TODO determine best variant
-        if(invertedSegmentationOn) {
-            mask = segmentRedColorViaInverting(bgr);
-        } else {
-            mask = segmentRedColor(bgr);
-        }
-        double test = Core.countNonZero(mask) / (double)mask.total();
+        Mat maskWithInvert = segmentRedColorViaInverting(bgr);
+        Mat maskWithTwoThresh = segmentRedColor(bgr);
+        Mat mask = new Mat();
+        Core.bitwise_or(maskWithInvert, maskWithTwoThresh, mask);
         return Core.countNonZero(mask) / (double)mask.total();
     }
 
     private Mat convertYUVToBGRInAreaSize(Mat yuv) {
         Mat bgr = new Mat();
         Imgproc.cvtColor(yuv, bgr, Imgproc.COLOR_YUV2BGR_NV21, 3);
-        //OpenCVHelper.saveImage(bgr, "bgr");
         bgr = bgr.submat(getGestureArea());
-        //OpenCVHelper.saveImage(bgr, "bgrCropped");
         return bgr;
     }
 
@@ -100,10 +93,13 @@ public class ReadyToServeDetector {
         int width = (int) (this.table.getWidth() * GESTURE_AREA_PERCENTAGE_RELATIVE_TO_TABLE);
 
         Point position = this.table.getCornerDownLeft();
+        int positionX = position.x;
         if(this.server == Side.RIGHT) {
             position = this.table.getCornerDownRight();
+            positionX = position.x - width;
+            if(positionX<0) positionX = 0;
         }
-        return new Rect(position.x - width/2, position.y - width/2, width, width);
+        return new Rect(positionX, position.y - width/2, width, width);
     }
 
     /**
@@ -118,14 +114,9 @@ public class ReadyToServeDetector {
         Mat normal = new Mat();
         Mat hsv = new Mat();
         Imgproc.cvtColor(bgr, hsv, Imgproc.COLOR_BGR2HSV, 3);
-        inRange(hsv, new Scalar(0,120,70), new Scalar(10,255,255), mask1);
-        // evtl. Maske 2 weglassen? Muss getestet werden
-        inRange(hsv, new Scalar(170,120,70), new Scalar(180,255,255), mask2);
+        inRange(hsv, new Scalar(0,120,50), new Scalar(MAX_COLOR_CHANNEL_OFFSET,255,255), mask1);
+        inRange(hsv, new Scalar(170,120,50), new Scalar(180,255,255), mask2);
         Core.bitwise_or(mask1, mask2, normal);
-        /*OpenCVHelper.saveImage(hsv, "hsv");
-        OpenCVHelper.saveImage(mask1, "mask1");
-        OpenCVHelper.saveImage(mask2, "mask2");
-        OpenCVHelper.saveImage(normal, "normal");*/
         return mask1;
     }
 
@@ -142,9 +133,7 @@ public class ReadyToServeDetector {
         Mat maskInv = new Mat();
         Core.bitwise_not(bgr, bgrInverted);
         Imgproc.cvtColor(bgrInverted, hsvInverted, Imgproc.COLOR_BGR2HSV);
-        inRange(hsvInverted, new Scalar(90 - 10, 70, 50), new Scalar(90 + 10, 255, 255), maskInv);
-        OpenCVHelper.saveImage(bgrInverted, "bgrinverted");
-        OpenCVHelper.saveImage(maskInv, "inverted");
+        inRange(hsvInverted, new Scalar(90 - MAX_COLOR_CHANNEL_OFFSET, 70, 50), new Scalar(90 + MAX_COLOR_CHANNEL_OFFSET, 255, 255), maskInv);
         return maskInv;
     }
 

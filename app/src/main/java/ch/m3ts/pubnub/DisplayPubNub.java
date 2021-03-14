@@ -168,7 +168,7 @@ public class DisplayPubNub extends Callback {
                         break;
                     case "onScore":
                         this.uiCallback.onScore(Side.valueOf(json.getString(JSONInfo.SIDE_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.SCORE_PROPERTY)),
-                                Side.valueOf(json.getString(JSONInfo.NEXT_SERVER_PROPERTY)));
+                                Side.valueOf(json.getString(JSONInfo.NEXT_SERVER_PROPERTY)), Side.valueOf(json.getString(JSONInfo.LAST_SERVER_PROPERTY)));
                         break;
                     case "onWin":
                         this.uiCallback.onWin(Side.valueOf(json.getString(JSONInfo.SIDE_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.WINS_PROPERTY)));
@@ -176,11 +176,14 @@ public class DisplayPubNub extends Callback {
                     case "onReadyToServe":
                         this.uiCallback.onReadyToServe(Side.valueOf(json.getString(JSONInfo.SIDE_PROPERTY)));
                         break;
+                    case "onNotReadyButPlaying":
+                        this.uiCallback.onNotReadyButPlaying();
+                        break;
                     case "onStatusUpdate":
                         this.scoreCallback.onStatusUpdate(json.getString(JSONInfo.PLAYER_NAME_LEFT_PROPERTY), json.getString(JSONInfo.PLAYER_NAME_RIGHT_PROPERTY),
                                 Integer.parseInt(json.getString(JSONInfo.SCORE_LEFT_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.SCORE_RIGHT_PROPERTY)),
                                 Integer.parseInt(json.getString(JSONInfo.WINS_LEFT_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.WINS_RIGHT_PROPERTY)),
-                                Side.valueOf(json.getString(JSONInfo.NEXT_SERVER_PROPERTY)));
+                                Side.valueOf(json.getString(JSONInfo.NEXT_SERVER_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.GAMES_NEEDED_PROPERTY)));
                         break;
                     case "onConnected":
                         if(this.connectCallback != null) {

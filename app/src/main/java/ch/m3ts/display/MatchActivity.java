@@ -1,5 +1,6 @@
 package ch.m3ts.display;
 
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -15,6 +16,7 @@ import java.util.Properties;
 import java.util.Random;
 
 import ch.m3ts.Log;
+import ch.m3ts.helper.QuitAlertDialogHelper;
 import ch.m3ts.pubnub.DisplayPubNub;
 import ch.m3ts.pubnub.PubNubFactory;
 import cz.fmo.R;
@@ -28,10 +30,12 @@ import cz.fmo.R;
 public class MatchActivity extends FragmentActivity implements FragmentReplaceCallback {
     private DisplayPubNub pubNub;
     private Random random = new SecureRandom();
+    private AlertDialog alertDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        this.alertDialog = QuitAlertDialogHelper.makeDialog(this);
         setContentView(R.layout.activity_match);
         RelativeLayout relativeLayout = findViewById(R.id.mainBackground);
         AnimationDrawable animationDrawable = (AnimationDrawable) relativeLayout.getBackground();
@@ -87,5 +91,16 @@ public class MatchActivity extends FragmentActivity implements FragmentReplaceCa
             buffer.append((char) randomLimitedInt);
         }
         return buffer.toString();
+    }
+
+    @Override
+    protected void onPause() {
+        alertDialog.dismiss();
+        super.onPause();
+    }
+
+    @Override
+    public void onBackPressed() {
+        this.alertDialog.show();
     }
 }

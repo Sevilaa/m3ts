@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="run all unit tests" type="AndroidJUnit" factoryName="Android JUnit">
-    <module name="app" />
+    <module name="m3ts.app" />
     <useClassPathOnly />
     <extension name="coverage" track_test_folders="true" runner="jacoco" />
     <option name="MAIN_CLASS_NAME" value="" />

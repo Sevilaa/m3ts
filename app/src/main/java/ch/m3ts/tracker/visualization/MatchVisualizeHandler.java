@@ -1,6 +1,7 @@
 package ch.m3ts.tracker.visualization;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -10,16 +11,15 @@ import android.support.annotation.NonNull;
 import android.view.SurfaceHolder;
 import android.widget.TextView;
 
+import org.opencv.android.OpenCVLoader;
+
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 
-import ch.m3ts.Log;
 import ch.m3ts.display.OnSwipeListener;
-import ch.m3ts.pubnub.PubNubFactory;
-import ch.m3ts.pubnub.TrackerPubNub;
 import ch.m3ts.tabletennis.Table;
 import ch.m3ts.tabletennis.events.EventDetectionCallback;
 import ch.m3ts.tabletennis.events.EventDetector;
@@ -34,6 +34,7 @@ import ch.m3ts.tabletennis.match.ServeRules;
 import ch.m3ts.tabletennis.match.UICallback;
 import ch.m3ts.tabletennis.match.game.GameType;
 import ch.m3ts.tabletennis.match.game.ScoreManipulationCallback;
+import ch.m3ts.tracker.ZPositionCalc;
 import cz.fmo.Lib;
 import cz.fmo.R;
 import cz.fmo.data.Track;
@@ -42,16 +43,20 @@ import cz.fmo.util.Config;
 
 /**
  * Renders the images received by any video source onto the screen and also passes them to FMO.
+ * Use this Handler for tasks which need to be done on Replay AND live.
  *
  * FMO then finds detections and tracks and forwards them to the EventDetector, which then calls
  * for events on this Handler.
  **/
 public class MatchVisualizeHandler extends android.os.Handler implements EventDetectionCallback, UICallback, MatchVisualizeHandlerCallback, GestureCallback {
-    private static final int MAX_REFRESHING_TIME_MS = 500;
+    protected static final int MAX_REFRESHING_TIME_MS = 500;
     final WeakReference<MatchVisualizeActivity> mActivity;
     private EventDetector eventDetector;
     private ReadyToServeDetector serveDetector;
     private Paint p;
+    private Paint oofP;
+    private Paint bounceP;
+    private Paint trackP;
     private VideoScaling videoScaling;
     private Config config;
     private TrackSet tracks;
@@ -59,42 +64,28 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     private boolean hasNewTable;
     private Lib.Detection latestNearlyOutOfFrame;
     private Lib.Detection latestBounce;
-    private Match match;
-    private MatchSettings matchSettings;
     private int newBounceCount;
     private ScoreManipulationCallback smc;
-    private boolean useScreenForUICallback;
     private boolean waitingForGesture = false;
-    private TrackerPubNub trackerPubNub;
-    private UICallback uiCallback;
+    protected Match match;
+    protected MatchSettings matchSettings;
+    protected UICallback uiCallback;
 
-    public MatchVisualizeHandler(@NonNull MatchVisualizeActivity activity, String matchID, boolean useScreenForUICallback) {
-        mActivity = new WeakReference<>(activity);
-        this.useScreenForUICallback = useScreenForUICallback;
-        tracks = TrackSet.getInstance();
-        tracks.clear();
-        hasNewTable = true;
-        p = new Paint();
-        uiCallback = this;
-        if (!useScreenForUICallback) {
-            try {
-                this.trackerPubNub = PubNubFactory.createTrackerPubNub(activity.getApplicationContext(), matchID);
-                uiCallback = this.trackerPubNub;
-            } catch (PubNubFactory.NoPropertiesFileFoundException ex) {
-                Log.d("No properties file found, using display of this device...");
-                this.useScreenForUICallback = true;
-            }
+    public MatchVisualizeHandler(@NonNull MatchVisualizeActivity activity) {
+        this.mActivity = new WeakReference<>(activity);
+        this.tracks = TrackSet.getInstance();
+        this.tracks.clear();
+        this.hasNewTable = true;
+        this.uiCallback = this;
+        initColors(activity);
+        if (!OpenCVLoader.initDebug()) {
+            // init async here
         }
     }
 
     public void initMatch(Side servingSide, MatchType matchType, Player playerLeft, Player playerRight) {
         this.matchSettings = new MatchSettings(matchType, GameType.G11, ServeRules.S2, playerLeft, playerRight, servingSide);
         match = new Match(matchSettings, uiCallback, this);
-        if (this.trackerPubNub != null) {
-            this.trackerPubNub.setTrackerPubNubCallback(match);
-            this.trackerPubNub.setMatchVisualizeHandlerCallback(this);
-            this.trackerPubNub.sendStatusUpdate(playerLeft.getName(), playerRight.getName(), 0,0,0,0,servingSide);
-        }
         startMatch();
         setTextInTextView(R.id.txtDebugPlayerNameLeft, playerLeft.getName());
         setTextInTextView(R.id.txtDebugPlayerNameRight, playerRight.getName());
@@ -104,8 +95,6 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
 
     @Override
     public void onBounce(Lib.Detection detection, Side ballBouncedOnSide) {
-        // update game logic
-        // then display game state to some views
         latestBounce = detection;
         final MatchVisualizeActivity activity = mActivity.get();
         final TextView mBounceCountText = activity.getmBounceCountText();
@@ -132,33 +121,41 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (activity.ismSurfaceHolderReady()) {
-                    SurfaceHolder surfaceHolder = activity.getmSurfaceTrack().getHolder();
-                    Canvas canvas = surfaceHolder.lockCanvas();
-                    if (canvas == null) {
-                        return;
-                    }
-                    if (videoScaling.getCanvasWidth() == 0 || videoScaling.getCanvasHeight() == 0) {
-                        videoScaling.setCanvasWidth(canvas.getWidth());
-                        videoScaling.setCanvasHeight(canvas.getHeight());
-                    }
-                    canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-                    if (hasNewTable) {
-                        drawTable();
-                        hasNewTable = false;
-                    }
-                    drawTrack(canvas, track);
-                    drawLatestBounce(canvas);
-                    drawLatestOutOfFrameDetection(canvas);
-                    surfaceHolder.unlockCanvasAndPost(canvas);
+            if (activity.ismSurfaceHolderReady()) {
+                SurfaceHolder surfaceHolder = activity.getmSurfaceTrack().getHolder();
+                Canvas canvas = surfaceHolder.lockCanvas();
+                if (canvas == null) {
+                    return;
                 }
-                setTextInTextView(R.id.txtPlayMovieState, match.getReferee().getState().toString());
-                setTextInTextView(R.id.txtPlayMovieServing, match.getReferee().getServer().toString());
-                if(match.getReferee().getCurrentBallSide() != null) {
-                    setTextInTextView(R.id.txtBounce, String.valueOf(newBounceCount));
-                }
+                initVideoScaling(canvas);
+                drawDebugInfo(canvas, track);
+                surfaceHolder.unlockCanvasAndPost(canvas);
+            }
+            setTextInTextView(R.id.txtPlayMovieState, match.getReferee().getState().toString());
+            setTextInTextView(R.id.txtPlayMovieServing, match.getReferee().getServer().toString());
+            if(match.getReferee().getCurrentBallSide() != null) {
+                setTextInTextView(R.id.txtBounce, String.valueOf(newBounceCount));
+            }
             }
         });
+    }
+
+    void drawDebugInfo(Canvas canvas, Track track) {
+        canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+        if (hasNewTable) {
+            drawTable();
+            hasNewTable = false;
+        }
+        drawTrack(canvas, track);
+        drawLatestBounce(canvas);
+        drawLatestOutOfFrameDetection(canvas);
+    }
+
+    void initVideoScaling(Canvas canvas) {
+        if (videoScaling.getCanvasWidth() == 0 || videoScaling.getCanvasHeight() == 0) {
+            videoScaling.setCanvasWidth(canvas.getWidth());
+            videoScaling.setCanvasHeight(canvas.getHeight());
+        }
     }
 
     @Override
@@ -188,7 +185,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     }
 
     @Override
-    public void onScore(Side side, int score, Side nextServer) {
+    public void onScore(Side side, int score, Side nextServer, Side lastServer) {
         if (side == Side.LEFT) {
             setTextInTextView(R.id.txtPlayMovieScoreLeft, String.valueOf(score));
         } else {
@@ -214,10 +211,13 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     }
 
     @Override
+    public void onNotReadyButPlaying() {
+        // do nothing for now
+    }
+
+    @Override
     public void restartMatch() {
-        initMatch(this.matchSettings.getStartingServer(), this.matchSettings.getMatchType(), this.matchSettings.getPlayerLeft(), this.matchSettings.getPlayerRight());
-        startDetections();
-        refreshDebugTextViews();
+        // no implementation needed in here
     }
 
     public void refreshDebugTextViews() {
@@ -228,13 +228,16 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         }
     }
 
-    public void init(Config config, int srcWidth, int srcHeight) {
+    public void init(Config config, int srcWidth, int srcHeight, Table table, double viewingAngle) {
+        this.table = table;
         this.videoScaling = new VideoScaling(srcWidth, srcHeight);
         this.config = config;
         List<EventDetectionCallback> callbacks = new ArrayList<>();
         callbacks.add(this.match.getReferee());
         callbacks.add(this);
-        eventDetector = new EventDetector(config, srcWidth, srcHeight, callbacks, tracks, this.table);
+        ZPositionCalc calc = new ZPositionCalc(viewingAngle, table.getWidth(), srcWidth);
+        eventDetector = new EventDetector(config, srcWidth, srcHeight, callbacks, tracks, this.table, calc);
+        this.match.getReferee().initWaitingForGesture();
     }
 
     public void startDetections() {
@@ -243,14 +246,6 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
 
     public void stopDetections() {
         Lib.detectionStop();
-    }
-
-    public void setTable(Table table) {
-        if (table != null) {
-            hasNewTable = true;
-            this.table = table;
-            eventDetector.setTable(table);
-        }
     }
 
     public void clearCanvas(SurfaceHolder surfaceHolder) {
@@ -282,13 +277,16 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
             }
             c1 = this.videoScaling.scalePoint(c1);
             c2 = this.videoScaling.scalePoint(c2);
-            p.setColor(Color.CYAN);
-            p.setStrokeWidth(5f);
             canvas.drawLine(c1.x, c1.y, c2.x, c2.y, p);
         }
         Point closeNetEnd = this.videoScaling.scalePoint(table.getCloseNetEnd());
-        Point farNetEnd = this.videoScaling.scalePoint(table.getFarNetEnd());
-        canvas.drawLine(closeNetEnd.x, closeNetEnd.y, farNetEnd.x, farNetEnd.y, p);
+        canvas.drawCircle(closeNetEnd.x, closeNetEnd.y, 10f, p);
+        canvas.drawLine(
+                closeNetEnd.x,
+                closeNetEnd.y,
+                closeNetEnd.x,
+                Math.round(closeNetEnd.y - 0.06 * this.videoScaling.scaleX(this.table.getWidth())), // 0.06 is relative length of a table tennis net to the table width
+                p);
         surfaceHolderTable.unlockCanvasAndPost(canvas);
     }
 
@@ -309,7 +307,18 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         return this.serveDetector;
     }
 
-    private void startMatch() {
+    private void initColors(Activity activity) {
+        this.p = new Paint();
+        this.p.setColor(activity.getColor(R.color.accent_color));
+        this.p.setStrokeWidth(5f);
+        this.oofP = new Paint();
+        oofP.setColor(Color.rgb(255, 165, 0));
+        this.bounceP = new Paint();
+        bounceP.setColor(Color.RED);
+        this.trackP = new Paint();
+    }
+
+    protected void startMatch() {
         setOnSwipeListener();
         refreshDebugTextViews();
     }
@@ -320,17 +329,17 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         Lib.Detection pre = t.getLatest();
         cz.fmo.util.Color.RGBA r = t.getColor();
         int c = Color.argb(255, Math.round(r.rgba[0] * 255), Math.round(r.rgba[1] * 255), Math.round(r.rgba[2] * 255));
-        p.setColor(c);
-        p.setStrokeWidth(pre.radius);
+        trackP.setColor(c);
+        trackP.setStrokeWidth(pre.radius);
         int count = 0;
         while (pre != null && count < 2) {
-            canvas.drawCircle(this.videoScaling.scaleX(pre.centerX), this.videoScaling.scaleY(pre.centerY), this.videoScaling.scaleY(pre.radius), p);
+            canvas.drawCircle(this.videoScaling.scaleX(pre.centerX), this.videoScaling.scaleY(pre.centerY), this.videoScaling.scaleY(pre.radius), trackP);
             if (pre.predecessor != null) {
                 int x1 = this.videoScaling.scaleX(pre.centerX);
                 int x2 = this.videoScaling.scaleX(pre.predecessor.centerX);
                 int y1 = this.videoScaling.scaleY(pre.centerY);
                 int y2 = this.videoScaling.scaleY(pre.predecessor.centerY);
-                canvas.drawLine(x1, y1, x2, y2, p);
+                canvas.drawLine(x1, y1, x2, y2, trackP);
             }
             pre = pre.predecessor;
             count++;
@@ -339,17 +348,15 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
 
     private void drawLatestOutOfFrameDetection(Canvas canvas) {
         if (latestNearlyOutOfFrame != null) {
-            p.setColor(Color.rgb(255, 165, 0));
-            p.setStrokeWidth(latestNearlyOutOfFrame.radius);
-            canvas.drawCircle(this.videoScaling.scaleX(latestNearlyOutOfFrame.centerX), this.videoScaling.scaleY(latestNearlyOutOfFrame.centerY), latestNearlyOutOfFrame.radius, p);
+            oofP.setStrokeWidth(latestNearlyOutOfFrame.radius);
+            canvas.drawCircle(this.videoScaling.scaleX(latestNearlyOutOfFrame.centerX), this.videoScaling.scaleY(latestNearlyOutOfFrame.centerY), latestNearlyOutOfFrame.radius, oofP);
         }
     }
 
     private void drawLatestBounce(Canvas canvas) {
         if(latestBounce != null) {
-            p.setColor(Color.rgb(255,0,0));
-            p.setStrokeWidth(latestBounce.radius * 2);
-            canvas.drawCircle(this.videoScaling.scaleX(latestBounce.centerX), this.videoScaling.scaleY(latestBounce.centerY), latestBounce.radius * 2, p);
+            bounceP.setStrokeWidth(latestBounce.radius * 2);
+            canvas.drawCircle(this.videoScaling.scaleX(latestBounce.centerX), this.videoScaling.scaleY(latestBounce.centerY), latestBounce.radius * 2, bounceP);
         }
     }
 
@@ -363,7 +370,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         setTextInTextView(R.id.txtPlayMovieGameRight, String.valueOf(0));
     }
 
-    private void setTextInTextView(int id, final String text) {
+    protected void setTextInTextView(int id, final String text) {
         final MatchVisualizeActivity activity = mActivity.get();
         if (activity == null) {
             return;
@@ -403,13 +410,9 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         }
     }
 
-    private void setCallbackForNewGame() {
-        if(match != null) {
-            if (!useScreenForUICallback) {
-                this.trackerPubNub.setScoreManipulationCallback(match.getReferee());
-            } else {
-                this.smc = match.getReferee();
-            }
+    protected void setCallbackForNewGame() {
+        if (match != null) {
+            this.smc = match.getReferee();
         }
     }
 }

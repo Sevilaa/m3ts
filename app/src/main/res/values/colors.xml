@@ -8,7 +8,10 @@
     <color name="primary_dark">#303030</color>
     <color name="secondary_dark">#91919c</color>
     <color name="primary_light">#ebeff2</color>
-    <color name="display_serving">#DF2935</color>
+    <color name="color_error">#A22522</color>
+    <color name="display_serving">@color/color_error</color>
+    <color name="color_success">#A8C256</color>
     <color name="player_left_background">#3772FF</color>
     <color name="player_right_background">#F49D37</color>
+    <color name="accent_color">#F49D37</color>
 </resources>

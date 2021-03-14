@@ -3,7 +3,9 @@ package ch.m3ts.tracker.init;
 import android.app.Activity;
 import android.content.Intent;
 import android.test.InstrumentationTestCase;
+import android.view.View;
 
+import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -14,6 +16,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 
+import androidx.test.espresso.UiController;
+import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.core.internal.deps.guava.collect.Iterables;
 import androidx.test.filters.LargeTest;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -29,8 +33,10 @@ import cz.fmo.R;
 import helper.GrantPermission;
 
 import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.CoreMatchers.not;
@@ -66,6 +72,12 @@ public class InitTrackerActivityTest extends InstrumentationTestCase {
 
     @Test
     public void scanOverlayDisplayed() {
+        onView(withId(R.id.adjust_device_overlay)).check(matches(isDisplayed()));
+        onView(withId(R.id.init_moveDeviceBtn)).perform(click());
+        onView(withId(R.id.init_moveDeviceBtn)).check(matches((not(isDisplayed()))));
+        // need to perform a wait until the sensor data of the emulator has been received
+        onView(isRoot()).perform(waitFor(3000));
+        onView(withId(R.id.adjust_device_overlay)).check(matches(not(isDisplayed())));
         onView(withId(R.id.scan_overlay)).check(matches(isDisplayed()));
         onView(withText(SCAN_OVERLAY_TEXT)).check(matches(isDisplayed()));
     }
@@ -151,5 +163,27 @@ public class InitTrackerActivityTest extends InstrumentationTestCase {
                 activity[0] = Iterables.getOnlyElement(activities);
             }});
         return activity[0];
+    }
+
+    /**
+     * Perform action of waiting for a specific time.
+     */
+    public static ViewAction waitFor(final long millis) {
+        return new ViewAction() {
+            @Override
+            public Matcher<View> getConstraints() {
+                return isRoot();
+            }
+
+            @Override
+            public String getDescription() {
+                return "Wait for " + millis + " milliseconds.";
+            }
+
+            @Override
+            public void perform(UiController uiController, final View view) {
+                uiController.loopMainThreadForAtLeast(millis);
+            }
+        };
     }
 }

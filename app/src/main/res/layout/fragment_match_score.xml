@@ -2,16 +2,14 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-
-
+    android:layout_height="match_parent"
+    android:background="@color/primary_dark">
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
-        android:background="#fff"
+        android:background="@drawable/background_tiles"
         android:elevation="8dp">
         <GridLayout
             android:layout_width="wrap_content"
@@ -35,7 +33,7 @@
                     android:textStyle="bold"
                     android:textAlignment="center"
                     android:background="@color/player_left_background"
-                    android:textColor="#fff"
+                    android:textColor="@color/primary_light"
                     android:paddingTop="10dp"
                     android:paddingBottom="10dp"
                     android:paddingStart="5dp"
@@ -73,7 +71,7 @@
                     android:layout_gravity="top"
                     android:textAlignment="center"
                     android:background="@color/player_right_background"
-                    android:textColor="#fff"
+                    android:textColor="@color/primary_light"
                     android:paddingTop="10dp"
                     android:paddingBottom="10dp"
                     android:paddingStart="5dp"
@@ -105,7 +103,7 @@
                 android:rowCount="1"
                 android:columnCount="2"
                 android:padding="5dp"
-                android:background="#EEEEEE"
+                android:background="#00000000"
                 android:elevation="8dp">
                 <TextView
                     android:id="@+id/left_name"
@@ -116,21 +114,21 @@
                     android:textSize="25sp"
                     android:layout_gravity="fill_horizontal"
                     android:textStyle="bold"
-                    android:textColor="@android:color/secondary_text_light"
+                    android:textColor="@color/primary_light"
                     android:layout_columnWeight="1"
                     android:layout_margin="10dp"/>
                 <TextView
                     android:id="@+id/right_name"
                     android:layout_height="wrap_content"
                     android:layout_width="wrap_content"
-                    android:textAlignment="viewEnd"
+                    android:textAlignment="textEnd"
                     android:textAllCaps="true"
                     android:layout_gravity="fill_horizontal"
                     android:layout_columnWeight="1"
                     android:text="Player 2"
                     android:textSize="25sp"
                     android:textStyle="bold"
-                    android:textColor="@android:color/secondary_text_light"
+                    android:textColor="@color/primary_light"
                     android:layout_margin="10dp"/>
             </GridLayout>
         </GridLayout>

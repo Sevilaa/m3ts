@@ -3,13 +3,18 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#fff"
+    android:background="@color/primary_dark"
     android:keepScreenOn="true">
     <RelativeLayout
-        android:id="@+id/mainBackground"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/background_list"
-        tools:context="ch.m3ts.display.MatchActivity">
+        android:background="@drawable/background_tiles">
+        <RelativeLayout
+            android:id="@+id/mainBackground"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/background_list"
+            tools:context="ch.m3ts.display.MatchActivity">
+        </RelativeLayout>
     </RelativeLayout>
 </RelativeLayout>

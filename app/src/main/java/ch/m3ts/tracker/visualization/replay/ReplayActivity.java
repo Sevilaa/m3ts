@@ -26,6 +26,7 @@ import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -76,6 +77,7 @@ import cz.fmo.util.FileManager;
  */
 @SuppressWarnings("squid:S110")
 public class ReplayActivity extends MatchVisualizeActivity implements OnItemSelectedListener, VideoPlayer.PlayerFeedback {
+    private final double VIEWING_ANGLE_HORIZONTAL = 66.56780242919922; // viewing angle of phone which we used for recordings
     private final FileManager mFileMan = new FileManager(this);
     private String[] mMovieFiles;
     private int mSelectedMovie;
@@ -99,6 +101,11 @@ public class ReplayActivity extends MatchVisualizeActivity implements OnItemSele
         spinner.setAdapter(adapter);
         spinner.setOnItemSelectedListener(this);
         updateControls();
+    }
+
+    @Override
+    public double getCameraHorizontalViewAngle() {
+        return VIEWING_ANGLE_HORIZONTAL;
     }
 
     /**
@@ -133,9 +140,13 @@ public class ReplayActivity extends MatchVisualizeActivity implements OnItemSele
                 player = new VideoPlayer(mFileMan.open(mMovieFiles[mSelectedMovie]), surface,
                         callback, mHandler);
                 Config mConfig = new Config(this);
-                mHandler.init(mConfig, player.getVideoWidth(), player.getVideoHeight());
-                trySettingTableLocationFromXML(mMovieFiles[mSelectedMovie]);
-                mHandler.startDetections();
+                Table table = trySettingTableLocationFromXML(mMovieFiles[mSelectedMovie]);
+                if(table != null) {
+                    mHandler.init(mConfig, player.getVideoWidth(), player.getVideoHeight(), table, VIEWING_ANGLE_HORIZONTAL);
+                    mHandler.startDetections();
+                } else {
+                    Toast.makeText(this, "unable to initialize, please select the table again", Toast.LENGTH_LONG).show();
+                }
             } catch (IOException ioe) {
                 Log.e("Unable to play movie", ioe);
                 surface.release();
@@ -252,16 +263,16 @@ public class ReplayActivity extends MatchVisualizeActivity implements OnItemSele
      * Tries to load the table location from an xml file from assets.
      * @param videoFileName - Full name of video file in phones Camera dir. Example: "bounce_back_1.mp4"
      */
-    private void trySettingTableLocationFromXML(String videoFileName) {
+    private Table trySettingTableLocationFromXML(String videoFileName) {
         String fileNameWithoutExtension = videoFileName.split("\\.")[0];
         try (InputStream is = getAssets().open(fileNameWithoutExtension+".xml")) {
             Properties properties = new Properties();
             properties.loadFromXML(is);
-            mHandler.setTable(Table.makeTableFromProperties(properties));
-            Log.d("found new table!");
+            return Table.makeTableFromProperties(properties);
         } catch (IOException ex) {
             Log.e(ex.getMessage(), ex);
         }
+        return null;
     }
 
     /**

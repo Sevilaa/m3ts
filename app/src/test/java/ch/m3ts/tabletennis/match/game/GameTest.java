@@ -46,7 +46,7 @@ public class GameTest {
         game = new Game(matchCallback, uiCallbackSpy, GameType.G11, ServeRules.S2, STARTING_SIDE);
         game.onPointDeduction(Side.RIGHT);
         game.onPointDeduction(Side.LEFT);
-        verify(uiCallbackSpy, never()).onScore(any(Side.class), anyInt(), any(Side.class));
+        verify(uiCallbackSpy, never()).onScore(any(Side.class), anyInt(), any(Side.class), any(Side.class));
         verify(uiCallbackSpy, never()).onWin(any(Side.class), anyInt());
         assertEquals(0, game.getScore(Side.RIGHT));
         assertEquals(0, game.getScore(Side.LEFT));
@@ -61,7 +61,7 @@ public class GameTest {
         game.onPointDeduction(Side.LEFT);
         assertEquals(0, game.getScore(Side.LEFT));
         // expect 6 times on score -> 3 for onPoint, 3 for onPointDeduction
-        verify(uiCallbackSpy, times(6)).onScore(any(Side.class), anyInt(), any(Side.class));
+        verify(uiCallbackSpy, times(6)).onScore(any(Side.class), anyInt(), any(Side.class), any(Side.class));
     }
 
     @Test
@@ -102,7 +102,7 @@ public class GameTest {
         // let left side win 11:0
         for (int i = 0; i<GameType.G11.amountOfPoints; i++) {
             game.onPoint(Side.LEFT);
-            verify(uiCallback, times(1)).onScore(eq(Side.LEFT), eq(i+1), any(Side.class));
+            verify(uiCallback, times(1)).onScore(eq(Side.LEFT), eq(i+1), any(Side.class), any(Side.class));
         }
         verify(matchCallback, times(1)).onWin(Side.LEFT);
 
@@ -110,7 +110,7 @@ public class GameTest {
         game = new Game(matchCallback, uiCallback, GameType.G11, ServeRules.S2, STARTING_SIDE);
         for (int i = 0; i<11; i++) {
             game.onPoint(Side.RIGHT);
-            verify(uiCallback, times(1)).onScore(eq(Side.RIGHT), eq(i+1), any(Side.class));
+            verify(uiCallback, times(1)).onScore(eq(Side.RIGHT), eq(i+1), any(Side.class), any(Side.class));
         }
         verify(matchCallback, times(1)).onWin(Side.RIGHT);
     }

@@ -46,7 +46,7 @@ public class ScoreManager {
         return pointsMap.get(player);
     }
 
-    private Side getLastServer() {
+    public Side getLastServer() {
         Side server = servers.peekLast();
         if (server == null) {
             server = startServingSide;

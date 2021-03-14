@@ -82,8 +82,22 @@ public class TrackerPubNub extends Callback implements UICallback {
     }
 
     @Override
-    public void onScore(Side side, int score, Side nextServer) {
+    public void onScore(Side side, int score, Side nextServer, Side lastServer) {
         send("onScore", side.toString(), score,null, nextServer);
+            try {
+                JSONObject json = new JSONObject();
+                json.put(JSONInfo.SENDER_PROPERTY, pubnub.getUUID());
+                json.put(JSONInfo.SIDE_PROPERTY, side);
+                json.put(JSONInfo.SCORE_PROPERTY, score);
+                json.put(JSONInfo.LAST_SERVER_PROPERTY, lastServer);
+                json.put(JSONInfo.EVENT_PROPERTY, "onScore");
+                json.put(JSONInfo.ROLE_PROPERTY, ROLE);
+                json.put(JSONInfo.NEXT_SERVER_PROPERTY, nextServer);
+                pubnub.publish(this.roomID, json, new Callback() {});
+            } catch (JSONException ex) {
+                Log.d(JSON_SEND_EXCEPTION_MESSAGE+this.roomID+"\n"+ex.getMessage());
+            }
+
     }
 
     @Override
@@ -94,6 +108,11 @@ public class TrackerPubNub extends Callback implements UICallback {
     @Override
     public void onReadyToServe(Side server) {
         send("onReadyToServe", server.toString(), null, null, null);
+    }
+
+    @Override
+    public void onNotReadyButPlaying() {
+        send("onNotReadyButPlaying", null, null, null, null);
     }
 
     private void sendTableFramePart(final String encodedFrame, final int index, final int numberOfPackages, boolean doContinue) {
@@ -154,7 +173,7 @@ public class TrackerPubNub extends Callback implements UICallback {
         }
     }
 
-    public void sendStatusUpdate(String playerNameLeft, String playerNameRight, int scoreLeft, int scoreRight, int winsLeft, int winsRight, Side nextServer) {
+    public void sendStatusUpdate(String playerNameLeft, String playerNameRight, int scoreLeft, int scoreRight, int winsLeft, int winsRight, Side nextServer, int gamesNeededToWin) {
         try {
             JSONObject json = new JSONObject();
             json.put(JSONInfo.SENDER_PROPERTY, pubnub.getUUID());
@@ -167,6 +186,7 @@ public class TrackerPubNub extends Callback implements UICallback {
             json.put(JSONInfo.EVENT_PROPERTY, "onStatusUpdate");
             json.put(JSONInfo.ROLE_PROPERTY, ROLE);
             json.put(JSONInfo.NEXT_SERVER_PROPERTY, nextServer);
+            json.put(JSONInfo.GAMES_NEEDED_PROPERTY, gamesNeededToWin);
             pubnub.publish(this.roomID, json, new Callback() {});
         } catch (JSONException ex) {
             Log.d(JSON_SEND_EXCEPTION_MESSAGE+this.roomID+"\n"+ex.getMessage());
@@ -227,7 +247,7 @@ public class TrackerPubNub extends Callback implements UICallback {
                             MatchStatus status = this.callback.onRequestMatchStatus();
                             sendStatusUpdate(status.getPlayerLeft(), status.getPlayerRight(),
                                     status.getScoreLeft(), status.getScoreRight(), status.getWinsLeft(),
-                                    status.getWinsRight(), status.getNextServer());
+                                    status.getWinsRight(), status.getNextServer(), status.getGamesNeededToWin());
                         }
                         break;
                     case "onPause":

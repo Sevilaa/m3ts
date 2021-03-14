@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import cz.fmo.R;
+
 public class Config {
     private final boolean frontFacing;
     private final boolean highResolution;
@@ -15,6 +17,10 @@ public class Config {
     private final float objectRadius;
     private final float frameRate;
     private final boolean disableDetection;
+    private final String player1Name;
+    private final String player2Name;
+    private final boolean useDebug;
+    private final boolean doRecordMatches;
 
     public Config(Context ctx) {
         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(ctx);
@@ -28,6 +34,10 @@ public class Config {
         objectRadius = getObjectRadius(p);
         frameRate = getFloatFromString(p, "frameRate", "30.00");
         disableDetection = p.getBoolean("disableDetection", false);
+        player1Name = getPlayer1Name(p, ctx);
+        player2Name = getPlayer2Name(p, ctx);
+        useDebug = getDebug(p, ctx);
+        doRecordMatches = getRecordMatches(p, ctx);
     }
 
     private boolean getFrontFacing(SharedPreferences p) {
@@ -84,6 +94,22 @@ public class Config {
         return diameter;
     }
 
+    private String getPlayer1Name(SharedPreferences p, Context ctx) {
+        return p.getString(ctx.getString(R.string.prefPlayer1Key), "Hans");
+    }
+
+    private String getPlayer2Name(SharedPreferences p, Context ctx) {
+        return p.getString(ctx.getString(R.string.prefPlayer2Key), "Peter");
+    }
+
+    private boolean getDebug(SharedPreferences p, Context ctx) {
+        return p.getBoolean(ctx.getString(R.string.prefDisplayDebugKey), false);
+    }
+
+    private boolean getRecordMatches(SharedPreferences p, Context ctx) {
+        return p.getBoolean(ctx.getString(R.string.prefRecordKey), false);
+    }
+
     public float getFrameRate() {
         return frameRate;
     }
@@ -122,6 +148,22 @@ public class Config {
 
     public boolean isDisableDetection() {
         return disableDetection;
+    }
+
+    public String getPlayer1Name() {
+        return player1Name;
+    }
+
+    public String getPlayer2Name() {
+        return player2Name;
+    }
+
+    public boolean isUseDebug() {
+        return useDebug;
+    }
+
+    public boolean doRecordMatches() {
+        return doRecordMatches;
     }
 
     public enum RecordMode {

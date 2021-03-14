@@ -1,5 +1,6 @@
 package cz.fmo.camera;
 
+import android.hardware.Camera;
 import android.media.MediaFormat;
 import android.opengl.GLES20;
 import android.support.annotation.Nullable;
@@ -136,6 +137,10 @@ public class CameraThread extends GenericThread<CameraThreadHandler> {
 
     public int getHeight() {
         return mCapture.getHeight();
+    }
+
+    public double getCameraHorizontalViewAngle() {
+        return mCapture.getCameraHorizontalViewAngle();
     }
 
     public int getBitRate() {

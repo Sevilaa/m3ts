@@ -1,17 +1,25 @@
 package ch.m3ts.tracker.visualization.live;
 
+import android.app.AlertDialog;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.view.Display;
+import android.view.SurfaceView;
 
 import ch.m3ts.Log;
+import ch.m3ts.helper.QuitAlertDialogHelper;
 import ch.m3ts.tabletennis.Table;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.MatchType;
 import ch.m3ts.tabletennis.match.Player;
+import ch.m3ts.tracker.visualization.CameraStatus;
 import ch.m3ts.tracker.visualization.MatchVisualizeActivity;
 import cz.fmo.R;
+import cz.fmo.camera.CameraThread;
+import cz.fmo.camera.PreviewCameraTarget;
+import cz.fmo.data.Assets;
+import cz.fmo.recording.EncodeThread;
 import cz.fmo.util.Config;
 
 /**
@@ -24,42 +32,76 @@ public final class LiveActivity extends MatchVisualizeActivity {
     private static final String MATCH_TYPE_PARAM = "MATCH_TYPE";
     private static final String SERVING_SIDE_PARAM = "SERVING_SIDE";
     private static final String MATCH_ID = "MATCH_ID";
-    private Config mConfig;
     private LiveHandler mHandler;
     private int[] tableCorners;
     private MatchType matchType;
     private Side servingSide;
     private String matchId;
+    private AlertDialog alertDialog;
+    private LiveRecording liveRecording;
 
     @Override
     protected void onCreate(android.os.Bundle savedBundle) {
         super.onCreate(savedBundle);
+        Config mConfig = new Config(this);
         getDataFromIntent();
-        Player playerLeft = new Player("Hannes");
-        Player playerRight = new Player("Kannes");
+        Player playerLeft = new Player(mConfig.getPlayer1Name());
+        Player playerRight = new Player(mConfig.getPlayer2Name());
         this.mHandler = new LiveHandler(this, this.matchId);
         this.mHandler.initMatch(this.servingSide, this.matchType, playerLeft, playerRight);
         cameraCallback = this.mHandler;
-        this.mConfig = new Config(this);
+        this.alertDialog = QuitAlertDialogHelper.makeDialog(this);
         Log.d("Found match: " +matchId);
         this.onPause();
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        init();
-    }
-
-    @Override
     public void init() {
-        super.init();
-        if (!mConfig.isDisableDetection() && ismSurfaceHolderReady()) {
-            // C++ initialization
-            mHandler.init(mConfig, this.getCameraWidth(), this.getCameraHeight());
-            trySettingTableLocationFromIntent();
-            mHandler.startDetections();
+        // reality check: don't initialize twice
+        if (mStatus == CameraStatus.RUNNING) return;
+
+        if (!ismSurfaceHolderReady()) return;
+
+        // stop if permissions haven't been granted
+        if (isCameraPermissionDenied()) {
+            mStatus = CameraStatus.CAMERA_PERMISSION_ERROR;
+            return;
         }
+
+        // get configuration settings
+        Config mConfig = new Config(this);
+
+        // set up assets
+        Assets.getInstance().load(this);
+
+        // create a dedicated camera input thread
+        mCamera = new CameraThread(this.cameraCallback, mConfig);
+        this.cameraHorizontalAngle = mCamera.getCameraHorizontalViewAngle();
+
+        // add preview as camera target
+        SurfaceView cameraView = getmSurfaceView();
+        PreviewCameraTarget mPreviewTarget = new PreviewCameraTarget(cameraView.getHolder().getSurface(),
+                cameraView.getWidth(), cameraView.getHeight());
+        mCamera.addTarget(mPreviewTarget);
+
+        if (mConfig.isSlowPreview()) {
+            mPreviewTarget.setSlowdown(PREVIEW_SLOWDOWN_FRAMES);
+        }
+
+        // refresh GUI
+        mStatus = CameraStatus.RUNNING;
+
+        if(mConfig.doRecordMatches()) {
+            if (liveRecording != null) liveRecording.tearDown();
+            liveRecording = LiveRecording.getInstance(this, mCamera);
+        }
+
+        // start thread
+        mCamera.start();
+        Table table = trySettingTableLocationFromIntent();
+        mHandler.init(mConfig, this.getCameraWidth(), this.getCameraHeight(), table, this.getCameraHorizontalViewAngle());
+        mHandler.startDetections();
+        liveRecording.startRecording();
     }
 
     @Override
@@ -78,18 +120,36 @@ public final class LiveActivity extends MatchVisualizeActivity {
         init();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        init();
+    }
+
     /**
      * Perform cleanup after the activity has been paused.
      */
     @Override
     protected void onPause() {
         mHandler.stopDetections();
+        alertDialog.dismiss();
         super.onPause();
+        if (liveRecording != null) liveRecording.tearDown();
     }
 
-    private void trySettingTableLocationFromIntent() {
+    @Override
+    public void onBackPressed() {
+        alertDialog.show();
+    }
+
+    public EncodeThread getmEncode() {
+        if (liveRecording != null) return liveRecording.getmEncode();
+        return null;
+    }
+
+    private Table trySettingTableLocationFromIntent() {
         scaleCornerIntsToSelectedCamera();
-        mHandler.setTable(Table.makeTableFromIntArray(tableCorners));
+        return Table.makeTableFromIntArray(tableCorners);
     }
 
     private void getDataFromIntent() {

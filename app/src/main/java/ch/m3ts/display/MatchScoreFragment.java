@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
@@ -29,13 +30,17 @@ import cz.fmo.R;
  */
 public class MatchScoreFragment extends Fragment implements UICallback, DisplayScoreEventCallback {
     private String ttsWin;
-    private String ttsPoints;
-    private String ttsPoint;
     private String ttsSide;
+    private String ttsTo;
     private String ttsReadyToServe;
     private TextToSpeech tts;
+    private MediaPlayer mediaPlayer;
     private DisplayPubNub pubNub;
     private boolean isPaused = false;
+    private int gamesNeededToWin;
+    private int scoreLeft;
+    private int scoreRight;
+    private final int MAX_SCORE = 11;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -45,6 +50,7 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
         pubNub.setDisplayScoreEventCallback(this);
         pubNub.setUiCallback(this);
         initTTS();
+        this.mediaPlayer = MediaPlayer.create(getContext(), R.raw.success);
         ImageButton refreshButton = v.findViewById(R.id.btnDisplayRefresh);
         refreshButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -75,38 +81,63 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
     }
 
     @Override
+    public void onDestroy() {
+        if(this.tts != null) {
+            tts.stop();
+            this.tts.shutdown();
+        }
+        super.onDestroy();
+    }
+
+    @Override
     public void onMatchEnded(String winnerName) {
-        tts.stop();
-        tts.shutdown();
-        tts = null;
         Intent intent = new Intent(getActivity(), MatchWonActivity.class);
         Bundle bundle = new Bundle();
         bundle.putString("winner", winnerName);
         bundle.putString("room", this.pubNub.getRoomID());
         intent.putExtras(bundle);
+        while(tts.isSpeaking()) {}
         startActivity(intent);
         getActivity().finish();
     }
 
     @Override
-    public void onScore(Side side, int score, Side nextServer) {
-        setScoreOnTextView(side, score);
-        updateIndicationNextServer(nextServer, false);
-        if (score == 1) tts.speak(score + ttsPoint +side.toString()+ ttsSide, TextToSpeech.QUEUE_FLUSH, null, null);
-        else tts.speak(score + ttsPoints +side.toString()+ ttsSide, TextToSpeech.QUEUE_FLUSH, null, null);
+    public void onScore(final Side side, final int score, final Side nextServer, final Side lastServer) {
+        Activity activity = getActivity();
+        if(side == Side.LEFT) {
+            scoreLeft = score;
+        } else {
+            scoreRight = score;
+        }
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                setScoreOnTextView(side, score);
+                updateIndicationNextServer(nextServer);
+                playScoreTTS(nextServer, lastServer);
+            }
+        });
     }
 
     @Override
-    public void onWin(Side side, int wins) {
-        setWinsOnTextView(side, wins);
-        setScoreOnTextView(Side.LEFT, 0);
-        setScoreOnTextView(Side.RIGHT, 0);
-        tts.speak(ttsWin +side+ ttsSide, TextToSpeech.QUEUE_FLUSH, null, null);
+    public void onWin(final Side side, final int wins) {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                setWinsOnTextView(side, wins);
+                if(gamesNeededToWin != wins) {
+                    pubNub.requestStatusUpdate();
+                    setScoreOnTextView(Side.LEFT, 0);
+                    setScoreOnTextView(Side.RIGHT, 0);
+                    tts.speak(ttsWin + " " + getPlayerNameBySide(side), TextToSpeech.QUEUE_FLUSH, null, null);
+                }
+            }
+        });
     }
 
     @Override
     public void onReadyToServe(Side server) {
-        tts.speak(server.toString() + ttsSide + ttsReadyToServe, TextToSpeech.QUEUE_ADD, null, null);
+        playSound(R.raw.success);
         Activity activity = getActivity();
         if (activity == null) return;
 
@@ -117,11 +148,55 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
         colorTextViewAsInactive(txtView);
     }
 
+    @Override
+    public void onNotReadyButPlaying() {
+        playSound(R.raw.error);
+    }
+
+    private void playSound(int audioFileID) {
+        if (mediaPlayer.isPlaying()) {
+            mediaPlayer.stop();
+            mediaPlayer.release();
+        }
+        mediaPlayer = MediaPlayer.create(getContext(), audioFileID);
+        mediaPlayer.start();
+    }
+
+    private void playScoreTTS(Side nextServer, Side lastServer) {
+        String scoreLeft = String.valueOf(Integer.parseInt(((TextView)getActivity().findViewById(R.id.left_score)).getText().toString()));
+        String scoreRight = String.valueOf(Integer.parseInt(((TextView)getActivity().findViewById(R.id.right_score)).getText().toString()));
+        String name;
+        if(nextServer == Side.RIGHT) {
+            tts.speak(scoreRight + ttsTo + scoreLeft, TextToSpeech.QUEUE_FLUSH, null, null);
+            name = getPlayerNameBySide(Side.RIGHT);
+        } else {
+            tts.speak(scoreLeft + ttsTo + scoreRight, TextToSpeech.QUEUE_FLUSH, null, null);
+            name = getPlayerNameBySide(Side.LEFT);
+        }
+
+        if(nextServer != lastServer && !isWinningPoint()) {
+            tts.speak(ttsReadyToServe + " " + name, TextToSpeech.QUEUE_ADD, null, null);
+        }
+    }
+
+    private boolean isWinningPoint() {
+        return Math.abs(scoreRight-scoreLeft) > 1 && (scoreLeft >= MAX_SCORE || scoreRight >= MAX_SCORE);
+    }
+
+    private String getPlayerNameBySide(Side side) {
+        int nameId;
+        if(side == Side.RIGHT) {
+            nameId = R.id.right_name;
+        } else {
+            nameId = R.id.left_name;
+        }
+        return ((TextView)getActivity().findViewById(nameId)).getText().toString();
+    }
+
     private void initTTS() {
         ttsWin = getResources().getString(R.string.ttsWin);
-        ttsPoints = getResources().getString(R.string.ttsPoints);
-        ttsPoint = getResources().getString(R.string.ttsPoint);
         ttsSide = getResources().getString(R.string.ttsSide);
+        ttsTo = getResources().getString(R.string.ttsTo);
         ttsReadyToServe = getResources().getString(R.string.ttsReadyServe);
         this.tts = new TextToSpeech(getContext(), new TextToSpeech.OnInitListener() {
             @Override
@@ -131,7 +206,7 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
         });
     }
 
-    private void updateIndicationNextServer(Side nextServer, boolean init) {
+    private void updateIndicationNextServer(Side nextServer) {
         Activity activity = getActivity();
         if (activity == null) return;
 
@@ -140,23 +215,22 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
         SpannableString content = new SpannableString(txtView.getText());
         content.setSpan(new UnderlineSpan(), 0, content.length(), 0);
         txtView.setText(content);
-        if (init) colorTextViewAsActive(txtView);
-        else colorTextViewAsInactive(txtView);
+        colorTextViewAsInactive(txtView);
         txtView = getServerLabelTextView(activity, otherSide);
         txtView.setText(txtView.getText().toString());
         colorTextViewAsInactive(txtView);
     }
 
     private TextView getServerLabelTextView(@NonNull Activity activity, Side server) {
-        int idServer = R.id.right_name;
+        int idServer = R.id.right_score;
         if (server == Side.LEFT) {
-            idServer = R.id.left_name;
+            idServer = R.id.left_score;
         }
         return activity.findViewById(idServer);
     }
 
     private void colorTextViewAsInactive(TextView txtView) {
-        txtView.setTextColor(ContextCompat.getColor(getContext() ,android.R.color.secondary_text_light));
+        txtView.setTextColor(ContextCompat.getColor(getContext() , R.color.primary_light));
     }
 
     private void colorTextViewAsActive(TextView txtView) {
@@ -212,7 +286,7 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
 
 
     @Override
-    public void onStatusUpdate(final String playerNameLeft, final String playerNameRight, final int pointsLeft, final int pointsRight, final int gamesLeft, final int gamesRight, final Side nextServer) {
+    public void onStatusUpdate(final String playerNameLeft, final String playerNameRight, final int pointsLeft, final int pointsRight, final int gamesLeft, final int gamesRight, final Side nextServer, final int gamesNeeded) {
         Activity activity = getActivity();
         activity.runOnUiThread(new Runnable() {
             @Override
@@ -223,7 +297,8 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
                 setScoreOnTextView(Side.RIGHT, pointsRight);
                 setWinsOnTextView(Side.LEFT, gamesLeft);
                 setWinsOnTextView(Side.RIGHT, gamesRight);
-                updateIndicationNextServer(nextServer, true);
+                updateIndicationNextServer(nextServer);
+                gamesNeededToWin = gamesNeeded;
             }
         });
     }

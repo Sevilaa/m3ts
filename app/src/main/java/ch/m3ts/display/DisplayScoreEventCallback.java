@@ -7,5 +7,5 @@ import ch.m3ts.tabletennis.helper.Side;
  * device (via PubNub).
  */
 public interface DisplayScoreEventCallback {
-    void onStatusUpdate(String playerNameLeft, String playerNameRight, int pointsLeft, int pointsRight, int gamesLeft, int gamesRight, Side nextServer);
+    void onStatusUpdate(String playerNameLeft, String playerNameRight, int pointsLeft, int pointsRight, int gamesLeft, int gamesRight, Side nextServer, int gamesNeededToWin);
 }

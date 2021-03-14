@@ -9,6 +9,7 @@ public final class JSONInfo {
     public static final String EVENT_PROPERTY = "event";
     public static final String SIDE_PROPERTY = "side";
     public static final String WINS_PROPERTY = "wins";
+    public static final String GAMES_NEEDED_PROPERTY = "gamesNeeded";
     public static final String WINS_LEFT_PROPERTY = "winsLeft";
     public static final String WINS_RIGHT_PROPERTY = "winsRight";
     public static final String SCORE_PROPERTY = "score";
@@ -17,6 +18,7 @@ public final class JSONInfo {
     public static final String PLAYER_NAME_LEFT_PROPERTY = "playerNameLeft";
     public static final String PLAYER_NAME_RIGHT_PROPERTY = "playerNameRight";
     public static final String NEXT_SERVER_PROPERTY = "nextServer";
+    public static final String LAST_SERVER_PROPERTY = "lastServer";
     public static final String TABLE_FRAME = "tableFrame";
     public static final String TABLE_FRAME_INDEX = "tableFrameIndex";
     public static final String TABLE_FRAME_NUMBER_OF_PARTS = "tableFrameNumberOfParts";

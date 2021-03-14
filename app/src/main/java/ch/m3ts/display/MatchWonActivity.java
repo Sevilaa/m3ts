@@ -4,9 +4,12 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
+import android.speech.tts.TextToSpeech;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import java.util.Locale;
 
 import ch.m3ts.MainActivity;
 import cz.fmo.R;
@@ -19,6 +22,7 @@ import cz.fmo.R;
 public class MatchWonActivity extends Activity {
     private AnimationDrawable animationDrawable;
     private String pubnubRoom;
+    private TextToSpeech tts;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -34,6 +38,7 @@ public class MatchWonActivity extends Activity {
         animationDrawable.setEnterFadeDuration(2000);
         animationDrawable.setExitFadeDuration(4000);
         animationDrawable.start();
+        playMatchWonTTS(winner);
     }
 
     /*
@@ -61,5 +66,33 @@ public class MatchWonActivity extends Activity {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK |Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
         this.finish();
+    }
+
+    @Override
+    public void onBackPressed() {
+        animationDrawable.stop();
+        startActivity(new Intent(getApplicationContext(), MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+        this.finish();
+    }
+
+    @Override
+    public void onPause() {
+        if(this.tts != null) {
+            this.tts.shutdown();
+        }
+        super.onPause();
+    }
+
+    private void playMatchWonTTS(final String winner) {
+        tts = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int i) {
+                if (i == TextToSpeech.SUCCESS) {
+                    final String ttsMatchWon = getResources().getString(R.string.ttsMatchWin);
+                    tts.setLanguage(Locale.ENGLISH);
+                    tts.speak(winner + ttsMatchWon, TextToSpeech.QUEUE_FLUSH, null, null);
+                }
+            }
+        });
     }
 }

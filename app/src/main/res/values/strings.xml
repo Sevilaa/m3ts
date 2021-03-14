@@ -43,10 +43,26 @@
     <string name="prefSlowPreviewSummary">Update only once in 2 seconds</string>
     <string name="prefHeaderDetection">Detection</string>
     <string name="prefColorSpace">Color space</string>
-    <string name="prefColorSpaceDefault">yuv</string>
+    <string name="prefColorSpaceDefault">gray</string>
     <string name="prefProcRes">Processing resolution</string>
-    <string name="prefProcResDefault">300</string>
+    <string name="prefProcResDefault">600</string>
     <string name="prefHeaderVelocity">Velocity estimation</string>
+
+    <!-- Game settings -->
+    <string name="prefGame">Game</string>
+    <string name="prefPlayer1Name">Name Player 1</string>
+    <string name="prefPlayer1NameDefault">Hans</string>
+    <string name="prefPlayer1Key">player_1</string>
+    <string name="prefPlayer2Name">Name Player 2</string>
+    <string name="prefPlayer2NameDefault">Peter</string>
+    <string name="prefPlayer2Key">player_2</string>
+    <string name="prefDisplayDebug">Display debug info</string>
+    <string name="prefDisplayDebugKey">display_debug</string>
+    <string name="prefDisplayDebugDefault">false</string>
+    <string name="prefDisplayDebugSummary">Shows debug information on the tracking device\'s display</string>
+    <string name="prefRecord">Record matches</string>
+    <string name="prefRecordKey">record_matches</string>
+    <string name="prefRecordDefault">false</string>
 
     <!-- Detection settings -->
     <string name="prefVelocityEstimationMode">Velocity estimation mode</string>
@@ -62,6 +78,7 @@
     <!-- Velocity estimation settings -->
     <string name="runVideoPlayer">Run video player</string>
     <string name="prefDisableDetection">Disable FMO detection</string>
+
     <string name="playerLeftDefaultName">Player 1</string>
     <string name="playerRightDefaultName">Player 2</string>
     <string name="gameScoreStart">0</string>
@@ -71,12 +88,16 @@
     <string name="debugBallShotStart">None</string>
     <string name="debugBallCountStart">0</string>
     <string name="contentDescRevert">reverts last selected corner</string>
-    <string name="initMarkTableLabel">Mark all four table corners</string>
+    <string name="initMarkTableLabel">Mark the left and right table corner</string>
+    <string name="trackerStatusConnectedWithDisplay">connected to server</string>
+    <string name="trackerStatusConnectedWithDisplayFail">unable to connect to display!</string>
+
     <!-- Main Activity -->
     <string name="appName">M3TS</string>
     <string name="appNameLong">mobile table tennis tracking system</string>
     <string name="mainTrackerBtnLabel">Use as Tracker</string>
     <string name="mainDisplayBtnLabel">Use as Display</string>
+
     <!-- Init Activity -->
     <string name="initMarkTableLabelExplanation">Long Press to select a corner</string>
     <string name="initCornersSelectedLabel">Corners selected: </string>
@@ -86,12 +107,12 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
     <!-- TTS -->
-    <string name="ttsPoints">points </string>
-    <string name="ttsPoint">point </string>
     <string name="ttsSide"> Side</string>
-    <string name="ttsWin">Game Win </string>
-    <string name="ttsReadyServe"> ready to serve!</string>
+    <string name="ttsWin">Game </string>
+    <string name="ttsMatchWin"> wins the Match!</string>
+    <string name="ttsReadyServe"> Serve </string>
     <string name="ttsServe">Serve </string>
+    <string name="ttsTo"> to </string>
 
     <!-- MatchInit Fragment -->
     <string name="miTitle">Connect With Tracker</string>
@@ -103,8 +124,8 @@
 
     <!-- MatchSettings Fragment -->
     <string name="msTitle">Match Settings</string>
-    <string name="msType">Match Type</string>
-    <string name="msServer">Starting Server Side</string>
+    <string name="msType">Choose Match Length</string>
+    <string name="msServer">Choose Server</string>
     <string name="msBtn">Create Match</string>
 
     <!-- MatchWin Fragment -->
@@ -119,9 +140,21 @@
     <!-- Scan Overlay -->
     <string name="scanText">Scan the QR code from the display</string>
 
+    <!-- Quitting Match Messages -->
+    <string name="quitMatchTitle">Quit match</string>
+    <string name="quitMatchMessage">Are you sure you want to quit the ongoing match?\nYou will be sent back to the main screen.</string>
+    <string name="quitMatchProceed">Quit Match</string>
+    <string name="quitMatchCancel">Cancel</string>
+
     <!-- Tracker Init -->
     <string name="tiLoadingText">Sending Frame…</string>
     <string name="tiWaitingText">Selecting corners…</string>
+    <string name="adjustDeviceTiltLeftText">Tilt the device to the left</string>
+    <string name="adjustDeviceTiltRightText">Tilt the device to the right</string>
+    <string name="adjustDeviceRollTopText">Roll the device down from the top</string>
+    <string name="adjustDeviceRollBottomText">Roll the device up from the bottom</string>
+    <string name="adjustDeviceRollDegreeText">Roll: %1$d°</string>
+    <string name="adjustDeviceTiltDegreeText">Tilt: %1$d°</string>
 
     <!-- Movie Player Activity -->
     <string-array name="prefCameraFacingNames">
@@ -198,5 +231,9 @@
         <item>0.072</item>
         <item>0</item>
     </string-array>
+
+    <!-- Permissions -->
+    <string name="perm_label_DEFAULT_PERMISSION">Default Permission</string>
+    <string name="perm_desc_DEFAULT_PERMISSION">A lower-risk permission that gives requesting applications access to isolated application-level features, with minimal risk to other applications, the system, or the user. </string>
 
 </resources>

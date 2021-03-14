@@ -26,11 +26,18 @@ public class SettingsActivity extends PreferenceActivity {
 
     private static void bindToSummaryUpdater(Preference preference, SummaryUpdater updater) {
         preference.setOnPreferenceChangeListener(updater);
-
         updater.onPreferenceChange(preference,
                 PreferenceManager
                         .getDefaultSharedPreferences(preference.getContext())
                         .getString(preference.getKey(), ""));
+    }
+
+    private static void bindToSummaryUpdaterBoolean(Preference preference, SummaryUpdater updater) {
+        preference.setOnPreferenceChangeListener(updater);
+        updater.onPreferenceChange(preference,
+                PreferenceManager
+                        .getDefaultSharedPreferences(preference.getContext())
+                        .getBoolean(preference.getKey(), false));
     }
 
     @Override
@@ -75,7 +82,8 @@ public class SettingsActivity extends PreferenceActivity {
                 || CapturePreferenceFragment.class.getName().equals(fragmentName)
                 || DetectionPreferenceFragment.class.getName().equals(fragmentName)
                 || VelocityPreferenceFragment.class.getName().equals(fragmentName)
-                || AdvancedPreferenceFragment.class.getName().equals(fragmentName);
+                || AdvancedPreferenceFragment.class.getName().equals(fragmentName)
+                || GamePreferenceFragment.class.getName().equals(fragmentName);
     }
 
     private static class SummaryUpdater implements Preference.OnPreferenceChangeListener {
@@ -152,6 +160,18 @@ public class SettingsActivity extends PreferenceActivity {
             bindToSummaryUpdater(findPreference("objectDiameterPicker"), sSummaryUpdater);
             bindToSummaryUpdater(findPreference("objectDiameterCustom"), sSummaryUpdater);
             bindToSummaryUpdater(findPreference("frameRate"), sSummaryUpdater);
+        }
+    }
+
+    public static class GamePreferenceFragment extends PreferenceFragmentBase {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.setXmlResourceId(R.xml.pref_game);
+            super.onCreate(savedInstanceState);
+            bindToSummaryUpdater(findPreference(getString(R.string.prefPlayer1Key)), sSummaryUpdater);
+            bindToSummaryUpdater(findPreference(getString(R.string.prefPlayer2Key)), sSummaryUpdater);
+            bindToSummaryUpdaterBoolean(findPreference(getString(R.string.prefDisplayDebugKey)), sSummaryUpdater);
+            bindToSummaryUpdaterBoolean(findPreference(getString(R.string.prefRecordKey)), sSummaryUpdater);
         }
     }
 

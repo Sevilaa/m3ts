@@ -20,11 +20,12 @@ import cz.fmo.util.Config;
  * Base Activity which uses the camera to preview on a SurfaceView
  */
 public abstract class CameraPreviewActivity extends Activity implements SurfaceHolder.Callback {
-    private static final int PREVIEW_SLOWDOWN_FRAMES = 59;
+    protected static final int PREVIEW_SLOWDOWN_FRAMES = 59;
     private SurfaceView mSurfaceView;
-    private CameraStatus mStatus = CameraStatus.STOPPED;
-    private CameraThread mCamera;
+    protected CameraStatus mStatus = CameraStatus.STOPPED;
+    protected CameraThread mCamera;
     private boolean mSurfaceHolderReady = false;
+    protected double cameraHorizontalAngle;
     protected CameraThread.Callback cameraCallback;
 
     /**
@@ -63,6 +64,7 @@ public abstract class CameraPreviewActivity extends Activity implements SurfaceH
 
         // create a dedicated camera input thread
         mCamera = new CameraThread(this.cameraCallback, mConfig);
+        this.cameraHorizontalAngle = mCamera.getCameraHorizontalViewAngle();
 
         // add preview as camera target
         SurfaceView cameraView = getmSurfaceView();
@@ -81,7 +83,9 @@ public abstract class CameraPreviewActivity extends Activity implements SurfaceH
         mCamera.start();
     }
 
-
+    public double getCameraHorizontalViewAngle() {
+        return this.cameraHorizontalAngle;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,6 +102,7 @@ public abstract class CameraPreviewActivity extends Activity implements SurfaceH
     @Override
     protected void onPause() {
         super.onPause();
+
         if (mCamera != null) {
             mCamera.getHandler().sendKill();
             try {
@@ -173,7 +178,7 @@ public abstract class CameraPreviewActivity extends Activity implements SurfaceH
     /**
      * Queries the camera permission status.
      */
-    private boolean isCameraPermissionDenied() {
+    protected boolean isCameraPermissionDenied() {
         int permissionStatus = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
         return permissionStatus != PackageManager.PERMISSION_GRANTED;
     }

@@ -166,7 +166,7 @@ public class TrackerPubNubTest {
 
     @Test
     public void testRequestMatchStatus() {
-        final MatchStatus matchStatus = new MatchStatus("pl","pr",1,0,0,1, Side.RIGHT);
+        final MatchStatus matchStatus = new MatchStatus("pl","pr",1,0,0,1, Side.RIGHT, 1);
         MatchStatusCallback spyCallback = PowerMockito.spy(PowerMockito.mock(MatchStatusCallback.class));
         PowerMockito.doAnswer(new Answer() {
             @Override
@@ -211,7 +211,7 @@ public class TrackerPubNubTest {
                 return null;
             }
         }).when(pubNub).publish(any(String.class), any(JSONObject.class), any(Callback.class));
-        trackerPubNub.onScore(scorer, score, server);
+        trackerPubNub.onScore(scorer, score, server, server);
     }
 
     @Test

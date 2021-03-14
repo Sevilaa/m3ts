@@ -114,12 +114,22 @@
         <include layout="@layout/debug_score_layout" />
 
         <TextView
-            android:id="@+id/camera_status"
+            android:id="@+id/tracker_status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
+            android:text="tracker is running"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"/>
+
+        <TextView
+            android:id="@+id/display_connected_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/trackerStatusConnectedWithDisplay"
+            android:textColor="@color/color_success"
+            android:layout_centerHorizontal="true"
             android:layout_alignParentTop="true"
-            android:textAppearance="@android:style/TextAppearance.Material.Large" />
+            android:layout_marginTop="5dp" />
 
     </RelativeLayout>
 </merge>
