@@ -158,33 +158,37 @@ public final class InitTrackerActivity extends CameraPreviewActivity implements 
             mGeomagnetic = event.values;
         if (mGravity != null && mGeomagnetic != null) {
             countSensorRefresh++;
-            float rot[] = new float[9];
-            float in[] = new float[9];
+            float[] rot = new float[9];
+            float[] in = new float[9];
             boolean success = SensorManager.getRotationMatrix(rot, in, mGravity, mGeomagnetic);
             if (success) {
-                float orientation[] = new float[3];
-                SensorManager.getOrientation(rot, orientation);
-                long rollDegrees = Math.round(Math.toDegrees(orientation[2]));
-                long pitchDegrees = Math.round(Math.toDegrees(orientation[1]));
-                rollText.setText(String.format(getString(R.string.adjustDeviceRollDegreeText), Math.abs(rollDegrees)));
-                pitchText.setText(String.format(getString(R.string.adjustDeviceTiltDegreeText), pitchDegrees));
-                if(countSensorRefresh % 50 == 0) {
-                    if(pitchDegrees > MAX_ALLOWED_ADJUSTMENT_OFFSET) {
-                        changeAdjustmentInfo(R.drawable.tilt_right, R.string.adjustDeviceTiltRightText);
-                    } else if (pitchDegrees < -1 * MAX_ALLOWED_ADJUSTMENT_OFFSET) {
-                        changeAdjustmentInfo(R.drawable.tilt_left, R.string.adjustDeviceTiltLeftText);
-                    } else if (rollDegrees < -90 - MAX_ALLOWED_ADJUSTMENT_OFFSET_TOP) {
-                        changeAdjustmentInfo(R.drawable.roll_back, R.string.adjustDeviceRollBottomText);
-                    } else if (rollDegrees > -90 + MAX_ALLOWED_ADJUSTMENT_OFFSET) {
-                        changeAdjustmentInfo(R.drawable.roll_front, R.string.adjustDeviceRollTopText);
-                    } else {
-                        adjustDeviceOverlay.setVisibility(View.INVISIBLE);
-                        qrCodeOverlay.setVisibility(View.VISIBLE);
-                        ((InitTrackerHandler) cameraCallback).setIsReadingQRCode(true);
-                    }
-                    countSensorRefresh = 0;
-                }
+                handleSensorData(rot);
             }
+        }
+    }
+
+    private void handleSensorData(float[] rot) {
+        float[] orientation = new float[3];
+        SensorManager.getOrientation(rot, orientation);
+        long rollDegrees = Math.round(Math.toDegrees(orientation[2]));
+        long pitchDegrees = Math.round(Math.toDegrees(orientation[1]));
+        rollText.setText(String.format(getString(R.string.adjustDeviceRollDegreeText), Math.abs(rollDegrees)));
+        pitchText.setText(String.format(getString(R.string.adjustDeviceTiltDegreeText), pitchDegrees));
+        if(countSensorRefresh % 50 == 0) {
+            if(pitchDegrees > MAX_ALLOWED_ADJUSTMENT_OFFSET) {
+                changeAdjustmentInfo(R.drawable.tilt_right, R.string.adjustDeviceTiltRightText);
+            } else if (pitchDegrees < -1 * MAX_ALLOWED_ADJUSTMENT_OFFSET) {
+                changeAdjustmentInfo(R.drawable.tilt_left, R.string.adjustDeviceTiltLeftText);
+            } else if (rollDegrees < -90 - MAX_ALLOWED_ADJUSTMENT_OFFSET_TOP) {
+                changeAdjustmentInfo(R.drawable.roll_back, R.string.adjustDeviceRollBottomText);
+            } else if (rollDegrees > -90 + MAX_ALLOWED_ADJUSTMENT_OFFSET) {
+                changeAdjustmentInfo(R.drawable.roll_front, R.string.adjustDeviceRollTopText);
+            } else {
+                adjustDeviceOverlay.setVisibility(View.INVISIBLE);
+                qrCodeOverlay.setVisibility(View.VISIBLE);
+                ((InitTrackerHandler) cameraCallback).setIsReadingQRCode(true);
+            }
+            countSensorRefresh = 0;
         }
     }
 

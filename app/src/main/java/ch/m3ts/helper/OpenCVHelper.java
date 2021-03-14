@@ -10,6 +10,8 @@ import java.io.File;
 import ch.m3ts.Log;
 
 public class OpenCVHelper {
+    private OpenCVHelper() {}
+
     public static void saveImage(Mat mat, String fileName) {
         File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
         String fileWithEnding = fileName + ".png";

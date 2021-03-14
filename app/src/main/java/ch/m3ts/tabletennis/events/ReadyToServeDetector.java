@@ -28,6 +28,7 @@ public class ReadyToServeDetector {
     private final double PERCENTAGE_THRESHOLD = 0.15;
     private final int GESTURE_HOLD_TIME_IN_FRAMES = 15;
     private final double GESTURE_AREA_PERCENTAGE_RELATIVE_TO_TABLE = 0.1;
+    private final static double MAX_COLOR_CHANNEL_OFFSET = 10;
 
     public ReadyToServeDetector(Table table, Side server, int cameraWidth, int cameraHeight, ReadyToServeCallback callback) {
         this.table = table;
@@ -113,7 +114,7 @@ public class ReadyToServeDetector {
         Mat normal = new Mat();
         Mat hsv = new Mat();
         Imgproc.cvtColor(bgr, hsv, Imgproc.COLOR_BGR2HSV, 3);
-        inRange(hsv, new Scalar(0,120,50), new Scalar(10,255,255), mask1);
+        inRange(hsv, new Scalar(0,120,50), new Scalar(MAX_COLOR_CHANNEL_OFFSET,255,255), mask1);
         inRange(hsv, new Scalar(170,120,50), new Scalar(180,255,255), mask2);
         Core.bitwise_or(mask1, mask2, normal);
         return mask1;
@@ -132,7 +133,7 @@ public class ReadyToServeDetector {
         Mat maskInv = new Mat();
         Core.bitwise_not(bgr, bgrInverted);
         Imgproc.cvtColor(bgrInverted, hsvInverted, Imgproc.COLOR_BGR2HSV);
-        inRange(hsvInverted, new Scalar(90 - 10, 70, 50), new Scalar(90 + 10, 255, 255), maskInv);
+        inRange(hsvInverted, new Scalar(90 - MAX_COLOR_CHANNEL_OFFSET, 70, 50), new Scalar(90 + MAX_COLOR_CHANNEL_OFFSET, 255, 255), maskInv);
         return maskInv;
     }
 

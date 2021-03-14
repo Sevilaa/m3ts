@@ -232,4 +232,8 @@
         <item>0</item>
     </string-array>
 
+    <!-- Permissions -->
+    <string name="perm_label_DEFAULT_PERMISSION">Default Permission</string>
+    <string name="perm_desc_DEFAULT_PERMISSION">A lower-risk permission that gives requesting applications access to isolated application-level features, with minimal risk to other applications, the system, or the user. </string>
+
 </resources>
