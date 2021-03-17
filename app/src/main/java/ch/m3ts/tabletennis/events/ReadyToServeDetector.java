@@ -19,16 +19,17 @@ import static org.opencv.core.Core.inRange;
  * Takes a frame in YUV format and checks if a player held his racket in the ready to serve area.
  **/
 public class ReadyToServeDetector {
-    private Table table;
-    private int cameraWidth;
-    private int cameraHeight;
-    private ReadyToServeCallback callback;
-    private Side server;
-    private int gestureFrameCounter = 0;
-    private static final double PERCENTAGE_THRESHOLD = 0.15;
+    private static final double PERCENTAGE_THRESHOLD = 0.5;
+    private static final double PERCENTAGE_THRESHOLD_BLACK = 0.8;
     private static final int GESTURE_HOLD_TIME_IN_FRAMES = 15;
-    private static final double GESTURE_AREA_PERCENTAGE_RELATIVE_TO_TABLE = 0.1;
+    private static final double GESTURE_AREA_PERCENTAGE_RELATIVE_TO_TABLE = 0.05;
     private static final double MAX_COLOR_CHANNEL_OFFSET = 10;
+    private final Table table;
+    private final int cameraWidth;
+    private final int cameraHeight;
+    private final ReadyToServeCallback callback;
+    private final Side server;
+    private int gestureFrameCounter = 0;
 
     public ReadyToServeDetector(Table table, Side server, int cameraWidth, int cameraHeight, ReadyToServeCallback callback) {
         this.table = table;
@@ -42,15 +43,16 @@ public class ReadyToServeDetector {
      * Checks every three frames if the player held his racket into the ready for serve area,
      * If the gesture was active for 15 frames (0.5s on a 30 FPS camera) it returns true and
      * triggers an event
-     * @param  frameYUVBytes  frame in YUV format
+     *
+     * @param frameYUVBytes frame in YUV format
      * @return true if gesture was active for 15 frames and false otherwise
      */
     public boolean isReadyToServe(byte[] frameYUVBytes) {
         boolean isReady = false;
         gestureFrameCounter++;
-        if(gestureFrameCounter % 3 == 0 && OpenCVLoader.initDebug()) {
-            if(isRacketInArea(frameYUVBytes)) {
-                if(gestureFrameCounter >= GESTURE_HOLD_TIME_IN_FRAMES) {
+        if (gestureFrameCounter % 3 == 0 && OpenCVLoader.initDebug()) {
+            if (isRacketInArea(frameYUVBytes)) {
+                if (gestureFrameCounter >= GESTURE_HOLD_TIME_IN_FRAMES) {
                     this.callback.onGestureDetected();
                     isReady = true;
                 }
@@ -62,12 +64,13 @@ public class ReadyToServeDetector {
     }
 
     private boolean isRacketInArea(byte[] frameYUVBytes) {
-        return getRedPercentage(frameYUVBytes) > PERCENTAGE_THRESHOLD;
+        return (getRedPercentage(frameYUVBytes) > PERCENTAGE_THRESHOLD) ||
+                (getBlackPercentage(frameYUVBytes) > PERCENTAGE_THRESHOLD_BLACK);
     }
 
-    private double getRedPercentage(byte [] frameYUVBytes) {
+    private double getRedPercentage(byte[] frameYUVBytes) {
         Mat yuv = new Mat(getYUVMatHeight(), this.cameraWidth, CvType.CV_8UC1);
-        yuv.put( 0, 0, frameYUVBytes);
+        yuv.put(0, 0, frameYUVBytes);
 
         Mat bgr = convertYUVToBGRInAreaSize(yuv);
 
@@ -75,7 +78,16 @@ public class ReadyToServeDetector {
         Mat maskWithTwoThresh = segmentRedColor(bgr);
         Mat mask = new Mat();
         Core.bitwise_or(maskWithInvert, maskWithTwoThresh, mask);
-        return Core.countNonZero(mask) / (double)mask.total();
+        return Core.countNonZero(mask) / (double) mask.total();
+    }
+
+    private double getBlackPercentage(byte[] frameYUVBytes) {
+        Mat yuv = new Mat(getYUVMatHeight(), this.cameraWidth, CvType.CV_8UC1);
+        yuv.put(0, 0, frameYUVBytes);
+
+        Mat bgr = convertYUVToBGRInAreaSize(yuv);
+        Mat mask = segmentBlackColor(bgr);
+        return Core.countNonZero(mask) / (double) mask.total();
     }
 
     private Mat convertYUVToBGRInAreaSize(Mat yuv) {
@@ -87,26 +99,28 @@ public class ReadyToServeDetector {
 
     /**
      * Calculates square around table corner of server
-     * @return  rect with with sides in the size of 10% of the table
+     *
+     * @return rect with with sides in the size of GESTURE_AREA_PERCENTAGE_RELATIVE_TO_TABLE of the table width
      */
     private Rect getGestureArea() {
         int width = (int) (this.table.getWidth() * GESTURE_AREA_PERCENTAGE_RELATIVE_TO_TABLE);
 
         Point position = this.table.getCornerDownLeft();
         int positionX = position.x;
-        if(this.server == Side.RIGHT) {
+        if (this.server == Side.RIGHT) {
             position = this.table.getCornerDownRight();
             positionX = position.x - width;
-            if(positionX<0) positionX = 0;
+            if (positionX < 0) positionX = 0;
         }
-        return new Rect(positionX, position.y - width/2, width, width);
+        return new Rect(positionX, position.y - width / 2, width, width);
     }
 
     /**
      * Segments red color from image with two color ranges.
      * Needs more resources than segmentation with inversion.
-     * @param  bgr  mat with bgr color space
-     * @return      image where red pixels in original images are 255 and others 0
+     *
+     * @param bgr mat with bgr color space
+     * @return image where red pixels in original images are 255 and others 0
      */
     private Mat segmentRedColor(Mat bgr) {
         Mat mask1 = new Mat();
@@ -114,9 +128,23 @@ public class ReadyToServeDetector {
         Mat normal = new Mat();
         Mat hsv = new Mat();
         Imgproc.cvtColor(bgr, hsv, Imgproc.COLOR_BGR2HSV, 3);
-        inRange(hsv, new Scalar(0,120,50), new Scalar(MAX_COLOR_CHANNEL_OFFSET,255,255), mask1);
-        inRange(hsv, new Scalar(170,120,50), new Scalar(180,255,255), mask2);
+        inRange(hsv, new Scalar(0, 120, 50), new Scalar(MAX_COLOR_CHANNEL_OFFSET, 255, 255), mask1);
+        inRange(hsv, new Scalar(170, 120, 50), new Scalar(180, 255, 255), mask2);
         Core.bitwise_or(mask1, mask2, normal);
+        return mask1;
+    }
+
+    /**
+     * Segments black color from image with two color ranges.
+     *
+     * @param bgr mat with bgr color space
+     * @return image where black pixels in original images are 255 and others 0
+     */
+    private Mat segmentBlackColor(Mat bgr) {
+        Mat mask1 = new Mat();
+        Mat hsv = new Mat();
+        Imgproc.cvtColor(bgr, hsv, Imgproc.COLOR_BGR2HSV, 3);
+        inRange(hsv, new Scalar(0, 0, 0), new Scalar(255, 255, 70), mask1);
         return mask1;
     }
 
@@ -124,8 +152,9 @@ public class ReadyToServeDetector {
     /**
      * Segments red color from image by inverting first and then looking for cyan parts in image.
      * Needs less resources than segmentRedColor.
-     * @param  bgr  mat with bgr color space
-     * @return      image where red pixels in original images are 255 and others 0
+     *
+     * @param bgr mat with bgr color space
+     * @return image where red pixels in original images are 255 and others 0
      */
     private Mat segmentRedColorViaInverting(Mat bgr) {
         Mat bgrInverted = new Mat();
@@ -138,7 +167,7 @@ public class ReadyToServeDetector {
     }
 
     private int getYUVMatHeight() {
-        return this.cameraHeight + this.cameraHeight/2;
+        return this.cameraHeight + this.cameraHeight / 2;
     }
 
 }
