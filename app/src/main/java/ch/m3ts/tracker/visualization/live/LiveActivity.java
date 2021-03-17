@@ -1,9 +1,13 @@
 package ch.m3ts.tracker.visualization.live;
 
+import android.Manifest;
 import android.app.AlertDialog;
+import android.content.pm.PackageManager;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.view.Display;
 import android.view.SurfaceView;
 import android.widget.TextView;
@@ -58,11 +62,15 @@ public final class LiveActivity extends MatchVisualizeActivity {
         Log.d("Found match: " +matchId);
         this.onPause();
 
-        this.audioRecorder = new Recorder(new ImplAudioRecorderCallback(
-                (TextView) findViewById(R.id.txtPlayMovieAmp),
-                (TextView) findViewById(R.id.txtPlayMovieFrequency)
-        ));
+    }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (isAudioPermissionDenied()) {
+            String[] perms = new String[]{Manifest.permission.RECORD_AUDIO};
+            ActivityCompat.requestPermissions(this, perms, 0);
+        }
     }
 
     @Override
@@ -104,6 +112,11 @@ public final class LiveActivity extends MatchVisualizeActivity {
         if(mConfig.doRecordMatches()) {
             if (liveRecording != null) liveRecording.tearDown();
             liveRecording = LiveRecording.getInstance(this, mCamera);
+            this.audioRecorder = new Recorder(new ImplAudioRecorderCallback(
+                    (TextView) findViewById(R.id.txtPlayMovieAmp),
+                    (TextView) findViewById(R.id.txtPlayMovieFrequency)
+            ));
+            this.audioRecorder.start();
         }
 
         // start thread
@@ -134,7 +147,7 @@ public final class LiveActivity extends MatchVisualizeActivity {
     protected void onResume() {
         super.onResume();
         init();
-        audioRecorder.start();
+        if (audioRecorder != null) audioRecorder.start();
     }
 
     /**
@@ -142,7 +155,7 @@ public final class LiveActivity extends MatchVisualizeActivity {
      */
     @Override
     protected void onPause() {
-        audioRecorder.stop();
+        if (audioRecorder != null) audioRecorder.stop();
         mHandler.stopDetections();
         alertDialog.dismiss();
         super.onPause();
@@ -157,6 +170,11 @@ public final class LiveActivity extends MatchVisualizeActivity {
     public EncodeThread getmEncode() {
         if (liveRecording != null) return liveRecording.getmEncode();
         return null;
+    }
+
+    private boolean isAudioPermissionDenied() {
+        int permissionStatus = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO);
+        return permissionStatus != PackageManager.PERMISSION_GRANTED;
     }
 
     private Table trySettingTableLocationFromIntent() {
