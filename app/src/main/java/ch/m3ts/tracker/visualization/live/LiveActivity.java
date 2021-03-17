@@ -6,6 +6,9 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.view.Display;
 import android.view.SurfaceView;
+import android.widget.TextView;
+
+import com.google.audio.core.Recorder;
 
 import ch.m3ts.Log;
 import ch.m3ts.helper.QuitAlertDialogHelper;
@@ -39,6 +42,7 @@ public final class LiveActivity extends MatchVisualizeActivity {
     private String matchId;
     private AlertDialog alertDialog;
     private LiveRecording liveRecording;
+    private Recorder audioRecorder;
 
     @Override
     protected void onCreate(android.os.Bundle savedBundle) {
@@ -53,6 +57,12 @@ public final class LiveActivity extends MatchVisualizeActivity {
         this.alertDialog = QuitAlertDialogHelper.makeDialog(this);
         Log.d("Found match: " +matchId);
         this.onPause();
+
+        this.audioRecorder = new Recorder(new ImplAudioRecorderCallback(
+                (TextView) findViewById(R.id.txtPlayMovieAmp),
+                (TextView) findViewById(R.id.txtPlayMovieFrequency)
+        ));
+
     }
 
     @Override
@@ -124,6 +134,7 @@ public final class LiveActivity extends MatchVisualizeActivity {
     protected void onResume() {
         super.onResume();
         init();
+        audioRecorder.start();
     }
 
     /**
@@ -131,6 +142,7 @@ public final class LiveActivity extends MatchVisualizeActivity {
      */
     @Override
     protected void onPause() {
+        audioRecorder.stop();
         mHandler.stopDetections();
         alertDialog.dismiss();
         super.onPause();

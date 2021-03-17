@@ -122,5 +122,4 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
         this.trackerPubNub.sendStatusUpdate(this.matchSettings.getPlayerLeft().getName(), this.matchSettings.getPlayerRight().getName(), 0,0,0,0,this.matchSettings.getStartingServer(), this.matchSettings.getMatchType().gamesNeededToWin);
         refreshDebugTextViews();
     }
-
 }
