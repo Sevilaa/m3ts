@@ -52,7 +52,8 @@ public class MainActivity extends Activity {
         animationDrawable.start();
         this.audioRecorder = new Recorder(new ImplAudioRecorderCallback(
                 (TextView) findViewById(R.id.txtPlayMovieAmp),
-                (TextView) findViewById(R.id.txtPlayMovieFrequency)
+                (TextView) findViewById(R.id.txtPlayMovieFrequency),
+                (TextView) findViewById(R.id.txtAudioBounce)
         ));
     }
 

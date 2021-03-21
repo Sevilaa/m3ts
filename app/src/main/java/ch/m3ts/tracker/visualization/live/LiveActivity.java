@@ -114,7 +114,8 @@ public final class LiveActivity extends MatchVisualizeActivity {
             liveRecording = LiveRecording.getInstance(this, mCamera);
             this.audioRecorder = new Recorder(new ImplAudioRecorderCallback(
                     (TextView) findViewById(R.id.txtPlayMovieAmp),
-                    (TextView) findViewById(R.id.txtPlayMovieFrequency)
+                    (TextView) findViewById(R.id.txtPlayMovieFrequency),
+                    (TextView) findViewById(R.id.txtAudioBounce)
             ));
             this.audioRecorder.start();
         }
