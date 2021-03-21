@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <GridLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:rowCount="4"
+        android:layout_centerVertical="true"
+        android:columnCount="1"
+        android:layout_centerHorizontal="true">
+
+        <TextView
+            android:id="@+id/tutorialTitleTxt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textAlignment="center"
+            android:textColor="@color/primary_light"
+            android:textSize="30sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/tutorialImg"
+            android:layout_width="400dp"
+            android:layout_height="150dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="10dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/tutorial_tracker_setup_0"
+            tools:src="@drawable/tutorial_tracker_setup_0" />
+
+        <TextView
+            android:id="@+id/tutorialDescriptionTxt"
+            android:layout_width="400dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text=""
+            android:textAlignment="center"
+            android:textColor="@color/primary_light"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/tutorialContinueBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/radius_background"
+            android:backgroundTint="@android:color/secondary_text_light"
+            android:elevation="8dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:textAllCaps="false"
+            android:textStyle="normal"
+            android:layout_marginBottom="8dp"
+            android:text="OK"
+            android:textColor="#fff"
+            android:layout_gravity="end"
+            android:textSize="18sp" />
+    </GridLayout>
+
+    <ImageButton
+        android:id="@+id/tutorialGoBackBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/radius_background"
+        android:backgroundTint="@android:color/secondary_text_light"
+        android:elevation="8dp"
+        android:padding="8dp"
+        android:src="@drawable/undo"
+        android:textAppearance="@android:style/TextAppearance.Material.Medium"
+        android:tint="@android:color/white" />
+</RelativeLayout>

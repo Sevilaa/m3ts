@@ -17,6 +17,7 @@ import com.google.audio.core.Recorder;
 import ch.m3ts.display.MatchActivity;
 import ch.m3ts.tracker.init.InitTrackerActivity;
 import ch.m3ts.tracker.visualization.live.ImplAudioRecorderCallback;
+import ch.m3ts.tutorial.TutorialActivity;
 import cz.fmo.R;
 
 /**
@@ -84,5 +85,9 @@ public class MainActivity extends Activity {
     @SuppressWarnings("squid:S1172")
     public void onUseAsTracker(View toggle) {
         startActivity(new Intent(this, InitTrackerActivity.class));
+    }
+
+    public void onStartTutorial(View view) {
+        startActivity(new Intent(this, TutorialActivity.class));
     }
 }

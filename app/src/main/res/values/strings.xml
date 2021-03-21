@@ -89,6 +89,7 @@
     <string name="debugBallCountStart">0</string>
     <string name="contentDescRevert">reverts last selected corner</string>
     <string name="initMarkTableLabel">Mark the left and right table corner</string>
+    <string name="initMoveDeviceMsg">Move the device until the white line is somewhat aligned with the net</string>
     <string name="trackerStatusConnectedWithDisplay">connected to server</string>
     <string name="trackerStatusConnectedWithDisplayFail">unable to connect to display!</string>
 
@@ -97,6 +98,19 @@
     <string name="appNameLong">mobile table tennis tracking system</string>
     <string name="mainTrackerBtnLabel">Use as Tracker</string>
     <string name="mainDisplayBtnLabel">Use as Display</string>
+    <string name="mainTutorialBtnLabel">Help</string>
+
+    <!-- Tutorial Activity -->
+    <string name="tutorialTitleKey">title</string>
+    <string name="tutorialImagesKey">images</string>
+    <string name="tutorialDescriptionsKey">descriptions</string>
+    <string name="tutorialPlayBtnLabel">How to Serve</string>
+    <string name="tutorialTrackerBtnLabel">How to setup Tracker</string>
+    <string name="tutorialDisplayBtnLabel">The Scoreboard</string>
+    <string name="tutorialTrackerSetupDescription0">Place the Tracker roughly 2-3 meters from the table.</string>
+    <string name="tutorialTrackerSetupDescription1">The height of the Tracker should roughly be the same as the height of the ping pong table. Follow the instructions on screen for camera placement.</string>
+    <string name="tutorialTrackerSetupDescription2">Once the screen asks for a QR-Code, the camera is placed correctly and the screen should look similar to the one above.</string>
+    <string name="tutorialServeDescription0">To serve, the server must first hold the red or black side of the racket over his/her table corner for a second. An audible "beep" sound effect will be played. The server can now perform the serve.</string>
 
     <!-- Init Activity -->
     <string name="initMarkTableLabelExplanation">Long Press to select a corner</string>
