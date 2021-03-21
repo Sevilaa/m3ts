@@ -24,8 +24,8 @@
 
         <ImageView
             android:id="@+id/tutorialImg"
-            android:layout_width="400dp"
-            android:layout_height="150dp"
+            android:layout_width="460dp"
+            android:layout_height="210dp"
             android:layout_gravity="center"
             android:layout_marginTop="10dp"
             android:scaleType="centerInside"
@@ -37,6 +37,7 @@
             android:layout_width="400dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
+            android:layout_gravity="center"
             android:text=""
             android:textAlignment="center"
             android:textColor="@color/primary_light"
