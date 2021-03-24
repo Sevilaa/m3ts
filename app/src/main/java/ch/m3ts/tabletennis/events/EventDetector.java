@@ -8,7 +8,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
-import ch.m3ts.Log;
 import ch.m3ts.tabletennis.Table;
 import ch.m3ts.tabletennis.events.timeouts.TimeoutTimerTask;
 import ch.m3ts.tabletennis.helper.DirectionX;
@@ -87,14 +86,12 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
 
     @Override
     public void onAudioBounceDetected() {
-        Log.d("audio bounce detected");
         if (currentTrack != null &&
                 TimeUnit.MILLISECONDS.convert(System.nanoTime() - currentTrack.getLastDetectionTime(), TimeUnit.NANOSECONDS) < 100) {
             Side ballBouncedOnSide = table.getHorizontalSideOfDetection(previousDetection.centerX);
             for (EventDetectionCallback callback : callbacks) {
                 callback.onAudioBounce(ballBouncedOnSide);
             }
-            Log.d("valid audio bounce detected " + System.currentTimeMillis());
         }
     }
 

@@ -102,6 +102,7 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
             case SERVING:
             case PLAY:
                 if (ballBouncedOnSide == currentBallSide) {
+                    Log.d("Referee: Audio bounce detected in PLAY state");
                     audioBounces++;
                 }
                 break;
@@ -218,7 +219,6 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
         initPoint();
         this.state = State.PAUSE;
         gestureCallback.onWaitingForGesture(getServer());
-        //setTimeoutForNextServe(PAUSE_SCORE_MANIPULATION_DELAY);
     }
 
     @Override
@@ -227,7 +227,6 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
         initPoint();
         this.state = State.PAUSE;
         gestureCallback.onWaitingForGesture(getServer());
-        //setTimeoutForNextServe(PAUSE_SCORE_MANIPULATION_DELAY);
     }
 
     @Override
@@ -250,7 +249,9 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
                 Log.d("Out of Frame for too long - Striker most likely shot the ball into the net");
                 faultBySide(currentStriker);
             } else if (this.bounces >= 1 || this.audioBounces >= 1) {
-                Log.d("Out of Frame for too long - Strike received no return");
+                if (this.audioBounces >= 1)
+                    Log.d("Out of Frame for too long (AUDIO_BOUNCE) - Strike received no return");
+                else Log.d("Out of Frame for too long - Strike received no return");
                 pointBySide(currentStriker);
             } else {
                 Log.d("Out of Frame for too long - Strike did not bounce");
