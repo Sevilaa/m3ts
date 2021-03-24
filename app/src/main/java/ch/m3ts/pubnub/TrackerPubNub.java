@@ -265,7 +265,7 @@ public class TrackerPubNub extends Callback implements UICallback, TrackerConnec
                         handleOnSelectTableCorner(tableCorners);
                         break;
                     case "onStartMatch":
-                        this.initTrackerCallback.switchToLiveActivity();
+                        this.initTrackerCallback.switchToLiveActivity(Integer.parseInt(json.getString(JSONInfo.TYPE_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.SERVER_PROPERTY)));
                         break;
                     case "onRestartMatch":
                         if(this.matchVisualizeHandlerCallback != null) {

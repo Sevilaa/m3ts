@@ -25,6 +25,7 @@ import ch.m3ts.pubnub.CameraBytesConversions;
 import ch.m3ts.tracker.visualization.CameraPreviewActivity;
 import cz.fmo.R;
 import cz.fmo.camera.CameraThread;
+import cz.fmo.util.Config;
 
 
 /**
@@ -80,14 +81,19 @@ public class InitTrackerHandler extends android.os.Handler implements CameraThre
             public void run() {
                 activity.findViewById(R.id.connection_info).setVisibility(View.GONE);
                 activity.findViewById(R.id.tracker_loading).setVisibility(View.VISIBLE);
+                if(!new Config(activity).isUsingPubnub()) {
+                    activity.findViewById(R.id.loading_bar_background).setVisibility(View.GONE);
+                }
             }
         });
         return this.currentFrame;
     }
 
     @Override
-    public void switchToLiveActivity() {
+    public void switchToLiveActivity(int matchType, int server) {
         if(this.tableCorners != null) {
+            this.selectedMatchType = matchType;
+            this.selectedServingSide = server;
             mActivity.get().switchToLiveActivity(this.selectedMatchId, this.selectedMatchType, this.selectedServingSide, this.tableCorners);
         }
     }

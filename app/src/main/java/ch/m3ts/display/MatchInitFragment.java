@@ -88,6 +88,8 @@ public class MatchInitFragment extends Fragment implements DisplayConnectCallbac
         bundle.putByteArray("tableFrame", imageBytes);
         bundle.putInt("width", imageWidth);
         bundle.putInt("height", imageHeight);
+        bundle.putString("type", getArguments().getString("type"));
+        bundle.putString("server", getArguments().getString("server"));
         fragment.setArguments(bundle);
         callback.replaceFragment(fragment, TAG_MATCH_SELECT_CORNERS);
     }

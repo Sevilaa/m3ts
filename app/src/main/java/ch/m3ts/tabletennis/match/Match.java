@@ -99,6 +99,9 @@ public class Match implements MatchCallback, MatchStatusCallback {
     }
 
     private Game getCurrentGame() {
+        if(this.wins.get(Side.RIGHT) + this.wins.get(Side.LEFT) >= this.games.length) {
+            return this.games[this.games.length-1];
+        }
         return this.games[this.wins.get(Side.RIGHT) + this.wins.get(Side.LEFT)];
     }
 

@@ -65,6 +65,12 @@ public final class LiveActivity extends MatchVisualizeActivity {
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+        this.mHandler.setConnectCallback(null);
+    }
+
+    @Override
     protected void onStart() {
         super.onStart();
         if (isAudioPermissionDenied()) {

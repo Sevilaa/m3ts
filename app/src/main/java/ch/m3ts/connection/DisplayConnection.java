@@ -13,7 +13,7 @@ public interface DisplayConnection {
     void setDisplayConnectCallback(DisplayConnectCallback displayConnectCallback);
     void onRequestTableFrame();
     void onSelectTableCorners(Point[] tableCorners);
-    void onStartMatch();
+    void onStartMatch(String matchType, String server);
     void onRestartMatch();
     void requestStatusUpdate();
     void onPause();

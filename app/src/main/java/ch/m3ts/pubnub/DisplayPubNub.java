@@ -75,7 +75,17 @@ public class DisplayPubNub extends Callback implements DisplayConnection {
         }
     }
 
-    public void onStartMatch() { send("onStartMatch", null); }
+    public void onStartMatch(String matchType, String server) {
+        try {
+            JSONObject json = new JSONObject();
+            json.put(JSONInfo.TYPE_PROPERTY, matchType);
+            json.put(JSONInfo.SERVER_PROPERTY, server);
+            json.put(JSONInfo.EVENT_PROPERTY, "onStartMatch");
+            pubnub.publish(this.roomID, json, new Callback() {});
+        } catch (JSONException ex) {
+            Log.d("Unable to send JSON to channel "+this.roomID+"\n"+ex.getMessage());
+        }
+    }
 
     public void onRestartMatch() { send("onRestartMatch", null); }
 

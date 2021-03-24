@@ -157,4 +157,8 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
     public void onDisconnection(String endpoint) {
         ConnectionHelper.makeDisconnectDialog(mLiveActivity.get());
     }
+
+    public void setConnectCallback(ConnectionCallback callback) {
+        ((NearbyTrackerConnection)this.connection).setConnectionCallback(callback);
+    }
 }

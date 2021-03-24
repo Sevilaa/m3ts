@@ -261,7 +261,7 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
             Log.d(e.getMessage());
             Thread.currentThread().interrupt();
         }
-        connection.onStartMatch();
+        connection.onStartMatch(getArguments().getString("type"), getArguments().getString("server"));
         Fragment fragment = new MatchScoreFragment();
         callback.replaceFragment(fragment, TAG_MATCH_SCORE);
     }

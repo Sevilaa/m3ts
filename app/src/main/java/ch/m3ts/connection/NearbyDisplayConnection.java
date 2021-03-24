@@ -48,7 +48,6 @@ public class NearbyDisplayConnection implements DisplayConnection {
     private String encodedFrameComplete;
     private int numberOfEncodedFrameParts;
     private String endpointName;
-    private static boolean isConnected = false;
 
 
     private NearbyDisplayConnection() {
@@ -84,7 +83,6 @@ public class NearbyDisplayConnection implements DisplayConnection {
                     connection.stopAdvertising();
                     discovererEndpointID = s;
                     connectionCallback.onConnection(endpointName);
-                    isConnected = true;
                     pubnubConnectionCallback.onImageTransmissionStarted(100);
                 } else {
                     connectionCallback.onRejection();
@@ -104,15 +102,14 @@ public class NearbyDisplayConnection implements DisplayConnection {
                 if(connectionCallback != null) {
                     connectionCallback.onDisconnection(endpointName);
                 }
-                isConnected = false;
             }
         };
     }
 
     public void startAdvertising() {
-        if(isConnected) {
-            this.connection.disconnectFromEndpoint(discovererEndpointID);
-        }
+        this.connection.stopAllEndpoints();
+        this.connection.stopAdvertising();
+        this.connection.stopDiscovery();
         AdvertisingOptions advertisingOptions =
                 new AdvertisingOptions.Builder().setStrategy(Strategy.P2P_POINT_TO_POINT).build();
         this.connection
@@ -152,7 +149,18 @@ public class NearbyDisplayConnection implements DisplayConnection {
         }
     }
 
-    public void onStartMatch() { send("onStartMatch", null); }
+    public void onStartMatch(String matchType, String server) {
+        try {
+            JSONObject json = new JSONObject();
+            json.put(JSONInfo.TYPE_PROPERTY, matchType);
+            json.put(JSONInfo.SERVER_PROPERTY, server);
+            json.put(JSONInfo.EVENT_PROPERTY, "onStartMatch");
+            Payload payload = Payload.fromBytes(json.toString().getBytes(UTF_8));
+            this.connection.sendPayload(this.discovererEndpointID, payload);
+        } catch (JSONException ex) {
+            Log.d("Unable to send JSON to endpoint "+this.discovererEndpointID+"\n"+ex.getMessage());
+        }
+    }
 
     public void onRestartMatch() { send("onRestartMatch", null); }
 

@@ -55,7 +55,6 @@ public class NearbyTrackerConnection implements UICallback, TrackerConnection {
     private static final int MAX_SIZE = 1000;
     private static final String JSON_SEND_EXCEPTION_MESSAGE = "Unable to send JSON to endpoint ";
     private String endpointName = "";
-    private static boolean isConnected = false;
 
     private NearbyTrackerConnection() {
     }
@@ -71,9 +70,9 @@ public class NearbyTrackerConnection implements UICallback, TrackerConnection {
     }
 
     public void startDiscovery() {
-        if(isConnected) {
-            this.connection.disconnectFromEndpoint(advertiserEndpointID);
-        }
+        this.connection.stopAllEndpoints();
+        this.connection.stopAdvertising();
+        this.connection.stopDiscovery();
         DiscoveryOptions discoveryOptions =
                 new DiscoveryOptions.Builder().setStrategy(Strategy.P2P_POINT_TO_POINT).build();
         connection.startDiscovery(ConnectionHelper.SERVICE_ID, endpointDiscoveryCallback, discoveryOptions)
@@ -150,7 +149,6 @@ public class NearbyTrackerConnection implements UICallback, TrackerConnection {
                 if (connectionResolution.getStatus().getStatusCode() == ConnectionsStatusCodes.STATUS_OK) {
                     connection.stopDiscovery();
                     advertiserEndpointID = s;
-                    isConnected = true;
                     connectionCallback.onConnection(endpointName);
                 } else {
                     connectionCallback.onRejection();
@@ -161,8 +159,9 @@ public class NearbyTrackerConnection implements UICallback, TrackerConnection {
             public void onDisconnected(String endpointId) {
                 // We've been disconnected from this endpoint. No more data can be
                 // sent or received.
-                connectionCallback.onDisconnection(endpointName);
-                isConnected = false;
+                if(connectionCallback != null) {
+                    connectionCallback.onDisconnection(endpointName);
+                }
             }
         };
     }
@@ -368,7 +367,7 @@ public class NearbyTrackerConnection implements UICallback, TrackerConnection {
                         handleOnSelectTableCorner(tableCorners);
                         break;
                     case "onStartMatch":
-                        this.initTrackerCallback.switchToLiveActivity();
+                        this.initTrackerCallback.switchToLiveActivity(Integer.parseInt(json.getString(JSONInfo.TYPE_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.SERVER_PROPERTY)));
                         break;
                     case "onRestartMatch":
                         if(this.matchVisualizeHandlerCallback != null) {

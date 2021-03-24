@@ -186,7 +186,10 @@ public final class InitTrackerActivity extends CameraPreviewActivity implements 
 
     void switchToLiveActivity(String selectedMatchId, int selectedMatchType, int selectedServingSide, int[] tableCorners) {
         if (this.trackerPubNub != null) this.trackerPubNub.unsubscribe();
-        if(this.nearbyTrackerConnection != null) this.nearbyTrackerConnection = null;
+        if(this.nearbyTrackerConnection != null) {
+            this.nearbyTrackerConnection.setConnectionCallback(null);
+            this.nearbyTrackerConnection = null;
+        }
         Intent intent = new Intent(this, LiveActivity.class);
         Bundle bundle = new Bundle();
         bundle.putString(MATCH_ID, selectedMatchId);
