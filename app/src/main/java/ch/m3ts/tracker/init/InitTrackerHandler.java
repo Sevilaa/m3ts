@@ -58,8 +58,8 @@ public class InitTrackerHandler extends android.os.Handler implements CameraThre
     @Override
     public void onCameraFrame(byte[] dataYUV420SP) {
         this.currentFrame = dataYUV420SP;
+        setCameraSize(this.mActivity.get());
         if(this.isReadingQRCode) {
-            setCameraSize(this.mActivity.get());
             BinaryBitmap binaryBitmap = convertBytesToBinaryBitmap(dataYUV420SP);
             String result = readQRCode(binaryBitmap);
             parseQRCodeData(result);
@@ -78,6 +78,7 @@ public class InitTrackerHandler extends android.os.Handler implements CameraThre
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                activity.findViewById(R.id.connection_info).setVisibility(View.GONE);
                 activity.findViewById(R.id.tracker_loading).setVisibility(View.VISIBLE);
             }
         });
@@ -125,6 +126,7 @@ public class InitTrackerHandler extends android.os.Handler implements CameraThre
             public void run() {
                 activity.findViewById(R.id.loading_bar_background).setVisibility(View.GONE);
                 ((TextView)activity.findViewById(R.id.tracker_info)).setText(activity.getResources().getString(R.string.tiWaitingText));
+
             }
         });
     }

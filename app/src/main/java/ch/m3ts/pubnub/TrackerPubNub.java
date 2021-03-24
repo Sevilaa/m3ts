@@ -12,6 +12,7 @@ import org.json.JSONObject;
 import java.util.UUID;
 
 import ch.m3ts.Log;
+import ch.m3ts.connection.TrackerConnection;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.MatchStatus;
 import ch.m3ts.tabletennis.match.MatchStatusCallback;
@@ -20,7 +21,7 @@ import ch.m3ts.tabletennis.match.game.ScoreManipulationCallback;
 import ch.m3ts.tracker.init.InitTrackerCallback;
 import ch.m3ts.tracker.visualization.MatchVisualizeHandlerCallback;
 
-public class TrackerPubNub extends Callback implements UICallback {
+public class TrackerPubNub extends Callback implements UICallback, TrackerConnection {
     private static final String JSON_SEND_EXCEPTION_MESSAGE = "Unable to send JSON to channel ";
     private static final String ROLE = "tracker";
     private static final int MAX_SIZE = 10000;

@@ -32,6 +32,7 @@ import com.otaliastudios.zoom.ZoomLayout;
 import org.jetbrains.annotations.NotNull;
 
 import ch.m3ts.Log;
+import ch.m3ts.connection.DisplayConnection;
 import cz.fmo.R;
 
 /**
@@ -251,15 +252,16 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
     @Override
     public void onClick(View v) {
         Point[] scaledPoints = pointsToRelativeFormat(this.tableCorners);
-        ((MatchActivity)getActivity()).getPubNub().setDisplayConnectCallback(null);
-        ((MatchActivity) getActivity()).getPubNub().onSelectTableCorners(scaledPoints);
+        DisplayConnection connection = ((MatchActivity)getActivity()).getConnection();
+        connection.setDisplayConnectCallback(null);
+        connection.onSelectTableCorners(scaledPoints);
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
             Log.d(e.getMessage());
             Thread.currentThread().interrupt();
         }
-        ((MatchActivity) getActivity()).getPubNub().onStartMatch();
+        connection.onStartMatch();
         Fragment fragment = new MatchScoreFragment();
         callback.replaceFragment(fragment, TAG_MATCH_SCORE);
     }

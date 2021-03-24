@@ -19,26 +19,53 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 
 import ch.m3ts.Log;
+import ch.m3ts.connection.ConnectionCallback;
+import ch.m3ts.connection.NearbyDisplayConnection;
 import cz.fmo.R;
+import cz.fmo.util.Config;
 
 /**
  * Fragment which generates and displays a QR-Code based on the selected table tennis
  * match settings and a randomly generated PubNub room id. The QR-Code is displayed for the
  * tracking device.
  */
-public class MatchInitFragment extends Fragment implements DisplayConnectCallback, View.OnClickListener {
+public class MatchInitFragment extends Fragment implements DisplayConnectCallback, View.OnClickListener, ConnectionCallback {
     private static final String TAG_MATCH_SELECT_CORNERS = "MATCH_SELECT_CORNERS";
     private FragmentReplaceCallback callback;
+    private NearbyDisplayConnection nearbyDisplayConnection;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_match_init, container, false);
-        ImageView imageView = v.findViewById(R.id.qr_code);
-        createQRCode(imageView);
+        initConnection(v);
         v.findViewById(R.id.miPictureBtn).setOnClickListener(this);
-        ((MatchActivity)getActivity()).getPubNub().setDisplayConnectCallback(this);
         return v;
     }
+
+    private void initConnection(View v) {
+        Config mConfig = new Config(getContext());
+        if(mConfig.isUsingPubnub()) {
+            ((MatchActivity)getActivity()).getConnection().setDisplayConnectCallback(this);
+            ImageView imageView = v.findViewById(R.id.qr_code);
+            createQRCode(imageView);
+        } else {
+            ((TextView) v.findViewById(R.id.miSubTitle)).setText(getString(R.string.connectDisplaySearching));
+            this.nearbyDisplayConnection = ((MatchActivity)getActivity()).getNearbyDisplayConnection();
+            this.nearbyDisplayConnection.setDisplayConnectCallback(this);
+            this.nearbyDisplayConnection.setConnectCallback(this);
+            this.nearbyDisplayConnection.startAdvertising();
+        }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if(this.nearbyDisplayConnection != null) {
+            this.nearbyDisplayConnection.setDisplayConnectCallback(null);
+            this.nearbyDisplayConnection.setConnectCallback(null);
+        }
+    }
+
 
     @Override
     public void onAttach(Context context) {
@@ -67,6 +94,10 @@ public class MatchInitFragment extends Fragment implements DisplayConnectCallbac
 
     @Override
     public void onConnected() {
+        initTakePicture();
+    }
+
+    private void initTakePicture() {
         final Activity activity = getActivity();
         activity.runOnUiThread(new Runnable() {
             @Override
@@ -98,7 +129,7 @@ public class MatchInitFragment extends Fragment implements DisplayConnectCallbac
         ((TextView)activity.findViewById(R.id.miSubTitle)).setText(R.string.miPictureLoadingSubTitle);
         activity.findViewById(R.id.display_loading).setVisibility(View.VISIBLE);
         activity.findViewById(R.id.miPictureBtn).setVisibility(View.GONE);
-        ((MatchActivity) getActivity()).getPubNub().onRequestTableFrame();
+        ((MatchActivity) getActivity()).getConnection().onRequestTableFrame();
         v.setOnClickListener(null);
     }
 
@@ -120,5 +151,34 @@ public class MatchInitFragment extends Fragment implements DisplayConnectCallbac
         } catch (WriterException e) {
             Log.d(e.getMessage());
         }
+    }
+
+    @Override
+    public void onDiscoverFailure() {
+        setConnectInfoText(R.string.connectDiscoverFailure);
+    }
+
+    @Override
+    public void onRejection() {
+        setConnectInfoText(R.string.connectRejection);
+    }
+
+    @Override
+    public void onDisconnection(String endpoint) {
+        setConnectInfoText(R.string.connectDisconnect);
+    }
+
+    @Override
+    public void onConnection(String endpoint) {
+        initTakePicture();
+    }
+
+    @Override
+    public void onConnecting(String endpoint) {
+
+    }
+
+    private void setConnectInfoText(int stringId) {
+        ((TextView) getActivity().findViewById(R.id.miSubTitle)).setText(getString(stringId));
     }
 }

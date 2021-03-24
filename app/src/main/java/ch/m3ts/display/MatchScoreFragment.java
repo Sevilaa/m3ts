@@ -19,10 +19,12 @@ import android.widget.TextView;
 
 import java.util.Locale;
 
+import ch.m3ts.connection.DisplayConnection;
 import ch.m3ts.pubnub.DisplayPubNub;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.UICallback;
 import cz.fmo.R;
+import cz.fmo.util.Config;
 
 /**
  * Fragment which implements the features of a digital table tennis scoreboard.
@@ -35,7 +37,7 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
     private String ttsReadyToServe;
     private TextToSpeech tts;
     private MediaPlayer mediaPlayer;
-    private DisplayPubNub pubNub;
+    private DisplayConnection connection;
     private boolean isPaused = false;
     private int gamesNeededToWin;
     private int scoreLeft;
@@ -46,16 +48,16 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_match_score, container, false);
-        this.pubNub = ((MatchActivity)getActivity()).getPubNub();
-        pubNub.setDisplayScoreEventCallback(this);
-        pubNub.setUiCallback(this);
+        this.connection = ((MatchActivity)getActivity()).getConnection();
+        connection.setDisplayScoreEventCallback(this);
+        connection.setUiCallback(this);
         initTTS();
         this.mediaPlayer = MediaPlayer.create(getContext(), R.raw.success);
         ImageButton refreshButton = v.findViewById(R.id.btnDisplayRefresh);
         refreshButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                pubNub.requestStatusUpdate();
+                connection.requestStatusUpdate();
             }
         });
 
@@ -65,11 +67,11 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
             @Override
             public void onClick(View view) {
                 if (isPaused) {
-                    pubNub.onResume();
+                    connection.onResume();
                     pauseResumeButton.setTag("Play");
                     pauseResumeButton.setImageResource(android.R.drawable.ic_media_pause);
                 } else {
-                    pubNub.onPause();
+                    connection.onPause();
                     pauseResumeButton.setTag("Pause");
                     pauseResumeButton.setImageResource(android.R.drawable.ic_media_play);
                 }
@@ -94,7 +96,9 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
         Intent intent = new Intent(getActivity(), MatchWonActivity.class);
         Bundle bundle = new Bundle();
         bundle.putString("winner", winnerName);
-        bundle.putString("room", this.pubNub.getRoomID());
+        if(new Config(getContext()).isUsingPubnub()) {
+            bundle.putString("room", ((DisplayPubNub) this.connection).getRoomID());
+        }
         intent.putExtras(bundle);
         while(tts.isSpeaking()) {}
         startActivity(intent);
@@ -126,7 +130,7 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
             public void run() {
                 setWinsOnTextView(side, wins);
                 if(gamesNeededToWin != wins) {
-                    pubNub.requestStatusUpdate();
+                    connection.requestStatusUpdate();
                     setScoreOnTextView(Side.LEFT, 0);
                     setScoreOnTextView(Side.RIGHT, 0);
                     tts.speak(ttsWin + " " + getPlayerNameBySide(side), TextToSpeech.QUEUE_FLUSH, null, null);
@@ -246,19 +250,19 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
 
     @SuppressLint("ClickableViewAccessibility")
     private void setOnSwipeListener(View v) {
-        if(pubNub != null) {
+        if(connection != null) {
             v.setOnTouchListener(new OnSwipeListener(this.getContext()) {
                 @Override
                 public void onSwipeDown(Side swipeSide) {
-                    if(pubNub != null) {
-                        pubNub.onPointDeduction(swipeSide);
+                    if(connection != null) {
+                        connection.onPointDeduction(swipeSide);
                     }
                 }
 
                 @Override
                 public void onSwipeUp(Side swipeSide) {
-                    if(pubNub != null) {
-                        pubNub.onPointAddition(swipeSide);
+                    if(connection != null) {
+                        connection.onPointAddition(swipeSide);
                     }
                 }
             });

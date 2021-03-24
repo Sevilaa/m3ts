@@ -180,6 +180,7 @@ public class SettingsActivity extends PreferenceActivity {
         public void onCreate(Bundle savedInstanceState) {
             super.setXmlResourceId(R.xml.pref_advanced);
             super.onCreate(savedInstanceState);
+            bindToSummaryUpdaterBoolean(findPreference(getString(R.string.prefPubnubKey)), sSummaryUpdater);
         }
     }
 }
