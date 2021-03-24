@@ -6,9 +6,13 @@ import java.util.Arrays;
  * Java FFT implementation by Google
  * https://code.google.com/archive/p/android-spectrum-analyzer/
  * GNU GPL v3
+ * <p>
+ * Adjusted to prefer higher frequencies between 9.5k - 11.1k
+ * (frequencies where a bounce of a table tennis ball will spike)
  */
 public class FrequencyCalculator {
-
+    private static final double RELEVANT_FREQ_MAX = 11100.0;
+    private static final double RELEVANT_FREQ_MIN = 9500.0;
     private RealDoubleFFT spectrumAmpFFT;
     private double[] spectrumAmpOutCum;
     private double[] spectrumAmpOutTmp;
@@ -114,14 +118,35 @@ public class FrequencyCalculator {
         }
 
         double maxAmpDB = 20 * Math.log10(0.125 / 32768);
+        double maxRelevantAmpDB = maxAmpDB;
+        double maxRelevantFreqIndex = 0;
         double maxAmpFreq = 0;
+        int sampleRate = 44100;
+        int hitCount = 0;
+        double medianFreq = 0;
         for (int i = 1; i < spectrumAmpOutDB.length; i++) {
+            double freq = ((double) i * sampleRate / fftLen);
             if (spectrumAmpOutDB[i] > maxAmpDB) {
                 maxAmpDB = spectrumAmpOutDB[i];
                 maxAmpFreq = i;
             }
+
+            if (freq > RELEVANT_FREQ_MIN && freq < RELEVANT_FREQ_MAX) {
+                medianFreq += spectrumAmpOutDB[i];
+                if (spectrumAmpOutDB[i] > maxRelevantAmpDB) {
+                    maxRelevantAmpDB = spectrumAmpOutDB[i];
+                    maxRelevantFreqIndex = i;
+                }
+                ++hitCount;
+            }
         }
-        int sampleRate = 44100;
+
+        if (hitCount > 0) medianFreq = medianFreq / hitCount;
+
+        if (medianFreq > -65) {
+            maxAmpFreq = maxRelevantFreqIndex;
+        }
+
         maxAmpFreq = maxAmpFreq * sampleRate / fftLen;
         if (sampleRate / fftLen < maxAmpFreq && maxAmpFreq < sampleRate / 2 - sampleRate / fftLen) {
             int id = (int) (Math.round(maxAmpFreq / sampleRate * fftLen));

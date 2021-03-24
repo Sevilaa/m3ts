@@ -80,7 +80,7 @@ public class AudioCalculator {
 
     private double retrieveFrequency() {
         int length = bytes.length / 2;
-        int sampleSize = 8192;
+        int sampleSize = 96000;
         while (sampleSize > length) sampleSize = sampleSize >> 1;
 
         FrequencyCalculator frequencyCalculator = new FrequencyCalculator(sampleSize);

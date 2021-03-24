@@ -14,9 +14,9 @@ import com.google.audio.calculators.AudioCalculator;
  */
 public class ImplAudioRecorderCallback implements com.google.audio.core.Callback {
     private static final int MAX_FREQUENCY = 13000;
-    private static final int MIN_FREQUENCY = 7500;
+    private static final int MIN_FREQUENCY = 8000;
     private static final int MIN_DECIBEL = -20;
-    private static final int TIME_BETWEEN_TWO_BOUNCES_MS = 100;
+    private static final int TIME_BETWEEN_TWO_BOUNCES_MS = 500;
     private final TextView txtAmp;
     private final TextView txtFrequency;
     private final TextView txtAudioBounce;
