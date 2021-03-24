@@ -17,15 +17,6 @@ public class AudioCalculator {
     public AudioCalculator() {
     }
 
-    public AudioCalculator(byte[] bytes) {
-        this.bytes = bytes;
-        amplitudes = null;
-        decibels = null;
-        frequency = 0.0D;
-        amplitude = 0;
-        decibel = 0.0D;
-    }
-
     public void setBytes(byte[] bytes) {
         this.bytes = bytes;
         amplitudes = null;

@@ -6,12 +6,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
+import ch.m3ts.Log;
 import ch.m3ts.tabletennis.Table;
 import ch.m3ts.tabletennis.events.timeouts.TimeoutTimerTask;
 import ch.m3ts.tabletennis.helper.DirectionX;
 import ch.m3ts.tabletennis.helper.DirectionY;
 import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.tracker.ImplAudioRecorderCallback;
 import ch.m3ts.tracker.ZPositionCalc;
 import cz.fmo.Lib;
 import cz.fmo.data.Track;
@@ -32,7 +35,7 @@ import cz.fmo.util.Config;
  *   - A ball falling off sideways the table (onBallDroppedSideWays)
  *   - A ball detection missing for some time (onTimeout)
  */
-public class EventDetector implements Lib.Callback {
+public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Callback {
     private static final double PERCENTAGE_OF_NEARLY_OUT_OF_FRAME = 0.07;
     private static final int MILLISECONDS_TILL_TIMEOUT = 1000;
     private final Object mLock = new Object();
@@ -49,6 +52,7 @@ public class EventDetector implements Lib.Callback {
     private Table table;
     private int numberOfDetections;
     private ZPositionCalc zPositionCalc;
+    private Track currentTrack;
 
     public EventDetector(Config config, int srcWidth, int srcHeight, EventDetectionCallback callback, TrackSet tracks, @NonNull Table table, ZPositionCalc calc) {
         this(config, srcWidth, srcHeight, Collections.singletonList(callback), tracks, table, calc);
@@ -79,6 +83,19 @@ public class EventDetector implements Lib.Callback {
     @Override
     public void onObjectsDetected(Lib.Detection[] detections) {
         this.onObjectsDetected(detections, System.nanoTime());
+    }
+
+    @Override
+    public void onAudioBounceDetected() {
+        Log.d("audio bounce detected");
+        if (currentTrack != null &&
+                TimeUnit.MILLISECONDS.convert(System.nanoTime() - currentTrack.getLastDetectionTime(), TimeUnit.NANOSECONDS) < 100) {
+            Side ballBouncedOnSide = table.getHorizontalSideOfDetection(previousDetection.centerX);
+            for (EventDetectionCallback callback : callbacks) {
+                callback.onAudioBounce(ballBouncedOnSide);
+            }
+            Log.d("valid audio bounce detected " + System.currentTimeMillis());
+        }
     }
 
     public void onObjectsDetected(Lib.Detection[] detections, long detectionTime) {
@@ -140,6 +157,7 @@ public class EventDetector implements Lib.Callback {
         for(int i = tracks.size()-1; i>=0; i--) {
             if(isOnTable(tracks.get(i))) {
                 selectedTrack = tracks.get(i);
+                currentTrack = selectedTrack;
                 break;
             }
         }

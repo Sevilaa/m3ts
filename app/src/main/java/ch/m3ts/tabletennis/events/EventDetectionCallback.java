@@ -15,4 +15,6 @@ public interface EventDetectionCallback {
     void onTableSideChange(Side side);
     void onBallDroppedSideWays();
     void onTimeout();
+
+    void onAudioBounce(Side side);
 }

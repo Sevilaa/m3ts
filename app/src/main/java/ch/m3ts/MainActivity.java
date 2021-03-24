@@ -16,7 +16,7 @@ import com.google.audio.core.Recorder;
 
 import ch.m3ts.display.MatchActivity;
 import ch.m3ts.tracker.init.InitTrackerActivity;
-import ch.m3ts.tracker.visualization.live.ImplAudioRecorderCallback;
+import ch.m3ts.tracker.visualization.live.DebugImplAudioRecorderCallback;
 import ch.m3ts.tutorial.TutorialActivity;
 import cz.fmo.R;
 
@@ -50,7 +50,7 @@ public class MainActivity extends Activity {
         animationDrawable.setEnterFadeDuration(2000);
         animationDrawable.setExitFadeDuration(4000);
         animationDrawable.start();
-        this.audioRecorder = new Recorder(new ImplAudioRecorderCallback(
+        this.audioRecorder = new Recorder(new DebugImplAudioRecorderCallback(
                 (TextView) findViewById(R.id.txtPlayMovieAmp),
                 (TextView) findViewById(R.id.txtPlayMovieFrequency),
                 (TextView) findViewById(R.id.txtAudioBounce)

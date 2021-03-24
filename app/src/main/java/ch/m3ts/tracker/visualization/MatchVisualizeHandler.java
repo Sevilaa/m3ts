@@ -11,6 +11,8 @@ import android.support.annotation.NonNull;
 import android.view.SurfaceHolder;
 import android.widget.TextView;
 
+import com.google.audio.core.Recorder;
+
 import org.opencv.android.OpenCVLoader;
 
 import java.lang.ref.WeakReference;
@@ -34,6 +36,7 @@ import ch.m3ts.tabletennis.match.ServeRules;
 import ch.m3ts.tabletennis.match.UICallback;
 import ch.m3ts.tabletennis.match.game.GameType;
 import ch.m3ts.tabletennis.match.game.ScoreManipulationCallback;
+import ch.m3ts.tracker.ImplAudioRecorderCallback;
 import ch.m3ts.tracker.ZPositionCalc;
 import cz.fmo.Lib;
 import cz.fmo.R;
@@ -67,6 +70,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     private int newBounceCount;
     private ScoreManipulationCallback smc;
     private boolean waitingForGesture = false;
+    private Recorder audioRecorder;
     protected Match match;
     protected MatchSettings matchSettings;
     protected UICallback uiCallback;
@@ -170,6 +174,11 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     }
 
     @Override
+    public void onAudioBounce(Side side) {
+        // do nothing for now
+    }
+
+    @Override
     public void onBallDroppedSideWays() {
         // do nothing
     }
@@ -177,7 +186,9 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public void onMatchEnded(String winnerName) {
+        this.audioRecorder = null;
         this.match = null;
+        this.eventDetector = null;
         Lib.detectionStop();
         mActivity.get().getmSurfaceView().setOnTouchListener(null);
         resetScoreTextViews();
@@ -236,16 +247,19 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         callbacks.add(this.match.getReferee());
         callbacks.add(this);
         ZPositionCalc calc = new ZPositionCalc(viewingAngle, table.getWidth(), srcWidth);
-        eventDetector = new EventDetector(config, srcWidth, srcHeight, callbacks, tracks, this.table, calc);
+        this.eventDetector = new EventDetector(config, srcWidth, srcHeight, callbacks, tracks, this.table, calc);
+        this.audioRecorder = new Recorder(new ImplAudioRecorderCallback(this.eventDetector));
         this.match.getReferee().initWaitingForGesture();
     }
 
     public void startDetections() {
         Lib.detectionStart(this.videoScaling.getVideoWidth(), this.videoScaling.getVideoHeight(), this.config.getProcRes(), this.config.isGray(), eventDetector);
+        if (this.audioRecorder != null) this.audioRecorder.start();
     }
 
     public void stopDetections() {
         Lib.detectionStop();
+        if (this.audioRecorder != null) this.audioRecorder.stop();
     }
 
     public void clearCanvas(SurfaceHolder surfaceHolder) {
