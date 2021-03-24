@@ -4,10 +4,14 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.ContextCompat;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,10 +20,14 @@ import java.util.Properties;
 import java.util.Random;
 
 import ch.m3ts.Log;
+import ch.m3ts.connection.ConnectionHelper;
+import ch.m3ts.connection.DisplayConnection;
+import ch.m3ts.connection.NearbyDisplayConnection;
 import ch.m3ts.helper.QuitAlertDialogHelper;
 import ch.m3ts.pubnub.DisplayPubNub;
 import ch.m3ts.pubnub.PubNubFactory;
 import cz.fmo.R;
+import cz.fmo.util.Config;
 
 /**
  * Activity which implements main the features of the device used as a display.
@@ -31,6 +39,7 @@ public class MatchActivity extends FragmentActivity implements FragmentReplaceCa
     private DisplayPubNub pubNub;
     private Random random = new SecureRandom();
     private AlertDialog alertDialog;
+    private NearbyDisplayConnection nearbyDisplayConnection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,16 +56,72 @@ public class MatchActivity extends FragmentActivity implements FragmentReplaceCa
         boolean isRestartedMatch = bundle.getBoolean("isRestartedMatch");
         Fragment nextFragment = new MatchSettingsFragment();
         if(isRestartedMatch) {
-            initPubNub(bundle.getString("room"));
-            this.pubNub.onRestartMatch();
+            initRestartedMatch(bundle);
             nextFragment = new MatchScoreFragment();
         } else {
-            initPubNub(getRandomRoomID(8));
+            initConnection();
         }
         FragmentManager manager = getFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
         transaction.add(R.id.mainBackground, nextFragment);
         transaction.commit();
+    }
+
+    private void initRestartedMatch(Bundle bundle) {
+        Config mConfig = new Config(this);
+        if(mConfig.isUsingPubnub()) {
+            initPubNub(bundle.getString("room"));
+            this.pubNub.onRestartMatch();
+        } else {
+            this.nearbyDisplayConnection = NearbyDisplayConnection.getInstance();
+            this.nearbyDisplayConnection.init(this);
+            this.nearbyDisplayConnection.onRestartMatch();
+        }
+    }
+
+    private void initConnection() {
+        Config mConfig = new Config(this);
+        if(mConfig.isUsingPubnub()) {
+            initPubNub(getRandomRoomID(8));
+        } else {
+            if (!hasPermissions(this, ConnectionHelper.REQUIRED_PERMISSIONS)) {
+                requestPermissions(ConnectionHelper.REQUIRED_PERMISSIONS, ConnectionHelper.REQUEST_CODE_REQUIRED_PERMISSIONS);
+            } else {
+                this.nearbyDisplayConnection = NearbyDisplayConnection.getInstance();
+                this.nearbyDisplayConnection.init(this);
+            }
+        }
+    }
+
+    /** Returns true if the app was granted all the permissions. Otherwise, returns false. */
+    private static boolean hasPermissions(Context context, String... permissions) {
+        for (String permission : permissions) {
+            if (ContextCompat.checkSelfPermission(context, permission)
+                    != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Handles user acceptance (or denial) of our permission request. */
+    @Override
+    public void onRequestPermissionsResult(
+            int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode != ConnectionHelper.REQUEST_CODE_REQUIRED_PERMISSIONS) {
+            return;
+        }
+
+        for (int grantResult : grantResults) {
+            if (grantResult == PackageManager.PERMISSION_DENIED) {
+                Toast.makeText(this,"error", Toast.LENGTH_LONG).show();
+                finish();
+                return;
+            }
+        }
+        recreate();
     }
 
     @Override
@@ -70,6 +135,14 @@ public class MatchActivity extends FragmentActivity implements FragmentReplaceCa
 
     public DisplayPubNub getPubNub() {
         return pubNub;
+    }
+
+    public DisplayConnection getConnection() {
+        if(new Config(this).isUsingPubnub()) {
+            return pubNub;
+        } else {
+            return nearbyDisplayConnection;
+        }
     }
 
     private void initPubNub(String pubnubRoom) {
@@ -103,4 +176,9 @@ public class MatchActivity extends FragmentActivity implements FragmentReplaceCa
     public void onBackPressed() {
         this.alertDialog.show();
     }
+
+    public NearbyDisplayConnection getNearbyDisplayConnection() {
+        return nearbyDisplayConnection;
+    }
+
 }

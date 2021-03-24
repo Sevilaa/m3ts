@@ -1,5 +1,6 @@
 package ch.m3ts.connection;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Point;
 import android.support.annotation.NonNull;
@@ -32,7 +33,8 @@ import ch.m3ts.tabletennis.match.UICallback;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class Advertiser {
+public class NearbyDisplayConnection implements DisplayConnection {
+    private static final NearbyDisplayConnection instance = new NearbyDisplayConnection();
     private ConnectionLifecycleCallback connectionLifecycleCallback;
     private PayloadCallback payloadCallback;
     private Context context;
@@ -41,16 +43,25 @@ public class Advertiser {
     private String discovererEndpointID = "";
     private UICallback uiCallback;
     private DisplayScoreEventCallback scoreCallback;
-    private DisplayConnectCallback connectCallback;
+    private DisplayConnectCallback pubnubConnectionCallback;
+    private ConnectionCallback connectionCallback;
     private String encodedFrameComplete;
     private int numberOfEncodedFrameParts;
+    private String endpointName;
+    private static boolean isConnected = false;
 
 
-    public Advertiser(Context context) {
+    private NearbyDisplayConnection() {
+    }
+
+    public static NearbyDisplayConnection getInstance() {
+        return instance;
+    }
+
+    public void init(Context context) {
         this.context = context;
-        this.connection = Nearby.getConnectionsClient(context);
+        this.connection = Nearby.getConnectionsClient(context.getApplicationContext());
         initCallbacks();
-        startAdvertising();
     }
 
     private void initCallbacks() {
@@ -69,44 +80,44 @@ public class Advertiser {
          this.connectionLifecycleCallback = new ConnectionLifecycleCallback() {
             @Override
             public void onConnectionResult(@NonNull String s, @NonNull ConnectionResolution connectionResolution) {
-                switch (connectionResolution.getStatus().getStatusCode()) {
-                    case ConnectionsStatusCodes.STATUS_OK:
-                        connection.stopDiscovery();
-                        connection.stopAdvertising();
-                        discovererEndpointID = s;
-                        // We're connected! Can now start sending and receiving data.
-                        break;
-                    case ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED:
-                        // The connection was rejected by one or both sides.
-                        break;
-                    case ConnectionsStatusCodes.STATUS_ERROR:
-                        // The connection broke before it was able to be accepted.
-                        break;
-                    default:
-                        // Unknown status code
+                if (connectionResolution.getStatus().getStatusCode() == ConnectionsStatusCodes.STATUS_OK) {
+                    connection.stopAdvertising();
+                    discovererEndpointID = s;
+                    connectionCallback.onConnection(endpointName);
+                    isConnected = true;
+                    pubnubConnectionCallback.onImageTransmissionStarted(100);
+                } else {
+                    connectionCallback.onRejection();
                 }
             }
 
             @Override
-            public void onConnectionInitiated(@NonNull String s, @NonNull ConnectionInfo connectionInfo) {
-                // Automatically accept the connection on both sides.
-                connection.acceptConnection(s, payloadCallback);
+            public void onConnectionInitiated(@NonNull final String endpointId, @NonNull ConnectionInfo connectionInfo) {
+                endpointName = connectionInfo.getEndpointName();
+                connectionCallback.onConnecting(endpointName);
+                AlertDialog dialog = ConnectionHelper.makeAuthenticationDialog(context, endpointId, endpointName, connectionInfo.getAuthenticationToken(), payloadCallback);
+                dialog.show();
             }
 
             @Override
             public void onDisconnected(String endpointId) {
-                // We've been disconnected from this endpoint. No more data can be
-                // sent or received.
+                if(connectionCallback != null) {
+                    connectionCallback.onDisconnection(endpointName);
+                }
+                isConnected = false;
             }
         };
     }
 
-    private void startAdvertising() {
+    public void startAdvertising() {
+        if(isConnected) {
+            this.connection.disconnectFromEndpoint(discovererEndpointID);
+        }
         AdvertisingOptions advertisingOptions =
                 new AdvertisingOptions.Builder().setStrategy(Strategy.P2P_POINT_TO_POINT).build();
         this.connection
                 .startAdvertising(
-                        this.ID, context.getPackageName(), connectionLifecycleCallback, advertisingOptions)
+                        this.ID, ConnectionHelper.SERVICE_ID, connectionLifecycleCallback, advertisingOptions)
                 .addOnSuccessListener(
                         new OnSuccessListener<Void>() {
                             @Override
@@ -178,7 +189,11 @@ public class Advertiser {
     }
 
     public void setDisplayConnectCallback(DisplayConnectCallback displayConnectCallback) {
-        this.connectCallback = displayConnectCallback;
+        this.pubnubConnectionCallback = displayConnectCallback;
+    }
+
+    public void setConnectCallback(ConnectionCallback callback) {
+        this.connectionCallback = callback;
     }
 
     private void handleOnTableFrame(JSONObject json) throws JSONException {
@@ -188,11 +203,11 @@ public class Advertiser {
         if (encodedFramePartIndex == 0) {
             this.numberOfEncodedFrameParts = 1;
             this.encodedFrameComplete = encodedFramePart;
-            this.connectCallback.onImageTransmissionStarted(numberOfFramePartsSent);
+            this.pubnubConnectionCallback.onImageTransmissionStarted(numberOfFramePartsSent);
         } else {
             this.numberOfEncodedFrameParts++;
             this.encodedFrameComplete += encodedFramePart;
-            this.connectCallback.onImagePartReceived(encodedFramePartIndex+1);
+            this.pubnubConnectionCallback.onImagePartReceived(encodedFramePartIndex+1);
             if (encodedFramePartIndex == numberOfFramePartsSent-1) {
                 Log.d("number of frame parts sent: " + numberOfFramePartsSent);
                 Log.d("number of frame parts received: " + numberOfEncodedFrameParts);
@@ -200,7 +215,8 @@ public class Advertiser {
                     Log.d("encodedFrame length: " + this.encodedFrameComplete.length());
                     byte[] frame = ByteToBase64.decodeToByte(this.encodedFrameComplete);
                     Log.d("frame length: " + frame.length);
-                    this.connectCallback.onImageReceived(frame, json.getInt(JSONInfo.TABLE_FRAME_WIDTH), json.getInt(JSONInfo.TABLE_FRAME_HEIGHT));
+                    this.pubnubConnectionCallback.onImageReceived(frame, json.getInt(JSONInfo.TABLE_FRAME_WIDTH), json.getInt(JSONInfo.TABLE_FRAME_HEIGHT));
+                    this.send("onAllFramePartsReceived", null);
                 } else {
                     onRequestTableFrame();
                 }
@@ -222,10 +238,6 @@ public class Advertiser {
 
     private void handleMessage(Payload payload) {
         try {
-            //new String(payload.asBytes(), UTF_8)
-            // Payload test = Payload.fromBytes(json.toString().getBytes(UTF_8));
-            // JSONObject json2 = new JSONObject();
-            // json2.put("test", new String(test.asBytes(), UTF_8))
             JSONObject json = new JSONObject(new String(payload.asBytes(), UTF_8));
             String event = json.getString(JSONInfo.EVENT_PROPERTY);
             if(event != null) {
@@ -253,8 +265,8 @@ public class Advertiser {
                                 Side.valueOf(json.getString(JSONInfo.NEXT_SERVER_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.GAMES_NEEDED_PROPERTY)));
                         break;
                     case "onConnected":
-                        if(this.connectCallback != null) {
-                            this.connectCallback.onConnected();
+                        if(this.pubnubConnectionCallback != null) {
+                            this.pubnubConnectionCallback.onConnected();
                         }
                         break;
                     case "onTableFrame":
@@ -266,7 +278,7 @@ public class Advertiser {
                 }
             }
         } catch (Exception ex) {
-            Log.d("Unable to send JSON to endpoint "+this.discovererEndpointID+"\n"+ex.getMessage());
+            Log.d("Unable to receive JSON from endpoint "+this.discovererEndpointID+"\n"+ex.getMessage());
         }
     }
 }

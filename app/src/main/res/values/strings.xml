@@ -79,6 +79,10 @@
     <string name="runVideoPlayer">Run video player</string>
     <string name="prefDisableDetection">Disable FMO detection</string>
 
+    <!-- Advanced settings -->
+    <string name="prefPubnub">Connect with pubnub</string>
+    <string name="prefPubnubKey">connect_pubnub</string>
+
     <string name="playerLeftDefaultName">Player 1</string>
     <string name="playerRightDefaultName">Player 2</string>
     <string name="gameScoreStart">0</string>
@@ -129,7 +133,7 @@
     <string name="ttsTo"> to </string>
 
     <!-- MatchInit Fragment -->
-    <string name="miTitle">Connect With Tracker</string>
+    <string name="miTitle">Connecting With Tracker</string>
     <string name="miSubTitle">scan the QR code with the tracker device</string>
     <string name="miConnectedTitle">Connected With Tracker</string>
     <string name="miConnectedSubTitle">click on the button to take a picture of the table with the tracker device</string>
@@ -159,6 +163,21 @@
     <string name="quitMatchMessage">Are you sure you want to quit the ongoing match?\nYou will be sent back to the main screen.</string>
     <string name="quitMatchProceed">Quit Match</string>
     <string name="quitMatchCancel">Cancel</string>
+
+    <!-- Connect Messages -->
+    <string name="connectTitle">Accept connection with %1$s</string>
+    <string name="connectMessage">Confirm the code matches on both devices:\n</string>
+    <string name="disconnectTitle">Lost connection to other device</string>
+    <string name="disconnectMessage">Please set up a new connection</string>
+    <string name="connectConfirm">Confirm</string>
+    <string name="connectReject">Reject</string>
+    <string name="connectTrackerSearching">Setup the display device and wait for a connection…</string>
+    <string name="connectDisplaySearching">Setup the tracker device and wait for a connection…</string>
+    <string name="connectConnecting">Connecting with %1$s…</string>
+    <string name="connectDisconnect">Lost connection with remote device. Try again!</string>
+    <string name="connectRejection">The connection was rejected. Try again!</string>
+    <string name="connectDiscoverFailure">Search failed. Try again!</string>
+    <string name="connectPicture">Waiting for the display to take a picture…</string>
 
     <!-- Tracker Init -->
     <string name="tiLoadingText">Sending Frame…</string>

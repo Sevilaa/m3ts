@@ -7,4 +7,8 @@
         android:defaultValue="false"
         android:key="disableDetection"
         android:title="@string/prefDisableDetection"/>
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key="@string/prefPubnubKey"
+        android:title="@string/prefPubnub"/>
 </PreferenceScreen>

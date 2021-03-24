@@ -21,6 +21,7 @@ public class Config {
     private final String player2Name;
     private final boolean useDebug;
     private final boolean doRecordMatches;
+    private final boolean usePubnub;
 
     public Config(Context ctx) {
         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(ctx);
@@ -38,6 +39,11 @@ public class Config {
         player2Name = getPlayer2Name(p, ctx);
         useDebug = getDebug(p, ctx);
         doRecordMatches = getRecordMatches(p, ctx);
+        usePubnub = getUsePubnub(p, ctx);
+    }
+
+    private boolean getUsePubnub(SharedPreferences p, Context ctx) {
+        return p.getBoolean(ctx.getString(R.string.prefPubnubKey), false);
     }
 
     private boolean getFrontFacing(SharedPreferences p) {
@@ -164,6 +170,10 @@ public class Config {
 
     public boolean doRecordMatches() {
         return doRecordMatches;
+    }
+
+    public boolean isUsingPubnub() {
+        return usePubnub;
     }
 
     public enum RecordMode {

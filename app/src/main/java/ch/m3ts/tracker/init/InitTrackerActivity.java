@@ -1,6 +1,8 @@
 package ch.m3ts.tracker.init;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Point;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -8,6 +10,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,12 +18,17 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import ch.m3ts.connection.ConnectionCallback;
+import ch.m3ts.connection.ConnectionHelper;
+import ch.m3ts.connection.NearbyTrackerConnection;
 import ch.m3ts.pubnub.PubNubFactory;
 import ch.m3ts.pubnub.TrackerPubNub;
 import ch.m3ts.tracker.visualization.CameraPreviewActivity;
 import ch.m3ts.tracker.visualization.live.LiveActivity;
 import cz.fmo.R;
+import cz.fmo.util.Config;
 
 /**
  * "Main Activity" of the Tracker device.
@@ -32,7 +40,7 @@ import cz.fmo.R;
  * have decided to start the game.
  */
 @SuppressWarnings("squid:S110")
-public final class InitTrackerActivity extends CameraPreviewActivity implements SensorEventListener {
+public final class InitTrackerActivity extends CameraPreviewActivity implements SensorEventListener, ConnectionCallback {
 
     private static final String CORNERS_PARAM = "CORNERS_UNSORTED";
     private static final String MATCH_TYPE_PARAM = "MATCH_TYPE";
@@ -54,7 +62,10 @@ public final class InitTrackerActivity extends CameraPreviewActivity implements 
     private ImageView adjustDeviceIcon;
     private View adjustDeviceOverlay;
     private View qrCodeOverlay;
+    private View connectOverlay;
     private long countSensorRefresh;
+    private NearbyTrackerConnection nearbyTrackerConnection;
+    private boolean hasStartedConnecting = false;
 
     @Override
     protected void onCreate(android.os.Bundle savedBundle) {
@@ -79,6 +90,7 @@ public final class InitTrackerActivity extends CameraPreviewActivity implements 
         qrCodeOverlay = findViewById(R.id.scan_overlay);
         adjustDeviceIcon = findViewById(R.id.adjust_device_info_icon);
         moveDeviceButton = findViewById(R.id.init_moveDeviceBtn);
+        connectOverlay = findViewById(R.id.connection_info);
         ViewGroup.LayoutParams params = layout.getLayoutParams();
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
@@ -93,6 +105,30 @@ public final class InitTrackerActivity extends CameraPreviewActivity implements 
                 moveDeviceButton.setVisibility(View.INVISIBLE);
             }
         });
+        checkNearbyPermissions();
+    }
+
+
+    @Override
+    public void onStop() {
+        super.onStop();
+    }
+
+    private void checkNearbyPermissions() {
+        if (!hasPermissions(this, ConnectionHelper.REQUIRED_PERMISSIONS)) {
+            requestPermissions(ConnectionHelper.REQUIRED_PERMISSIONS, ConnectionHelper.REQUEST_CODE_REQUIRED_PERMISSIONS);
+        }
+    }
+
+    /** Returns true if the app was granted all the permissions. Otherwise, returns false. */
+    private static boolean hasPermissions(Context context, String... permissions) {
+        for (String permission : permissions) {
+            if (ContextCompat.checkSelfPermission(context, permission)
+                    != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
@@ -128,6 +164,18 @@ public final class InitTrackerActivity extends CameraPreviewActivity implements 
     public void onRequestPermissionsResult(int requestID, @NonNull String[] permissionList,
                                            @NonNull int[] grantedList) {
         init();
+        if (requestID != ConnectionHelper.REQUEST_CODE_REQUIRED_PERMISSIONS) {
+            return;
+        }
+
+        for (int grantResult : grantedList) {
+            if (grantResult == PackageManager.PERMISSION_DENIED) {
+                Toast.makeText(this,"error", Toast.LENGTH_LONG).show();
+                finish();
+                return;
+            }
+        }
+        recreate();
     }
 
     void enterPubNubRoom(String roomId) {
@@ -138,6 +186,7 @@ public final class InitTrackerActivity extends CameraPreviewActivity implements 
 
     void switchToLiveActivity(String selectedMatchId, int selectedMatchType, int selectedServingSide, int[] tableCorners) {
         if (this.trackerPubNub != null) this.trackerPubNub.unsubscribe();
+        if(this.nearbyTrackerConnection != null) this.nearbyTrackerConnection = null;
         Intent intent = new Intent(this, LiveActivity.class);
         Bundle bundle = new Bundle();
         bundle.putString(MATCH_ID, selectedMatchId);
@@ -184,9 +233,23 @@ public final class InitTrackerActivity extends CameraPreviewActivity implements 
             } else if (rollDegrees > -90 + MAX_ALLOWED_ADJUSTMENT_OFFSET) {
                 changeAdjustmentInfo(R.drawable.roll_front, R.string.adjustDeviceRollTopText);
             } else {
-                adjustDeviceOverlay.setVisibility(View.INVISIBLE);
-                qrCodeOverlay.setVisibility(View.VISIBLE);
-                ((InitTrackerHandler) cameraCallback).setIsReadingQRCode(true);
+                if(new Config(this).isUsingPubnub()) {
+                    adjustDeviceOverlay.setVisibility(View.INVISIBLE);
+                    qrCodeOverlay.setVisibility(View.VISIBLE);
+                    ((InitTrackerHandler) cameraCallback).setIsReadingQRCode(true);
+                } else {
+                    adjustDeviceOverlay.setVisibility(View.INVISIBLE);
+                    if(!hasStartedConnecting) {
+                        ConnectionHelper.createConnection(this);
+                        this.nearbyTrackerConnection = NearbyTrackerConnection.getInstance();
+                        this.nearbyTrackerConnection.init(this);
+                        this.nearbyTrackerConnection.setInitTrackerCallback((InitTrackerHandler) cameraCallback);
+                        this.nearbyTrackerConnection.setConnectionCallback(this);
+                        this.nearbyTrackerConnection.startDiscovery();
+                        hasStartedConnecting = true;
+                        connectOverlay.setVisibility(View.VISIBLE);
+                    }
+                }
             }
             countSensorRefresh = 0;
         }
@@ -203,4 +266,39 @@ public final class InitTrackerActivity extends CameraPreviewActivity implements 
     public void onAccuracyChanged(Sensor sensor, int i) {
         // no need
     }
+
+    @Override
+    public void onDiscoverFailure() {
+        setConnectInfoText(R.string.connectDiscoverFailure);
+    }
+
+    @Override
+    public void onRejection() {
+        setConnectInfoText(R.string.connectRejection);
+    }
+
+    @Override
+    public void onDisconnection(String endpoint) {
+        adjustDeviceOverlay.setVisibility(View.GONE);
+        qrCodeOverlay.setVisibility(View.GONE);
+        connectOverlay.setVisibility(View.VISIBLE);
+        ConnectionHelper.makeDisconnectDialog(this).show();
+    }
+
+    @Override
+    public void onConnection(String endpoint) {
+        connectOverlay.setVisibility(View.GONE);
+        setConnectInfoText(R.string.connectPicture);
+        connectOverlay.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void onConnecting(String endpoint) {
+        ((TextView) findViewById(R.id.connection_text)).setText(String.format(getString(R.string.connectConnecting), endpoint));
+    }
+
+    private void setConnectInfoText(int stringId) {
+        ((TextView) findViewById(R.id.connection_text)).setText(getString(stringId));
+    }
+
 }

@@ -13,12 +13,13 @@ import org.json.JSONObject;
 import java.util.UUID;
 
 import ch.m3ts.Log;
+import ch.m3ts.connection.DisplayConnection;
 import ch.m3ts.display.DisplayConnectCallback;
 import ch.m3ts.display.DisplayScoreEventCallback;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.UICallback;
 
-public class DisplayPubNub extends Callback {
+public class DisplayPubNub extends Callback implements DisplayConnection {
     private static final String ROLE = "display";
     private final Pubnub pubnub;
     private final String roomID;
