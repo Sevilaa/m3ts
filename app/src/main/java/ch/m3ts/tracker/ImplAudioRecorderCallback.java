@@ -5,8 +5,6 @@ import android.os.Looper;
 
 import com.google.audio.calculators.AudioCalculator;
 
-import ch.m3ts.Log;
-
 /**
  * Callback of the Audio Recorder from com.google.audio package.
  * Challenge is to isolate the sound of a ping pong ball hitting a ping pong / stone table.
@@ -38,7 +36,6 @@ public class ImplAudioRecorderCallback implements com.google.audio.core.Callback
         handler.post(new Runnable() {
             @Override
             public void run() {
-                Log.d("freq: " + frequency + " db: " + decibel);
                 if ((frequency > MIN_FREQUENCY) && (frequency < MAX_FREQUENCY) && decibel > MIN_DECIBEL &&
                         System.currentTimeMillis() - timestampLastDetectedBounce > TIME_BETWEEN_TWO_BOUNCES_MS) {
                     callback.onAudioBounceDetected();
