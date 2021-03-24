@@ -1,9 +1,7 @@
-package ch.m3ts.tracker.visualization.live;
+package ch.m3ts.tracker;
 
-import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
-import android.widget.TextView;
 
 import com.google.audio.calculators.AudioCalculator;
 
@@ -14,21 +12,16 @@ import com.google.audio.calculators.AudioCalculator;
  */
 public class ImplAudioRecorderCallback implements com.google.audio.core.Callback {
     private static final int MAX_FREQUENCY = 13000;
-    private static final int MIN_FREQUENCY = 7500;
+    private static final int MIN_FREQUENCY = 8000;
     private static final int MIN_DECIBEL = -20;
-    private static final int TIME_BETWEEN_TWO_BOUNCES_MS = 100;
-    private final TextView txtAmp;
-    private final TextView txtFrequency;
-    private final TextView txtAudioBounce;
+    private static final int TIME_BETWEEN_TWO_BOUNCES_MS = 500;
     private final AudioCalculator audioCalculator;
     private final Handler handler;
-    private int bounces;
+    private final Callback callback;
     private long timestampLastDetectedBounce;
 
-    public ImplAudioRecorderCallback(TextView txtAmp, TextView txtFrequency, TextView txtAudioBounce) {
-        this.txtAmp = txtAmp;
-        this.txtFrequency = txtFrequency;
-        this.txtAudioBounce = txtAudioBounce;
+    public ImplAudioRecorderCallback(ImplAudioRecorderCallback.Callback callback) {
+        this.callback = callback;
         this.audioCalculator = new AudioCalculator();
         handler = new Handler(Looper.getMainLooper());
     }
@@ -36,29 +29,23 @@ public class ImplAudioRecorderCallback implements com.google.audio.core.Callback
     @Override
     public void onBufferAvailable(byte[] buffer) {
         audioCalculator.setBytes(buffer);
-        final int amplitude = audioCalculator.getAmplitude();
+        audioCalculator.getAmplitude();
         final double frequency = audioCalculator.getFrequency();
         final double decibel = audioCalculator.getDecibel();
-
-        final String amp = String.valueOf(amplitude + " Amp");
-        final String hz = String.valueOf(frequency + " Hz");
-        final String db = String.valueOf(decibel + " db");
 
         handler.post(new Runnable() {
             @Override
             public void run() {
-                txtAmp.setText(db);
                 if ((frequency > MIN_FREQUENCY) && (frequency < MAX_FREQUENCY) && decibel > MIN_DECIBEL &&
                         System.currentTimeMillis() - timestampLastDetectedBounce > TIME_BETWEEN_TWO_BOUNCES_MS) {
-                    ++bounces;
-                    txtFrequency.setTextColor(Color.GREEN);
-                    txtAudioBounce.setText(String.valueOf(bounces));
+                    callback.onAudioBounceDetected();
                     timestampLastDetectedBounce = System.currentTimeMillis();
-                } else {
-                    txtFrequency.setTextColor(Color.BLACK);
                 }
-                txtFrequency.setText(hz);
             }
         });
+    }
+
+    public interface Callback {
+        void onAudioBounceDetected();
     }
 }

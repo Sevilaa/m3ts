@@ -12,7 +12,6 @@ import android.util.Log;
  * GNU GPL v3
  */
 public class Recorder {
-
     private int audioSource = MediaRecorder.AudioSource.DEFAULT;
     private int channelConfig = AudioFormat.CHANNEL_IN_MONO;
     private int audioEncoding = AudioFormat.ENCODING_PCM_16BIT;
@@ -46,7 +45,6 @@ public class Recorder {
                     return;
                 } else {
                     Log.i(Recorder.class.getSimpleName(), "Started.");
-                    //callback.onStart();
                 }
                 byte[] buffer = new byte[minBufferSize];
                 recorder.startRecording();

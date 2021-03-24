@@ -10,9 +10,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.view.Display;
 import android.view.SurfaceView;
-import android.widget.TextView;
-
-import com.google.audio.core.Recorder;
 
 import ch.m3ts.Log;
 import ch.m3ts.helper.QuitAlertDialogHelper;
@@ -46,7 +43,6 @@ public final class LiveActivity extends MatchVisualizeActivity {
     private String matchId;
     private AlertDialog alertDialog;
     private LiveRecording liveRecording;
-    private Recorder audioRecorder;
 
     @Override
     protected void onCreate(android.os.Bundle savedBundle) {
@@ -118,12 +114,7 @@ public final class LiveActivity extends MatchVisualizeActivity {
         if(mConfig.doRecordMatches()) {
             if (liveRecording != null) liveRecording.tearDown();
             liveRecording = LiveRecording.getInstance(this, mCamera);
-            this.audioRecorder = new Recorder(new ImplAudioRecorderCallback(
-                    (TextView) findViewById(R.id.txtPlayMovieAmp),
-                    (TextView) findViewById(R.id.txtPlayMovieFrequency),
-                    (TextView) findViewById(R.id.txtAudioBounce)
-            ));
-            this.audioRecorder.start();
+            liveRecording.startRecording();
         }
 
         // start thread
@@ -131,7 +122,6 @@ public final class LiveActivity extends MatchVisualizeActivity {
         Table table = trySettingTableLocationFromIntent();
         mHandler.init(mConfig, this.getCameraWidth(), this.getCameraHeight(), table, this.getCameraHorizontalViewAngle());
         mHandler.startDetections();
-        liveRecording.startRecording();
     }
 
     @Override
@@ -154,7 +144,6 @@ public final class LiveActivity extends MatchVisualizeActivity {
     protected void onResume() {
         super.onResume();
         init();
-        if (audioRecorder != null) audioRecorder.start();
     }
 
     /**
@@ -162,7 +151,6 @@ public final class LiveActivity extends MatchVisualizeActivity {
      */
     @Override
     protected void onPause() {
-        if (audioRecorder != null) audioRecorder.stop();
         mHandler.stopDetections();
         alertDialog.dismiss();
         super.onPause();

@@ -17,15 +17,6 @@ public class AudioCalculator {
     public AudioCalculator() {
     }
 
-    public AudioCalculator(byte[] bytes) {
-        this.bytes = bytes;
-        amplitudes = null;
-        decibels = null;
-        frequency = 0.0D;
-        amplitude = 0;
-        decibel = 0.0D;
-    }
-
     public void setBytes(byte[] bytes) {
         this.bytes = bytes;
         amplitudes = null;
@@ -80,7 +71,7 @@ public class AudioCalculator {
 
     private double retrieveFrequency() {
         int length = bytes.length / 2;
-        int sampleSize = 8192;
+        int sampleSize = 96000;
         while (sampleSize > length) sampleSize = sampleSize >> 1;
 
         FrequencyCalculator frequencyCalculator = new FrequencyCalculator(sampleSize);
