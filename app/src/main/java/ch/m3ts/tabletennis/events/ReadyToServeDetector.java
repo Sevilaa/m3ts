@@ -29,14 +29,16 @@ public class ReadyToServeDetector {
     private final int cameraHeight;
     private final ReadyToServeCallback callback;
     private final Side server;
+    private final boolean useBlackSide;
     private int gestureFrameCounter = 0;
 
-    public ReadyToServeDetector(Table table, Side server, int cameraWidth, int cameraHeight, ReadyToServeCallback callback) {
+    public ReadyToServeDetector(Table table, Side server, int cameraWidth, int cameraHeight, ReadyToServeCallback callback, boolean useBlackSide) {
         this.table = table;
         this.server = server;
         this.cameraWidth = cameraWidth;
         this.cameraHeight = cameraHeight;
         this.callback = callback;
+        this.useBlackSide = useBlackSide;
     }
 
     /**
@@ -64,8 +66,12 @@ public class ReadyToServeDetector {
     }
 
     private boolean isRacketInArea(byte[] frameYUVBytes) {
-        return (getRedPercentage(frameYUVBytes) > PERCENTAGE_THRESHOLD) ||
-                (getBlackPercentage(frameYUVBytes) > PERCENTAGE_THRESHOLD_BLACK);
+        if (useBlackSide) {
+            return (getRedPercentage(frameYUVBytes) > PERCENTAGE_THRESHOLD) ||
+                    (getBlackPercentage(frameYUVBytes) > PERCENTAGE_THRESHOLD_BLACK);
+        } else {
+            return (getRedPercentage(frameYUVBytes) > PERCENTAGE_THRESHOLD);
+        }
     }
 
     private double getRedPercentage(byte[] frameYUVBytes) {

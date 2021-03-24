@@ -63,6 +63,14 @@
     <string name="prefRecord">Record matches</string>
     <string name="prefRecordKey">record_matches</string>
     <string name="prefRecordDefault">false</string>
+    <string name="prefUseBlackSideDefault">false</string>
+    <string name="prefUseBlackSideKey">use_black_side</string>
+    <string name="prefUseBlackSideTitle">Use black side of racket for serving</string>
+    <string name="prefUseBlackSideSummary">Allows the use of the black side of the racket (in addition to the red one) to signal that a player is ready for serve</string>
+    <string name="prefUseAudioDefault">true</string>
+    <string name="prefUseAudioKey">use_audio</string>
+    <string name="prefUseAudioSummary">Allows the use of audio of the tracker device to assist ball detection</string>
+    <string name="prefUseAudioTitle">Use Audio</string>
 
     <!-- Detection settings -->
     <string name="prefVelocityEstimationMode">Velocity estimation mode</string>

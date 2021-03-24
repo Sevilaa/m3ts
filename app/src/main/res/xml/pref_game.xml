@@ -6,19 +6,29 @@
         android:key="@string/prefPlayer1Key"
         android:maxLines="1"
         android:singleLine="true"
-        android:title="@string/prefPlayer1Name"/>
+        android:title="@string/prefPlayer1Name" />
     <EditTextPreference
         android:defaultValue="@string/prefPlayer2NameDefault"
         android:inputType="textPersonName"
         android:key="@string/prefPlayer2Key"
         android:maxLines="1"
         android:singleLine="true"
-        android:title="@string/prefPlayer2Name"/>
+        android:title="@string/prefPlayer2Name" />
+    <SwitchPreference
+        android:defaultValue="@string/prefUseBlackSideDefault"
+        android:key="@string/prefUseBlackSideKey"
+        android:summary="@string/prefUseBlackSideSummary"
+        android:title="@string/prefUseBlackSideTitle" />
+    <SwitchPreference
+        android:defaultValue="@string/prefUseAudioDefault"
+        android:key="@string/prefUseAudioKey"
+        android:summary="@string/prefUseAudioSummary"
+        android:title="@string/prefUseAudioTitle" />
     <SwitchPreference
         android:defaultValue="@string/prefDisplayDebugDefault"
         android:key="@string/prefDisplayDebugKey"
         android:summary="@string/prefDisplayDebugSummary"
-        android:title="@string/prefDisplayDebug"/>
+        android:title="@string/prefDisplayDebug" />
     <SwitchPreference
         android:defaultValue="@string/prefRecordDefault"
         android:key="@string/prefRecordKey"

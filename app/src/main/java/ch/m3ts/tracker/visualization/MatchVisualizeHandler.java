@@ -47,13 +47,15 @@ import cz.fmo.util.Config;
 /**
  * Renders the images received by any video source onto the screen and also passes them to FMO.
  * Use this Handler for tasks which need to be done on Replay AND live.
- *
+ * <p>
  * FMO then finds detections and tracks and forwards them to the EventDetector, which then calls
  * for events on this Handler.
  **/
 public class MatchVisualizeHandler extends android.os.Handler implements EventDetectionCallback, UICallback, MatchVisualizeHandlerCallback, GestureCallback {
     protected static final int MAX_REFRESHING_TIME_MS = 500;
     final WeakReference<MatchVisualizeActivity> mActivity;
+    private final boolean useBlackSide;
+    private final boolean useAudio;
     private EventDetector eventDetector;
     private ReadyToServeDetector serveDetector;
     private Paint p;
@@ -81,6 +83,8 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         this.tracks.clear();
         this.hasNewTable = true;
         this.uiCallback = this;
+        this.useBlackSide = new Config(activity.getApplicationContext()).isUseBlackSide();
+        this.useAudio = new Config(activity.getApplicationContext()).isUseAudio();
         initColors(activity);
         if (!OpenCVLoader.initDebug()) {
             // init async here
@@ -248,7 +252,8 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         callbacks.add(this);
         ZPositionCalc calc = new ZPositionCalc(viewingAngle, table.getWidth(), srcWidth);
         this.eventDetector = new EventDetector(config, srcWidth, srcHeight, callbacks, tracks, this.table, calc);
-        this.audioRecorder = new Recorder(new ImplAudioRecorderCallback(this.eventDetector));
+        if (useAudio)
+            this.audioRecorder = new Recorder(new ImplAudioRecorderCallback(this.eventDetector));
         this.match.getReferee().initWaitingForGesture();
     }
 
@@ -306,7 +311,8 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
 
     @Override
     public void onWaitingForGesture(Side server) {
-        serveDetector = new ReadyToServeDetector(table, server, this.videoScaling.getVideoWidth(), this.videoScaling.getVideoHeight(), this.match.getReferee());
+        serveDetector = new ReadyToServeDetector(table, server, this.videoScaling.getVideoWidth(),
+                this.videoScaling.getVideoHeight(), this.match.getReferee(), this.useBlackSide);
         this.waitingForGesture = true;
     }
 
