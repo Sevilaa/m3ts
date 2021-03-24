@@ -143,7 +143,7 @@ public class FrequencyCalculator {
 
         if (hitCount > 0) medianFreq = medianFreq / hitCount;
 
-        if (medianFreq > -65) {
+        if (medianFreq > -70) {
             maxAmpFreq = maxRelevantFreqIndex;
         }
 

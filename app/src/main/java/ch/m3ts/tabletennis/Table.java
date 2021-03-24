@@ -66,8 +66,8 @@ public class Table {
     }
 
     public boolean isOnOrAbove(int x, int y) {
-        double leftThreshold = this.getCornerDownLeft().x * 0.95;
-        double rightThreshold = this.getCornerDownRight().x * 1.05;
+        double leftThreshold = this.getCornerDownLeft().x;
+        double rightThreshold = this.getCornerDownRight().x;
         double bottomThreshold = this.getCloseNetEnd().y;
         return (x >= leftThreshold && x <= rightThreshold && y <= bottomThreshold);
     }

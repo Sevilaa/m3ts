@@ -28,21 +28,22 @@ public class ImplAudioRecorderCallback implements com.google.audio.core.Callback
 
     @Override
     public void onBufferAvailable(byte[] buffer) {
-        audioCalculator.setBytes(buffer);
-        audioCalculator.getAmplitude();
-        final double frequency = audioCalculator.getFrequency();
-        final double decibel = audioCalculator.getDecibel();
+        if(System.currentTimeMillis() - timestampLastDetectedBounce > TIME_BETWEEN_TWO_BOUNCES_MS) {
+            audioCalculator.setBytes(buffer);
+            audioCalculator.getAmplitude();
+            final double frequency = audioCalculator.getFrequency();
+            final double decibel = audioCalculator.getDecibel();
 
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                if ((frequency > MIN_FREQUENCY) && (frequency < MAX_FREQUENCY) && decibel > MIN_DECIBEL &&
-                        System.currentTimeMillis() - timestampLastDetectedBounce > TIME_BETWEEN_TWO_BOUNCES_MS) {
-                    callback.onAudioBounceDetected();
-                    timestampLastDetectedBounce = System.currentTimeMillis();
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if ((frequency > MIN_FREQUENCY) && (frequency < MAX_FREQUENCY) && decibel > MIN_DECIBEL) {
+                        callback.onAudioBounceDetected();
+                        timestampLastDetectedBounce = System.currentTimeMillis();
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     public interface Callback {

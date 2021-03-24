@@ -30,7 +30,7 @@ import cz.fmo.data.Track;
  * if a player can shoot the ball back onto the table.
  */
 public class Referee implements EventDetectionCallback, ScoreManipulationCallback, ReadyToServeCallback {
-    private static final int OUT_OF_FRAME_MAX_DELAY = 1000;
+    private static final int OUT_OF_FRAME_MAX_DELAY = 1500;
     private final GestureCallback gestureCallback;
     private Timer outOfFrameTimer;
     private Timer timeOutNextServeTimer;
@@ -102,7 +102,7 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
             case SERVING:
             case PLAY:
                 if (ballBouncedOnSide == currentBallSide) {
-                    Log.d("Referee: Audio bounce detected in PLAY state");
+                    Log.d("REFEREE:Referee: Audio bounce detected in PLAY state");
                     audioBounces++;
                 }
                 break;
@@ -180,8 +180,11 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
         this.currentBallSide = side;
         switch (this.state) {
             case SERVING:
+                if (this.getServer() != side) {
+                    Log.d("REFEREE:Table Side Change:Changing to PLAY");
+                    this.state = State.PLAY;
+                }
             case PLAY:
-                this.state = State.PLAY;
                 this.bounces = 0;
                 this.audioBounces = 0;
                 break;
@@ -195,10 +198,10 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
         switch (this.state) {
             case PLAY:
                 if (bounces == 0) {
-                    Log.d("Fault by Striker: Ball has fallen off side ways and had no bounce");
+                    Log.d("REFEREE:Fault by Striker: Ball has fallen off side ways and had no bounce");
                     faultBySide(currentStriker);
                 } else if (bounces == 1) {
-                    Log.d("Point by Striker: Ball has fallen off side ways and had a bounce");
+                    Log.d("REFEREE:Point by Striker: Ball has fallen off side ways and had a bounce");
                     pointBySide(currentStriker);
                 }
                 break;
@@ -246,15 +249,15 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     public void onOutOfFrameForTooLong() {
         if (this.state == State.OUT_OF_FRAME) {
             if (currentBallSide == currentStriker) {
-                Log.d("Out of Frame for too long - Striker most likely shot the ball into the net");
+                Log.d("REFEREE:Out of Frame for too long - Striker most likely shot the ball into the net");
                 faultBySide(currentStriker);
             } else if (this.bounces >= 1 || this.audioBounces >= 1) {
                 if (this.audioBounces >= 1)
-                    Log.d("Out of Frame for too long (AUDIO_BOUNCE) - Strike received no return");
-                else Log.d("Out of Frame for too long - Strike received no return");
+                    Log.d("REFEREE:Out of Frame for too long (AUDIO_BOUNCE) - Strike received no return");
+                else Log.d("REFEREE:Out of Frame for too long - Strike received no return");
                 pointBySide(currentStriker);
             } else {
-                Log.d("Out of Frame for too long - Strike did not bounce");
+                Log.d("REFEREE:Out of Frame for too long - Strike did not bounce");
                 faultBySide(currentStriker);
             }
         } else {
@@ -315,20 +318,20 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     private void applyRuleSet() {
         if (bounces == 1) {
             if (this.currentStriker == this.currentBallSide) {
-                Log.d("currentStriker: " + this.currentStriker);
-                Log.d("currentBallSide: " + this.currentBallSide);
-                Log.d("Bounce on same Side");
+                Log.d("REFEREE:currentStriker: " + this.currentStriker);
+                Log.d("REFEREE:currentBallSide: " + this.currentBallSide);
+                Log.d("REFEREE:Bounce on same Side");
                 faultBySide(this.currentStriker);
             }
         } else if (bounces >= 2 && this.currentStriker != this.currentBallSide) {
-            Log.d("Double Bounce");
+            Log.d("REFEREE:Double Bounce");
             pointBySide(this.currentStriker);
         }
     }
 
     private void applyRuleSetServing() {
         if (bounces > 1 && currentBallSide == getServer()) {
-            Log.d("Server Fault: Multiple Bounces on same Side");
+            Log.d("REFEREE:Server Fault: Multiple Bounces on same Side");
             faultBySide(getServer());
         }
     }
