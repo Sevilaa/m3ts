@@ -13,6 +13,7 @@ import java.util.Arrays;
 public class FrequencyCalculator {
     private static final double RELEVANT_FREQ_MAX = 11100.0;
     private static final double RELEVANT_FREQ_MIN = 9500.0;
+    private static final double MIN_DB = -75;
     private RealDoubleFFT spectrumAmpFFT;
     private double[] spectrumAmpOutCum;
     private double[] spectrumAmpOutTmp;
@@ -143,7 +144,7 @@ public class FrequencyCalculator {
 
         if (hitCount > 0) medianFreq = medianFreq / hitCount;
 
-        if (medianFreq > -70) {
+        if (medianFreq > MIN_DB) {
             maxAmpFreq = maxRelevantFreqIndex;
         }
 

@@ -50,10 +50,10 @@
 
     <!-- Game settings -->
     <string name="prefGame">Game</string>
-    <string name="prefPlayer1Name">Name Player 1</string>
+    <string name="prefPlayer1Name">Name Player 1 (left)</string>
     <string name="prefPlayer1NameDefault">Hans</string>
     <string name="prefPlayer1Key">player_1</string>
-    <string name="prefPlayer2Name">Name Player 2</string>
+    <string name="prefPlayer2Name">Name Player 2 (right)</string>
     <string name="prefPlayer2NameDefault">Peter</string>
     <string name="prefPlayer2Key">player_2</string>
     <string name="prefDisplayDebug">Display debug info</string>
@@ -67,10 +67,10 @@
     <string name="prefUseBlackSideKey">use_black_side</string>
     <string name="prefUseBlackSideTitle">Use black side of racket for serving</string>
     <string name="prefUseBlackSideSummary">Allows the use of the black side of the racket (in addition to the red one) to signal that a player is ready for serve</string>
-    <string name="prefUseAudioDefault">true</string>
+    <string name="prefUseAudioDefault">false</string>
     <string name="prefUseAudioKey">use_audio</string>
     <string name="prefUseAudioSummary">Allows the use of audio of the tracker device to assist ball detection</string>
-    <string name="prefUseAudioTitle">Use Audio</string>
+    <string name="prefUseAudioTitle">Use Audio (experimental)</string>
 
     <!-- Detection settings -->
     <string name="prefVelocityEstimationMode">Velocity estimation mode</string>
