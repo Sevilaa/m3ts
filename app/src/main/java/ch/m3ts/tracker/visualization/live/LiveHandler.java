@@ -13,7 +13,7 @@ import ch.m3ts.connection.ConnectionCallback;
 import ch.m3ts.connection.ConnectionHelper;
 import ch.m3ts.connection.NearbyTrackerConnection;
 import ch.m3ts.connection.TrackerConnection;
-import ch.m3ts.pubnub.PubNubFactory;
+import ch.m3ts.connection.pubnub.PubNubFactory;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.Match;
 import ch.m3ts.tabletennis.match.MatchSettings;
@@ -159,6 +159,8 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
     }
 
     public void setConnectCallback(ConnectionCallback callback) {
-        ((NearbyTrackerConnection)this.connection).setConnectionCallback(callback);
+        if (this.connection instanceof NearbyTrackerConnection) {
+            ((NearbyTrackerConnection) this.connection).setConnectionCallback(callback);
+        }
     }
 }

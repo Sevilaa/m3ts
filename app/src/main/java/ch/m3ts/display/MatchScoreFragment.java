@@ -20,7 +20,7 @@ import android.widget.TextView;
 import java.util.Locale;
 
 import ch.m3ts.connection.DisplayConnection;
-import ch.m3ts.pubnub.DisplayPubNub;
+import ch.m3ts.connection.pubnub.PubNubDisplayConnection;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.UICallback;
 import cz.fmo.R;
@@ -97,7 +97,7 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
         Bundle bundle = new Bundle();
         bundle.putString("winner", winnerName);
         if(new Config(getContext()).isUsingPubnub()) {
-            bundle.putString("room", ((DisplayPubNub) this.connection).getRoomID());
+            bundle.putString("room", ((PubNubDisplayConnection) this.connection).getRoomID());
         }
         intent.putExtras(bundle);
         while(tts.isSpeaking()) {}

@@ -21,7 +21,7 @@ import com.google.zxing.qrcode.QRCodeReader;
 import java.lang.ref.WeakReference;
 
 import ch.m3ts.Log;
-import ch.m3ts.pubnub.CameraBytesConversions;
+import ch.m3ts.connection.pubnub.CameraBytesConversions;
 import ch.m3ts.tracker.visualization.CameraPreviewActivity;
 import cz.fmo.R;
 import cz.fmo.camera.CameraThread;

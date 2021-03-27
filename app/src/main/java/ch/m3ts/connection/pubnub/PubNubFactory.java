@@ -1,4 +1,4 @@
-package ch.m3ts.pubnub;
+package ch.m3ts.connection.pubnub;
 
 import android.content.Context;
 
@@ -17,16 +17,16 @@ public class PubNubFactory {
 
     private PubNubFactory() {}
 
-    public static TrackerPubNub createTrackerPubNub(Context context, String roomId) {
+    public static PubNubTrackerConnection createTrackerPubNub(Context context, String roomId) {
         Properties properties = findProperties(context);
         Pubnub pubnub = createPubNub(properties);
-        return new TrackerPubNub(pubnub, roomId);
+        return new PubNubTrackerConnection(pubnub, roomId);
     }
 
-    public static DisplayPubNub createDisplayPubNub(Context context, String roomId) {
+    public static PubNubDisplayConnection createDisplayPubNub(Context context, String roomId) {
         Properties properties = findProperties(context);
         Pubnub pubnub = createPubNub(properties);
-        return new DisplayPubNub(pubnub, roomId);
+        return new PubNubDisplayConnection(pubnub, roomId);
     }
 
     private static Pubnub createPubNub(Properties properties) {

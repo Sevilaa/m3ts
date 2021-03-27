@@ -1,4 +1,4 @@
-package ch.m3ts.pubnub;
+package ch.m3ts.connection.pubnub;
 
 import android.util.Base64;
 

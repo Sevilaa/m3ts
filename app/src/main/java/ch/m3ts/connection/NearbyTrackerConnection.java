@@ -20,39 +20,26 @@ import com.google.android.gms.nearby.connection.Strategy;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import ch.m3ts.Log;
-import ch.m3ts.pubnub.ByteToBase64;
-import ch.m3ts.pubnub.CameraBytesConversions;
-import ch.m3ts.pubnub.JSONInfo;
+import ch.m3ts.connection.pubnub.JSONInfo;
 import ch.m3ts.tabletennis.helper.Side;
-import ch.m3ts.tabletennis.match.MatchStatus;
-import ch.m3ts.tabletennis.match.MatchStatusCallback;
 import ch.m3ts.tabletennis.match.UICallback;
-import ch.m3ts.tabletennis.match.game.ScoreManipulationCallback;
-import ch.m3ts.tracker.init.InitTrackerCallback;
-import ch.m3ts.tracker.visualization.MatchVisualizeHandlerCallback;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class NearbyTrackerConnection implements UICallback, TrackerConnection {
+public class NearbyTrackerConnection extends ImplTrackerConnection implements UICallback {
     private static final NearbyTrackerConnection instance = new NearbyTrackerConnection();
+    private static final String ID = "tracker";
     private Context context;
     private ConnectionsClient connection;
     private EndpointDiscoveryCallback endpointDiscoveryCallback;
     private ConnectionLifecycleCallback connectionLifecycleCallback;
     private PayloadCallback payloadCallback;
-    private final String ID = "tracker";
-    private String advertiserEndpointID = "";
-    private MatchStatusCallback callback;
-    private ScoreManipulationCallback scoreManipulationCallback;
-    private InitTrackerCallback initTrackerCallback;
     private ConnectionCallback connectionCallback;
-    private MatchVisualizeHandlerCallback matchVisualizeHandlerCallback;
-    private static final int MAX_SIZE = 1000;
+    private String advertiserEndpointID = "";
     private static final String JSON_SEND_EXCEPTION_MESSAGE = "Unable to send JSON to endpoint ";
     private String endpointName = "";
 
@@ -97,12 +84,17 @@ public class NearbyTrackerConnection implements UICallback, TrackerConnection {
 
             @Override
             public void onPayloadReceived(@NonNull String s, @NonNull Payload payload) {
-                handleMessage(payload);
+                try {
+                    JSONObject json = new JSONObject(new String(payload.asBytes(), UTF_8));
+                    handleMessage(json);
+                } catch (JSONException ex) {
+                    Log.d("Unable to receive JSON from endpoint \n" + ex.getMessage());
+                }
             }
 
             @Override
             public void onPayloadTransferUpdate(@NonNull String s, @NonNull PayloadTransferUpdate payloadTransferUpdate) {
-
+                // no implementation needed
             }
         };
 
@@ -166,29 +158,8 @@ public class NearbyTrackerConnection implements UICallback, TrackerConnection {
         };
     }
 
-    public void setTrackerPubNubCallback(MatchStatusCallback callback) {
-        this.callback = callback;
-    }
-
-    public void setScoreManipulationCallback(ScoreManipulationCallback scoreManipulationCallback) {
-        this.scoreManipulationCallback = scoreManipulationCallback;
-    }
-
-    public void setInitTrackerCallback(InitTrackerCallback initTrackerCallback) {
-        this.initTrackerCallback = initTrackerCallback;
-    }
-
-    public void setMatchVisualizeHandlerCallback(MatchVisualizeHandlerCallback matchVisualizeHandlerCallback) {
-        this.matchVisualizeHandlerCallback = matchVisualizeHandlerCallback;
-    }
-
     public void setConnectionCallback(ConnectionCallback connectionCallback) {
         this.connectionCallback = connectionCallback;
-    }
-
-    @Override
-    public void onMatchEnded(String winnerName) {
-        send("onMatchEnded", winnerName, null,null, null);
     }
 
     @Override
@@ -206,25 +177,9 @@ public class NearbyTrackerConnection implements UICallback, TrackerConnection {
         } catch (JSONException ex) {
             Log.d(JSON_SEND_EXCEPTION_MESSAGE+this.advertiserEndpointID+"\n"+ex.getMessage());
         }
-
     }
 
-    @Override
-    public void onWin(Side side, int wins) {
-        send("onWin", side.toString(), null, wins, null);
-    }
-
-    @Override
-    public void onReadyToServe(Side server) {
-        send("onReadyToServe", server.toString(), null, null, null);
-    }
-
-    @Override
-    public void onNotReadyButPlaying() {
-        send("onNotReadyButPlaying", null, null, null, null);
-    }
-
-    private void send(String event, String side, Integer score, Integer wins, Side nextServer) {
+    protected void send(String event, String side, Integer score, Integer wins, Side nextServer) {
         try {
             JSONObject json = new JSONObject();
             json.put(JSONInfo.SIDE_PROPERTY, side);
@@ -232,11 +187,16 @@ public class NearbyTrackerConnection implements UICallback, TrackerConnection {
             json.put(JSONInfo.WINS_PROPERTY, wins);
             json.put(JSONInfo.EVENT_PROPERTY, event);
             json.put(JSONInfo.NEXT_SERVER_PROPERTY, nextServer);
-            Payload payload = Payload.fromBytes(json.toString().getBytes(UTF_8));
-            this.connection.sendPayload(this.advertiserEndpointID, payload);
+            sendData(json);
         } catch (JSONException ex) {
-            Log.d(JSON_SEND_EXCEPTION_MESSAGE+this.advertiserEndpointID+"\n"+ex.getMessage());
+            Log.d(JSON_SEND_EXCEPTION_MESSAGE + this.advertiserEndpointID + "\n" + ex.getMessage());
         }
+    }
+
+    @Override
+    protected void sendData(JSONObject json) {
+        Payload payload = Payload.fromBytes(json.toString().getBytes(UTF_8));
+        this.connection.sendPayload(this.advertiserEndpointID, payload);
     }
 
     public void sendStatusUpdate(String playerNameLeft, String playerNameRight, int scoreLeft, int scoreRight, int winsLeft, int winsRight, Side nextServer, int gamesNeededToWin) {
@@ -251,55 +211,18 @@ public class NearbyTrackerConnection implements UICallback, TrackerConnection {
             json.put(JSONInfo.EVENT_PROPERTY, "onStatusUpdate");
             json.put(JSONInfo.NEXT_SERVER_PROPERTY, nextServer);
             json.put(JSONInfo.GAMES_NEEDED_PROPERTY, gamesNeededToWin);
-            Payload payload = Payload.fromBytes(json.toString().getBytes(UTF_8));
-            this.connection.sendPayload(this.advertiserEndpointID, payload);
+            sendData(json);
         } catch (JSONException ex) {
             Log.d(JSON_SEND_EXCEPTION_MESSAGE+this.advertiserEndpointID+"\n"+ex.getMessage());
         }
     }
 
-    private void handleOnRequestTableFrame() {
-        Log.d("onRequestTableFrame");
-        byte[] frame = this.initTrackerCallback.onCaptureFrame();
-
-        byte[] compressedJPGBytes = CameraBytesConversions.compressCameraImageBytes(frame, this.initTrackerCallback.getCameraWidth(), this.initTrackerCallback.getCameraHeight());
-        Log.d("frame length of compressed image: " + compressedJPGBytes.length + "Bytes");
-        try {
-            String encodedFrame = ByteToBase64.encodeToString(compressedJPGBytes);
-            Log.d("encodedFrame length: " + encodedFrame.length());
-            sendTableFrame(encodedFrame);
-        } catch (Exception ex) {
-            Log.d("UNSUPPORTED ENCODING EXCEPTION:");
-            Log.d(ex.getMessage());
-        }
-
-    }
-
-    private void sendTableFrame(String encodedFrame) {
-        int numberOfPackages = (int)Math.ceil(encodedFrame.length() / (double) MAX_SIZE);
-        Log.d("numberOfPackages: " + numberOfPackages);
-        this.initTrackerCallback.setLoadingBarSize(numberOfPackages);
-        sendTableFramePart(encodedFrame, 0, numberOfPackages, true);
-    }
-
-    private void handleOnSelectTableCorner(JSONArray tableCorners) {
-        Log.d("onTableCorner: " + tableCorners);
-        if (tableCorners != null) {
-            int[] coordinates = new int[tableCorners.length()];
-
-            for (int i = 0; i < tableCorners.length(); ++i) {
-                coordinates[i] = tableCorners.optInt(i);
-            }
-            this.initTrackerCallback.setTableCorners(coordinates);
-        }
-    }
-
-    private void sendTableFramePart(final String encodedFrame, final int index, final int numberOfPackages, boolean doContinue) {
+    protected void sendTableFramePart(final String encodedFrame, final int index, final int numberOfPackages, boolean doContinue) {
         String encodedFramePart;
-        if (index == numberOfPackages-1) {
-            encodedFramePart = encodedFrame.substring(index*MAX_SIZE);
+        if (index == numberOfPackages - 1) {
+            encodedFramePart = encodedFrame.substring(index * MAX_SIZE);
         } else {
-            encodedFramePart = encodedFrame.substring(index*MAX_SIZE, (index+1)*MAX_SIZE);
+            encodedFramePart = encodedFrame.substring(index * MAX_SIZE, (index + 1) * MAX_SIZE);
         }
         try {
             JSONObject json = new JSONObject();
@@ -325,67 +248,4 @@ public class NearbyTrackerConnection implements UICallback, TrackerConnection {
             Log.d(JSON_SEND_EXCEPTION_MESSAGE+this.advertiserEndpointID+"\n"+ex.getMessage());
         }
     }
-
-    private void handleMessage(Payload payload) {
-        try {
-            //new String(payload.asBytes(), UTF_8)
-            // Payload test = Payload.fromBytes(json.toString().getBytes(UTF_8));
-            // JSONObject json2 = new JSONObject();
-            // json2.put("test", new String(test.asBytes(), UTF_8))
-            JSONObject json = new JSONObject(new String(payload.asBytes(), UTF_8));
-            String event = json.getString(JSONInfo.EVENT_PROPERTY);
-            String side;
-            if(event != null) {
-                switch (event) {
-                    case "onPointDeduction":
-                        side = json.getString(JSONInfo.SIDE_PROPERTY);
-                        this.scoreManipulationCallback.onPointDeduction(Side.valueOf(side));
-                        break;
-                    case "onPointAddition":
-                        side = json.getString(JSONInfo.SIDE_PROPERTY);
-                        this.scoreManipulationCallback.onPointAddition(Side.valueOf(side));
-                        break;
-                    case "requestStatus":
-                        if (this.callback != null) {
-                            MatchStatus status = this.callback.onRequestMatchStatus();
-                            sendStatusUpdate(status.getPlayerLeft(), status.getPlayerRight(),
-                                    status.getScoreLeft(), status.getScoreRight(), status.getWinsLeft(),
-                                    status.getWinsRight(), status.getNextServer(), status.getGamesNeededToWin());
-                        }
-                        break;
-                    case "onPause":
-                        this.scoreManipulationCallback.onPause();
-                        break;
-                    case "onResume":
-                        this.scoreManipulationCallback.onResume();
-                        break;
-                    case "onRequestTableFrame":
-                        handleOnRequestTableFrame();
-                        break;
-                    case "onSelectTableCorner":
-                        JSONArray tableCorners = json.getJSONArray(JSONInfo.CORNERS);
-                        handleOnSelectTableCorner(tableCorners);
-                        break;
-                    case "onStartMatch":
-                        this.initTrackerCallback.switchToLiveActivity(Integer.parseInt(json.getString(JSONInfo.TYPE_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.SERVER_PROPERTY)));
-                        break;
-                    case "onRestartMatch":
-                        if(this.matchVisualizeHandlerCallback != null) {
-                            this.matchVisualizeHandlerCallback.restartMatch();
-                        }
-                        break;
-                    case "onAllFramePartsReceived":
-                        initTrackerCallback.frameSent();
-                        break;
-                    default:
-                        Log.d("Invalid event received.\nevent:"+event);
-                        break;
-                }
-            }
-        } catch (JSONException ex) {
-            Log.d("Unable to send JSON to endpoint "+this.advertiserEndpointID+"\n"+ex.getMessage());
-        }
-    }
-
-
 }

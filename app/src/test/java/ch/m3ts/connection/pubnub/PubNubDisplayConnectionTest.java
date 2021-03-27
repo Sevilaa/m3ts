@@ -1,4 +1,4 @@
-package ch.m3ts.pubnub;
+package ch.m3ts.connection.pubnub;
 
 import android.graphics.Point;
 
@@ -39,7 +39,7 @@ import static org.powermock.api.mockito.PowerMockito.spy;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(Pubnub.class)
-public class DisplayPubNubTest {
+public class PubNubDisplayConnectionTest {
     private Random random = new Random();
     private Pubnub pubnub;
     private final static String ROOM_ID = "invalid";
@@ -58,64 +58,64 @@ public class DisplayPubNubTest {
     public void testOnMatchEnded() throws JSONException {
         UICallback spyCallback = spy(mock(UICallback.class));
         DisplayScoreEventCallback deCallback = spy(mock(DisplayScoreEventCallback.class));
-        DisplayPubNub displayPubNub = new DisplayPubNub(pubnub, ROOM_ID);
-        displayPubNub.setUiCallback(spyCallback);
-        displayPubNub.setDisplayScoreEventCallback(deCallback);
+        PubNubDisplayConnection pubNubDisplayConnection = new PubNubDisplayConnection(pubnub, ROOM_ID);
+        pubNubDisplayConnection.setUiCallback(spyCallback);
+        pubNubDisplayConnection.setDisplayScoreEventCallback(deCallback);
         JSONObject jsonMatchEnded = makeJSONObject("onMatchEnded", Side.LEFT, null, null, null);
-        displayPubNub.connectCallback(ROOM_ID, jsonMatchEnded);
+        pubNubDisplayConnection.connectCallback(ROOM_ID, jsonMatchEnded);
         verify(spyCallback, times(0)).onMatchEnded(Side.LEFT.toString());
-        displayPubNub.successCallback(ROOM_ID, jsonMatchEnded);
+        pubNubDisplayConnection.successCallback(ROOM_ID, jsonMatchEnded);
         verify(spyCallback, times(1)).onMatchEnded(Side.LEFT.toString());
     }
 
     @Test
     public void testOnScore() throws JSONException {
         UICallback spyCallback = spy(mock(UICallback.class));
-        DisplayPubNub displayPubNub = new DisplayPubNub(pubnub, ROOM_ID);
-        displayPubNub.setUiCallback(spyCallback);
+        PubNubDisplayConnection pubNubDisplayConnection = new PubNubDisplayConnection(pubnub, ROOM_ID);
+        pubNubDisplayConnection.setUiCallback(spyCallback);
         final Side scorer = Side.RIGHT;
         final Side server = Side.LEFT;
         final int score = random.nextInt(999);
         JSONObject jsonScore = makeJSONObject("onScore", scorer, score, null, server, server);
-        displayPubNub.connectCallback(ROOM_ID, jsonScore);
+        pubNubDisplayConnection.connectCallback(ROOM_ID, jsonScore);
         verify(spyCallback, times(0)).onScore(Side.RIGHT, jsonScore.getInt("score"), Side.LEFT, server);
-        displayPubNub.successCallback(ROOM_ID, jsonScore);
+        pubNubDisplayConnection.successCallback(ROOM_ID, jsonScore);
         verify(spyCallback, times(1)).onScore(Side.RIGHT, jsonScore.getInt("score"), Side.LEFT, server);
     }
 
     @Test
     public void testOnWin() throws JSONException {
         UICallback spyCallback = spy(mock(UICallback.class));
-        DisplayPubNub displayPubNub = new DisplayPubNub(pubnub, ROOM_ID);
-        displayPubNub.setUiCallback(spyCallback);
+        PubNubDisplayConnection pubNubDisplayConnection = new PubNubDisplayConnection(pubnub, ROOM_ID);
+        pubNubDisplayConnection.setUiCallback(spyCallback);
         final Side winner = Side.LEFT;
         final Side server = Side.RIGHT;
         final int wins = random.nextInt(999);
         JSONObject jsonWin = makeJSONObject("onWin", winner, null, wins, server);
-        displayPubNub.connectCallback(ROOM_ID, jsonWin);
+        pubNubDisplayConnection.connectCallback(ROOM_ID, jsonWin);
         verify(spyCallback, times(0)).onWin(Side.LEFT, jsonWin.getInt("wins"));
-        displayPubNub.successCallback(ROOM_ID, jsonWin);
+        pubNubDisplayConnection.successCallback(ROOM_ID, jsonWin);
         verify(spyCallback, times(1)).onWin(Side.LEFT, jsonWin.getInt("wins"));
     }
 
     @Test
     public void testOnReadyToServe() {
         UICallback spyCallback = spy(mock(UICallback.class));
-        DisplayPubNub displayPubNub = new DisplayPubNub(pubnub, ROOM_ID);
-        displayPubNub.setUiCallback(spyCallback);
+        PubNubDisplayConnection pubNubDisplayConnection = new PubNubDisplayConnection(pubnub, ROOM_ID);
+        pubNubDisplayConnection.setUiCallback(spyCallback);
         final Side server = Side.RIGHT;
         JSONObject jsonReadyToServe = makeJSONObject("onReadyToServe", server, null, null, null);
-        displayPubNub.connectCallback(ROOM_ID, jsonReadyToServe);
+        pubNubDisplayConnection.connectCallback(ROOM_ID, jsonReadyToServe);
         verify(spyCallback, times(0)).onReadyToServe(server);
-        displayPubNub.successCallback(ROOM_ID, jsonReadyToServe);
+        pubNubDisplayConnection.successCallback(ROOM_ID, jsonReadyToServe);
         verify(spyCallback, times(1)).onReadyToServe(server);
     }
 
     @Test
     public void testOnStatusUpdate() throws JSONException {
         DisplayScoreEventCallback spyCallback = spy(mock(DisplayScoreEventCallback.class));
-        DisplayPubNub displayPubNub = new DisplayPubNub(pubnub, ROOM_ID);
-        displayPubNub.setDisplayScoreEventCallback(spyCallback);
+        PubNubDisplayConnection pubNubDisplayConnection = new PubNubDisplayConnection(pubnub, ROOM_ID);
+        pubNubDisplayConnection.setDisplayScoreEventCallback(spyCallback);
         String pL = "leftDude";
         String pR = "rightDude";
         int sL = random.nextInt(999);
@@ -134,49 +134,49 @@ public class DisplayPubNubTest {
         jsonStatus.put(JSONInfo.WINS_RIGHT_PROPERTY, wR);
         jsonStatus.put(JSONInfo.NEXT_SERVER_PROPERTY, nextServer);
         jsonStatus.put(JSONInfo.GAMES_NEEDED_PROPERTY, gN);
-        displayPubNub.connectCallback(ROOM_ID, jsonStatus);
+        pubNubDisplayConnection.connectCallback(ROOM_ID, jsonStatus);
         verify(spyCallback, times(0)).onStatusUpdate(pL, pR, sL, sR, wL, wR, nextServer, gN);
-        displayPubNub.successCallback(ROOM_ID, jsonStatus);
+        pubNubDisplayConnection.successCallback(ROOM_ID, jsonStatus);
         verify(spyCallback, times(1)).onStatusUpdate(pL, pR, sL, sR, wL, wR, nextServer, gN);
     }
 
     @Test
     public void testOnConnected() throws JSONException {
         DisplayConnectCallback spyCallback = spy(mock(DisplayConnectCallback.class));
-        DisplayPubNub displayPubNub = new DisplayPubNub(pubnub, ROOM_ID);
+        PubNubDisplayConnection pubNubDisplayConnection = new PubNubDisplayConnection(pubnub, ROOM_ID);
         JSONObject jsonStatus = new JSONObject();
         jsonStatus.put(JSONInfo.EVENT_PROPERTY, "onConnected");
-        displayPubNub.successCallback(ROOM_ID, jsonStatus);
+        pubNubDisplayConnection.successCallback(ROOM_ID, jsonStatus);
         verify(spyCallback, times(0)).onConnected();
-        displayPubNub.setDisplayConnectCallback(spyCallback);
-        displayPubNub.successCallback(ROOM_ID, jsonStatus);
+        pubNubDisplayConnection.setDisplayConnectCallback(spyCallback);
+        pubNubDisplayConnection.successCallback(ROOM_ID, jsonStatus);
         verify(spyCallback, times(1)).onConnected();
     }
 
     @Test
     public void testOnPauseJSON() {
-        DisplayPubNub displayPubNub = new DisplayPubNub(pubnub, ROOM_ID);
+        PubNubDisplayConnection pubNubDisplayConnection = new PubNubDisplayConnection(pubnub, ROOM_ID);
         assertJSONWithEvent("onPause");
-        displayPubNub.onPause();
+        pubNubDisplayConnection.onPause();
     }
 
     @Test
     public void testOnResumeJSON() {
-        DisplayPubNub displayPubNub = new DisplayPubNub(pubnub, ROOM_ID);
+        PubNubDisplayConnection pubNubDisplayConnection = new PubNubDisplayConnection(pubnub, ROOM_ID);
         assertJSONWithEvent("onResume");
-        displayPubNub.onResume();
+        pubNubDisplayConnection.onResume();
     }
 
     @Test
     public void testOnRequestTableFrame() {
-        DisplayPubNub displayPubNub = new DisplayPubNub(pubnub, ROOM_ID);
+        PubNubDisplayConnection pubNubDisplayConnection = new PubNubDisplayConnection(pubnub, ROOM_ID);
         assertJSONWithEvent("onRequestTableFrame");
-        displayPubNub.onRequestTableFrame();
+        pubNubDisplayConnection.onRequestTableFrame();
     }
 
     @Test
     public void testOnPointAdditionJSON() {
-        DisplayPubNub displayPubNub = new DisplayPubNub(pubnub, ROOM_ID);
+        PubNubDisplayConnection pubNubDisplayConnection = new PubNubDisplayConnection(pubnub, ROOM_ID);
         final Side sideToBeAddedTo = Side.LEFT;
         PowerMockito.doAnswer(new Answer() {
             @Override
@@ -189,12 +189,12 @@ public class DisplayPubNubTest {
                 return null;
             }
         }).when(pubnub).publish(any(String.class), any(JSONObject.class), any(Callback.class));
-        displayPubNub.onPointAddition(sideToBeAddedTo);
+        pubNubDisplayConnection.onPointAddition(sideToBeAddedTo);
     }
 
     @Test
     public void testOnSelectTableCornersJSON() {
-        DisplayPubNub displayPubNub = new DisplayPubNub(pubnub, ROOM_ID);
+        PubNubDisplayConnection pubNubDisplayConnection = new PubNubDisplayConnection(pubnub, ROOM_ID);
         final Point[] tableCorners = new Point[6];
         tableCorners[0] = new Point(5, 60);
         tableCorners[1] = new Point(95, 61);
@@ -209,24 +209,24 @@ public class DisplayPubNubTest {
                 JSONObject json = (JSONObject) invocation.getArguments()[1];
                 JSONArray intTableCornersArray = json.getJSONArray(JSONInfo.CORNERS);
                 assertEquals(tableCorners.length*2, intTableCornersArray.length());
-                for(int i = 0; i<tableCorners.length; i++) {
-                    int j = i*2;
+                for (int i = 0; i < tableCorners.length; i++) {
+                    int j = i * 2;
                     assertEquals(tableCorners[i].x, intTableCornersArray.getInt(j));
-                    assertEquals(tableCorners[i].y, intTableCornersArray.getInt(j+1));
+                    assertEquals(tableCorners[i].y, intTableCornersArray.getInt(j + 1));
                 }
                 assertEquals("onSelectTableCorner", json.getString(JSONInfo.EVENT_PROPERTY));
                 assertEquals(ROOM_ID, channelName);
                 return null;
             }
         }).when(pubnub).publish(any(String.class), any(JSONObject.class), any(Callback.class));
-        displayPubNub.onSelectTableCorners(tableCorners);
+        pubNubDisplayConnection.onSelectTableCorners(tableCorners);
     }
 
     @Test
     public void testOnTableFrameSuccess() {
-        DisplayPubNub displayPubNub = new DisplayPubNub(pubnub, ROOM_ID);
+        PubNubDisplayConnection pubNubDisplayConnection = new PubNubDisplayConnection(pubnub, ROOM_ID);
         DisplayConnectCallback displayConnectCallback = spy(mock(DisplayConnectCallback.class));
-        displayPubNub.setDisplayConnectCallback(displayConnectCallback);
+        pubNubDisplayConnection.setDisplayConnectCallback(displayConnectCallback);
         final String baseImg = "I'm an encoded byte array";
         String baseImgP1 = "I'm an encoded ";
         String baseImgP2 = "byte array";
@@ -248,11 +248,11 @@ public class DisplayPubNubTest {
 
         JSONObject jsonTableFrame1of2 = makeJSONObject("onTableFrame", 0, 2, baseImgP1, w, h);
         JSONObject jsonTableFrame2of2 = makeJSONObject("onTableFrame", 1, 2, baseImgP2, w, h);
-        displayPubNub.successCallback(ROOM_ID, jsonTableFrame1of2);
+        pubNubDisplayConnection.successCallback(ROOM_ID, jsonTableFrame1of2);
         verify(displayConnectCallback, times(1)).onImageTransmissionStarted(2);
         verify(displayConnectCallback, times(0)).onImagePartReceived(anyInt());
         verify(displayConnectCallback, times(0)).onImageReceived(any(byte[].class), anyInt(), anyInt());
-        displayPubNub.successCallback(ROOM_ID, jsonTableFrame2of2);
+        pubNubDisplayConnection.successCallback(ROOM_ID, jsonTableFrame2of2);
         verify(displayConnectCallback, times(1)).onImageTransmissionStarted(2);
         verify(displayConnectCallback, times(1)).onImagePartReceived(2);
         verify(displayConnectCallback, times(1)).onImageReceived(any(byte[].class), anyInt(), anyInt());
@@ -261,9 +261,9 @@ public class DisplayPubNubTest {
 
     @Test
     public void testOnTableFrameFailure() {
-        DisplayPubNub displayPubNub = new DisplayPubNub(pubnub, ROOM_ID);
+        PubNubDisplayConnection pubNubDisplayConnection = new PubNubDisplayConnection(pubnub, ROOM_ID);
         DisplayConnectCallback displayConnectCallback = spy(mock(DisplayConnectCallback.class));
-        displayPubNub.setDisplayConnectCallback(displayConnectCallback);
+        pubNubDisplayConnection.setDisplayConnectCallback(displayConnectCallback);
         String baseImgP1 = "I'm an encoded ";
         String baseImgP2 = "byte";
         String baseImgP3 = " array";
@@ -284,8 +284,8 @@ public class DisplayPubNubTest {
             }
         }).when(pubnub).publish(any(String.class), any(JSONObject.class), any(Callback.class));
         verify(pubnub, times(0)).publish(any(String.class), any(JSONObject.class), any(Callback.class));
-        displayPubNub.successCallback(ROOM_ID, jsonTableFrame1of3);
-        displayPubNub.successCallback(ROOM_ID, jsonTableFrame3of3);
+        pubNubDisplayConnection.successCallback(ROOM_ID, jsonTableFrame1of3);
+        pubNubDisplayConnection.successCallback(ROOM_ID, jsonTableFrame3of3);
         // display now notices that a part is missing -> onRequestTableFrame() gets executed which publishes an event
         verify(pubnub, times(1)).publish(any(String.class), any(JSONObject.class), any(Callback.class));
         verify(displayConnectCallback, times(0)).onImageReceived(any(byte[].class), anyInt(), anyInt());
@@ -293,7 +293,7 @@ public class DisplayPubNubTest {
 
     @Test
     public void testOnPointDeductionJSON() {
-        DisplayPubNub displayPubNub = new DisplayPubNub(pubnub, ROOM_ID);
+        PubNubDisplayConnection pubNubDisplayConnection = new PubNubDisplayConnection(pubnub, ROOM_ID);
         final Side sideToBeDeducted = Side.RIGHT;
         PowerMockito.doAnswer(new Answer() {
             @Override
@@ -306,21 +306,21 @@ public class DisplayPubNubTest {
                 return null;
             }
         }).when(pubnub).publish(any(String.class), any(JSONObject.class), any(Callback.class));
-        displayPubNub.onPointDeduction(sideToBeDeducted);
+        pubNubDisplayConnection.onPointDeduction(sideToBeDeducted);
     }
 
     @Test
     public void testRequestStatusUpdateJSON() {
-        DisplayPubNub displayPubNub = new DisplayPubNub(pubnub, ROOM_ID);
+        PubNubDisplayConnection pubNubDisplayConnection = new PubNubDisplayConnection(pubnub, ROOM_ID);
         assertJSONWithEvent("requestStatus");
-        displayPubNub.requestStatusUpdate();
+        pubNubDisplayConnection.requestStatusUpdate();
     }
 
     @Test
     public void testOnStartMatch() {
-        DisplayPubNub displayPubNub = new DisplayPubNub(pubnub, ROOM_ID);
+        PubNubDisplayConnection pubNubDisplayConnection = new PubNubDisplayConnection(pubnub, ROOM_ID);
         assertJSONWithEvent("onStartMatch");
-        displayPubNub.onStartMatch();
+        pubNubDisplayConnection.onStartMatch();
     }
 
     private void assertJSONWithEvent(final String event) {
@@ -341,16 +341,16 @@ public class DisplayPubNubTest {
         try {
             UICallback spyCallback = spy(mock(UICallback.class));
             DisplayScoreEventCallback deCallback = spy(mock(DisplayScoreEventCallback.class));
-            DisplayPubNub displayPubNub = new DisplayPubNub(pubnub, ROOM_ID);
-            displayPubNub.setUiCallback(spyCallback);
-            displayPubNub.setDisplayScoreEventCallback(deCallback);
+            PubNubDisplayConnection pubNubDisplayConnection = new PubNubDisplayConnection(pubnub, ROOM_ID);
+            pubNubDisplayConnection.setUiCallback(spyCallback);
+            pubNubDisplayConnection.setDisplayScoreEventCallback(deCallback);
 
-            for (int i = 0; i<100; i++) {
+            for (int i = 0; i < 100; i++) {
                 JSONObject invalidJSON = makeJSONObject(generateRandomAlphabeticString(random.nextInt(20)),
                         Side.values()[random.nextInt(4)], random.nextInt(999), random.nextInt(999), Side.values()[random.nextInt(4)]);
-                displayPubNub.connectCallback(ROOM_ID, invalidJSON);
-                displayPubNub.disconnectCallback(ROOM_ID, invalidJSON);
-                displayPubNub.successCallback(ROOM_ID, invalidJSON);
+                pubNubDisplayConnection.connectCallback(ROOM_ID, invalidJSON);
+                pubNubDisplayConnection.disconnectCallback(ROOM_ID, invalidJSON);
+                pubNubDisplayConnection.successCallback(ROOM_ID, invalidJSON);
                 verify(spyCallback, times(0)).onScore(any(Side.class), anyInt(), any(Side.class), any(Side.class));
                 verify(spyCallback, times(0)).onWin(any(Side.class), anyInt());
                 verify(spyCallback, times(0)).onMatchEnded(any(String.class));
@@ -363,12 +363,12 @@ public class DisplayPubNubTest {
     @Test
     public void testUnsubscribe() throws Exception {
         doNothing().when(pubnub).unsubscribe(anyString());
-        DisplayPubNub displayPubNub = new DisplayPubNub(pubnub, ROOM_ID);
+        PubNubDisplayConnection pubNubDisplayConnection = new PubNubDisplayConnection(pubnub, ROOM_ID);
         verify(pubnub, times(0)).unsubscribe(ROOM_ID);
-        verify(pubnub, times(1)).subscribe(ROOM_ID, displayPubNub);
-        displayPubNub.unsubscribe();
+        verify(pubnub, times(1)).subscribe(ROOM_ID, pubNubDisplayConnection);
+        pubNubDisplayConnection.unsubscribe();
         verify(pubnub, times(1)).unsubscribe(ROOM_ID);
-        verify(pubnub, times(1)).subscribe(ROOM_ID, displayPubNub);
+        verify(pubnub, times(1)).subscribe(ROOM_ID, pubNubDisplayConnection);
     }
 
 

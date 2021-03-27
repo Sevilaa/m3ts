@@ -1,4 +1,4 @@
-package ch.m3ts.pubnub;
+package ch.m3ts.connection.pubnub;
 
 import com.pubnub.api.Callback;
 import com.pubnub.api.Pubnub;
@@ -37,14 +37,14 @@ import static org.mockito.Mockito.when;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(Pubnub.class)
-public class TrackerPubNubTest {
-    private TrackerPubNub trackerPubNub;
+public class PubNubTrackerConnectionTest {
+    private PubNubTrackerConnection pubNubTrackerConnection;
     private Pubnub pubNub;
 
     @Before
     public void init() {
         pubNub = PowerMockito.spy(PowerMockito.mock(Pubnub.class));
-        trackerPubNub = new TrackerPubNub(pubNub, "invalid");
+        pubNubTrackerConnection = new PubNubTrackerConnection(pubNub, "invalid");
     }
 
     @After
@@ -56,29 +56,29 @@ public class TrackerPubNubTest {
     public void testReceivingPointAdditionAndDeduction() {
         try {
             ScoreManipulationCallback spyCallback = PowerMockito.spy(PowerMockito.mock(ScoreManipulationCallback.class));
-            trackerPubNub.setScoreManipulationCallback(spyCallback);
+            pubNubTrackerConnection.setScoreManipulationCallback(spyCallback);
             // test onPointAddition
             JSONObject jsonObject = makeJSONObject("onPointAddition", Side.LEFT);
-            trackerPubNub.successCallback("test", jsonObject);
+            pubNubTrackerConnection.successCallback("test", jsonObject);
             verify(spyCallback, times(1)).onPointAddition(Side.LEFT);
             jsonObject = makeJSONObject("onPointAddition", Side.RIGHT);
-            trackerPubNub.successCallback("test", jsonObject);
+            pubNubTrackerConnection.successCallback("test", jsonObject);
             verify(spyCallback, times(1)).onPointAddition(Side.RIGHT);
             // test onPointDeduction
             jsonObject = makeJSONObject("onPointDeduction", Side.LEFT);
-            trackerPubNub.successCallback("test", jsonObject);
+            pubNubTrackerConnection.successCallback("test", jsonObject);
             verify(spyCallback, times(1)).onPointDeduction(Side.LEFT);
             jsonObject = makeJSONObject("onPointDeduction", Side.RIGHT);
-            trackerPubNub.successCallback("test", jsonObject);
+            pubNubTrackerConnection.successCallback("test", jsonObject);
             verify(spyCallback, times(1)).onPointDeduction(Side.RIGHT);
 
             // test with Random events
             Random r = new Random();
             for (int i = 0; i<100; i++) {
                 jsonObject = makeJSONObject(generateRandomAlphabeticString(r.nextInt(20)), Side.LEFT);
-                trackerPubNub.successCallback("test", jsonObject);
+                pubNubTrackerConnection.successCallback("test", jsonObject);
                 jsonObject = makeJSONObject(generateRandomAlphabeticString(r.nextInt(20)), Side.RIGHT);
-                trackerPubNub.successCallback("test", jsonObject);
+                pubNubTrackerConnection.successCallback("test", jsonObject);
                 verify(spyCallback, times(1)).onPointDeduction(Side.LEFT);
                 verify(spyCallback, times(1)).onPointAddition(Side.RIGHT);
             }
@@ -91,14 +91,14 @@ public class TrackerPubNubTest {
     @Test
     public void testPausingAndResumingMatch() throws Exception {
         ScoreManipulationCallback spyCallback = PowerMockito.spy(PowerMockito.mock(ScoreManipulationCallback.class));
-        trackerPubNub.setScoreManipulationCallback(spyCallback);
+        pubNubTrackerConnection.setScoreManipulationCallback(spyCallback);
         verify(spyCallback, times(0)).onPause();
         verify(spyCallback, times(0)).onResume();
         JSONObject jsonObject = makeJSONObject("onPause");
-        trackerPubNub.successCallback("test", jsonObject);
+        pubNubTrackerConnection.successCallback("test", jsonObject);
         verify(spyCallback, times(1)).onPause();
         jsonObject = makeJSONObject("onResume");
-        trackerPubNub.successCallback("test", jsonObject);
+        pubNubTrackerConnection.successCallback("test", jsonObject);
         verify(spyCallback, times(1)).onResume();
     }
 
@@ -107,10 +107,10 @@ public class TrackerPubNubTest {
         MatchVisualizeHandlerCallback spyCallback = PowerMockito.spy(PowerMockito.mock(MatchVisualizeHandlerCallback.class));
         JSONObject jsonObject = makeJSONObject("onRestartMatch");
         // check for exception
-        trackerPubNub.successCallback("test", jsonObject);
+        pubNubTrackerConnection.successCallback("test", jsonObject);
         verify(spyCallback, times(0)).restartMatch();
-        trackerPubNub.setMatchVisualizeHandlerCallback(spyCallback);
-        trackerPubNub.successCallback("test", jsonObject);
+        pubNubTrackerConnection.setMatchVisualizeHandlerCallback(spyCallback);
+        pubNubTrackerConnection.successCallback("test", jsonObject);
         verify(spyCallback, times(1)).restartMatch();
     }
 
@@ -124,7 +124,7 @@ public class TrackerPubNubTest {
         when(spyCallback.getCameraHeight()).thenReturn(h);
         when(spyCallback.getCameraWidth()).thenReturn(w);
         when(spyCallback.onCaptureFrame()).thenReturn(randomBytes);
-        trackerPubNub.setInitTrackerCallback(spyCallback);
+        pubNubTrackerConnection.setInitTrackerCallback(spyCallback);
 
         // test the workflow
         // firstly a table frame is requested
@@ -133,7 +133,7 @@ public class TrackerPubNubTest {
         verify(spyCallback, times(0)).onCaptureFrame();
         verify(spyCallback, times(0)).setLoadingBarSize(anyInt());
         JSONObject jsonObject = makeJSONObject("onRequestTableFrame");
-        trackerPubNub.successCallback("test", jsonObject);
+        pubNubTrackerConnection.successCallback("test", jsonObject);
         verify(spyCallback, times(2)).getCameraHeight();
         verify(spyCallback, times(2)).getCameraWidth();
         verify(spyCallback, times(1)).onCaptureFrame();
@@ -153,14 +153,14 @@ public class TrackerPubNubTest {
             }
         }).when(spyCallback).setTableCorners(any(int[].class));
         verify(spyCallback, times(0)).setTableCorners(any(int[].class));
-        trackerPubNub.successCallback("test", jsonObject);
+        pubNubTrackerConnection.successCallback("test", jsonObject);
         verify(spyCallback, times(1)).setTableCorners(any(int[].class));
 
 
         // last, the display will tell "start the match"
         jsonObject = makeJSONObject("onStartMatch");
         verify(spyCallback, times(0)).switchToLiveActivity();
-        trackerPubNub.successCallback("test", jsonObject);
+        pubNubTrackerConnection.successCallback("test", jsonObject);
         verify(spyCallback, times(1)).switchToLiveActivity();
     }
 
@@ -187,10 +187,10 @@ public class TrackerPubNubTest {
 
         when(spyCallback.onRequestMatchStatus()).thenReturn(matchStatus);
         JSONObject json = makeJSONObject("requestStatus");
-        trackerPubNub.successCallback("test", json);
+        pubNubTrackerConnection.successCallback("test", json);
         verify(spyCallback, times(0)).onRequestMatchStatus();
-        trackerPubNub.setTrackerPubNubCallback(spyCallback);
-        trackerPubNub.successCallback("test", json);
+        pubNubTrackerConnection.setTrackerPubNubCallback(spyCallback);
+        pubNubTrackerConnection.successCallback("test", json);
     }
 
     @Test
@@ -211,7 +211,7 @@ public class TrackerPubNubTest {
                 return null;
             }
         }).when(pubNub).publish(any(String.class), any(JSONObject.class), any(Callback.class));
-        trackerPubNub.onScore(scorer, score, server, server);
+        pubNubTrackerConnection.onScore(scorer, score, server, server);
     }
 
     @Test
@@ -230,7 +230,7 @@ public class TrackerPubNubTest {
                 return null;
             }
         }).when(pubNub).publish(any(String.class), any(JSONObject.class), any(Callback.class));
-        trackerPubNub.onWin(winner, wins);
+        pubNubTrackerConnection.onWin(winner, wins);
     }
 
     @Test
@@ -247,7 +247,7 @@ public class TrackerPubNubTest {
                 return null;
             }
         }).when(pubNub).publish(any(String.class), any(JSONObject.class), any(Callback.class));
-        trackerPubNub.onMatchEnded(winnerName);
+        pubNubTrackerConnection.onMatchEnded(winnerName);
     }
 
     @Test
@@ -264,7 +264,7 @@ public class TrackerPubNubTest {
                 return null;
             }
         }).when(pubNub).publish(any(String.class), any(JSONObject.class), any(Callback.class));
-        trackerPubNub.onReadyToServe(server);
+        pubNubTrackerConnection.onReadyToServe(server);
     }
 
     private JSONObject makeJSONObject(String event) {

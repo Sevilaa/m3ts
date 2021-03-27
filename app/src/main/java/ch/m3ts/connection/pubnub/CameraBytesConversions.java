@@ -1,4 +1,4 @@
-package ch.m3ts.pubnub;
+package ch.m3ts.connection.pubnub;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;

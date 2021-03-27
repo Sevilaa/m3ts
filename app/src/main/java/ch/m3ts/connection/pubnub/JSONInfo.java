@@ -1,4 +1,4 @@
-package ch.m3ts.pubnub;
+package ch.m3ts.connection.pubnub;
 
 /**
  * Contains commonly used JSON properties in M3TS.

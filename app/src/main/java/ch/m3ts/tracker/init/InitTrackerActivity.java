@@ -18,8 +18,8 @@ import android.widget.TextView;
 import ch.m3ts.connection.ConnectionCallback;
 import ch.m3ts.connection.ConnectionHelper;
 import ch.m3ts.connection.NearbyTrackerConnection;
-import ch.m3ts.pubnub.PubNubFactory;
-import ch.m3ts.pubnub.TrackerPubNub;
+import ch.m3ts.connection.pubnub.PubNubFactory;
+import ch.m3ts.connection.pubnub.PubNubTrackerConnection;
 import ch.m3ts.tracker.visualization.CameraPreviewActivity;
 import ch.m3ts.tracker.visualization.live.LiveActivity;
 import cz.fmo.R;
@@ -43,7 +43,7 @@ public final class InitTrackerActivity extends CameraPreviewActivity implements 
     private static final String MATCH_ID = "MATCH_ID";
     private static final int MAX_ALLOWED_ADJUSTMENT_OFFSET = 3;
     private static final int MAX_ALLOWED_ADJUSTMENT_OFFSET_TOP = 20;
-    private TrackerPubNub trackerPubNub;
+    private PubNubTrackerConnection pubNubTrackerConnection;
     private SensorManager mSensorManager;
     private Sensor accelerometer;
     private Sensor magnetometer;
@@ -133,13 +133,13 @@ public final class InitTrackerActivity extends CameraPreviewActivity implements 
 
     void enterPubNubRoom(String roomId) {
         mSensorManager.unregisterListener(this);
-        this.trackerPubNub = PubNubFactory.createTrackerPubNub(this, roomId);
-        this.trackerPubNub.setInitTrackerCallback((InitTrackerCallback) this.cameraCallback);
+        this.pubNubTrackerConnection = PubNubFactory.createTrackerPubNub(this, roomId);
+        this.pubNubTrackerConnection.setInitTrackerCallback((InitTrackerCallback) this.cameraCallback);
     }
 
     void switchToLiveActivity(String selectedMatchId, int selectedMatchType, int selectedServingSide, int[] tableCorners) {
-        if (this.trackerPubNub != null) this.trackerPubNub.unsubscribe();
-        if(this.nearbyTrackerConnection != null) {
+        if (this.pubNubTrackerConnection != null) this.pubNubTrackerConnection.unsubscribe();
+        if (this.nearbyTrackerConnection != null) {
             this.nearbyTrackerConnection.setConnectionCallback(null);
             this.nearbyTrackerConnection = null;
         }
