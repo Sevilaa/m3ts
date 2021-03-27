@@ -1,4 +1,4 @@
-package ch.m3ts.tracker.visualization.live;
+package com.google.audio;
 
 import android.graphics.Color;
 import android.os.Handler;
@@ -11,6 +11,8 @@ import com.google.audio.calculators.AudioCalculator;
  * Callback of the Audio Recorder from com.google.audio package.
  * Challenge is to isolate the sound of a ping pong ball hitting a ping pong / stone table.
  * Currently we're using thresholds suggested in https://www.tandfonline.com/doi/abs/10.1080/02640414.2018.1462578?journalCode=rjsp20&#:~:text=Using%20average%20values%20for%20density,ball%20is%20approximately%205880%20Hz
+ * <p>
+ * When a Bounce is detected, this callback will update Text Views (given in Constructor)
  */
 public class DebugImplAudioRecorderCallback implements com.google.audio.core.Callback {
     private static final int MAX_FREQUENCY = 13000;
