@@ -4,7 +4,6 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -42,7 +41,6 @@ public abstract class CameraPreviewActivity extends Activity implements SurfaceH
      * Called by:
      * - onResume()
      * - GUI.surfaceCreated(), when GUI preview surface has just been created
-     * - onRequestPermissionsResult(), when camera permissions have just been granted
      */
     public void init() {
         // reality check: don't initialize twice
@@ -114,22 +112,6 @@ public abstract class CameraPreviewActivity extends Activity implements SurfaceH
             mCamera = null;
         }
         mStatus = CameraStatus.STOPPED;
-    }
-
-    /**
-     * Responsible for querying and acquiring camera permissions. Whatever the response will be,
-     * the permission request could result in the application being paused and resumed. For that
-     * reason, requesting permissions at any later point, including in onResume(), might cause an
-     * infinite loop.
-     */
-    @Override
-    protected void onStart() {
-        super.onStart();
-        if (isCameraPermissionDenied()) {
-            String[] perms = new String[]{Manifest.permission.CAMERA,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE};
-            ActivityCompat.requestPermissions(this, perms, 0);
-        }
     }
 
     @Override

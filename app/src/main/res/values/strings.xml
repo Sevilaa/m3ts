@@ -4,6 +4,7 @@
 
     <string name="play_button_text">Play</string>
     <string name="stop_button_text">Stop</string>
+    <string name="errorMsgPermissions">Sorry, cannot use M3TS unless all permissions are granted</string>
 
     <string name="videoLength">%d seconds in buffer</string>
     <string name="noVideoLength">Buffer is empty</string>

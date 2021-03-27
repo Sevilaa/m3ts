@@ -1,6 +1,5 @@
 package ch.m3ts.connection;
 
-import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -12,16 +11,6 @@ import com.google.android.gms.nearby.connection.PayloadCallback;
 import cz.fmo.R;
 
 public class ConnectionHelper {
-    public static final String[] REQUIRED_PERMISSIONS =
-            new String[] {
-                    Manifest.permission.BLUETOOTH,
-                    Manifest.permission.BLUETOOTH_ADMIN,
-                    Manifest.permission.ACCESS_WIFI_STATE,
-                    Manifest.permission.CHANGE_WIFI_STATE,
-                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.ACCESS_FINE_LOCATION
-            };
-    public static final int REQUEST_CODE_REQUIRED_PERMISSIONS = 1;
     public static final String SERVICE_ID = "M3TS_NEARBY";
     public static ConnectionsClient CONNECTIONS_CLIENT;
 

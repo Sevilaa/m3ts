@@ -11,6 +11,7 @@ import android.support.annotation.NonNull;
 import android.view.SurfaceHolder;
 import android.widget.TextView;
 
+import com.google.audio.ImplAudioRecorderCallback;
 import com.google.audio.core.Recorder;
 
 import org.opencv.android.OpenCVLoader;
@@ -36,7 +37,6 @@ import ch.m3ts.tabletennis.match.ServeRules;
 import ch.m3ts.tabletennis.match.UICallback;
 import ch.m3ts.tabletennis.match.game.GameType;
 import ch.m3ts.tabletennis.match.game.ScoreManipulationCallback;
-import ch.m3ts.tracker.ImplAudioRecorderCallback;
 import ch.m3ts.tracker.ZPositionCalc;
 import cz.fmo.Lib;
 import cz.fmo.R;

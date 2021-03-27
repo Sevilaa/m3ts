@@ -1,16 +1,12 @@
 package ch.m3ts.tracker.init;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Point;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
 import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,7 +14,6 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import ch.m3ts.connection.ConnectionCallback;
 import ch.m3ts.connection.ConnectionHelper;
@@ -105,30 +100,11 @@ public final class InitTrackerActivity extends CameraPreviewActivity implements 
                 moveDeviceButton.setVisibility(View.INVISIBLE);
             }
         });
-        checkNearbyPermissions();
     }
-
 
     @Override
     public void onStop() {
         super.onStop();
-    }
-
-    private void checkNearbyPermissions() {
-        if (!hasPermissions(this, ConnectionHelper.REQUIRED_PERMISSIONS)) {
-            requestPermissions(ConnectionHelper.REQUIRED_PERMISSIONS, ConnectionHelper.REQUEST_CODE_REQUIRED_PERMISSIONS);
-        }
-    }
-
-    /** Returns true if the app was granted all the permissions. Otherwise, returns false. */
-    private static boolean hasPermissions(Context context, String... permissions) {
-        for (String permission : permissions) {
-            if (ContextCompat.checkSelfPermission(context, permission)
-                    != PackageManager.PERMISSION_GRANTED) {
-                return false;
-            }
-        }
-        return true;
     }
 
     @Override
@@ -153,29 +129,6 @@ public final class InitTrackerActivity extends CameraPreviewActivity implements 
     @Override
     public void setCurrentContentView() {
         setContentView(R.layout.activity_initialize);
-    }
-
-    /**
-     * Called when a decision has been made regarding the camera permission. Whatever the response
-     * is, the initialization procedure continues. If the permission is denied, the init() method
-     * will display a proper error message on the screen.
-     */
-    @Override
-    public void onRequestPermissionsResult(int requestID, @NonNull String[] permissionList,
-                                           @NonNull int[] grantedList) {
-        init();
-        if (requestID != ConnectionHelper.REQUEST_CODE_REQUIRED_PERMISSIONS) {
-            return;
-        }
-
-        for (int grantResult : grantedList) {
-            if (grantResult == PackageManager.PERMISSION_DENIED) {
-                Toast.makeText(this,"error", Toast.LENGTH_LONG).show();
-                finish();
-                return;
-            }
-        }
-        recreate();
     }
 
     void enterPubNubRoom(String roomId) {
@@ -303,5 +256,4 @@ public final class InitTrackerActivity extends CameraPreviewActivity implements 
     private void setConnectInfoText(int stringId) {
         ((TextView) findViewById(R.id.connection_text)).setText(getString(stringId));
     }
-
 }

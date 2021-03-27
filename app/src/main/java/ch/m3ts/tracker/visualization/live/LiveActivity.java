@@ -5,8 +5,6 @@ import android.app.AlertDialog;
 import android.content.pm.PackageManager;
 import android.graphics.Point;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.view.Display;
 import android.view.SurfaceView;
@@ -67,15 +65,6 @@ public final class LiveActivity extends MatchVisualizeActivity {
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        if (isAudioPermissionDenied()) {
-            String[] perms = new String[]{Manifest.permission.RECORD_AUDIO};
-            ActivityCompat.requestPermissions(this, perms, 0);
-        }
-    }
-
-    @Override
     public void init() {
         // reality check: don't initialize twice
         if (mStatus == CameraStatus.RUNNING) return;
@@ -127,17 +116,6 @@ public final class LiveActivity extends MatchVisualizeActivity {
     @Override
     public void setCurrentContentView() {
         setContentView(R.layout.activity_live_debug);
-    }
-
-    /**
-     * Called when a decision has been made regarding the camera permission. Whatever the response
-     * is, the initialization procedure continues. If the permission is denied, the init() method
-     * will display a proper error message on the screen.
-     */
-    @Override
-    public void onRequestPermissionsResult(int requestID, @NonNull String[] permissionList,
-                                           @NonNull int[] grantedList) {
-        init();
     }
 
     @Override

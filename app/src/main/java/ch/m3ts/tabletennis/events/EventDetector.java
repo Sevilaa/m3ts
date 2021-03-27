@@ -2,6 +2,8 @@ package ch.m3ts.tabletennis.events;
 
 import android.support.annotation.NonNull;
 
+import com.google.audio.ImplAudioRecorderCallback;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Timer;
@@ -13,7 +15,6 @@ import ch.m3ts.tabletennis.events.timeouts.TimeoutTimerTask;
 import ch.m3ts.tabletennis.helper.DirectionX;
 import ch.m3ts.tabletennis.helper.DirectionY;
 import ch.m3ts.tabletennis.helper.Side;
-import ch.m3ts.tracker.ImplAudioRecorderCallback;
 import ch.m3ts.tracker.ZPositionCalc;
 import cz.fmo.Lib;
 import cz.fmo.data.Track;

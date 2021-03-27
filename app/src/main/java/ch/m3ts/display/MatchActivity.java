@@ -4,14 +4,10 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-import android.content.Context;
-import android.content.pm.PackageManager;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.content.ContextCompat;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,7 +16,6 @@ import java.util.Properties;
 import java.util.Random;
 
 import ch.m3ts.Log;
-import ch.m3ts.connection.ConnectionHelper;
 import ch.m3ts.connection.DisplayConnection;
 import ch.m3ts.connection.NearbyDisplayConnection;
 import ch.m3ts.helper.QuitAlertDialogHelper;
@@ -84,44 +79,9 @@ public class MatchActivity extends FragmentActivity implements FragmentReplaceCa
         if(mConfig.isUsingPubnub()) {
             initPubNub(getRandomRoomID(8));
         } else {
-            if (!hasPermissions(this, ConnectionHelper.REQUIRED_PERMISSIONS)) {
-                requestPermissions(ConnectionHelper.REQUIRED_PERMISSIONS, ConnectionHelper.REQUEST_CODE_REQUIRED_PERMISSIONS);
-            } else {
-                this.nearbyDisplayConnection = NearbyDisplayConnection.getInstance();
-                this.nearbyDisplayConnection.init(this);
-            }
+            this.nearbyDisplayConnection = NearbyDisplayConnection.getInstance();
+            this.nearbyDisplayConnection.init(this);
         }
-    }
-
-    /** Returns true if the app was granted all the permissions. Otherwise, returns false. */
-    private static boolean hasPermissions(Context context, String... permissions) {
-        for (String permission : permissions) {
-            if (ContextCompat.checkSelfPermission(context, permission)
-                    != PackageManager.PERMISSION_GRANTED) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /** Handles user acceptance (or denial) of our permission request. */
-    @Override
-    public void onRequestPermissionsResult(
-            int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (requestCode != ConnectionHelper.REQUEST_CODE_REQUIRED_PERMISSIONS) {
-            return;
-        }
-
-        for (int grantResult : grantResults) {
-            if (grantResult == PackageManager.PERMISSION_DENIED) {
-                Toast.makeText(this,"error", Toast.LENGTH_LONG).show();
-                finish();
-                return;
-            }
-        }
-        recreate();
     }
 
     @Override

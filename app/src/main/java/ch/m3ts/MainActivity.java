@@ -11,12 +11,13 @@ import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.audio.DebugImplAudioRecorderCallback;
 import com.google.audio.core.Recorder;
 
 import ch.m3ts.display.MatchActivity;
 import ch.m3ts.tracker.init.InitTrackerActivity;
-import ch.m3ts.tracker.visualization.live.DebugImplAudioRecorderCallback;
 import ch.m3ts.tutorial.TutorialActivity;
 import cz.fmo.R;
 
@@ -25,18 +26,56 @@ import cz.fmo.R;
  * A player can here specify whether to use his/her device as a Display or Tracker.
  */
 public class MainActivity extends Activity {
+    private final static String[] perms = new String[]{
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.CAMERA,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.BLUETOOTH,
+            Manifest.permission.BLUETOOTH_ADMIN,
+            Manifest.permission.ACCESS_WIFI_STATE,
+            Manifest.permission.CHANGE_WIFI_STATE,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_FINE_LOCATION};
     private Recorder audioRecorder;
 
-    private boolean isAudioPermissionDenied() {
-        int permissionStatus = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO);
-        return permissionStatus != PackageManager.PERMISSION_GRANTED;
+    private boolean areAllPermissionsGranted() {
+        boolean hasPermission = true;
+        for (String permission : perms) {
+            int permissionStatus = ContextCompat.checkSelfPermission(this, permission);
+            if (permissionStatus != PackageManager.PERMISSION_GRANTED) {
+                hasPermission = false;
+                break;
+            }
+        }
+        return hasPermission;
+    }
+
+    /**
+     * Handles user acceptance (or denial) of our permission request.
+     */
+    @Override
+    public void onRequestPermissionsResult(
+            int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode != 0) {
+            return;
+        }
+
+        for (int grantResult : grantResults) {
+            if (grantResult == PackageManager.PERMISSION_DENIED) {
+                Toast.makeText(this, getString(R.string.errorMsgPermissions), Toast.LENGTH_LONG).show();
+                finish();
+                return;
+            }
+        }
+        recreate();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        if (isAudioPermissionDenied()) {
-            String[] perms = new String[]{Manifest.permission.RECORD_AUDIO};
+        if (!areAllPermissionsGranted()) {
             ActivityCompat.requestPermissions(this, perms, 0);
         }
     }
