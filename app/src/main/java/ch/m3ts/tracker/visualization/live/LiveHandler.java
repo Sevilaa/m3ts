@@ -95,6 +95,8 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
     public void initMatch(Side servingSide, MatchType matchType, Player playerLeft, Player playerRight) {
         this.matchSettings = new MatchSettings(matchType, GameType.G11, ServeRules.S2, playerLeft, playerRight, servingSide);
         this.match = new Match(matchSettings, uiCallback, this);
+        if (mLiveActivity.get() != null)
+            this.match.getReferee().debugToFile(mLiveActivity.get().getApplicationContext());
         this.connection.setTrackerPubNubCallback(match);
         this.connection.setMatchVisualizeHandlerCallback(this);
         this.connection.setScoreManipulationCallback(match.getReferee());

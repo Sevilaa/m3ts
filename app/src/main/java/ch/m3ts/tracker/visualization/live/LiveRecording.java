@@ -3,6 +3,10 @@ package ch.m3ts.tracker.visualization.live;
 import android.content.Context;
 
 import java.io.File;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 import cz.fmo.camera.CameraThread;
 import cz.fmo.camera.RecordingCameraTarget;
@@ -77,7 +81,10 @@ public class LiveRecording implements SaveThread.Callback {
     public void startRecording() {
         isRecording = true;
         setEncodingEnabled(true);
-        File outFile = mFileMan.open(String.format(FILENAME, System.currentTimeMillis()/1000));
+        Date date = Calendar.getInstance().getTime();
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd_hh_mm_ss");
+        String strDate = dateFormat.format(date);
+        File outFile = mFileMan.open(String.format(FILENAME, strDate));
         mSaveTask = new ManualRecordingTask(outFile, mSaveMovie);
     }
 
