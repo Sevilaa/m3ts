@@ -1,5 +1,6 @@
 package ch.m3ts.tracker.init;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Point;
 import android.hardware.Sensor;
@@ -14,6 +15,8 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.google.android.gms.nearby.connection.PayloadCallback;
 
 import ch.m3ts.connection.ConnectionCallback;
 import ch.m3ts.connection.ConnectionHelper;
@@ -249,8 +252,10 @@ public final class InitTrackerActivity extends CameraPreviewActivity implements 
     }
 
     @Override
-    public void onConnecting(String endpoint) {
-        ((TextView) findViewById(R.id.connection_text)).setText(String.format(getString(R.string.connectConnecting), endpoint));
+    public void onConnecting(String enpointId, String endpointName, String token, PayloadCallback callback) {
+        ((TextView) findViewById(R.id.connection_text)).setText(String.format(getString(R.string.connectConnecting), endpointName));
+        AlertDialog dialog = ConnectionHelper.makeAuthenticationDialog(this, enpointId, endpointName, token, callback);
+        dialog.show();
     }
 
     private void setConnectInfoText(int stringId) {

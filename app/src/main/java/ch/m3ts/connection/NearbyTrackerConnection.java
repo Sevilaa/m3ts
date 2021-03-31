@@ -1,6 +1,5 @@
 package ch.m3ts.connection;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
@@ -33,7 +32,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class NearbyTrackerConnection extends ImplTrackerConnection implements UICallback {
     private static final NearbyTrackerConnection instance = new NearbyTrackerConnection();
     private static final String ID = "tracker";
-    private Context context;
     private ConnectionsClient connection;
     private EndpointDiscoveryCallback endpointDiscoveryCallback;
     private ConnectionLifecycleCallback connectionLifecycleCallback;
@@ -51,7 +49,6 @@ public class NearbyTrackerConnection extends ImplTrackerConnection implements UI
     }
 
     public void init(Context context) {
-        this.context = context;
         this.connection = Nearby.getConnectionsClient(context.getApplicationContext());
         initCallbacks();
     }
@@ -131,9 +128,7 @@ public class NearbyTrackerConnection extends ImplTrackerConnection implements UI
             @Override
             public void onConnectionInitiated(final String endpointId, ConnectionInfo connectionInfo) {
                 endpointName = connectionInfo.getEndpointName();
-                connectionCallback.onConnecting(endpointName);
-                AlertDialog dialog = ConnectionHelper.makeAuthenticationDialog(context, endpointId, endpointName, connectionInfo.getAuthenticationToken(), payloadCallback);
-                dialog.show();
+                connectionCallback.onConnecting(endpointId, endpointName, connectionInfo.getAuthenticationToken(), payloadCallback);
             }
 
             @Override

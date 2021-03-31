@@ -1,6 +1,5 @@
 package ch.m3ts.connection;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
@@ -31,7 +30,6 @@ public class NearbyDisplayConnection extends ImplDisplayConnection implements Di
     private final String ID = "display";
     private ConnectionLifecycleCallback connectionLifecycleCallback;
     private PayloadCallback payloadCallback;
-    private Context context;
     private ConnectionsClient connection;
     private String discovererEndpointID = "";
     private ConnectionCallback connectionCallback;
@@ -45,7 +43,6 @@ public class NearbyDisplayConnection extends ImplDisplayConnection implements Di
     }
 
     public void init(Context context) {
-        this.context = context;
         this.connection = Nearby.getConnectionsClient(context.getApplicationContext());
         initCallbacks();
     }
@@ -84,9 +81,7 @@ public class NearbyDisplayConnection extends ImplDisplayConnection implements Di
             @Override
             public void onConnectionInitiated(@NonNull final String endpointId, @NonNull ConnectionInfo connectionInfo) {
                 endpointName = connectionInfo.getEndpointName();
-                connectionCallback.onConnecting(endpointName);
-                AlertDialog dialog = ConnectionHelper.makeAuthenticationDialog(context, endpointId, endpointName, connectionInfo.getAuthenticationToken(), payloadCallback);
-                dialog.show();
+                connectionCallback.onConnecting(endpointId, endpointName, connectionInfo.getAuthenticationToken(), payloadCallback);
             }
 
             @Override
