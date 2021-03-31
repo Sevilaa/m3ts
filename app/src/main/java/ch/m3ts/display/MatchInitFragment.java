@@ -1,6 +1,7 @@
 package ch.m3ts.display;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -13,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.google.android.gms.nearby.connection.PayloadCallback;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
@@ -20,6 +22,7 @@ import com.google.zxing.qrcode.QRCodeWriter;
 
 import ch.m3ts.Log;
 import ch.m3ts.connection.ConnectionCallback;
+import ch.m3ts.connection.ConnectionHelper;
 import ch.m3ts.connection.NearbyDisplayConnection;
 import cz.fmo.R;
 import cz.fmo.util.Config;
@@ -176,8 +179,9 @@ public class MatchInitFragment extends Fragment implements DisplayConnectCallbac
     }
 
     @Override
-    public void onConnecting(String endpoint) {
-
+    public void onConnecting(String endpointId, String endpointName, String token, PayloadCallback callback) {
+        AlertDialog dialog = ConnectionHelper.makeAuthenticationDialog(getContext(), endpointId, endpointName, token, callback);
+        dialog.show();
     }
 
     private void setConnectInfoText(int stringId) {

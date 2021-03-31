@@ -4,6 +4,8 @@ import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.TextView;
 
+import com.google.android.gms.nearby.connection.PayloadCallback;
+
 import java.lang.ref.WeakReference;
 import java.util.Date;
 import java.util.Timer;
@@ -149,7 +151,7 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
     }
 
     @Override
-    public void onConnecting(String endpoint) {
+    public void onConnecting(String endpointId, String endpointName, String token, PayloadCallback callback) {
         // not needed
     }
 
