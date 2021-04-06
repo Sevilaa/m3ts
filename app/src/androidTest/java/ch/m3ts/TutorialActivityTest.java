@@ -15,6 +15,7 @@ import cz.fmo.R;
 import helper.GrantPermission;
 
 import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.Espresso.pressBack;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
@@ -73,6 +74,7 @@ public class TutorialActivityTest {
         testServeTutorial();
 
         // now we should be in mainActivity again
+        pressBack();
         onView(withId(R.id.mainHowToPlay)).check(matches(isDisplayed()));
     }
 
