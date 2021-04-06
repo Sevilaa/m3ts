@@ -115,6 +115,36 @@ public class MainActivityTest {
         onView(withText(R.string.prefDisplayDebug)).perform(click());
         onView(withText(R.string.prefRecord)).perform(click());
 
+        // check rest of the settings...
+        // Video Capture
+        onView(withText(R.string.prefHeaderCapture)).check(matches(isDisplayed()));
+        onView(withText(R.string.prefHeaderCapture)).perform(click());
+        onView(withText(R.string.prefResolution)).check(matches(isDisplayed()));
+        onView(withText(R.string.prefCameraFacing)).check(matches(isDisplayed()));
+        onView(withText(R.string.prefRecordMode)).check(matches(isDisplayed()));
+        onView(withText(R.string.prefSlowPreview)).check(matches(isDisplayed()));
+
+        // Detection
+        onView(withText(R.string.prefHeaderDetection)).check(matches(isDisplayed()));
+        onView(withText(R.string.prefHeaderDetection)).perform(click());
+        onView(withText(R.string.prefColorSpace)).check(matches(isDisplayed()));
+        onView(withText(R.string.prefProcRes)).check(matches(isDisplayed()));
+
+        // Velocity estimation
+        onView(withText(R.string.prefHeaderVelocity)).check(matches(isDisplayed()));
+        onView(withText(R.string.prefHeaderVelocity)).perform(click());
+        onView(withText(R.string.prefVelocityEstimationMode)).check(matches(isDisplayed()));
+        onView(withText(R.string.prefObjectDiameterCustom)).check(matches(isDisplayed()));
+        onView(withText(R.string.prefObjectDiameterPicker)).check(matches(isDisplayed()));
+        onView(withText(R.string.prefFrameRate)).check(matches(isDisplayed()));
+
+        // Advanced
+        onView(withText(R.string.prefHeaderAdvanced)).check(matches(isDisplayed()));
+        onView(withText(R.string.prefHeaderAdvanced)).perform(click());
+        onView(withText(R.string.runVideoPlayer)).check(matches(isDisplayed()));
+        onView(withText(R.string.prefDisableDetection)).check(matches(isDisplayed()));
+        onView(withText(R.string.prefPubnub)).check(matches(isDisplayed()));
+
         // now check the edited settings in main activity
         pressBack();
         config = new Config(activity);
@@ -122,7 +152,6 @@ public class MainActivityTest {
         assertEquals(!recordMatches, config.doRecordMatches());
         assertEquals(newPlayer1Name, config.getPlayer1Name());
         assertEquals(newPlayer2Name, config.getPlayer2Name());
-
     }
 
     private void checkMatchSettingsAndQRCode() {
