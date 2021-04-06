@@ -191,7 +191,8 @@ public class NearbyTrackerConnection extends ImplTrackerConnection implements UI
     @Override
     protected void sendData(JSONObject json) {
         Payload payload = Payload.fromBytes(json.toString().getBytes(UTF_8));
-        this.connection.sendPayload(this.advertiserEndpointID, payload);
+        if (this.connection != null)
+            this.connection.sendPayload(this.advertiserEndpointID, payload);    // needed Null Check for testing in LiveActivity...
     }
 
     public void sendStatusUpdate(String playerNameLeft, String playerNameRight, int scoreLeft, int scoreRight, int winsLeft, int winsRight, Side nextServer, int gamesNeededToWin) {

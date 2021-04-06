@@ -30,6 +30,7 @@ import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentat
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.not;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
@@ -134,9 +135,18 @@ public class MainActivityTest {
         onView(withId(R.id.init_sideAndMatchTypeDoneBtn))
                 .perform(click());
 
+        Activity activity = pmsMainActivityRule.getActivity();
+        Config config = new Config(activity);
 
-        // now we should be greeted by a QR code
-        onView(withId(R.id.qr_code))
-                .check(matches(isDisplayed()));
+        if (config.isUsingPubnub()) {
+            // now we should be greeted by a QR code
+            onView(withId(R.id.qr_code))
+                    .check(matches(isDisplayed()));
+        } else {
+            onView(withId(R.id.qr_code))
+                    .check(matches(not(isDisplayed())));
+            onView(withText(R.string.connectDisplaySearching))
+                    .check(matches(isDisplayed()));
+        }
     }
 }

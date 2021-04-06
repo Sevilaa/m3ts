@@ -6,7 +6,6 @@ import android.graphics.Point;
 import android.os.Bundle;
 import android.test.InstrumentationTestCase;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -30,6 +29,7 @@ import androidx.test.rule.GrantPermissionRule;
 import androidx.test.runner.AndroidJUnit4;
 import ch.m3ts.tabletennis.helper.Side;
 import cz.fmo.R;
+import cz.fmo.util.Config;
 import helper.GrantPermission;
 
 import static androidx.test.espresso.Espresso.onView;
@@ -272,14 +272,19 @@ public class MatchActivityTest extends InstrumentationTestCase {
         matchInitFragment.setArguments(bundle);
         matchActivity.replaceFragment(matchInitFragment, "MATCH_INIT");
         Thread.sleep(1000);
-        assertNotNull(((ImageView)matchActivity.findViewById(R.id.qr_code)).getDrawable());
+        Config config = new Config(matchActivity);
+        if (config.isUsingPubnub()) {
+            onView(withId(R.id.qr_code)).check(matches(isDisplayed()));
+        } else {
+            onView(withText(R.string.connectDisplaySearching)).check(matches(isDisplayed()));
+        }
 
         // invoke onImageTransmissionStarted and check if LoadingBar is initialized
         ProgressBar bar = matchActivity.findViewById(R.id.loading_bar);
         final int parts = 50;
         assertEquals(100, bar.getMax());
-        getInstrumentation().runOnMainSync(new Runnable(){
-            public void run(){
+        getInstrumentation().runOnMainSync(new Runnable() {
+            public void run() {
                 matchInitFragment.onImageTransmissionStarted(parts);
             }
         });
