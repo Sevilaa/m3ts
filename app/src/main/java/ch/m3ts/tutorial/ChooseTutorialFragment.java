@@ -1,35 +1,15 @@
 package ch.m3ts.tutorial;
 
 import android.app.Fragment;
-import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import ch.m3ts.display.FragmentReplaceCallback;
+import ch.m3ts.FragmentWithReplaceCallback;
 import cz.fmo.R;
 
-public class ChooseTutorialFragment extends Fragment {
-    private FragmentReplaceCallback callback;
-
-    public ChooseTutorialFragment() {
-        // Required empty public constructor
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-
-        // This makes sure that the container activity has implemented
-        // the callback interface. If not, it throws an exception
-        try {
-            callback = (FragmentReplaceCallback) context;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString()
-                    + " must implement FragmentReplaceListener");
-        }
-    }
+public class ChooseTutorialFragment extends FragmentWithReplaceCallback {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -69,7 +49,7 @@ public class ChooseTutorialFragment extends Fragment {
                 R.drawable.tutorial_display_4,
         });
         fragment.setArguments(bundle);
-        callback.replaceFragment(fragment, "TUTORIAL_DISPLAY");
+        getFragmentReplaceCallback().replaceFragment(fragment, "TUTORIAL_DISPLAY");
     }
 
     private void onHowToUseTracker() {
@@ -87,7 +67,7 @@ public class ChooseTutorialFragment extends Fragment {
                 R.string.tutorialTrackerSetupDescription2,
         });
         fragment.setArguments(bundle);
-        callback.replaceFragment(fragment, "TUTORIAL_TRACKER");
+        getFragmentReplaceCallback().replaceFragment(fragment, "TUTORIAL_TRACKER");
     }
 
     private void onHowToPlay() {
@@ -101,7 +81,6 @@ public class ChooseTutorialFragment extends Fragment {
                 R.string.tutorialServeDescription0
         });
         fragment.setArguments(bundle);
-        callback.replaceFragment(fragment, "TUTORIAL_SERVE");
-
+        getFragmentReplaceCallback().replaceFragment(fragment, "TUTORIAL_SERVE");
     }
 }

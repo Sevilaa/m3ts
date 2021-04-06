@@ -1,17 +1,14 @@
 package ch.m3ts.display;
 
 import android.app.Fragment;
-import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.Spinner;
 
+import ch.m3ts.FragmentWithReplaceCallback;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.MatchType;
 import cz.fmo.R;
@@ -21,36 +18,17 @@ import cz.fmo.R;
  * and the starting side can be selected. Both of these selected settings will be passed over to the
  * next fragment via Intent.
  */
-public class MatchSettingsFragment extends android.app.Fragment implements View.OnClickListener {
+public class MatchSettingsFragment extends FragmentWithReplaceCallback implements View.OnClickListener {
     private static final String[] MATCH_TYPE = {MatchType.BO1.toString(), MatchType.BO3.toString(), MatchType.BO5.toString()};
     private static final String[] SERVING_SIDES = {Side.LEFT.toString(), Side.RIGHT.toString()};
     private final ImageView[] VIEWS_FOR_SIDES = new ImageView[2];
     private final ImageView[] VIEWS_FOR_TYPE = new ImageView[3];
     private int selectedMatchType;
     private int selectedStartingServer;
-    private FragmentReplaceCallback callback;
     private ImageView viewMatchTypeBO1;
     private ImageView viewMatchTypeBO3;
     private ImageView viewMatchTypeBO5;
     private static final String TAG_MATCH_INIT = "MATCH_INIT";
-
-    public MatchSettingsFragment() {
-        // Required empty public constructor
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-
-        // This makes sure that the container activity has implemented
-        // the callback interface. If not, it throws an exception
-        try {
-            callback = (FragmentReplaceCallback) context;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString()
-                    + " must implement FragmentReplaceListener");
-        }
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -135,6 +113,6 @@ public class MatchSettingsFragment extends android.app.Fragment implements View.
         bundle.putString("type", Integer.toString(selectedMatchType));
         bundle.putString("server", Integer.toString(selectedStartingServer));
         fragment.setArguments(bundle);
-        callback.replaceFragment(fragment, TAG_MATCH_INIT);
+        getFragmentReplaceCallback().replaceFragment(fragment, TAG_MATCH_INIT);
     }
 }
