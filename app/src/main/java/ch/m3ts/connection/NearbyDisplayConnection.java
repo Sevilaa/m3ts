@@ -25,7 +25,7 @@ import ch.m3ts.connection.pubnub.JSONInfo;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class NearbyDisplayConnection extends ImplDisplayConnection implements DisplayConnection {
+public class NearbyDisplayConnection extends ImplDisplayConnection {
     private static final NearbyDisplayConnection instance = new NearbyDisplayConnection();
     private final String ID = "display";
     private ConnectionLifecycleCallback connectionLifecycleCallback;
@@ -116,18 +116,6 @@ public class NearbyDisplayConnection extends ImplDisplayConnection implements Di
                                 // We were unable to start advertising.
                             }
                         });
-    }
-
-    public void onStartMatch(String matchType, String server) {
-        try {
-            JSONObject json = new JSONObject();
-            json.put(JSONInfo.TYPE_PROPERTY, matchType);
-            json.put(JSONInfo.SERVER_PROPERTY, server);
-            json.put(JSONInfo.EVENT_PROPERTY, "onStartMatch");
-            sendData(json);
-        } catch (JSONException ex) {
-            Log.d("Unable to send JSON to endpoint "+this.discovererEndpointID+"\n"+ex.getMessage());
-        }
     }
 
     public void setConnectCallback(ConnectionCallback callback) {

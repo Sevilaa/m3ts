@@ -155,4 +155,16 @@ public abstract class ImplDisplayConnection extends Callback implements DisplayC
             }
         }
     }
+
+    public void onStartMatch(String matchType, String server) {
+        try {
+            JSONObject json = new JSONObject();
+            json.put(JSONInfo.TYPE_PROPERTY, matchType);
+            json.put(JSONInfo.SERVER_PROPERTY, server);
+            json.put(JSONInfo.EVENT_PROPERTY, "onStartMatch");
+            sendData(json);
+        } catch (JSONException ex) {
+            Log.d("Unable to send JSON " + "\n" + ex.getMessage());
+        }
+    }
 }

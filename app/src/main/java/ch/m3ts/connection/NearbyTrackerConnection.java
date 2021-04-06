@@ -25,11 +25,10 @@ import org.json.JSONObject;
 import ch.m3ts.Log;
 import ch.m3ts.connection.pubnub.JSONInfo;
 import ch.m3ts.tabletennis.helper.Side;
-import ch.m3ts.tabletennis.match.UICallback;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class NearbyTrackerConnection extends ImplTrackerConnection implements UICallback {
+public class NearbyTrackerConnection extends ImplTrackerConnection {
     private static final NearbyTrackerConnection instance = new NearbyTrackerConnection();
     private static final String ID = "tracker";
     private ConnectionsClient connection;
@@ -124,6 +123,7 @@ public class NearbyTrackerConnection extends ImplTrackerConnection implements UI
                 // A previously discovered endpoint has gone away.
             }
         };
+
         this.connectionLifecycleCallback = new ConnectionLifecycleCallback() {
             @Override
             public void onConnectionInitiated(final String endpointId, ConnectionInfo connectionInfo) {
@@ -157,22 +157,6 @@ public class NearbyTrackerConnection extends ImplTrackerConnection implements UI
         this.connectionCallback = connectionCallback;
     }
 
-    @Override
-    public void onScore(Side side, int score, Side nextServer, Side lastServer) {
-        send("onScore", side.toString(), score,null, nextServer);
-        try {
-            JSONObject json = new JSONObject();
-            json.put(JSONInfo.SIDE_PROPERTY, side);
-            json.put(JSONInfo.SCORE_PROPERTY, score);
-            json.put(JSONInfo.LAST_SERVER_PROPERTY, lastServer);
-            json.put(JSONInfo.EVENT_PROPERTY, "onScore");
-            json.put(JSONInfo.NEXT_SERVER_PROPERTY, nextServer);
-            Payload payload = Payload.fromBytes(json.toString().getBytes(UTF_8));
-            this.connection.sendPayload(this.advertiserEndpointID, payload);
-        } catch (JSONException ex) {
-            Log.d(JSON_SEND_EXCEPTION_MESSAGE+this.advertiserEndpointID+"\n"+ex.getMessage());
-        }
-    }
 
     protected void send(String event, String side, Integer score, Integer wins, Side nextServer) {
         try {
@@ -195,24 +179,6 @@ public class NearbyTrackerConnection extends ImplTrackerConnection implements UI
             this.connection.sendPayload(this.advertiserEndpointID, payload);    // needed Null Check for testing in LiveActivity...
     }
 
-    public void sendStatusUpdate(String playerNameLeft, String playerNameRight, int scoreLeft, int scoreRight, int winsLeft, int winsRight, Side nextServer, int gamesNeededToWin) {
-        try {
-            JSONObject json = new JSONObject();
-            json.put(JSONInfo.PLAYER_NAME_LEFT_PROPERTY, playerNameLeft);
-            json.put(JSONInfo.PLAYER_NAME_RIGHT_PROPERTY, playerNameRight);
-            json.put(JSONInfo.SCORE_LEFT_PROPERTY, scoreLeft);
-            json.put(JSONInfo.SCORE_RIGHT_PROPERTY, scoreRight);
-            json.put(JSONInfo.WINS_LEFT_PROPERTY, winsLeft);
-            json.put(JSONInfo.WINS_RIGHT_PROPERTY, winsRight);
-            json.put(JSONInfo.EVENT_PROPERTY, "onStatusUpdate");
-            json.put(JSONInfo.NEXT_SERVER_PROPERTY, nextServer);
-            json.put(JSONInfo.GAMES_NEEDED_PROPERTY, gamesNeededToWin);
-            sendData(json);
-        } catch (JSONException ex) {
-            Log.d(JSON_SEND_EXCEPTION_MESSAGE+this.advertiserEndpointID+"\n"+ex.getMessage());
-        }
-    }
-
     protected void sendTableFramePart(final String encodedFrame, final int index, final int numberOfPackages, boolean doContinue) {
         String encodedFramePart;
         if (index == numberOfPackages - 1) {
@@ -228,9 +194,8 @@ public class NearbyTrackerConnection extends ImplTrackerConnection implements UI
             json.put(JSONInfo.TABLE_FRAME_WIDTH, this.initTrackerCallback.getCameraWidth());
             json.put(JSONInfo.TABLE_FRAME_HEIGHT, this.initTrackerCallback.getCameraHeight());
             json.put(JSONInfo.TABLE_FRAME, encodedFramePart);
-            Payload payload = Payload.fromBytes(json.toString().getBytes(UTF_8));
             if (doContinue) {
-                this.connection.sendPayload(this.advertiserEndpointID, payload);
+                sendData(json);
                 doContinue = true;
                 initTrackerCallback.updateLoadingBar(index + 2);
                 if (index >= numberOfPackages - 2) {
@@ -238,7 +203,7 @@ public class NearbyTrackerConnection extends ImplTrackerConnection implements UI
                 }
                 sendTableFramePart(encodedFrame, index + 1, numberOfPackages, doContinue);
             } else {
-                this.connection.sendPayload(this.advertiserEndpointID, payload);
+                sendData(json);
             }
         } catch (JSONException ex) {
             Log.d(JSON_SEND_EXCEPTION_MESSAGE+this.advertiserEndpointID+"\n"+ex.getMessage());

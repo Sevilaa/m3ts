@@ -10,11 +10,9 @@ import org.json.JSONObject;
 import java.util.UUID;
 
 import ch.m3ts.Log;
-import ch.m3ts.connection.DisplayConnection;
 import ch.m3ts.connection.ImplDisplayConnection;
 
-public class PubNubDisplayConnection extends ImplDisplayConnection implements DisplayConnection {
-    private static final String ROLE = "display";
+public class PubNubDisplayConnection extends ImplDisplayConnection {
     private final Pubnub pubnub;
     private final String roomID;
 
@@ -70,15 +68,11 @@ public class PubNubDisplayConnection extends ImplDisplayConnection implements Di
     protected void send(String event, String side) {
         try {
             JSONObject json = new JSONObject();
-            json.put(JSONInfo.SENDER_PROPERTY, pubnub.getUUID());
             json.put(JSONInfo.EVENT_PROPERTY, event);
             json.put(JSONInfo.SIDE_PROPERTY, side);
-            json.put(JSONInfo.ROLE_PROPERTY, ROLE);
             sendData(json);
         } catch (JSONException ex) {
             Log.d("Unable to send JSON to channel " + this.roomID + "\n" + ex.getMessage());
         }
     }
-
-
 }

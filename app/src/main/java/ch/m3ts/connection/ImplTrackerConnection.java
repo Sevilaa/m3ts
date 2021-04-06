@@ -13,12 +13,15 @@ import ch.m3ts.connection.pubnub.JSONInfo;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.MatchStatus;
 import ch.m3ts.tabletennis.match.MatchStatusCallback;
+import ch.m3ts.tabletennis.match.UICallback;
 import ch.m3ts.tabletennis.match.game.ScoreManipulationCallback;
 import ch.m3ts.tracker.init.InitTrackerCallback;
 import ch.m3ts.tracker.visualization.MatchVisualizeHandlerCallback;
 
-public abstract class ImplTrackerConnection extends Callback implements TrackerConnection {
+public abstract class ImplTrackerConnection extends Callback implements TrackerConnection, UICallback {
     protected static final int MAX_SIZE = 10000;
+    protected static final String ROLE = "tracker";
+    private static final String JSON_SEND_EXCEPTION_MESSAGE = "Unable to send JSON to endpoint ";
     protected MatchStatusCallback callback;
     protected ScoreManipulationCallback scoreManipulationCallback;
     protected InitTrackerCallback initTrackerCallback;
@@ -44,6 +47,23 @@ public abstract class ImplTrackerConnection extends Callback implements TrackerC
 
     public void setMatchVisualizeHandlerCallback(MatchVisualizeHandlerCallback matchVisualizeHandlerCallback) {
         this.matchVisualizeHandlerCallback = matchVisualizeHandlerCallback;
+    }
+
+    @Override
+    public void onScore(Side side, int score, Side nextServer, Side lastServer) {
+        send("onScore", side.toString(), score, null, nextServer);
+        try {
+            JSONObject json = new JSONObject();
+            json.put(JSONInfo.SIDE_PROPERTY, side);
+            json.put(JSONInfo.SCORE_PROPERTY, score);
+            json.put(JSONInfo.LAST_SERVER_PROPERTY, lastServer);
+            json.put(JSONInfo.EVENT_PROPERTY, "onScore");
+            json.put(JSONInfo.NEXT_SERVER_PROPERTY, nextServer);
+            json.put(JSONInfo.ROLE_PROPERTY, ROLE);
+            sendData(json);
+        } catch (JSONException ex) {
+            Log.d(JSON_SEND_EXCEPTION_MESSAGE + ex.getMessage());
+        }
     }
 
     public void onWin(Side side, int wins) {
@@ -145,6 +165,27 @@ public abstract class ImplTrackerConnection extends Callback implements TrackerC
                 coordinates[i] = tableCorners.optInt(i);
             }
             this.initTrackerCallback.setTableCorners(coordinates);
+        }
+    }
+
+    public void sendStatusUpdate(String playerNameLeft, String playerNameRight, int scoreLeft,
+                                 int scoreRight, int winsLeft, int winsRight, Side nextServer,
+                                 int gamesNeededToWin) {
+        try {
+            JSONObject json = new JSONObject();
+            json.put(JSONInfo.PLAYER_NAME_LEFT_PROPERTY, playerNameLeft);
+            json.put(JSONInfo.PLAYER_NAME_RIGHT_PROPERTY, playerNameRight);
+            json.put(JSONInfo.SCORE_LEFT_PROPERTY, scoreLeft);
+            json.put(JSONInfo.SCORE_RIGHT_PROPERTY, scoreRight);
+            json.put(JSONInfo.WINS_LEFT_PROPERTY, winsLeft);
+            json.put(JSONInfo.WINS_RIGHT_PROPERTY, winsRight);
+            json.put(JSONInfo.EVENT_PROPERTY, "onStatusUpdate");
+            json.put(JSONInfo.ROLE_PROPERTY, ROLE);
+            json.put(JSONInfo.NEXT_SERVER_PROPERTY, nextServer);
+            json.put(JSONInfo.GAMES_NEEDED_PROPERTY, gamesNeededToWin);
+            sendData(json);
+        } catch (JSONException ex) {
+            Log.d(JSON_SEND_EXCEPTION_MESSAGE + "\n" + ex.getMessage());
         }
     }
 }

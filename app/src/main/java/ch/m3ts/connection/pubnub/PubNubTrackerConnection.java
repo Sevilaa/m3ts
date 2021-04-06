@@ -13,11 +13,9 @@ import java.util.UUID;
 import ch.m3ts.Log;
 import ch.m3ts.connection.ImplTrackerConnection;
 import ch.m3ts.tabletennis.helper.Side;
-import ch.m3ts.tabletennis.match.UICallback;
 
-public class PubNubTrackerConnection extends ImplTrackerConnection implements UICallback {
+public class PubNubTrackerConnection extends ImplTrackerConnection {
     private static final String JSON_SEND_EXCEPTION_MESSAGE = "Unable to send JSON to channel ";
-    private static final String ROLE = "tracker";
     private final Pubnub pubnub;
     private final String roomID;
 
@@ -56,24 +54,6 @@ public class PubNubTrackerConnection extends ImplTrackerConnection implements UI
         });
     }
 
-    @Override
-    public void onScore(Side side, int score, Side nextServer, Side lastServer) {
-        send("onScore", side.toString(), score, null, nextServer);
-        try {
-            JSONObject json = new JSONObject();
-            json.put(JSONInfo.SENDER_PROPERTY, pubnub.getUUID());
-            json.put(JSONInfo.SIDE_PROPERTY, side);
-            json.put(JSONInfo.SCORE_PROPERTY, score);
-            json.put(JSONInfo.LAST_SERVER_PROPERTY, lastServer);
-            json.put(JSONInfo.EVENT_PROPERTY, "onScore");
-            json.put(JSONInfo.ROLE_PROPERTY, ROLE);
-            json.put(JSONInfo.NEXT_SERVER_PROPERTY, nextServer);
-            sendData(json);
-        } catch (JSONException ex) {
-            Log.d(JSON_SEND_EXCEPTION_MESSAGE + this.roomID + "\n" + ex.getMessage());
-        }
-    }
-
     protected void sendTableFramePart(final String encodedFrame, final int index, final int numberOfPackages, boolean doContinue) {
         String encodedFramePart;
         if (index == numberOfPackages - 1) {
@@ -83,7 +63,6 @@ public class PubNubTrackerConnection extends ImplTrackerConnection implements UI
         }
         try {
             JSONObject json = new JSONObject();
-            json.put(JSONInfo.SENDER_PROPERTY, pubnub.getUUID());
             json.put(JSONInfo.EVENT_PROPERTY, "onTableFrame");
             json.put(JSONInfo.TABLE_FRAME_INDEX, index);
             json.put(JSONInfo.TABLE_FRAME_NUMBER_OF_PARTS, numberOfPackages);
@@ -121,33 +100,12 @@ public class PubNubTrackerConnection extends ImplTrackerConnection implements UI
     protected void send(String event, String side, Integer score, Integer wins, Side nextServer) {
         try {
             JSONObject json = new JSONObject();
-            json.put(JSONInfo.SENDER_PROPERTY, pubnub.getUUID());
             json.put(JSONInfo.SIDE_PROPERTY, side);
             json.put(JSONInfo.SCORE_PROPERTY, score);
             json.put(JSONInfo.WINS_PROPERTY, wins);
             json.put(JSONInfo.EVENT_PROPERTY, event);
             json.put(JSONInfo.ROLE_PROPERTY, ROLE);
             json.put(JSONInfo.NEXT_SERVER_PROPERTY, nextServer);
-            sendData(json);
-        } catch (JSONException ex) {
-            Log.d(JSON_SEND_EXCEPTION_MESSAGE + this.roomID + "\n" + ex.getMessage());
-        }
-    }
-
-    public void sendStatusUpdate(String playerNameLeft, String playerNameRight, int scoreLeft, int scoreRight, int winsLeft, int winsRight, Side nextServer, int gamesNeededToWin) {
-        try {
-            JSONObject json = new JSONObject();
-            json.put(JSONInfo.SENDER_PROPERTY, pubnub.getUUID());
-            json.put(JSONInfo.PLAYER_NAME_LEFT_PROPERTY, playerNameLeft);
-            json.put(JSONInfo.PLAYER_NAME_RIGHT_PROPERTY, playerNameRight);
-            json.put(JSONInfo.SCORE_LEFT_PROPERTY, scoreLeft);
-            json.put(JSONInfo.SCORE_RIGHT_PROPERTY, scoreRight);
-            json.put(JSONInfo.WINS_LEFT_PROPERTY, winsLeft);
-            json.put(JSONInfo.WINS_RIGHT_PROPERTY, winsRight);
-            json.put(JSONInfo.EVENT_PROPERTY, "onStatusUpdate");
-            json.put(JSONInfo.ROLE_PROPERTY, ROLE);
-            json.put(JSONInfo.NEXT_SERVER_PROPERTY, nextServer);
-            json.put(JSONInfo.GAMES_NEEDED_PROPERTY, gamesNeededToWin);
             sendData(json);
         } catch (JSONException ex) {
             Log.d(JSON_SEND_EXCEPTION_MESSAGE + this.roomID + "\n" + ex.getMessage());

@@ -4,7 +4,6 @@ package ch.m3ts.connection.pubnub;
  * Contains commonly used JSON properties in M3TS.
  */
 public final class JSONInfo {
-    public static final String SENDER_PROPERTY = "sender";
     public static final String ROLE_PROPERTY = "role";
     public static final String EVENT_PROPERTY = "event";
     public static final String SIDE_PROPERTY = "side";
