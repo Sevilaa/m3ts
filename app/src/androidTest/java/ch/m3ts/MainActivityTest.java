@@ -60,6 +60,13 @@ public class MainActivityTest {
         onView(withId(R.id.mainUseAsDisplayBtn))
                 .perform(click());
 
+        // check for alertDialog
+        pressBack();
+        onView(withText(R.string.quitMatchMessage)).check(matches(isDisplayed()));
+        onView(withText(R.string.quitMatchProceed)).perform(click());
+        onView(withId(R.id.mainUseAsDisplayBtn))
+                .perform(click());
+
         // check if we are at the MatchActivity
         onView(withId(R.id.match_type_bo1))
                 .check(matches(isDisplayed()));
