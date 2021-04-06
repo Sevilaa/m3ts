@@ -159,9 +159,11 @@ public class PubNubTrackerConnectionTest {
 
         // last, the display will tell "start the match"
         jsonObject = makeJSONObject("onStartMatch");
-        verify(spyCallback, times(0)).switchToLiveActivity();
+        jsonObject.put(JSONInfo.TYPE_PROPERTY, 1);
+        jsonObject.put(JSONInfo.SERVER_PROPERTY, 1);
+        verify(spyCallback, times(0)).switchToLiveActivity(anyInt(), anyInt());
         pubNubTrackerConnection.successCallback("test", jsonObject);
-        verify(spyCallback, times(1)).switchToLiveActivity();
+        verify(spyCallback, times(1)).switchToLiveActivity(1, 1);
     }
 
     @Test

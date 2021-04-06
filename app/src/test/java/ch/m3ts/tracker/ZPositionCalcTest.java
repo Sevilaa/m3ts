@@ -3,9 +3,8 @@ package ch.m3ts.tracker;
 import org.junit.Before;
 import org.junit.Test;
 
-import ch.m3ts.Log;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class ZPositionCalcTest {
     private final double TABLE_TENNIS_TABLE_LENGTH_MM = 2740; // normed, see https://en.wikipedia.org/wiki/Table_tennis
@@ -15,7 +14,7 @@ public class ZPositionCalcTest {
     private final double HORIZONTAL_VIEW_ANGLE = 66.56780242919922;     // from mobile phone used for all recordings
     private final double BALL_RADIUS_FURTHEST_EDGE_PX = 5.09382053830555;   // calculated beforehand
     private final double BALL_RADIUS_CLOSEST_EDGE_PX = 8.467153284671532;   // calculated beforehand
-    private final double ACCURACY_OF_CALCULATIONS = 2;
+    private final double ACCURACY_OF_CALCULATIONS_MM = 5;
     private final int MAX_OFFSET_MM = 100;  // from ZPositionCalc
 
     private ZPositionCalc calc;
@@ -37,9 +36,9 @@ public class ZPositionCalcTest {
     @Test
     public void testBallRadiusToZPos() {
         double zPosMm = calc.findZPosMmOfBall(BALL_RADIUS_FURTHEST_EDGE_PX);
-        assertEquals(TABLE_TENNIS_TABLE_WIDTH_MM, zPosMm, ACCURACY_OF_CALCULATIONS);
+        assertEquals(TABLE_TENNIS_TABLE_WIDTH_MM, zPosMm, ACCURACY_OF_CALCULATIONS_MM);
         zPosMm = calc.findZPosMmOfBall(BALL_RADIUS_CLOSEST_EDGE_PX);
-        assertEquals(0, zPosMm, ACCURACY_OF_CALCULATIONS);
+        assertEquals(0, zPosMm, ACCURACY_OF_CALCULATIONS_MM);
 
         // going over the table
         zPosMm = calc.findZPosMmOfBall(BALL_RADIUS_CLOSEST_EDGE_PX+0.03);
@@ -50,7 +49,7 @@ public class ZPositionCalcTest {
         // checking for min and max zpos
         zPosMm = calc.findZPosMmOfBall(BALL_RADIUS_CLOSEST_EDGE_PX*300);
         assertEquals(-MAX_OFFSET_MM, zPosMm, 1);
-        zPosMm = calc.findZPosMmOfBall(BALL_RADIUS_FURTHEST_EDGE_PX*0.1);
-        assertEquals(TABLE_TENNIS_TABLE_WIDTH_MM+MAX_OFFSET_MM, zPosMm, ACCURACY_OF_CALCULATIONS);
+        zPosMm = calc.findZPosMmOfBall(BALL_RADIUS_FURTHEST_EDGE_PX * 0.1);
+        assertEquals(TABLE_TENNIS_TABLE_WIDTH_MM + MAX_OFFSET_MM, zPosMm, ACCURACY_OF_CALCULATIONS_MM);
     }
 }

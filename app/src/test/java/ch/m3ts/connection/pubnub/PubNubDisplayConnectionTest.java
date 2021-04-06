@@ -24,6 +24,7 @@ import java.util.Random;
 import ch.m3ts.display.DisplayConnectCallback;
 import ch.m3ts.display.DisplayScoreEventCallback;
 import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.tabletennis.match.MatchType;
 import ch.m3ts.tabletennis.match.UICallback;
 
 import static junit.framework.Assert.assertEquals;
@@ -320,7 +321,7 @@ public class PubNubDisplayConnectionTest {
     public void testOnStartMatch() {
         PubNubDisplayConnection pubNubDisplayConnection = new PubNubDisplayConnection(pubnub, ROOM_ID);
         assertJSONWithEvent("onStartMatch");
-        pubNubDisplayConnection.onStartMatch();
+        pubNubDisplayConnection.onStartMatch(MatchType.BO1.toString(), Side.LEFT.toString());
     }
 
     private void assertJSONWithEvent(final String event) {
