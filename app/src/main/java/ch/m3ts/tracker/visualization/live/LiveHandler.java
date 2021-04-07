@@ -16,6 +16,7 @@ import ch.m3ts.connection.ConnectionHelper;
 import ch.m3ts.connection.NearbyTrackerConnection;
 import ch.m3ts.connection.TrackerConnection;
 import ch.m3ts.connection.pubnub.PubNubFactory;
+import ch.m3ts.helper.OpenCVHelper;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.Match;
 import ch.m3ts.tabletennis.match.MatchSettings;
