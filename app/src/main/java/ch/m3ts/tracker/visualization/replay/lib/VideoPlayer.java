@@ -41,23 +41,23 @@ import ch.m3ts.tracker.visualization.replay.ReplayDetectionCallback;
 public
 class VideoPlayer {
     private static final boolean VERBOSE = false;
+    private static final int TIMEOUT_USEC = 10000;
     private final FrameCallback mFrameCallback;
     // Declare this here to reduce allocations.
     private final MediaCodec.BufferInfo mBufferInfo = new MediaCodec.BufferInfo();
     private final File mSourceFile;
     private final Surface mOutputSurface;
+    private final ReplayDetectionCallback mDataCallback;
     // May be set/read by different threads.
     private volatile boolean mIsStopRequested;
     private boolean mLoop;
-    private int mVideoWidth;
-    private int mVideoHeight;
-    private int mFrameRate;
-    private final ReplayDetectionCallback mDataCallback;
+    private final int mVideoWidth;
+    private final int mVideoHeight;
+    private final int mFrameRate;
     private int inputChunk;
     private long firstInputTimeNsec;
     private boolean inputDone;
     private boolean outputDone;
-    private static final int TIMEOUT_USEC = 10000;
 
     /**
      * Constructs a MoviePlayer.
@@ -98,18 +98,6 @@ class VideoPlayer {
         }
     }
 
-    public int getmFrameRate() {
-        return mFrameRate;
-    }
-
-    public int getVideoWidth() {
-        return mVideoWidth;
-    }
-
-    public int getVideoHeight() {
-        return mVideoHeight;
-    }
-
     /**
      * Selects the video track, if any.
      *
@@ -130,6 +118,18 @@ class VideoPlayer {
         }
 
         return -1;
+    }
+
+    public int getmFrameRate() {
+        return mFrameRate;
+    }
+
+    public int getVideoWidth() {
+        return mVideoWidth;
+    }
+
+    public int getVideoHeight() {
+        return mVideoHeight;
     }
 
     /**

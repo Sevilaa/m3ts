@@ -8,11 +8,11 @@ import ch.m3ts.display.FragmentReplaceCallback;
 public class FragmentWithReplaceCallback extends Fragment {
     private FragmentReplaceCallback fragmentReplaceCallback;
 
-    public FragmentReplaceCallback getFragmentReplaceCallback() {
-        return fragmentReplaceCallback;
+    public FragmentWithReplaceCallback() {
     }
 
-    public FragmentWithReplaceCallback() {
+    public FragmentReplaceCallback getFragmentReplaceCallback() {
+        return fragmentReplaceCallback;
     }
 
     @Override

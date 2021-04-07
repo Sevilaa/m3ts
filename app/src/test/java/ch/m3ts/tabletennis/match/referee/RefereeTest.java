@@ -14,6 +14,7 @@ import cz.fmo.util.Config;
 import helper.DetectionGenerator;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -274,6 +275,27 @@ public class RefereeTest {
         referee.onBallDroppedSideWays();
         verify(gameMock, times(1)).onPoint(Side.LEFT);
         verify(gameMock, times(0)).onPoint(Side.RIGHT);
+    }
+
+    @Test
+    public void testPointManipulation() {
+        assertSame(State.WAIT_FOR_SERVE, referee.getState());
+        verify(gameMock, times(0)).onPoint(Side.LEFT);
+        verify(gameMock, times(0)).onPoint(Side.RIGHT);
+        verify(gameMock, times(0)).onPointDeduction(Side.LEFT);
+        verify(gameMock, times(0)).onPointDeduction(Side.RIGHT);
+        referee.onPointAddition(Side.RIGHT);
+        verify(gameMock, times(0)).onPoint(Side.LEFT);
+        verify(gameMock, times(1)).onPoint(Side.RIGHT);
+        assertSame(State.PAUSE, referee.getState());
+        referee.onPointDeduction(Side.RIGHT);
+        verify(gameMock, times(0)).onPointDeduction(Side.LEFT);
+        verify(gameMock, times(1)).onPointDeduction(Side.RIGHT);
+        assertSame(State.PAUSE, referee.getState());
+        referee.onPause();
+        referee.onResume();
+        verify(gameMock, times(1)).onReadyToServe(STARTING_SIDE);
+        assertSame(State.WAIT_FOR_SERVE, referee.getState());
     }
 
     @After

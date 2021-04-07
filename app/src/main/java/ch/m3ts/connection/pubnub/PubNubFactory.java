@@ -15,7 +15,8 @@ import java.util.Properties;
 public class PubNubFactory {
     private static final String PROP_FILE_NAME = "app.properties";
 
-    private PubNubFactory() {}
+    private PubNubFactory() {
+    }
 
     public static PubNubTrackerConnection createTrackerPubNub(Context context, String roomId) {
         Properties properties = findProperties(context);
@@ -47,7 +48,8 @@ public class PubNubFactory {
     }
 
     public static class NoPropertiesFileFoundException extends RuntimeException {
-        private static final String MESSAGE = "No "+PROP_FILE_NAME+ " file has been found in the assets directory!";
+        private static final String MESSAGE = "No " + PROP_FILE_NAME + " file has been found in the assets directory!";
+
         NoPropertiesFileFoundException() {
             super(MESSAGE);
         }

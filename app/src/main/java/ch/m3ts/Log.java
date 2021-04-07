@@ -7,10 +7,10 @@ import java.io.IOException;
 
 @SuppressWarnings("SameParameterValue")
 public class Log {
+    private static final String TAG = "M3TS";
+
     private Log() {
     }
-
-    private static final String TAG = "M3TS";
 
     public static void d(String msg) {
         android.util.Log.d(TAG, msg);

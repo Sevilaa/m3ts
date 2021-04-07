@@ -14,7 +14,9 @@ public class ConnectionHelper {
     public static final String SERVICE_ID = "M3TS_NEARBY";
     public static ConnectionsClient CONNECTIONS_CLIENT;
 
-    private ConnectionHelper() { throw new IllegalStateException("Utility class");}
+    private ConnectionHelper() {
+        throw new IllegalStateException("Utility class");
+    }
 
     public static AlertDialog makeAuthenticationDialog(final Context ctx, final String enpointId, String endpointName, String token, final PayloadCallback callback) {
         AlertDialog.Builder builder = new AlertDialog.Builder(ctx);

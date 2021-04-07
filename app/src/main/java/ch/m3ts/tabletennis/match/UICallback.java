@@ -7,8 +7,12 @@ import ch.m3ts.tabletennis.helper.Side;
  */
 public interface UICallback {
     void onMatchEnded(String winnerName);
-    void onScore (Side side, int score, Side nextServer, Side lastServer);
-    void onWin (Side side, int wins);
+
+    void onScore(Side side, int score, Side nextServer, Side lastServer);
+
+    void onWin(Side side, int wins);
+
     void onReadyToServe(Side server);
+
     void onNotReadyButPlaying();
 }

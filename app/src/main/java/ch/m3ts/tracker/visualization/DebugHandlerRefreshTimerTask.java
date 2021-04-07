@@ -3,7 +3,7 @@ package ch.m3ts.tracker.visualization;
 import java.util.TimerTask;
 
 public class DebugHandlerRefreshTimerTask extends TimerTask {
-    private MatchVisualizeHandler matchVisualizeHandler;
+    private final MatchVisualizeHandler matchVisualizeHandler;
 
     public DebugHandlerRefreshTimerTask(MatchVisualizeHandler matchVisualizeHandler) {
         this.matchVisualizeHandler = matchVisualizeHandler;

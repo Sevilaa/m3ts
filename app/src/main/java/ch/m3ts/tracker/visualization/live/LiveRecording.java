@@ -17,9 +17,9 @@ import cz.fmo.recording.SaveThread;
 import cz.fmo.util.FileManager;
 
 public class LiveRecording implements SaveThread.Callback {
-    private static LiveRecording instance;
     private static final float BUFFER_SECONDS = 8;
     private static final String FILENAME = "recording_%s.mp4";
+    private static LiveRecording instance;
     private FileManager mFileMan;
     private EncodeThread mEncode;
     private SaveThread mSaveMovie;
@@ -27,7 +27,8 @@ public class LiveRecording implements SaveThread.Callback {
     private RecordingCameraTarget mEncodeTarget;
     private boolean isRecording = false;
 
-    private LiveRecording() {}
+    private LiveRecording() {
+    }
 
     public static LiveRecording getInstance(Context ctx, CameraThread mCamera) {
         if (instance == null) {

@@ -7,8 +7,8 @@ import android.graphics.Point;
  * canvas).
  */
 public class VideoScaling {
-    private int videoWidth;
-    private int videoHeight;
+    private final int videoWidth;
+    private final int videoHeight;
     private int canvasWidth;
     private int canvasHeight;
 
@@ -29,12 +29,12 @@ public class VideoScaling {
         return canvasWidth;
     }
 
-    public int getCanvasHeight() {
-        return canvasHeight;
-    }
-
     public void setCanvasWidth(int canvasWidth) {
         this.canvasWidth = canvasWidth;
+    }
+
+    public int getCanvasHeight() {
+        return canvasHeight;
     }
 
     public void setCanvasHeight(int canvasHeight) {
@@ -51,7 +51,7 @@ public class VideoScaling {
 
     public int scaleX(int value) {
         if (this.canvasWidth == 0) {
-           throw new NoDestinationResolutionSpecifiedException();
+            throw new NoDestinationResolutionSpecifiedException();
         }
         float relPercentage = ((float) value) / ((float) this.videoWidth);
         return Math.round(relPercentage * this.canvasWidth);
@@ -63,6 +63,7 @@ public class VideoScaling {
 
     static class NoDestinationResolutionSpecifiedException extends RuntimeException {
         private static final String MESSAGE = "Tried to scale using a destination resolution of which width and or height equals zero.";
+
         NoDestinationResolutionSpecifiedException() {
             super(MESSAGE);
         }

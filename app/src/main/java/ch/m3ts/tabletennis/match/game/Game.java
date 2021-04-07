@@ -8,20 +8,20 @@ import ch.m3ts.tabletennis.match.UICallback;
 /**
  * Represents a game inside of a table tennis match.
  * Provides information on the current score and the current server.
- *
+ * <p>
  * A game usually ends when one player has reached eleven points.
  * However, there is an overtime mechanism when both players reach ten points.
  */
 public class Game implements GameCallback {
     private int maxScore;
-    private ScoreManager scoreManager;
-    private MatchCallback matchCallback;
-    private UICallback uiCallback;
+    private final ScoreManager scoreManager;
+    private final MatchCallback matchCallback;
+    private final UICallback uiCallback;
     private Side server;
-    private GameType type;
-    private ServeRules serveRules;
+    private final GameType type;
+    private final ServeRules serveRules;
 
-    public Game (MatchCallback matchCallback, UICallback uiCallback, GameType type, ServeRules serveRules, Side server) {
+    public Game(MatchCallback matchCallback, UICallback uiCallback, GameType type, ServeRules serveRules, Side server) {
         scoreManager = new ScoreManager(server);
         this.server = server;
         this.matchCallback = matchCallback;
@@ -96,8 +96,8 @@ public class Game implements GameCallback {
 
     private void changeServer() {
         int sumOfScores = getSumOfScores();
-        if(sumOfScores % this.serveRules.amountOfServes == 0 ||
-            isOneServeRuleActive()) {
+        if (sumOfScores % this.serveRules.amountOfServes == 0 ||
+                isOneServeRuleActive()) {
             if (server == Side.LEFT) {
                 server = Side.RIGHT;
             } else {

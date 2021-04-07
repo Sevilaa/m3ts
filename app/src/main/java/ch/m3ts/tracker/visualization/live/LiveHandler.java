@@ -16,7 +16,6 @@ import ch.m3ts.connection.ConnectionHelper;
 import ch.m3ts.connection.NearbyTrackerConnection;
 import ch.m3ts.connection.TrackerConnection;
 import ch.m3ts.connection.pubnub.PubNubFactory;
-import ch.m3ts.helper.OpenCVHelper;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.Match;
 import ch.m3ts.tabletennis.match.MatchSettings;
@@ -36,15 +35,15 @@ import cz.fmo.util.Config;
 
 /**
  * Renders the images received by the camera API onto the screen and also passes them to FMO.
- *
+ * <p>
  * FMO then finds detections and tracks and forwards them to the EventDetector, which then calls
  * for events on this Handler.
  **/
 public class LiveHandler extends MatchVisualizeHandler implements CameraThread.Callback, ConnectionCallback {
     private static final int CAMERA_ERROR = 2;
-    private TrackerConnection connection;
     private final boolean doDrawDebugInfo;
     private final WeakReference<LiveActivity> mLiveActivity;
+    private TrackerConnection connection;
 
     public LiveHandler(@NonNull MatchVisualizeActivity activity, String matchID) {
         super(activity);
@@ -52,11 +51,11 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
         this.mLiveActivity = new WeakReference<>((LiveActivity) activity);
         TextView displayConnectedText = (TextView) activity.findViewById(R.id.display_connected_status);
         try {
-            if(new Config(mLiveActivity.get()).isUsingPubnub()) {
+            if (new Config(mLiveActivity.get()).isUsingPubnub()) {
                 this.connection = (TrackerConnection) PubNubFactory.createTrackerPubNub(activity.getApplicationContext(), matchID);
             } else {
                 this.connection = (TrackerConnection) NearbyTrackerConnection.getInstance();
-                ((NearbyTrackerConnection)this.connection).setConnectionCallback(this);
+                ((NearbyTrackerConnection) this.connection).setConnectionCallback(this);
             }
             this.uiCallback = (UICallback) this.connection;
         } catch (PubNubFactory.NoPropertiesFileFoundException ex) {

@@ -12,7 +12,7 @@ import cz.fmo.Lib;
 
 /**
  * Renders the images received by a mp4 file (see ./lib/VideoPlayer) onto the screen and also passes them to FMO.
- *
+ * <p>
  * FMO then finds detections and tracks and forwards them to the EventDetector, which then calls
  * for events on this Handler.
  **/
