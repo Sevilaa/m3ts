@@ -12,9 +12,9 @@ import ch.m3ts.tabletennis.helper.Side;
  * Keeps track of the current score and server, allows manual manipulation by the players.
  */
 public class ScoreManager {
-    private Map<Side, Integer> pointsMap;
-    private Deque<Side> servers;
-    private Side startServingSide;
+    private final Map<Side, Integer> pointsMap;
+    private final Deque<Side> servers;
+    private final Side startServingSide;
 
     public ScoreManager(Side startServingSide) {
         this.startServingSide = startServingSide;
@@ -31,11 +31,12 @@ public class ScoreManager {
 
     /**
      * Reverts the score by one (-1 manipulation).
+     *
      * @return server of the previous round
      */
     public Side revertLastScore(Side player) {
         Side lastServer = getLastServer();
-        if(!this.servers.isEmpty()) {
+        if (!this.servers.isEmpty()) {
             this.servers.removeLast();
             updatePoints(player, false);
         }
@@ -56,7 +57,8 @@ public class ScoreManager {
 
     /**
      * Updates points of the provided player by +-1
-     * @param player specifies to adjust the points of
+     *
+     * @param player     specifies to adjust the points of
      * @param isIncrease specifies a +1 or -1 manipulation
      */
     private void updatePoints(Side player, boolean isIncrease) {

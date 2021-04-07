@@ -9,11 +9,17 @@ import cz.fmo.data.Track;
  */
 public interface EventDetectionCallback {
     void onBounce(Lib.Detection detection, Side side);
+
     void onSideChange(Side side);
+
     void onNearlyOutOfFrame(Lib.Detection detection, Side side);
+
     void onStrikeFound(Track track);
+
     void onTableSideChange(Side side);
+
     void onBallDroppedSideWays();
+
     void onTimeout();
 
     void onAudioBounce(Side side);

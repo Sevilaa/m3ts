@@ -31,7 +31,7 @@ public class MatchWonActivity extends Activity {
         setContentView(R.layout.activity_match_won);
         Bundle bundle = getIntent().getExtras();
         String winner = bundle.getString("winner");
-        if(new Config(this).isUsingPubnub()) {
+        if (new Config(this).isUsingPubnub()) {
             this.pubnubRoom = bundle.getString("room");
         }
         TextView txtView = findViewById(R.id.winner_name);
@@ -52,7 +52,7 @@ public class MatchWonActivity extends Activity {
         animationDrawable.stop();
         Intent intent = new Intent(this, MatchActivity.class);
         Bundle bundle = new Bundle();
-        if(this.pubnubRoom != null) {
+        if (this.pubnubRoom != null) {
             bundle.putString("room", this.pubnubRoom);
         }
         bundle.putBoolean("isRestartedMatch", true);
@@ -68,7 +68,7 @@ public class MatchWonActivity extends Activity {
     public void backToMenu(View view) {
         animationDrawable.stop();
         Intent intent = new Intent(this, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK |Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
         this.finish();
     }
@@ -82,7 +82,7 @@ public class MatchWonActivity extends Activity {
 
     @Override
     public void onPause() {
-        if(this.tts != null) {
+        if (this.tts != null) {
             this.tts.shutdown();
         }
         super.onPause();

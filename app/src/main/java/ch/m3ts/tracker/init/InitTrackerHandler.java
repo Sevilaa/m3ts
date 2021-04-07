@@ -60,7 +60,7 @@ public class InitTrackerHandler extends android.os.Handler implements CameraThre
     public void onCameraFrame(byte[] dataYUV420SP) {
         this.currentFrame = dataYUV420SP;
         setCameraSize(this.mActivity.get());
-        if(this.isReadingQRCode) {
+        if (this.isReadingQRCode) {
             BinaryBitmap binaryBitmap = convertBytesToBinaryBitmap(dataYUV420SP);
             String result = readQRCode(binaryBitmap);
             parseQRCodeData(result);
@@ -81,7 +81,7 @@ public class InitTrackerHandler extends android.os.Handler implements CameraThre
             public void run() {
                 activity.findViewById(R.id.connection_info).setVisibility(View.GONE);
                 activity.findViewById(R.id.tracker_loading).setVisibility(View.VISIBLE);
-                if(!new Config(activity).isUsingPubnub()) {
+                if (!new Config(activity).isUsingPubnub()) {
                     activity.findViewById(R.id.loading_bar_background).setVisibility(View.GONE);
                 }
             }
@@ -91,7 +91,7 @@ public class InitTrackerHandler extends android.os.Handler implements CameraThre
 
     @Override
     public void switchToLiveActivity(int matchType, int server) {
-        if(this.tableCorners != null) {
+        if (this.tableCorners != null) {
             this.selectedMatchType = matchType;
             this.selectedServingSide = server;
             mActivity.get().switchToLiveActivity(this.selectedMatchId, this.selectedMatchType, this.selectedServingSide, this.tableCorners);
@@ -131,7 +131,7 @@ public class InitTrackerHandler extends android.os.Handler implements CameraThre
             @Override
             public void run() {
                 activity.findViewById(R.id.loading_bar_background).setVisibility(View.GONE);
-                ((TextView)activity.findViewById(R.id.tracker_info)).setText(activity.getResources().getString(R.string.tiWaitingText));
+                ((TextView) activity.findViewById(R.id.tracker_info)).setText(activity.getResources().getString(R.string.tiWaitingText));
 
             }
         });

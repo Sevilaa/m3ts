@@ -42,13 +42,13 @@ import cz.fmo.R;
  */
 public class MatchSelectCornerFragment extends android.app.Fragment implements View.OnClickListener, SurfaceHolder.Callback {
     private static final String TAG_MATCH_SCORE = "MATCH_SCORE";
+    private final Point[] tableCorners = new Point[2];
+    protected int layout;
     private TextView txtMaxCorners;
     private TextView txtSelectedCorners;
     private String maxCorners;
     private String selectedCorners;
-    private final Point[] tableCorners = new Point[2];
     private int currentCornerIndex;
-    protected int layout;
     private ZoomLayout zoomLayout;
     private FragmentReplaceCallback callback;
     private SurfaceView cornerSurface;
@@ -136,7 +136,7 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
         Canvas canvas = this.tableFrameSurface.getHolder().lockCanvas();
         if (canvas != null) {
             Bitmap bitmap = BitmapFactory.decodeByteArray(this.tableFrame, 0, this.tableFrame.length);
-            canvas.drawBitmap(bitmap, null, new Rect(0,0,this.displaySize.x, this.displaySize.y), null);
+            canvas.drawBitmap(bitmap, null, new Rect(0, 0, this.displaySize.x, this.displaySize.y), null);
             this.tableFrameSurface.getHolder().unlockCanvasAndPost(canvas);
         }
     }
@@ -166,12 +166,12 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
                 float zoom = zoomLayout.getZoom();
                 float panX = zoomLayout.getPanX();
                 float panY = zoomLayout.getPanY();
-                Point p = makeAbsPoint(x,y,zoom,panX,panY);
+                Point p = makeAbsPoint(x, y, zoom, panX, panY);
                 tableCorners[currentCornerIndex] = p;
                 currentCornerIndex++;
                 onStateChanged();
                 updateViews();
-                if(currentCornerIndex == 2) {
+                if (currentCornerIndex == 2) {
                     final Activity activity = getActivity();
                     activity.findViewById(R.id.init_description).setVisibility(View.GONE);
                     activity.findViewById(R.id.init_startMatch).setVisibility(View.VISIBLE);
@@ -204,8 +204,8 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
     }
 
     private Point makeAbsPoint(float x, float y, float zoom, float panX, float panY) {
-        float absX = x/zoom + Math.abs(panX);
-        float absY = y/zoom + Math.abs(panY);
+        float absX = x / zoom + Math.abs(panX);
+        float absY = y / zoom + Math.abs(panY);
         return new Point(Math.round(absX), Math.round(absY));
     }
 
@@ -217,9 +217,9 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
             Paint paint = new Paint();
             paint.setColor(Color.CYAN);
 
-            for (int i = 0; i<this.tableCorners.length; i++) {
+            for (int i = 0; i < this.tableCorners.length; i++) {
                 Point p = this.tableCorners[i];
-                if(p != null) {
+                if (p != null) {
                     paint.setStrokeWidth(15f);
                     Point relP = makeRelPoint(p.x, p.y, tempZoomLayout.getZoom(), tempZoomLayout.getPanX(), tempZoomLayout.getPanY());
                     canvas.drawCircle(relP.x, relP.y, 20f, paint);
@@ -232,9 +232,9 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
 
     private void drawLineIfPossible(int i, Paint paint, Canvas canvas, Point[] corners, Point relP, ZoomLayout zoomLayout) {
         Point relPOther = null;
-        if (i < corners.length-1 && corners[i+1] != null) {
-            relPOther = makeRelPoint(corners[i+1].x, corners[i+1].y, zoomLayout.getZoom(), zoomLayout.getPanX(), zoomLayout.getPanY());
-        } else if (i == corners.length-1 && corners[0] != null) {
+        if (i < corners.length - 1 && corners[i + 1] != null) {
+            relPOther = makeRelPoint(corners[i + 1].x, corners[i + 1].y, zoomLayout.getZoom(), zoomLayout.getPanX(), zoomLayout.getPanY());
+        } else if (i == corners.length - 1 && corners[0] != null) {
             relPOther = makeRelPoint(corners[0].x, corners[0].y, zoomLayout.getZoom(), zoomLayout.getPanX(), zoomLayout.getPanY());
         }
         if (relPOther != null) {
@@ -252,7 +252,7 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
     @Override
     public void onClick(View v) {
         Point[] scaledPoints = pointsToRelativeFormat(this.tableCorners);
-        DisplayConnection connection = ((MatchActivity)getActivity()).getConnection();
+        DisplayConnection connection = ((MatchActivity) getActivity()).getConnection();
         connection.setDisplayConnectCallback(null);
         connection.onSelectTableCorners(scaledPoints);
         try {
@@ -268,11 +268,11 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
 
     private Point[] pointsToRelativeFormat(Point[] points) {
         Point[] relPoints = new Point[points.length];
-        for(int i = 0; i<relPoints.length; i++) {
+        for (int i = 0; i < relPoints.length; i++) {
             int scaledX = (int) Math.round(points[i].x / (double) displaySize.x * 100);
             int scaledY = (int) Math.round(points[i].y / (double) displaySize.y * 100);
             relPoints[i] = new Point(scaledX, scaledY);
-            Log.d("Scaled Point x: "+scaledX+" y: "+scaledY);
+            Log.d("Scaled Point x: " + scaledX + " y: " + scaledY);
         }
         return relPoints;
     }
@@ -284,7 +284,7 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-         // do nothing in here
+        // do nothing in here
     }
 
     @Override

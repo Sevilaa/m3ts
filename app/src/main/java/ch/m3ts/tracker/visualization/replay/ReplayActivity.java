@@ -141,7 +141,7 @@ public class ReplayActivity extends MatchVisualizeActivity implements OnItemSele
                         callback, mHandler);
                 Config mConfig = new Config(this);
                 Table table = trySettingTableLocationFromXML(mMovieFiles[mSelectedMovie]);
-                if(table != null) {
+                if (table != null) {
                     mHandler.init(mConfig, player.getVideoWidth(), player.getVideoHeight(), table, VIEWING_ANGLE_HORIZONTAL);
                     mHandler.startDetections();
                 } else {
@@ -261,11 +261,12 @@ public class ReplayActivity extends MatchVisualizeActivity implements OnItemSele
 
     /**
      * Tries to load the table location from an xml file from assets.
+     *
      * @param videoFileName - Full name of video file in phones Camera dir. Example: "bounce_back_1.mp4"
      */
     private Table trySettingTableLocationFromXML(String videoFileName) {
         String fileNameWithoutExtension = videoFileName.split("\\.")[0];
-        try (InputStream is = getAssets().open(fileNameWithoutExtension+".xml")) {
+        try (InputStream is = getAssets().open(fileNameWithoutExtension + ".xml")) {
             Properties properties = new Properties();
             properties.loadFromXML(is);
             return Table.makeTableFromProperties(properties);
@@ -277,12 +278,13 @@ public class ReplayActivity extends MatchVisualizeActivity implements OnItemSele
 
     /**
      * Tries to load the serving side from an xml file from assets.
+     *
      * @param videoFileName - Full name of video file in phones Camera dir. Example: "bounce_back_1.mp4"
      */
     private Side tryGettingServingSideFromXML(String videoFileName) {
         Side servingSide = Side.LEFT;
         String fileNameWithoutExtension = videoFileName.split("\\.")[0];
-        try (InputStream is = getAssets().open(fileNameWithoutExtension+".xml")) {
+        try (InputStream is = getAssets().open(fileNameWithoutExtension + ".xml")) {
             Properties properties = new Properties();
             properties.loadFromXML(is);
             if (properties.containsKey("servingSide") && properties.getProperty("servingSide").equals("RIGHT"))

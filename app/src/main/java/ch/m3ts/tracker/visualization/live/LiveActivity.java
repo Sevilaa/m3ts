@@ -1,11 +1,8 @@
 package ch.m3ts.tracker.visualization.live;
 
-import android.Manifest;
 import android.app.AlertDialog;
-import android.content.pm.PackageManager;
 import android.graphics.Point;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
 import android.view.Display;
 import android.view.SurfaceView;
 
@@ -53,7 +50,7 @@ public final class LiveActivity extends MatchVisualizeActivity {
         this.mHandler.initMatch(this.servingSide, this.matchType, playerLeft, playerRight);
         cameraCallback = this.mHandler;
         this.alertDialog = QuitAlertDialogHelper.makeDialog(this);
-        Log.d("Found match: " +matchId);
+        Log.d("Found match: " + matchId);
         this.onPause();
 
     }
@@ -100,7 +97,7 @@ public final class LiveActivity extends MatchVisualizeActivity {
         // refresh GUI
         mStatus = CameraStatus.RUNNING;
 
-        if(mConfig.doRecordMatches()) {
+        if (mConfig.doRecordMatches()) {
             if (liveRecording != null) liveRecording.tearDown();
             liveRecording = LiveRecording.getInstance(this, mCamera);
             liveRecording.startRecording();
@@ -145,11 +142,6 @@ public final class LiveActivity extends MatchVisualizeActivity {
         return null;
     }
 
-    private boolean isAudioPermissionDenied() {
-        int permissionStatus = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO);
-        return permissionStatus != PackageManager.PERMISSION_GRANTED;
-    }
-
     private Table trySettingTableLocationFromIntent() {
         scaleCornerIntsToSelectedCamera();
         return Table.makeTableFromIntArray(tableCorners);
@@ -174,8 +166,8 @@ public final class LiveActivity extends MatchVisualizeActivity {
         Display display = getWindowManager().getDefaultDisplay();
         Point displaySize = new Point();
         display.getSize(displaySize);
-        for (int i = 0; i<points.length; i++) {
-            if (i%2 == 0) {
+        for (int i = 0; i < points.length; i++) {
+            if (i % 2 == 0) {
                 points[i] = (int) Math.round(points[i] / 100.0 * displaySize.x);
             } else {
                 points[i] = (int) Math.round(points[i] / 100.0 * displaySize.y);
@@ -200,6 +192,7 @@ public final class LiveActivity extends MatchVisualizeActivity {
 
     static class NoCornersInIntendFoundException extends RuntimeException {
         private static final String MESSAGE = "No corners have been found in the intent's bundle!";
+
         NoCornersInIntendFoundException() {
             super(MESSAGE);
         }
@@ -207,6 +200,7 @@ public final class LiveActivity extends MatchVisualizeActivity {
 
     static class UnableToGetBundleException extends RuntimeException {
         private static final String MESSAGE = "Unable to get the bundle from Intent!";
+
         UnableToGetBundleException() {
             super(MESSAGE);
         }

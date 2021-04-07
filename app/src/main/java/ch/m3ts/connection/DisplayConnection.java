@@ -9,15 +9,26 @@ import ch.m3ts.tabletennis.match.UICallback;
 
 public interface DisplayConnection {
     void setUiCallback(UICallback uiCallback);
+
     void setDisplayScoreEventCallback(DisplayScoreEventCallback displayScoreCallback);
+
     void setDisplayConnectCallback(DisplayConnectCallback displayConnectCallback);
+
     void onRequestTableFrame();
+
     void onSelectTableCorners(Point[] tableCorners);
+
     void onStartMatch(String matchType, String server);
+
     void onRestartMatch();
+
     void requestStatusUpdate();
+
     void onPause();
+
     void onResume();
+
     void onPointDeduction(Side side);
+
     void onPointAddition(Side side);
 }

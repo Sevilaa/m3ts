@@ -5,7 +5,7 @@ import java.util.TimerTask;
 import ch.m3ts.tabletennis.match.referee.Referee;
 
 public class PauseTimerTask extends TimerTask {
-    private Referee referee;
+    private final Referee referee;
 
     public PauseTimerTask(Referee referee) {
         this.referee = referee;

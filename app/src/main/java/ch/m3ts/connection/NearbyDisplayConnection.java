@@ -65,7 +65,7 @@ public class NearbyDisplayConnection extends ImplDisplayConnection {
 
             }
         };
-         this.connectionLifecycleCallback = new ConnectionLifecycleCallback() {
+        this.connectionLifecycleCallback = new ConnectionLifecycleCallback() {
             @Override
             public void onConnectionResult(@NonNull String s, @NonNull ConnectionResolution connectionResolution) {
                 if (connectionResolution.getStatus().getStatusCode() == ConnectionsStatusCodes.STATUS_OK) {
@@ -86,7 +86,7 @@ public class NearbyDisplayConnection extends ImplDisplayConnection {
 
             @Override
             public void onDisconnected(String endpointId) {
-                if(connectionCallback != null) {
+                if (connectionCallback != null) {
                     connectionCallback.onDisconnection(endpointName);
                 }
             }

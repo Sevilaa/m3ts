@@ -35,15 +35,15 @@ import cz.fmo.util.Config;
 
 /**
  * Renders the images received by the camera API onto the screen and also passes them to FMO.
- *
+ * <p>
  * FMO then finds detections and tracks and forwards them to the EventDetector, which then calls
  * for events on this Handler.
  **/
 public class LiveHandler extends MatchVisualizeHandler implements CameraThread.Callback, ConnectionCallback {
     private static final int CAMERA_ERROR = 2;
-    private TrackerConnection connection;
     private final boolean doDrawDebugInfo;
     private final WeakReference<LiveActivity> mLiveActivity;
+    private TrackerConnection connection;
 
     public LiveHandler(@NonNull MatchVisualizeActivity activity, String matchID) {
         super(activity);
@@ -51,11 +51,11 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
         this.mLiveActivity = new WeakReference<>((LiveActivity) activity);
         TextView displayConnectedText = (TextView) activity.findViewById(R.id.display_connected_status);
         try {
-            if(new Config(mLiveActivity.get()).isUsingPubnub()) {
+            if (new Config(mLiveActivity.get()).isUsingPubnub()) {
                 this.connection = (TrackerConnection) PubNubFactory.createTrackerPubNub(activity.getApplicationContext(), matchID);
             } else {
                 this.connection = (TrackerConnection) NearbyTrackerConnection.getInstance();
-                ((NearbyTrackerConnection)this.connection).setConnectionCallback(this);
+                ((NearbyTrackerConnection) this.connection).setConnectionCallback(this);
             }
             this.uiCallback = (UICallback) this.connection;
         } catch (PubNubFactory.NoPropertiesFileFoundException ex) {
@@ -80,7 +80,7 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
     @Override
     public void onCameraFrame(byte[] dataYUV420SP) {
         Lib.detectionFrame(dataYUV420SP);
-        if(isWaitingForGesture()) {
+        if (isWaitingForGesture()) {
             setWaitingForGesture(!getServeDetector().isReadyToServe(dataYUV420SP));
         }
     }
@@ -100,9 +100,9 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
         this.connection.setTrackerPubNubCallback(match);
         this.connection.setMatchVisualizeHandlerCallback(this);
         this.connection.setScoreManipulationCallback(match.getReferee());
-        this.connection.sendStatusUpdate(playerLeft.getName(), playerRight.getName(), 0,0,0,0,servingSide, matchType.gamesNeededToWin);
+        this.connection.sendStatusUpdate(playerLeft.getName(), playerRight.getName(), 0, 0, 0, 0, servingSide, matchType.gamesNeededToWin);
         startMatch();
-        if(doDrawDebugInfo) {
+        if (doDrawDebugInfo) {
             setTextInTextView(R.id.txtDebugPlayerNameLeft, playerLeft.getName());
             setTextInTextView(R.id.txtDebugPlayerNameRight, playerRight.getName());
             Timer refreshTimer = new Timer();
@@ -112,7 +112,7 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
 
     @Override
     public void onStrikeFound(Track track) {
-        if(doDrawDebugInfo) {
+        if (doDrawDebugInfo) {
             super.onStrikeFound(track);
         }
     }
@@ -120,7 +120,7 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
     @Override
     public void onSideChange(final Side side) {
         // use the referees current striker (might be different then side in parameter!)
-        if(doDrawDebugInfo) {
+        if (doDrawDebugInfo) {
             super.onSideChange(side);
         }
     }
@@ -133,7 +133,7 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
     @Override
     public void restartMatch() {
         this.match.restartMatch();
-        this.connection.sendStatusUpdate(this.matchSettings.getPlayerLeft().getName(), this.matchSettings.getPlayerRight().getName(), 0,0,0,0,this.matchSettings.getStartingServer(), this.matchSettings.getMatchType().gamesNeededToWin);
+        this.connection.sendStatusUpdate(this.matchSettings.getPlayerLeft().getName(), this.matchSettings.getPlayerRight().getName(), 0, 0, 0, 0, this.matchSettings.getStartingServer(), this.matchSettings.getMatchType().gamesNeededToWin);
         refreshDebugTextViews();
     }
 

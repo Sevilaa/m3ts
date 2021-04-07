@@ -31,13 +31,13 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class NearbyTrackerConnection extends ImplTrackerConnection {
     private static final NearbyTrackerConnection instance = new NearbyTrackerConnection();
     private static final String ID = "tracker";
+    private static final String JSON_SEND_EXCEPTION_MESSAGE = "Unable to send JSON to endpoint ";
     private ConnectionsClient connection;
     private EndpointDiscoveryCallback endpointDiscoveryCallback;
     private ConnectionLifecycleCallback connectionLifecycleCallback;
     private PayloadCallback payloadCallback;
     private ConnectionCallback connectionCallback;
     private String advertiserEndpointID = "";
-    private static final String JSON_SEND_EXCEPTION_MESSAGE = "Unable to send JSON to endpoint ";
     private String endpointName = "";
 
     private NearbyTrackerConnection() {
@@ -146,7 +146,7 @@ public class NearbyTrackerConnection extends ImplTrackerConnection {
             public void onDisconnected(String endpointId) {
                 // We've been disconnected from this endpoint. No more data can be
                 // sent or received.
-                if(connectionCallback != null) {
+                if (connectionCallback != null) {
                     connectionCallback.onDisconnection(endpointName);
                 }
             }
@@ -206,7 +206,7 @@ public class NearbyTrackerConnection extends ImplTrackerConnection {
                 sendData(json);
             }
         } catch (JSONException ex) {
-            Log.d(JSON_SEND_EXCEPTION_MESSAGE+this.advertiserEndpointID+"\n"+ex.getMessage());
+            Log.d(JSON_SEND_EXCEPTION_MESSAGE + this.advertiserEndpointID + "\n" + ex.getMessage());
         }
     }
 }

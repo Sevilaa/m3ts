@@ -20,16 +20,16 @@ import cz.fmo.util.Config;
  */
 public abstract class CameraPreviewActivity extends Activity implements SurfaceHolder.Callback {
     protected static final int PREVIEW_SLOWDOWN_FRAMES = 59;
-    private SurfaceView mSurfaceView;
     protected CameraStatus mStatus = CameraStatus.STOPPED;
     protected CameraThread mCamera;
-    private boolean mSurfaceHolderReady = false;
     protected double cameraHorizontalAngle;
     protected CameraThread.Callback cameraCallback;
+    private SurfaceView mSurfaceView;
+    private boolean mSurfaceHolderReady = false;
 
     /**
      * In this method the inherited class must set the content view.
-     *  i.E. setContentView(R.layout.activity_play_movie_surface);
+     * i.E. setContentView(R.layout.activity_play_movie_surface);
      */
     public abstract void setCurrentContentView();
 
@@ -143,10 +143,6 @@ public abstract class CameraPreviewActivity extends Activity implements SurfaceH
 
     public boolean ismSurfaceHolderReady() {
         return mSurfaceHolderReady;
-    }
-
-    public void setmSurfaceHolderReady(boolean mSurfaceHolderReady) {
-        this.mSurfaceHolderReady = mSurfaceHolderReady;
     }
 
     public int getCameraWidth() {

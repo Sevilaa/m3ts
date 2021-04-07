@@ -64,7 +64,7 @@ public class OnSwipeListener implements View.OnTouchListener {
             if (Math.abs(distanceY) > Math.abs(distanceX) && Math.abs(distanceY) > SWIPE_DISTANCE_THRESHOLD && Math.abs(velocityY) > SWIPE_VELOCITY_THRESHOLD) {
                 int displayWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
                 Side swipeSide = Side.RIGHT;
-                if(e1.getX() < displayWidth/2) {
+                if (e1.getX() < displayWidth / 2) {
                     swipeSide = Side.LEFT;
                 }
                 if (distanceY > 0) {

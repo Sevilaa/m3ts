@@ -32,7 +32,7 @@ import cz.fmo.util.Config;
 @SuppressWarnings("squid:S110")
 public class MatchActivity extends FragmentActivity implements FragmentReplaceCallback {
     private PubNubDisplayConnection pubNub;
-    private Random random = new SecureRandom();
+    private final Random random = new SecureRandom();
     private AlertDialog alertDialog;
     private NearbyDisplayConnection nearbyDisplayConnection;
 
@@ -50,7 +50,7 @@ public class MatchActivity extends FragmentActivity implements FragmentReplaceCa
         Bundle bundle = getIntent().getExtras();
         boolean isRestartedMatch = bundle.getBoolean("isRestartedMatch");
         Fragment nextFragment = new MatchSettingsFragment();
-        if(isRestartedMatch) {
+        if (isRestartedMatch) {
             initRestartedMatch(bundle);
             nextFragment = new MatchScoreFragment();
         } else {
@@ -64,7 +64,7 @@ public class MatchActivity extends FragmentActivity implements FragmentReplaceCa
 
     private void initRestartedMatch(Bundle bundle) {
         Config mConfig = new Config(this);
-        if(mConfig.isUsingPubnub()) {
+        if (mConfig.isUsingPubnub()) {
             initPubNub(bundle.getString("room"));
             this.pubNub.onRestartMatch();
         } else {
@@ -76,7 +76,7 @@ public class MatchActivity extends FragmentActivity implements FragmentReplaceCa
 
     private void initConnection() {
         Config mConfig = new Config(this);
-        if(mConfig.isUsingPubnub()) {
+        if (mConfig.isUsingPubnub()) {
             initPubNub(getRandomRoomID(8));
         } else {
             this.nearbyDisplayConnection = NearbyDisplayConnection.getInstance();
@@ -98,7 +98,7 @@ public class MatchActivity extends FragmentActivity implements FragmentReplaceCa
     }
 
     public DisplayConnection getConnection() {
-        if(new Config(this).isUsingPubnub()) {
+        if (new Config(this).isUsingPubnub()) {
             return pubNub;
         } else {
             return nearbyDisplayConnection;

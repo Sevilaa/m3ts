@@ -21,6 +21,7 @@ import cz.fmo.R;
 public class MatchSettingsFragment extends FragmentWithReplaceCallback implements View.OnClickListener {
     private static final String[] MATCH_TYPE = {MatchType.BO1.toString(), MatchType.BO3.toString(), MatchType.BO5.toString()};
     private static final String[] SERVING_SIDES = {Side.LEFT.toString(), Side.RIGHT.toString()};
+    private static final String TAG_MATCH_INIT = "MATCH_INIT";
     private final ImageView[] VIEWS_FOR_SIDES = new ImageView[2];
     private final ImageView[] VIEWS_FOR_TYPE = new ImageView[3];
     private int selectedMatchType;
@@ -28,7 +29,6 @@ public class MatchSettingsFragment extends FragmentWithReplaceCallback implement
     private ImageView viewMatchTypeBO1;
     private ImageView viewMatchTypeBO3;
     private ImageView viewMatchTypeBO5;
-    private static final String TAG_MATCH_INIT = "MATCH_INIT";
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -47,7 +47,7 @@ public class MatchSettingsFragment extends FragmentWithReplaceCallback implement
         VIEWS_FOR_TYPE[1] = viewMatchTypeBO3;
         VIEWS_FOR_TYPE[2] = viewMatchTypeBO5;
 
-        for(int i = 0; i<VIEWS_FOR_SIDES.length; i++) {
+        for (int i = 0; i < VIEWS_FOR_SIDES.length; i++) {
             final int index = i;
             VIEWS_FOR_SIDES[i].setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -58,7 +58,7 @@ public class MatchSettingsFragment extends FragmentWithReplaceCallback implement
             });
         }
 
-        for(int i = 0; i<VIEWS_FOR_TYPE.length; i++) {
+        for (int i = 0; i < VIEWS_FOR_TYPE.length; i++) {
             final int index = i;
             VIEWS_FOR_TYPE[i].setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -75,7 +75,7 @@ public class MatchSettingsFragment extends FragmentWithReplaceCallback implement
     }
 
     private void updateServerIcons() {
-        for(ImageView v : VIEWS_FOR_SIDES) {
+        for (ImageView v : VIEWS_FOR_SIDES) {
             v.setImageDrawable(getActivity().getDrawable(R.drawable.player_not_server));
         }
 
@@ -87,11 +87,11 @@ public class MatchSettingsFragment extends FragmentWithReplaceCallback implement
     }
 
     private void updateMatchTypeIcons() {
-       if (MATCH_TYPE[selectedMatchType].equals(MatchType.BO1.toString())) {
-           viewMatchTypeBO1.setImageDrawable(getActivity().getDrawable(R.drawable.bo1_selected));
-       } else {
-           viewMatchTypeBO1.setImageDrawable(getActivity().getDrawable(R.drawable.bo1));
-       }
+        if (MATCH_TYPE[selectedMatchType].equals(MatchType.BO1.toString())) {
+            viewMatchTypeBO1.setImageDrawable(getActivity().getDrawable(R.drawable.bo1_selected));
+        } else {
+            viewMatchTypeBO1.setImageDrawable(getActivity().getDrawable(R.drawable.bo1));
+        }
 
         if (MATCH_TYPE[selectedMatchType].equals(MatchType.BO3.toString())) {
             viewMatchTypeBO3.setImageDrawable(getActivity().getDrawable(R.drawable.bo3_selected));

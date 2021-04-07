@@ -10,7 +10,8 @@ import cz.fmo.R;
 
 public class QuitAlertDialogHelper {
 
-    private QuitAlertDialogHelper(){}
+    private QuitAlertDialogHelper() {
+    }
 
     public static AlertDialog makeDialog(final Context ctx) {
         AlertDialog.Builder builder = new AlertDialog.Builder(ctx);

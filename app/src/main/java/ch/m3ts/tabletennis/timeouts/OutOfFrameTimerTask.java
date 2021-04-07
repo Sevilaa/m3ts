@@ -6,7 +6,7 @@ import ch.m3ts.tabletennis.match.referee.Referee;
 
 
 public class OutOfFrameTimerTask extends TimerTask {
-    private Referee referee;
+    private final Referee referee;
 
     public OutOfFrameTimerTask(Referee referee) {
         this.referee = referee;

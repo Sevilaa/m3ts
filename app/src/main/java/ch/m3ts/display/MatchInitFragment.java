@@ -47,13 +47,13 @@ public class MatchInitFragment extends Fragment implements DisplayConnectCallbac
 
     private void initConnection(View v) {
         Config mConfig = new Config(getContext());
-        if(mConfig.isUsingPubnub()) {
-            ((MatchActivity)getActivity()).getConnection().setDisplayConnectCallback(this);
+        if (mConfig.isUsingPubnub()) {
+            ((MatchActivity) getActivity()).getConnection().setDisplayConnectCallback(this);
             ImageView imageView = v.findViewById(R.id.qr_code);
             createQRCode(imageView);
         } else {
             ((TextView) v.findViewById(R.id.miSubTitle)).setText(getString(R.string.connectDisplaySearching));
-            this.nearbyDisplayConnection = ((MatchActivity)getActivity()).getNearbyDisplayConnection();
+            this.nearbyDisplayConnection = ((MatchActivity) getActivity()).getNearbyDisplayConnection();
             this.nearbyDisplayConnection.setDisplayConnectCallback(this);
             this.nearbyDisplayConnection.setConnectCallback(this);
             this.nearbyDisplayConnection.startAdvertising();
@@ -63,7 +63,7 @@ public class MatchInitFragment extends Fragment implements DisplayConnectCallbac
     @Override
     public void onStop() {
         super.onStop();
-        if(this.nearbyDisplayConnection != null) {
+        if (this.nearbyDisplayConnection != null) {
             this.nearbyDisplayConnection.setDisplayConnectCallback(null);
             this.nearbyDisplayConnection.setConnectCallback(null);
         }
@@ -107,8 +107,8 @@ public class MatchInitFragment extends Fragment implements DisplayConnectCallbac
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                ((TextView)activity.findViewById(R.id.miTitle)).setText(R.string.miConnectedTitle);
-                ((TextView)activity.findViewById(R.id.miSubTitle)).setText(R.string.miConnectedSubTitle);
+                ((TextView) activity.findViewById(R.id.miTitle)).setText(R.string.miConnectedTitle);
+                ((TextView) activity.findViewById(R.id.miSubTitle)).setText(R.string.miConnectedSubTitle);
                 activity.findViewById(R.id.qr_code).setVisibility(View.GONE);
                 activity.findViewById(R.id.miPictureBtn).setVisibility(View.VISIBLE);
             }
@@ -131,7 +131,7 @@ public class MatchInitFragment extends Fragment implements DisplayConnectCallbac
     @Override
     public void onClick(View v) {
         Activity activity = getActivity();
-        ((TextView)activity.findViewById(R.id.miSubTitle)).setText(R.string.miPictureLoadingSubTitle);
+        ((TextView) activity.findViewById(R.id.miSubTitle)).setText(R.string.miPictureLoadingSubTitle);
         activity.findViewById(R.id.display_loading).setVisibility(View.VISIBLE);
         activity.findViewById(R.id.miPictureBtn).setVisibility(View.GONE);
         ((MatchActivity) getActivity()).getConnection().onRequestTableFrame();
@@ -139,7 +139,7 @@ public class MatchInitFragment extends Fragment implements DisplayConnectCallbac
     }
 
     private void createQRCode(ImageView imageView) {
-        String qr = ((MatchActivity)getActivity()).getPubNub().getRoomID() + ";" + getArguments().getString("type") + ";" + getArguments().getString("server");
+        String qr = ((MatchActivity) getActivity()).getPubNub().getRoomID() + ";" + getArguments().getString("type") + ";" + getArguments().getString("server");
         try {
             QRCodeWriter writer = new QRCodeWriter();
             BitMatrix matrix = writer.encode(qr, BarcodeFormat.QR_CODE, 700, 700);

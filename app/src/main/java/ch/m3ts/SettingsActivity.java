@@ -22,7 +22,7 @@ import cz.fmo.R;
  */
 @SuppressWarnings("squid:S110")
 public class SettingsActivity extends PreferenceActivity {
-    private static SummaryUpdater sSummaryUpdater = new SummaryUpdater();
+    private static final SummaryUpdater sSummaryUpdater = new SummaryUpdater();
 
     private static void bindToSummaryUpdater(Preference preference, SummaryUpdater updater) {
         preference.setOnPreferenceChangeListener(updater);
