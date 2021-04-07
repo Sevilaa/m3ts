@@ -14,6 +14,7 @@ import helper.DetectionGenerator;
 import helper.TableGenerator;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyDouble;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
@@ -49,17 +50,42 @@ public class EventDetectorTest {
 
     @Test
     public void testUpdateTrackSetConfigOnConstruction() {
-        EventDetector ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT,mockCallback, mockTracks, table, mockCalc);
+        EventDetector ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT, mockCallback, mockTracks, table, mockCalc);
         verify(mockTracks, atLeastOnce()).setConfig(mockConfig);
     }
 
     @Test
     public void testUpdateTrackSetOnObjectsDetected() {
-        EventDetector ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT,mockCallback, mockTracks, table, mockCalc);
+        EventDetector ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT, mockCallback, mockTracks, table, mockCalc);
         Lib.Detection[] someDetections = new Lib.Detection[0];
         long detectionTime = System.nanoTime();
         ev.onObjectsDetected(someDetections, detectionTime);
         verify(mockTracks, times(1)).addDetections(someDetections, SOME_WIDTH, SOME_HEIGHT, detectionTime);
+    }
+
+    @Test
+    public void testAudioBounceDetection() {
+        EventDetector ev = new EventDetector(mockConfig, SOME_WIDTH, SOME_HEIGHT, mockCallback, TrackSet.getInstance(), table, mockCalc);
+        Lib.Detection[] strikeDetectionsRight = DetectionGenerator.makeDetectionsInXDirectionOnTable(true);
+        invokeOnObjectDetectedWithDelay(strikeDetectionsRight, ev, 0);
+        verify(mockCallback, times(0)).onAudioBounce(Side.RIGHT);
+        verify(mockCallback, times(0)).onAudioBounce(Side.LEFT);
+        ev.onAudioBounceDetected();
+        verify(mockCallback, times(1)).onAudioBounce(Side.RIGHT);
+
+        // now simulate the ball going out of the frame and bouncing again
+        // (f.e. ball is bouncing off the floor)
+        try {
+            Thread.sleep(3000);
+            ev.onAudioBounceDetected();
+            ev.onAudioBounceDetected();
+            ev.onAudioBounceDetected();
+            // should make no difference
+            verify(mockCallback, times(1)).onAudioBounce(Side.RIGHT);
+            verify(mockCallback, times(0)).onAudioBounce(Side.LEFT);
+        } catch (Exception e) {
+            fail();
+        }
     }
 
     @Test
