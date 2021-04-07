@@ -4,7 +4,6 @@ import android.graphics.Point;
 
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Core;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
@@ -25,18 +24,14 @@ public class ReadyToServeDetector {
     private static final double GESTURE_AREA_PERCENTAGE_RELATIVE_TO_TABLE = 0.05;
     private static final double MAX_COLOR_CHANNEL_OFFSET = 10;
     private final Table table;
-    private final int cameraWidth;
-    private final int cameraHeight;
     private final ReadyToServeCallback callback;
     private final Side server;
     private final boolean useBlackSide;
     private int gestureFrameCounter = 0;
 
-    public ReadyToServeDetector(Table table, Side server, int cameraWidth, int cameraHeight, ReadyToServeCallback callback, boolean useBlackSide) {
+    public ReadyToServeDetector(Table table, Side server, ReadyToServeCallback callback, boolean useBlackSide) {
         this.table = table;
         this.server = server;
-        this.cameraWidth = cameraWidth;
-        this.cameraHeight = cameraHeight;
         this.callback = callback;
         this.useBlackSide = useBlackSide;
     }
@@ -46,14 +41,14 @@ public class ReadyToServeDetector {
      * If the gesture was active for 15 frames (0.5s on a 30 FPS camera) it returns true and
      * triggers an event
      *
-     * @param frameYUVBytes frame in YUV format
+     * @param bgrMat frame as a BGR OpenCV Mat
      * @return true if gesture was active for 15 frames and false otherwise
      */
-    public boolean isReadyToServe(byte[] frameYUVBytes) {
+    public boolean isReadyToServe(Mat bgrMat) {
         boolean isReady = false;
         gestureFrameCounter++;
         if (gestureFrameCounter % 3 == 0 && OpenCVLoader.initDebug()) {
-            if (isRacketInArea(frameYUVBytes)) {
+            if (isRacketInArea(bgrMat)) {
                 if (gestureFrameCounter >= GESTURE_HOLD_TIME_IN_FRAMES) {
                     this.callback.onGestureDetected();
                     isReady = true;
@@ -65,42 +60,32 @@ public class ReadyToServeDetector {
         return isReady;
     }
 
-    private boolean isRacketInArea(byte[] frameYUVBytes) {
+    private boolean isRacketInArea(Mat bgrMat) {
         if (useBlackSide) {
-            return (getRedPercentage(frameYUVBytes) > PERCENTAGE_THRESHOLD) ||
-                    (getBlackPercentage(frameYUVBytes) > PERCENTAGE_THRESHOLD_BLACK);
+            return (getRedPercentage(bgrMat) > PERCENTAGE_THRESHOLD) ||
+                    (getBlackPercentage(bgrMat) > PERCENTAGE_THRESHOLD_BLACK);
         } else {
-            return (getRedPercentage(frameYUVBytes) > PERCENTAGE_THRESHOLD);
+            return (getRedPercentage(bgrMat) > PERCENTAGE_THRESHOLD);
         }
     }
 
-    private double getRedPercentage(byte[] frameYUVBytes) {
-        Mat yuv = new Mat(getYUVMatHeight(), this.cameraWidth, CvType.CV_8UC1);
-        yuv.put(0, 0, frameYUVBytes);
-
-        Mat bgr = convertYUVToBGRInAreaSize(yuv);
-
-        Mat maskWithInvert = segmentRedColorViaInverting(bgr);
-        Mat maskWithTwoThresh = segmentRedColor(bgr);
+    private double getRedPercentage(Mat bgrMat) {
+        Mat resized = resizeMatToAreaSize(bgrMat);
+        Mat maskWithInvert = segmentRedColorViaInverting(resized);
+        Mat maskWithTwoThresh = segmentRedColor(resized);
         Mat mask = new Mat();
         Core.bitwise_or(maskWithInvert, maskWithTwoThresh, mask);
         return Core.countNonZero(mask) / (double) mask.total();
     }
 
-    private double getBlackPercentage(byte[] frameYUVBytes) {
-        Mat yuv = new Mat(getYUVMatHeight(), this.cameraWidth, CvType.CV_8UC1);
-        yuv.put(0, 0, frameYUVBytes);
-
-        Mat bgr = convertYUVToBGRInAreaSize(yuv);
-        Mat mask = segmentBlackColor(bgr);
+    private double getBlackPercentage(Mat bgrMat) {
+        Mat resized = resizeMatToAreaSize(bgrMat);
+        Mat mask = segmentBlackColor(resized);
         return Core.countNonZero(mask) / (double) mask.total();
     }
 
-    private Mat convertYUVToBGRInAreaSize(Mat yuv) {
-        Mat bgr = new Mat();
-        Imgproc.cvtColor(yuv, bgr, Imgproc.COLOR_YUV2BGR_NV21, 3);
-        bgr = bgr.submat(getGestureArea());
-        return bgr;
+    private Mat resizeMatToAreaSize(Mat bgrMat) {
+        return bgrMat.submat(getGestureArea());
     }
 
     /**
@@ -171,9 +156,4 @@ public class ReadyToServeDetector {
         inRange(hsvInverted, new Scalar(90 - MAX_COLOR_CHANNEL_OFFSET, 70, 50), new Scalar(90 + MAX_COLOR_CHANNEL_OFFSET, 255, 255), maskInv);
         return maskInv;
     }
-
-    private int getYUVMatHeight() {
-        return this.cameraHeight + this.cameraHeight / 2;
-    }
-
 }

@@ -311,20 +311,28 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
 
     @Override
     public void onWaitingForGesture(Side server) {
-        serveDetector = new ReadyToServeDetector(table, server, this.videoScaling.getVideoWidth(),
-                this.videoScaling.getVideoHeight(), this.match.getReferee(), this.useBlackSide);
+        serveDetector = new ReadyToServeDetector(table, server, this.match.getReferee(), this.useBlackSide);
         this.waitingForGesture = true;
     }
 
     public boolean isWaitingForGesture() {
         return this.waitingForGesture;
     }
+
     public void setWaitingForGesture(boolean isWaitingForGesture) {
         this.waitingForGesture = isWaitingForGesture;
     }
 
     public ReadyToServeDetector getServeDetector() {
         return this.serveDetector;
+    }
+
+    public int getVideoWidth() {
+        return this.videoScaling.getVideoWidth();
+    }
+
+    public int getVideoHeight() {
+        return this.videoScaling.getVideoHeight();
     }
 
     private void initColors(Activity activity) {
