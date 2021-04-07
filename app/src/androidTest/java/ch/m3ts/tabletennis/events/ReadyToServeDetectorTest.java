@@ -43,7 +43,7 @@ public class ReadyToServeDetectorTest {
     }
 
     @Test
-    public void isReadyToServeSkipTwoOfThreeFrames() {
+    public void skipTwoOfThreeFrames() {
         detector = new ReadyToServeDetector(table, Side.RIGHT, callback, false);
         Mat redMat = getRedMat();
         detector.isReadyToServe(redMat);
@@ -55,7 +55,7 @@ public class ReadyToServeDetectorTest {
     }
 
     @Test
-    public void isReadyToServeGestureRedHoldFor15Frames() {
+    public void holdRedSideFor15Frames() {
         detector = new ReadyToServeDetector(table, Side.RIGHT, callback, false);
         boolean result;
         for (int i = 0; i < 14; i++) {
@@ -66,7 +66,52 @@ public class ReadyToServeDetectorTest {
         assertTrue(result);
     }
 
+    @Test
+    public void holdBlackSideFor15FramesWithUseBlackSideActive() {
+        detector = new ReadyToServeDetector(table, Side.RIGHT, callback, true);
+        boolean result;
+        for (int i = 0; i < 14; i++) {
+            result = detector.isReadyToServe(getBlackMat());
+            assertFalse(result);
+        }
+        result = detector.isReadyToServe(getBlackMat());
+        assertTrue(result);
+    }
+
+    @Test
+    public void holdBlackSideFor15FramesWithUseBlackSideInActive() {
+        detector = new ReadyToServeDetector(table, Side.RIGHT, callback, false);
+        boolean result;
+        for (int i = 0; i < 15; i++) {
+            result = detector.isReadyToServe(getBlackMat());
+            assertFalse(result);
+        }
+    }
+
+    @Test
+    public void invalidColorAfter14Frames() {
+        detector = new ReadyToServeDetector(table, Side.RIGHT, callback, false);
+        boolean result;
+        for (int i = 0; i < 15; i++) {
+            Mat mat = getBlackMat();
+            if (i == 14) {
+                mat = getGreenMat();
+            }
+            result = detector.isReadyToServe(mat);
+            assertFalse(result);
+        }
+
+    }
+
     private Mat getRedMat() {
         return new Mat(CAMERA_WIDTH, CAMERA_HEIGHT, CvType.CV_8UC3, new Scalar(0, 0, 255));
+    }
+
+    private Mat getBlackMat() {
+        return new Mat(CAMERA_WIDTH, CAMERA_HEIGHT, CvType.CV_8UC3, new Scalar(0, 0, 0));
+    }
+
+    private Mat getGreenMat() {
+        return new Mat(CAMERA_WIDTH, CAMERA_HEIGHT, CvType.CV_8UC3, new Scalar(0, 255, 0));
     }
 }
