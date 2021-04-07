@@ -10,7 +10,8 @@ import java.io.File;
 import ch.m3ts.Log;
 
 public class OpenCVHelper {
-    private OpenCVHelper() {}
+    private OpenCVHelper() {
+    }
 
     public static void saveImage(Mat mat, String fileName) {
         File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
@@ -24,6 +25,6 @@ public class OpenCVHelper {
         if (bool)
             Log.d("SUCCESS writing image to storage");
         else
-            Log.d( "Fail writing image to storage");
+            Log.d("Fail writing image to storage");
     }
 }

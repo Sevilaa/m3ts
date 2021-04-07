@@ -1,4 +1,4 @@
-package ch.m3ts.pubnub;
+package ch.m3ts.connection.pubnub;
 
 import android.content.Context;
 
@@ -15,18 +15,19 @@ import java.util.Properties;
 public class PubNubFactory {
     private static final String PROP_FILE_NAME = "app.properties";
 
-    private PubNubFactory() {}
-
-    public static TrackerPubNub createTrackerPubNub(Context context, String roomId) {
-        Properties properties = findProperties(context);
-        Pubnub pubnub = createPubNub(properties);
-        return new TrackerPubNub(pubnub, roomId);
+    private PubNubFactory() {
     }
 
-    public static DisplayPubNub createDisplayPubNub(Context context, String roomId) {
+    public static PubNubTrackerConnection createTrackerPubNub(Context context, String roomId) {
         Properties properties = findProperties(context);
         Pubnub pubnub = createPubNub(properties);
-        return new DisplayPubNub(pubnub, roomId);
+        return new PubNubTrackerConnection(pubnub, roomId);
+    }
+
+    public static PubNubDisplayConnection createDisplayPubNub(Context context, String roomId) {
+        Properties properties = findProperties(context);
+        Pubnub pubnub = createPubNub(properties);
+        return new PubNubDisplayConnection(pubnub, roomId);
     }
 
     private static Pubnub createPubNub(Properties properties) {
@@ -47,7 +48,8 @@ public class PubNubFactory {
     }
 
     public static class NoPropertiesFileFoundException extends RuntimeException {
-        private static final String MESSAGE = "No "+PROP_FILE_NAME+ " file has been found in the assets directory!";
+        private static final String MESSAGE = "No " + PROP_FILE_NAME + " file has been found in the assets directory!";
+
         NoPropertiesFileFoundException() {
             super(MESSAGE);
         }

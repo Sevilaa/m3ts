@@ -1,4 +1,4 @@
-package ch.m3ts.pubnub;
+package ch.m3ts.connection.pubnub;
 
 import android.util.Base64;
 
@@ -7,7 +7,9 @@ import android.util.Base64;
  */
 public class ByteToBase64 {
     private static final int FLAG = Base64.DEFAULT;
-    private ByteToBase64() {}
+
+    private ByteToBase64() {
+    }
 
     public static String encodeToString(byte[] bytes) {
         return Base64.encodeToString(bytes, FLAG);

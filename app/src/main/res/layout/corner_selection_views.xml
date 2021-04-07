@@ -10,6 +10,7 @@
         android:padding="8dp"
         android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
+        android:background="@drawable/radius_background_transparent"
         android:elevation="8dp">
 
         <TextView

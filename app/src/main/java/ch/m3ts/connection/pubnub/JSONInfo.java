@@ -1,14 +1,15 @@
-package ch.m3ts.pubnub;
+package ch.m3ts.connection.pubnub;
 
 /**
  * Contains commonly used JSON properties in M3TS.
  */
 public final class JSONInfo {
-    public static final String SENDER_PROPERTY = "sender";
     public static final String ROLE_PROPERTY = "role";
     public static final String EVENT_PROPERTY = "event";
     public static final String SIDE_PROPERTY = "side";
     public static final String WINS_PROPERTY = "wins";
+    public static final String TYPE_PROPERTY = "type";
+    public static final String SERVER_PROPERTY = "server";
     public static final String GAMES_NEEDED_PROPERTY = "gamesNeeded";
     public static final String WINS_LEFT_PROPERTY = "winsLeft";
     public static final String WINS_RIGHT_PROPERTY = "winsRight";
@@ -25,5 +26,7 @@ public final class JSONInfo {
     public static final String TABLE_FRAME_WIDTH = "tableFrameWidth";
     public static final String TABLE_FRAME_HEIGHT = "tableFrameHeight";
     public static final String CORNERS = "corners";
-    private JSONInfo(){}
+
+    private JSONInfo() {
+    }
 }

@@ -13,6 +13,7 @@ import java.util.Locale;
 
 import ch.m3ts.MainActivity;
 import cz.fmo.R;
+import cz.fmo.util.Config;
 
 /**
  * Activity which displays the winner of a table tennis match (info in Intent).
@@ -30,7 +31,9 @@ public class MatchWonActivity extends Activity {
         setContentView(R.layout.activity_match_won);
         Bundle bundle = getIntent().getExtras();
         String winner = bundle.getString("winner");
-        this.pubnubRoom = bundle.getString("room");
+        if (new Config(this).isUsingPubnub()) {
+            this.pubnubRoom = bundle.getString("room");
+        }
         TextView txtView = findViewById(R.id.winner_name);
         txtView.setText(winner);
         RelativeLayout relativeLayout = findViewById(R.id.won_background);
@@ -49,7 +52,9 @@ public class MatchWonActivity extends Activity {
         animationDrawable.stop();
         Intent intent = new Intent(this, MatchActivity.class);
         Bundle bundle = new Bundle();
-        bundle.putString("room", this.pubnubRoom);
+        if (this.pubnubRoom != null) {
+            bundle.putString("room", this.pubnubRoom);
+        }
         bundle.putBoolean("isRestartedMatch", true);
         intent.putExtras(bundle);
         startActivity(intent);
@@ -63,7 +68,7 @@ public class MatchWonActivity extends Activity {
     public void backToMenu(View view) {
         animationDrawable.stop();
         Intent intent = new Intent(this, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK |Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
         this.finish();
     }
@@ -77,7 +82,7 @@ public class MatchWonActivity extends Activity {
 
     @Override
     public void onPause() {
-        if(this.tts != null) {
+        if (this.tts != null) {
             this.tts.shutdown();
         }
         super.onPause();

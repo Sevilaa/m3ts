@@ -69,8 +69,6 @@ public class LiveActivityTest {
 
     @Test
     public void testFindAllViews() {
-        onView(withId(R.id.debugScoreLayoutWrapper))
-                .check(matches(isDisplayed()));
         onView(withId(R.id.playMovie_surfaceTracks))
                 .check(matches(isDisplayed()));
         onView(withId(R.id.playMovie_surfaceTable))

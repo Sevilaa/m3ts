@@ -4,7 +4,6 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -21,16 +20,16 @@ import cz.fmo.util.Config;
  */
 public abstract class CameraPreviewActivity extends Activity implements SurfaceHolder.Callback {
     protected static final int PREVIEW_SLOWDOWN_FRAMES = 59;
-    private SurfaceView mSurfaceView;
     protected CameraStatus mStatus = CameraStatus.STOPPED;
     protected CameraThread mCamera;
-    private boolean mSurfaceHolderReady = false;
     protected double cameraHorizontalAngle;
     protected CameraThread.Callback cameraCallback;
+    private SurfaceView mSurfaceView;
+    private boolean mSurfaceHolderReady = false;
 
     /**
      * In this method the inherited class must set the content view.
-     *  i.E. setContentView(R.layout.activity_play_movie_surface);
+     * i.E. setContentView(R.layout.activity_play_movie_surface);
      */
     public abstract void setCurrentContentView();
 
@@ -42,7 +41,6 @@ public abstract class CameraPreviewActivity extends Activity implements SurfaceH
      * Called by:
      * - onResume()
      * - GUI.surfaceCreated(), when GUI preview surface has just been created
-     * - onRequestPermissionsResult(), when camera permissions have just been granted
      */
     public void init() {
         // reality check: don't initialize twice
@@ -116,22 +114,6 @@ public abstract class CameraPreviewActivity extends Activity implements SurfaceH
         mStatus = CameraStatus.STOPPED;
     }
 
-    /**
-     * Responsible for querying and acquiring camera permissions. Whatever the response will be,
-     * the permission request could result in the application being paused and resumed. For that
-     * reason, requesting permissions at any later point, including in onResume(), might cause an
-     * infinite loop.
-     */
-    @Override
-    protected void onStart() {
-        super.onStart();
-        if (isCameraPermissionDenied()) {
-            String[] perms = new String[]{Manifest.permission.CAMERA,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE};
-            ActivityCompat.requestPermissions(this, perms, 0);
-        }
-    }
-
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         // There's a short delay between the start of the activity and the initialization
@@ -161,10 +143,6 @@ public abstract class CameraPreviewActivity extends Activity implements SurfaceH
 
     public boolean ismSurfaceHolderReady() {
         return mSurfaceHolderReady;
-    }
-
-    public void setmSurfaceHolderReady(boolean mSurfaceHolderReady) {
-        this.mSurfaceHolderReady = mSurfaceHolderReady;
     }
 
     public int getCameraWidth() {

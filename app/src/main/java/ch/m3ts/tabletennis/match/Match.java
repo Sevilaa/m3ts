@@ -16,15 +16,15 @@ import ch.m3ts.tabletennis.match.referee.Referee;
  */
 public class Match implements MatchCallback, MatchStatusCallback {
     private Game[] games;
-    private MatchType type;
-    private Map<Side, Player> players;
+    private final MatchType type;
+    private final Map<Side, Player> players;
     private Map<Side, Integer> wins;
-    private UICallback uiCallback;
-    private Referee referee;
+    private final UICallback uiCallback;
+    private final Referee referee;
     private Side serverSide;
-    private Side startingServer;
-    private ServeRules serveRules;
-    private GameType gameType;
+    private final Side startingServer;
+    private final ServeRules serveRules;
+    private final GameType gameType;
 
     public Match(MatchType type, GameType gameType, ServeRules serveRules, Player playerLeft, Player playerRight, UICallback uiCallback, Side startingServer, GestureCallback gestureCallback) {
         this.type = type;
@@ -46,7 +46,7 @@ public class Match implements MatchCallback, MatchStatusCallback {
     }
 
     void startNewGame(boolean firstInit) {
-        if(!firstInit) switchServers();
+        if (!firstInit) switchServers();
         Game game = new Game(this, uiCallback, gameType, serveRules, this.serverSide);
         this.games[this.wins.get(Side.RIGHT) + this.wins.get(Side.LEFT)] = game;
         this.referee.setGame(game, firstInit);
@@ -81,7 +81,7 @@ public class Match implements MatchCallback, MatchStatusCallback {
     private void init() {
         this.wins = new EnumMap<>(Side.class);
         this.wins.put(Side.LEFT, 0);
-        this.wins.put(Side.RIGHT,0);
+        this.wins.put(Side.RIGHT, 0);
         this.games = new Game[type.amountOfGames];
         this.serverSide = startingServer;
     }
@@ -99,6 +99,9 @@ public class Match implements MatchCallback, MatchStatusCallback {
     }
 
     private Game getCurrentGame() {
+        if (this.wins.get(Side.RIGHT) + this.wins.get(Side.LEFT) >= this.games.length) {
+            return this.games[this.games.length - 1];
+        }
         return this.games[this.wins.get(Side.RIGHT) + this.wins.get(Side.LEFT)];
     }
 

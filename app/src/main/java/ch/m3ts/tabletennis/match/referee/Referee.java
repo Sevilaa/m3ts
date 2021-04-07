@@ -1,5 +1,11 @@
 package ch.m3ts.tabletennis.match.referee;
 
+import android.content.Context;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -13,9 +19,9 @@ import ch.m3ts.tabletennis.match.game.Game;
 import ch.m3ts.tabletennis.match.game.GameCallback;
 import ch.m3ts.tabletennis.match.game.ScoreManipulationCallback;
 import ch.m3ts.tabletennis.timeouts.OutOfFrameTimerTask;
-import ch.m3ts.tabletennis.timeouts.PauseTimerTask;
 import cz.fmo.Lib;
 import cz.fmo.data.Track;
+import cz.fmo.util.FileManager;
 
 /**
  * Represents a referee inside a table tennis match.
@@ -31,8 +37,10 @@ import cz.fmo.data.Track;
  * if a player can shoot the ball back onto the table.
  */
 public class Referee implements EventDetectionCallback, ScoreManipulationCallback, ReadyToServeCallback {
+    private static final String FILENAME = "recording_%s.csv";
     private static final int OUT_OF_FRAME_MAX_DELAY = 1500;
     private final GestureCallback gestureCallback;
+    private final String currentFileName;
     private Timer outOfFrameTimer;
     private Timer timeOutNextServeTimer;
     private GameCallback gameCallback;
@@ -41,13 +49,24 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     private Side currentBallSide;
     private State state;
     private int bounces;
+    private int audioBounces;
+    private FileManager fm;
 
     public Referee(Side servingSide, GestureCallback gestureCallback) {
         this.currentStriker = servingSide;
         this.currentBallSide = servingSide;
         this.bounces = 0;
+        this.audioBounces = 0;
         this.state = State.WAIT_FOR_SERVE;
         this.gestureCallback = gestureCallback;
+        Date date = Calendar.getInstance().getTime();
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd_hh_mm_ss");
+        this.currentFileName = String.format(FILENAME, dateFormat.format(date));
+    }
+
+    public void debugToFile(Context context) {
+        this.fm = new FileManager(context);
+        Log.d("msg;point_for_side;score;strikes_for_point;ball_side;striker_side;server_side;", this.fm.open(this.currentFileName));
     }
 
     public void setGame(Game game, boolean firstGame) {
@@ -96,18 +115,35 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     }
 
     @Override
+    public void onAudioBounce(Side ballBouncedOnSide) {
+        switch (this.state) {
+            case SERVING:
+            case PLAY:
+                if (ballBouncedOnSide == currentBallSide) {
+                    Log.d("REFEREE:Referee: Audio bounce detected in PLAY state");
+                    audioBounces++;
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
     public void onSideChange(Side side) {
         switch (this.state) {
             case PLAY:
                 // do not change striker if the ball was sent back by net
                 if (currentBallSide == side) {
                     bounces = 0;
+                    audioBounces = 0;
                     currentStriker = side;
                 }
                 break;
             case SERVING:
                 if (side != getServer()) {
                     bounces = 0;
+                    audioBounces = 0;
                 }
                 if (currentBallSide == side) {
                     currentStriker = side;
@@ -162,9 +198,13 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
         this.currentBallSide = side;
         switch (this.state) {
             case SERVING:
+                if (this.getServer() != side) {
+                    Log.d("REFEREE:Table Side Change:Changing to PLAY");
+                    this.state = State.PLAY;
+                }
             case PLAY:
-                this.state = State.PLAY;
                 this.bounces = 0;
+                this.audioBounces = 0;
                 break;
             default:
                 break;
@@ -176,10 +216,10 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
         switch (this.state) {
             case PLAY:
                 if (bounces == 0) {
-                    Log.d("Fault by Striker: Ball has fallen off side ways and had no bounce");
+                    Log.d("REFEREE:Fault by Striker: Ball has fallen off side ways and had no bounce");
                     faultBySide(currentStriker);
                 } else if (bounces == 1) {
-                    Log.d("Point by Striker: Ball has fallen off side ways and had a bounce");
+                    Log.d("REFEREE:Point by Striker: Ball has fallen off side ways and had a bounce");
                     pointBySide(currentStriker);
                 }
                 break;
@@ -200,7 +240,6 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
         initPoint();
         this.state = State.PAUSE;
         gestureCallback.onWaitingForGesture(getServer());
-        //setTimeoutForNextServe(PAUSE_SCORE_MANIPULATION_DELAY);
     }
 
     @Override
@@ -209,7 +248,6 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
         initPoint();
         this.state = State.PAUSE;
         gestureCallback.onWaitingForGesture(getServer());
-        //setTimeoutForNextServe(PAUSE_SCORE_MANIPULATION_DELAY);
     }
 
     @Override
@@ -229,13 +267,17 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     public void onOutOfFrameForTooLong() {
         if (this.state == State.OUT_OF_FRAME) {
             if (currentBallSide == currentStriker) {
-                Log.d("Out of Frame for too long - Striker most likely shot the ball into the net");
+                Log.d("REFEREE:Out of Frame for too long - Striker most likely shot the ball into the net");
                 faultBySide(currentStriker);
-            } else if (this.bounces == 1) {
-                Log.d("Out of Frame for too long - Strike received no return");
+            } else if (this.bounces >= 1 || this.audioBounces >= 1) {
+                if (this.audioBounces >= 1) {
+                    Log.d("REFEREE:Out of Frame for too long (AUDIO_BOUNCE) - Strike received no return");
+                } else {
+                    Log.d("REFEREE:Out of Frame for too long - Strike received no return");
+                }
                 pointBySide(currentStriker);
             } else {
-                Log.d("Out of Frame for too long - Strike did not bounce");
+                Log.d("REFEREE:Out of Frame for too long - Strike did not bounce");
                 faultBySide(currentStriker);
             }
         } else {
@@ -272,31 +314,25 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
         this.state = State.OUT_OF_FRAME;
     }
 
-    private void setTimeoutForNextServe(int timeoutTime) {
-        this.state = State.PAUSE;
-        TimerTask outOfFrameTask = new PauseTimerTask(this);
-        this.timeOutNextServeTimer = new Timer("timeOutNextServeTimer");
-        this.timeOutNextServeTimer.schedule(outOfFrameTask, timeoutTime);
-    }
-
     private void pointBySide(Side side) {
         gameCallback.onPoint(side);
-        initPoint();
-        this.state = State.PAUSE;
-        gestureCallback.onWaitingForGesture(getServer());
-        //setTimeoutForNextServe(PAUSE_DELAY);
+        resetAfterPoint();
     }
 
     private void faultBySide(Side side) {
         gameCallback.onPoint(Side.getOpposite(side));
+        resetAfterPoint();
+    }
+
+    private void resetAfterPoint() {
         initPoint();
         this.state = State.PAUSE;
         gestureCallback.onWaitingForGesture(getServer());
-        //setTimeoutForNextServe(PAUSE_DELAY);
     }
 
     private void initPoint() {
         this.bounces = 0;
+        this.audioBounces = 0;
         this.cancelTimers();
         this.state = State.WAIT_FOR_SERVE;
     }
@@ -304,20 +340,20 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     private void applyRuleSet() {
         if (bounces == 1) {
             if (this.currentStriker == this.currentBallSide) {
-                Log.d("currentStriker: " + this.currentStriker);
-                Log.d("currentBallSide: " + this.currentBallSide);
-                Log.d("Bounce on same Side");
+                Log.d("REFEREE:currentStriker: " + this.currentStriker);
+                Log.d("REFEREE:currentBallSide: " + this.currentBallSide);
+                Log.d("REFEREE:Bounce on same Side");
                 faultBySide(this.currentStriker);
             }
         } else if (bounces >= 2 && this.currentStriker != this.currentBallSide) {
-            Log.d("Double Bounce");
+            Log.d("REFEREE:Double Bounce");
             pointBySide(this.currentStriker);
         }
     }
 
     private void applyRuleSetServing() {
         if (bounces > 1 && currentBallSide == getServer()) {
-            Log.d("Server Fault: Multiple Bounces on same Side");
+            Log.d("REFEREE:Server Fault: Multiple Bounces on same Side");
             faultBySide(getServer());
         }
     }

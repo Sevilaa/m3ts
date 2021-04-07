@@ -19,43 +19,45 @@ import android.widget.TextView;
 
 import java.util.Locale;
 
-import ch.m3ts.pubnub.DisplayPubNub;
+import ch.m3ts.connection.DisplayConnection;
+import ch.m3ts.connection.pubnub.PubNubDisplayConnection;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.UICallback;
 import cz.fmo.R;
+import cz.fmo.util.Config;
 
 /**
  * Fragment which implements the features of a digital table tennis scoreboard.
  * Displays f.e. the current score, current amount of games won by each sides, the current servers.
  */
 public class MatchScoreFragment extends Fragment implements UICallback, DisplayScoreEventCallback {
+    private final int MAX_SCORE = 11;
     private String ttsWin;
     private String ttsSide;
     private String ttsTo;
     private String ttsReadyToServe;
     private TextToSpeech tts;
     private MediaPlayer mediaPlayer;
-    private DisplayPubNub pubNub;
+    private DisplayConnection connection;
     private boolean isPaused = false;
     private int gamesNeededToWin;
     private int scoreLeft;
     private int scoreRight;
-    private final int MAX_SCORE = 11;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_match_score, container, false);
-        this.pubNub = ((MatchActivity)getActivity()).getPubNub();
-        pubNub.setDisplayScoreEventCallback(this);
-        pubNub.setUiCallback(this);
+        this.connection = ((MatchActivity) getActivity()).getConnection();
+        connection.setDisplayScoreEventCallback(this);
+        connection.setUiCallback(this);
         initTTS();
         this.mediaPlayer = MediaPlayer.create(getContext(), R.raw.success);
         ImageButton refreshButton = v.findViewById(R.id.btnDisplayRefresh);
         refreshButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                pubNub.requestStatusUpdate();
+                connection.requestStatusUpdate();
             }
         });
 
@@ -65,11 +67,11 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
             @Override
             public void onClick(View view) {
                 if (isPaused) {
-                    pubNub.onResume();
+                    connection.onResume();
                     pauseResumeButton.setTag("Play");
                     pauseResumeButton.setImageResource(android.R.drawable.ic_media_pause);
                 } else {
-                    pubNub.onPause();
+                    connection.onPause();
                     pauseResumeButton.setTag("Pause");
                     pauseResumeButton.setImageResource(android.R.drawable.ic_media_play);
                 }
@@ -82,7 +84,7 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
 
     @Override
     public void onDestroy() {
-        if(this.tts != null) {
+        if (this.tts != null) {
             tts.stop();
             this.tts.shutdown();
         }
@@ -94,9 +96,12 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
         Intent intent = new Intent(getActivity(), MatchWonActivity.class);
         Bundle bundle = new Bundle();
         bundle.putString("winner", winnerName);
-        bundle.putString("room", this.pubNub.getRoomID());
+        if (new Config(getContext()).isUsingPubnub()) {
+            bundle.putString("room", ((PubNubDisplayConnection) this.connection).getRoomID());
+        }
         intent.putExtras(bundle);
-        while(tts.isSpeaking()) {}
+        while (tts.isSpeaking()) {
+        }
         startActivity(intent);
         getActivity().finish();
     }
@@ -104,7 +109,7 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
     @Override
     public void onScore(final Side side, final int score, final Side nextServer, final Side lastServer) {
         Activity activity = getActivity();
-        if(side == Side.LEFT) {
+        if (side == Side.LEFT) {
             scoreLeft = score;
         } else {
             scoreRight = score;
@@ -125,8 +130,8 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
             @Override
             public void run() {
                 setWinsOnTextView(side, wins);
-                if(gamesNeededToWin != wins) {
-                    pubNub.requestStatusUpdate();
+                if (gamesNeededToWin != wins) {
+                    connection.requestStatusUpdate();
                     setScoreOnTextView(Side.LEFT, 0);
                     setScoreOnTextView(Side.RIGHT, 0);
                     tts.speak(ttsWin + " " + getPlayerNameBySide(side), TextToSpeech.QUEUE_FLUSH, null, null);
@@ -163,10 +168,10 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
     }
 
     private void playScoreTTS(Side nextServer, Side lastServer) {
-        String scoreLeft = String.valueOf(Integer.parseInt(((TextView)getActivity().findViewById(R.id.left_score)).getText().toString()));
-        String scoreRight = String.valueOf(Integer.parseInt(((TextView)getActivity().findViewById(R.id.right_score)).getText().toString()));
+        String scoreLeft = String.valueOf(Integer.parseInt(((TextView) getActivity().findViewById(R.id.left_score)).getText().toString()));
+        String scoreRight = String.valueOf(Integer.parseInt(((TextView) getActivity().findViewById(R.id.right_score)).getText().toString()));
         String name;
-        if(nextServer == Side.RIGHT) {
+        if (nextServer == Side.RIGHT) {
             tts.speak(scoreRight + ttsTo + scoreLeft, TextToSpeech.QUEUE_FLUSH, null, null);
             name = getPlayerNameBySide(Side.RIGHT);
         } else {
@@ -174,23 +179,23 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
             name = getPlayerNameBySide(Side.LEFT);
         }
 
-        if(nextServer != lastServer && !isWinningPoint()) {
+        if (nextServer != lastServer && !isWinningPoint()) {
             tts.speak(ttsReadyToServe + " " + name, TextToSpeech.QUEUE_ADD, null, null);
         }
     }
 
     private boolean isWinningPoint() {
-        return Math.abs(scoreRight-scoreLeft) > 1 && (scoreLeft >= MAX_SCORE || scoreRight >= MAX_SCORE);
+        return Math.abs(scoreRight - scoreLeft) > 1 && (scoreLeft >= MAX_SCORE || scoreRight >= MAX_SCORE);
     }
 
     private String getPlayerNameBySide(Side side) {
         int nameId;
-        if(side == Side.RIGHT) {
+        if (side == Side.RIGHT) {
             nameId = R.id.right_name;
         } else {
             nameId = R.id.left_name;
         }
-        return ((TextView)getActivity().findViewById(nameId)).getText().toString();
+        return ((TextView) getActivity().findViewById(nameId)).getText().toString();
     }
 
     private void initTTS() {
@@ -230,11 +235,11 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
     }
 
     private void colorTextViewAsInactive(TextView txtView) {
-        txtView.setTextColor(ContextCompat.getColor(getContext() , R.color.primary_light));
+        txtView.setTextColor(ContextCompat.getColor(getContext(), R.color.primary_light));
     }
 
     private void colorTextViewAsActive(TextView txtView) {
-        txtView.setTextColor(ContextCompat.getColor(getContext() ,R.color.display_serving));
+        txtView.setTextColor(ContextCompat.getColor(getContext(), R.color.display_serving));
     }
 
     private void setTextInTextView(int id, final String text) {
@@ -246,19 +251,19 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
 
     @SuppressLint("ClickableViewAccessibility")
     private void setOnSwipeListener(View v) {
-        if(pubNub != null) {
+        if (connection != null) {
             v.setOnTouchListener(new OnSwipeListener(this.getContext()) {
                 @Override
                 public void onSwipeDown(Side swipeSide) {
-                    if(pubNub != null) {
-                        pubNub.onPointDeduction(swipeSide);
+                    if (connection != null) {
+                        connection.onPointDeduction(swipeSide);
                     }
                 }
 
                 @Override
                 public void onSwipeUp(Side swipeSide) {
-                    if(pubNub != null) {
-                        pubNub.onPointAddition(swipeSide);
+                    if (connection != null) {
+                        connection.onPointAddition(swipeSide);
                     }
                 }
             });
@@ -276,7 +281,7 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
     }
 
     private void setWinsOnTextView(Side side, int wins) {
-        String winsToDisplay = "0"+ wins;
+        String winsToDisplay = "0" + wins;
         if (side == Side.LEFT) {
             setTextInTextView(R.id.left_games, winsToDisplay);
         } else {

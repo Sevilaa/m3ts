@@ -21,6 +21,10 @@ public class Config {
     private final String player2Name;
     private final boolean useDebug;
     private final boolean doRecordMatches;
+    private final boolean usePubnub;
+    private final boolean useBlackSide;
+    private final boolean useAudio;
+
 
     public Config(Context ctx) {
         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(ctx);
@@ -38,6 +42,21 @@ public class Config {
         player2Name = getPlayer2Name(p, ctx);
         useDebug = getDebug(p, ctx);
         doRecordMatches = getRecordMatches(p, ctx);
+        usePubnub = getUsePubnub(p, ctx);
+        useBlackSide = getUseBlackSide(p, ctx);
+        useAudio = getUseAudio(p, ctx);
+    }
+
+    private boolean getUseBlackSide(SharedPreferences p, Context ctx) {
+        return p.getBoolean(ctx.getString(R.string.prefUseBlackSideKey), false);
+    }
+
+    private boolean getUseAudio(SharedPreferences p, Context ctx) {
+        return p.getBoolean(ctx.getString(R.string.prefUseAudioKey), true);
+    }
+
+    private boolean getUsePubnub(SharedPreferences p, Context ctx) {
+        return p.getBoolean(ctx.getString(R.string.prefPubnubKey), false);
     }
 
     private boolean getFrontFacing(SharedPreferences p) {
@@ -164,6 +183,18 @@ public class Config {
 
     public boolean doRecordMatches() {
         return doRecordMatches;
+    }
+
+    public boolean isUsingPubnub() {
+        return usePubnub;
+    }
+
+    public boolean isUseBlackSide() {
+        return useBlackSide;
+    }
+
+    public boolean isUseAudio() {
+        return useAudio;
     }
 
     public enum RecordMode {

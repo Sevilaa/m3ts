@@ -1,14 +1,12 @@
 package ch.m3ts.tracker.visualization;
 
 import android.graphics.PixelFormat;
-import android.hardware.Camera;
 import android.os.Bundle;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.TextView;
 
 import cz.fmo.R;
-import cz.fmo.graphics.EGL;
 
 @SuppressWarnings("squid:S110")
 public abstract class MatchVisualizeActivity extends CameraPreviewActivity implements SurfaceHolder.Callback {
@@ -20,7 +18,7 @@ public abstract class MatchVisualizeActivity extends CameraPreviewActivity imple
 
     /**
      * In this method the inherited class must set the content view.
-     *  i.E. setContentView(R.layout.activity_play_movie_surface);
+     * i.E. setContentView(R.layout.activity_play_movie_surface);
      */
     public abstract void setCurrentContentView();
 

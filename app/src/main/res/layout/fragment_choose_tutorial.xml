@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <GridLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:rowCount="4"
+        android:layout_centerVertical="true"
+        android:columnCount="1"
+        android:layout_centerHorizontal="true">
+
+        <Button
+            android:id="@+id/tutorialTrackerBtn"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/radius_background"
+            android:backgroundTint="@android:color/secondary_text_light"
+            android:layout_marginTop="20dp"
+            android:paddingStart="36dp"
+            android:paddingEnd="36dp"
+            android:elevation="8dp"
+            android:textAllCaps="false"
+            android:textStyle="normal"
+            android:text="@string/tutorialTrackerBtnLabel"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:drawableStart="@drawable/ic_help"
+            android:drawableTint="@color/primary_light"
+            android:textColor="#fff"
+            android:textSize="18sp" />
+
+        <Button
+            android:id="@+id/tutorialDisplayBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/radius_background"
+            android:backgroundTint="@android:color/secondary_text_light"
+            android:elevation="8dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:paddingStart="36dp"
+            android:paddingEnd="36dp"
+            android:textAllCaps="false"
+            android:textStyle="normal"
+            android:text="@string/tutorialDisplayBtnLabel"
+            android:textColor="#fff"
+            android:drawableStart="@drawable/ic_help"
+            android:drawableTint="@color/primary_light"
+            android:textSize="18sp" />
+
+        <Button
+            android:id="@+id/tutorialPlayBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/radius_background"
+            android:backgroundTint="@android:color/secondary_text_light"
+            android:layout_marginTop="20dp"
+            android:paddingStart="36dp"
+            android:paddingEnd="36dp"
+            android:elevation="8dp"
+            android:textAllCaps="false"
+            android:textStyle="normal"
+            android:text="@string/tutorialPlayBtnLabel"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:textColor="#fff"
+            android:drawableStart="@drawable/ic_help"
+            android:drawableTint="@color/primary_light"
+            android:textSize="18sp" />
+    </GridLayout>
+</RelativeLayout>

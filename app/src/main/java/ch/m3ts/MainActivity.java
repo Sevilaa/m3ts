@@ -1,14 +1,24 @@
 package ch.m3ts;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.audio.DebugImplAudioRecorderCallback;
+import com.google.audio.core.Recorder;
 
 import ch.m3ts.display.MatchActivity;
 import ch.m3ts.tracker.init.InitTrackerActivity;
+import ch.m3ts.tutorial.TutorialActivity;
 import cz.fmo.R;
 
 /**
@@ -16,6 +26,59 @@ import cz.fmo.R;
  * A player can here specify whether to use his/her device as a Display or Tracker.
  */
 public class MainActivity extends Activity {
+    private final static String[] perms = new String[]{
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.CAMERA,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.BLUETOOTH,
+            Manifest.permission.BLUETOOTH_ADMIN,
+            Manifest.permission.ACCESS_WIFI_STATE,
+            Manifest.permission.CHANGE_WIFI_STATE,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_FINE_LOCATION};
+    private Recorder audioRecorder;
+
+    private boolean areAllPermissionsGranted() {
+        boolean hasPermission = true;
+        for (String permission : perms) {
+            int permissionStatus = ContextCompat.checkSelfPermission(this, permission);
+            if (permissionStatus != PackageManager.PERMISSION_GRANTED) {
+                hasPermission = false;
+                break;
+            }
+        }
+        return hasPermission;
+    }
+
+    /**
+     * Handles user acceptance (or denial) of our permission request.
+     */
+    @Override
+    public void onRequestPermissionsResult(
+            int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode != 0) {
+            return;
+        }
+
+        for (int grantResult : grantResults) {
+            if (grantResult == PackageManager.PERMISSION_DENIED) {
+                Toast.makeText(this, getString(R.string.errorMsgPermissions), Toast.LENGTH_LONG).show();
+                finish();
+                return;
+            }
+        }
+        recreate();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (!areAllPermissionsGranted()) {
+            ActivityCompat.requestPermissions(this, perms, 0);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +89,23 @@ public class MainActivity extends Activity {
         animationDrawable.setEnterFadeDuration(2000);
         animationDrawable.setExitFadeDuration(4000);
         animationDrawable.start();
+        this.audioRecorder = new Recorder(new DebugImplAudioRecorderCallback(
+                (TextView) findViewById(R.id.txtPlayMovieAmp),
+                (TextView) findViewById(R.id.txtPlayMovieFrequency),
+                (TextView) findViewById(R.id.txtAudioBounce)
+        ));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        audioRecorder.start();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        audioRecorder.stop();
     }
 
     @SuppressWarnings("squid:S1172")
@@ -45,5 +125,9 @@ public class MainActivity extends Activity {
     @SuppressWarnings("squid:S1172")
     public void onUseAsTracker(View toggle) {
         startActivity(new Intent(this, InitTrackerActivity.class));
+    }
+
+    public void onStartTutorial(View view) {
+        startActivity(new Intent(this, TutorialActivity.class));
     }
 }

@@ -25,11 +25,13 @@ import androidx.test.rule.ActivityTestRule;
 import androidx.test.runner.AndroidJUnit4;
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
 import androidx.test.runner.lifecycle.Stage;
+import ch.m3ts.connection.NearbyTrackerConnection;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.MatchType;
 import ch.m3ts.tracker.visualization.CameraPreviewActivity;
 import ch.m3ts.tracker.visualization.live.LiveActivity;
 import cz.fmo.R;
+import cz.fmo.util.Config;
 import helper.GrantPermission;
 
 import static androidx.test.espresso.Espresso.onView;
@@ -46,8 +48,8 @@ import static org.junit.Assert.assertNotEquals;
 @LargeTest
 public class InitTrackerActivityTest extends InstrumentationTestCase {
     private InitTrackerActivity activity;
+    private Config config;
     private String QR_CODE_PATH = "yuvimg.yuv";
-    private String SCAN_OVERLAY_TEXT = "Scan the QR code from the display";
 
     @Rule
     public ActivityTestRule<InitTrackerActivity> initActivityRule = new ActivityTestRule<InitTrackerActivity>(InitTrackerActivity.class) {
@@ -61,6 +63,11 @@ public class InitTrackerActivityTest extends InstrumentationTestCase {
     public void setUp() {
         injectInstrumentation(InstrumentationRegistry.getInstrumentation());
         activity = initActivityRule.getActivity();
+        config = new Config(activity);
+        if (!config.isUsingPubnub()) {
+            NearbyTrackerConnection trackerConnection = NearbyTrackerConnection.getInstance();
+            trackerConnection.init(activity);
+        }
         GrantPermission.grantAllPermissions();
     }
 
@@ -78,8 +85,11 @@ public class InitTrackerActivityTest extends InstrumentationTestCase {
         // need to perform a wait until the sensor data of the emulator has been received
         onView(isRoot()).perform(waitFor(3000));
         onView(withId(R.id.adjust_device_overlay)).check(matches(not(isDisplayed())));
-        onView(withId(R.id.scan_overlay)).check(matches(isDisplayed()));
-        onView(withText(SCAN_OVERLAY_TEXT)).check(matches(isDisplayed()));
+        if (config.isUsingPubnub()) {
+            onView(withId(R.id.scan_overlay)).check(matches(isDisplayed()));
+        } else {
+            onView(withText(R.string.connectTrackerSearching)).check(matches(isDisplayed()));
+        }
     }
 
     @Test
@@ -92,11 +102,11 @@ public class InitTrackerActivityTest extends InstrumentationTestCase {
         cameraCallback.onCaptureFrame();
         onView(withId(R.id.tracker_loading)).check(matches(isDisplayed()));
         onView(withId(R.id.tracker_info)).check(matches(isDisplayed()));
-        onView(withId(R.id.loading_bar)).check(matches(isDisplayed()));
+        onView(withText(R.string.tiLoadingText)).check(matches(isDisplayed()));
     }
 
     @Test
-    public void switchToLiveActivity() throws Throwable{
+    public void switchToLiveActivity() throws Throwable {
         String matchID = "some_id";
         int selectedMatchType = 0;
         int selectedServingSide = 1;

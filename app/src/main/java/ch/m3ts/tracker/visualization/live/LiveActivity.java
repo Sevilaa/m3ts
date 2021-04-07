@@ -3,7 +3,6 @@ package ch.m3ts.tracker.visualization.live;
 import android.app.AlertDialog;
 import android.graphics.Point;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.view.Display;
 import android.view.SurfaceView;
 
@@ -51,8 +50,15 @@ public final class LiveActivity extends MatchVisualizeActivity {
         this.mHandler.initMatch(this.servingSide, this.matchType, playerLeft, playerRight);
         cameraCallback = this.mHandler;
         this.alertDialog = QuitAlertDialogHelper.makeDialog(this);
-        Log.d("Found match: " +matchId);
+        Log.d("Found match: " + matchId);
         this.onPause();
+
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        this.mHandler.setConnectCallback(null);
     }
 
     @Override
@@ -91,9 +97,10 @@ public final class LiveActivity extends MatchVisualizeActivity {
         // refresh GUI
         mStatus = CameraStatus.RUNNING;
 
-        if(mConfig.doRecordMatches()) {
+        if (mConfig.doRecordMatches()) {
             if (liveRecording != null) liveRecording.tearDown();
             liveRecording = LiveRecording.getInstance(this, mCamera);
+            liveRecording.startRecording();
         }
 
         // start thread
@@ -101,23 +108,11 @@ public final class LiveActivity extends MatchVisualizeActivity {
         Table table = trySettingTableLocationFromIntent();
         mHandler.init(mConfig, this.getCameraWidth(), this.getCameraHeight(), table, this.getCameraHorizontalViewAngle());
         mHandler.startDetections();
-        liveRecording.startRecording();
     }
 
     @Override
     public void setCurrentContentView() {
         setContentView(R.layout.activity_live_debug);
-    }
-
-    /**
-     * Called when a decision has been made regarding the camera permission. Whatever the response
-     * is, the initialization procedure continues. If the permission is denied, the init() method
-     * will display a proper error message on the screen.
-     */
-    @Override
-    public void onRequestPermissionsResult(int requestID, @NonNull String[] permissionList,
-                                           @NonNull int[] grantedList) {
-        init();
     }
 
     @Override
@@ -171,8 +166,8 @@ public final class LiveActivity extends MatchVisualizeActivity {
         Display display = getWindowManager().getDefaultDisplay();
         Point displaySize = new Point();
         display.getSize(displaySize);
-        for (int i = 0; i<points.length; i++) {
-            if (i%2 == 0) {
+        for (int i = 0; i < points.length; i++) {
+            if (i % 2 == 0) {
                 points[i] = (int) Math.round(points[i] / 100.0 * displaySize.x);
             } else {
                 points[i] = (int) Math.round(points[i] / 100.0 * displaySize.y);
@@ -197,6 +192,7 @@ public final class LiveActivity extends MatchVisualizeActivity {
 
     static class NoCornersInIntendFoundException extends RuntimeException {
         private static final String MESSAGE = "No corners have been found in the intent's bundle!";
+
         NoCornersInIntendFoundException() {
             super(MESSAGE);
         }
@@ -204,6 +200,7 @@ public final class LiveActivity extends MatchVisualizeActivity {
 
     static class UnableToGetBundleException extends RuntimeException {
         private static final String MESSAGE = "Unable to get the bundle from Intent!";
+
         UnableToGetBundleException() {
             super(MESSAGE);
         }

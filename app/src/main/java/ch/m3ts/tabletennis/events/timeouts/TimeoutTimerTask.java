@@ -5,8 +5,8 @@ import java.util.TimerTask;
 import ch.m3ts.tabletennis.events.EventDetector;
 
 public class TimeoutTimerTask extends TimerTask {
-    private EventDetector eventDetector;
-    private int currentNumberOfDetections;
+    private final EventDetector eventDetector;
+    private final int currentNumberOfDetections;
 
     public TimeoutTimerTask(EventDetector eventDetector, int currentNumberOfDetections) {
         this.eventDetector = eventDetector;

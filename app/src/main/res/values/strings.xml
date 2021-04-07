@@ -4,6 +4,10 @@
 
     <string name="play_button_text">Play</string>
     <string name="stop_button_text">Stop</string>
+    <string name="errorMsgPermissions">Sorry, cannot use M3TS unless all permissions are granted</string>
+    <string name="idDisplay">m3ts_display</string>
+    <string name="idTracker">m3ts_tracker</string>
+    <string name="errorMsgNearbyConnection">Failed to request connection to the other device. Try again or switch to PubNub connection (settings).</string>
 
     <string name="videoLength">%d seconds in buffer</string>
     <string name="noVideoLength">Buffer is empty</string>
@@ -50,10 +54,10 @@
 
     <!-- Game settings -->
     <string name="prefGame">Game</string>
-    <string name="prefPlayer1Name">Name Player 1</string>
+    <string name="prefPlayer1Name">Name Player 1 (left)</string>
     <string name="prefPlayer1NameDefault">Hans</string>
     <string name="prefPlayer1Key">player_1</string>
-    <string name="prefPlayer2Name">Name Player 2</string>
+    <string name="prefPlayer2Name">Name Player 2 (right)</string>
     <string name="prefPlayer2NameDefault">Peter</string>
     <string name="prefPlayer2Key">player_2</string>
     <string name="prefDisplayDebug">Display debug info</string>
@@ -63,6 +67,14 @@
     <string name="prefRecord">Record matches</string>
     <string name="prefRecordKey">record_matches</string>
     <string name="prefRecordDefault">false</string>
+    <string name="prefUseBlackSideDefault">false</string>
+    <string name="prefUseBlackSideKey">use_black_side</string>
+    <string name="prefUseBlackSideTitle">Use black side of racket for serving</string>
+    <string name="prefUseBlackSideSummary">Allows the use of the black side of the racket (in addition to the red one) to signal that a player is ready for serve</string>
+    <string name="prefUseAudioDefault">false</string>
+    <string name="prefUseAudioKey">use_audio</string>
+    <string name="prefUseAudioSummary">Allows the use of audio of the tracker device to assist ball detection</string>
+    <string name="prefUseAudioTitle">Use Audio (experimental)</string>
 
     <!-- Detection settings -->
     <string name="prefVelocityEstimationMode">Velocity estimation mode</string>
@@ -79,6 +91,10 @@
     <string name="runVideoPlayer">Run video player</string>
     <string name="prefDisableDetection">Disable FMO detection</string>
 
+    <!-- Advanced settings -->
+    <string name="prefPubnub">Connect with pubnub</string>
+    <string name="prefPubnubKey">connect_pubnub</string>
+
     <string name="playerLeftDefaultName">Player 1</string>
     <string name="playerRightDefaultName">Player 2</string>
     <string name="gameScoreStart">0</string>
@@ -89,6 +105,7 @@
     <string name="debugBallCountStart">0</string>
     <string name="contentDescRevert">reverts last selected corner</string>
     <string name="initMarkTableLabel">Mark the left and right table corner</string>
+    <string name="initMoveDeviceMsg">Move the device until the white line is somewhat aligned with the net</string>
     <string name="trackerStatusConnectedWithDisplay">connected to server</string>
     <string name="trackerStatusConnectedWithDisplayFail">unable to connect to display!</string>
 
@@ -97,6 +114,19 @@
     <string name="appNameLong">mobile table tennis tracking system</string>
     <string name="mainTrackerBtnLabel">Use as Tracker</string>
     <string name="mainDisplayBtnLabel">Use as Display</string>
+    <string name="mainTutorialBtnLabel">Help</string>
+
+    <!-- Tutorial Activity -->
+    <string name="tutorialTitleKey">title</string>
+    <string name="tutorialImagesKey">images</string>
+    <string name="tutorialDescriptionsKey">descriptions</string>
+    <string name="tutorialPlayBtnLabel">How to Serve</string>
+    <string name="tutorialTrackerBtnLabel">How to setup Tracker</string>
+    <string name="tutorialDisplayBtnLabel">The Scoreboard</string>
+    <string name="tutorialTrackerSetupDescription0">Place the Tracker roughly 2-3 meters from the table.</string>
+    <string name="tutorialTrackerSetupDescription1">The height of the Tracker should roughly be the same as the height of the ping pong table. Follow the instructions on screen for camera placement.</string>
+    <string name="tutorialTrackerSetupDescription2">Once the screen asks for a QR-Code, the camera is placed correctly and the screen should look similar to the one above.</string>
+    <string name="tutorialServeDescription0">To serve, the server must first hold the red or black side of the racket over his/her table corner for a second. An audible "beep" sound effect will be played. The server can now perform the serve.</string>
 
     <!-- Init Activity -->
     <string name="initMarkTableLabelExplanation">Long Press to select a corner</string>
@@ -115,7 +145,7 @@
     <string name="ttsTo"> to </string>
 
     <!-- MatchInit Fragment -->
-    <string name="miTitle">Connect With Tracker</string>
+    <string name="miTitle">Connecting With Tracker</string>
     <string name="miSubTitle">scan the QR code with the tracker device</string>
     <string name="miConnectedTitle">Connected With Tracker</string>
     <string name="miConnectedSubTitle">click on the button to take a picture of the table with the tracker device</string>
@@ -145,6 +175,21 @@
     <string name="quitMatchMessage">Are you sure you want to quit the ongoing match?\nYou will be sent back to the main screen.</string>
     <string name="quitMatchProceed">Quit Match</string>
     <string name="quitMatchCancel">Cancel</string>
+
+    <!-- Connect Messages -->
+    <string name="connectTitle">Accept connection with %1$s</string>
+    <string name="connectMessage">Confirm the code matches on both devices:\n</string>
+    <string name="disconnectTitle">Lost connection to other device</string>
+    <string name="disconnectMessage">Please set up a new connection</string>
+    <string name="connectConfirm">Confirm</string>
+    <string name="connectReject">Reject</string>
+    <string name="connectTrackerSearching">Setup the display device and wait for a connection…</string>
+    <string name="connectDisplaySearching">Setup the tracker device and wait for a connection…</string>
+    <string name="connectConnecting">Connecting with %1$s…</string>
+    <string name="connectDisconnect">Lost connection with remote device. Try again!</string>
+    <string name="connectRejection">The connection was rejected. Try again!</string>
+    <string name="connectDiscoverFailure">Search failed. Try again!</string>
+    <string name="connectPicture">Waiting for the display to take a picture…</string>
 
     <!-- Tracker Init -->
     <string name="tiLoadingText">Sending Frame…</string>

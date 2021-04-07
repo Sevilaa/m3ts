@@ -30,6 +30,7 @@ import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentat
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.not;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
@@ -56,6 +57,13 @@ public class MainActivityTest {
                 .check(matches(isDisplayed()));
         onView(withId(R.id.mainUseAsDisplayBtn))
                 .check(matches(isDisplayed()));
+        onView(withId(R.id.mainUseAsDisplayBtn))
+                .perform(click());
+
+        // check for alertDialog
+        pressBack();
+        onView(withText(R.string.quitMatchMessage)).check(matches(isDisplayed()));
+        onView(withText(R.string.quitMatchProceed)).perform(click());
         onView(withId(R.id.mainUseAsDisplayBtn))
                 .perform(click());
 
@@ -107,6 +115,36 @@ public class MainActivityTest {
         onView(withText(R.string.prefDisplayDebug)).perform(click());
         onView(withText(R.string.prefRecord)).perform(click());
 
+        // check rest of the settings...
+        // Video Capture
+        onView(withText(R.string.prefHeaderCapture)).check(matches(isDisplayed()));
+        onView(withText(R.string.prefHeaderCapture)).perform(click());
+        onView(withText(R.string.prefResolution)).check(matches(isDisplayed()));
+        onView(withText(R.string.prefCameraFacing)).check(matches(isDisplayed()));
+        onView(withText(R.string.prefRecordMode)).check(matches(isDisplayed()));
+        onView(withText(R.string.prefSlowPreview)).check(matches(isDisplayed()));
+
+        // Detection
+        onView(withText(R.string.prefHeaderDetection)).check(matches(isDisplayed()));
+        onView(withText(R.string.prefHeaderDetection)).perform(click());
+        onView(withText(R.string.prefColorSpace)).check(matches(isDisplayed()));
+        onView(withText(R.string.prefProcRes)).check(matches(isDisplayed()));
+
+        // Velocity estimation
+        onView(withText(R.string.prefHeaderVelocity)).check(matches(isDisplayed()));
+        onView(withText(R.string.prefHeaderVelocity)).perform(click());
+        onView(withText(R.string.prefVelocityEstimationMode)).check(matches(isDisplayed()));
+        onView(withText(R.string.prefObjectDiameterCustom)).check(matches(isDisplayed()));
+        onView(withText(R.string.prefObjectDiameterPicker)).check(matches(isDisplayed()));
+        onView(withText(R.string.prefFrameRate)).check(matches(isDisplayed()));
+
+        // Advanced
+        onView(withText(R.string.prefHeaderAdvanced)).check(matches(isDisplayed()));
+        onView(withText(R.string.prefHeaderAdvanced)).perform(click());
+        onView(withText(R.string.runVideoPlayer)).check(matches(isDisplayed()));
+        onView(withText(R.string.prefDisableDetection)).check(matches(isDisplayed()));
+        onView(withText(R.string.prefPubnub)).check(matches(isDisplayed()));
+
         // now check the edited settings in main activity
         pressBack();
         config = new Config(activity);
@@ -114,7 +152,6 @@ public class MainActivityTest {
         assertEquals(!recordMatches, config.doRecordMatches());
         assertEquals(newPlayer1Name, config.getPlayer1Name());
         assertEquals(newPlayer2Name, config.getPlayer2Name());
-
     }
 
     private void checkMatchSettingsAndQRCode() {
@@ -134,9 +171,18 @@ public class MainActivityTest {
         onView(withId(R.id.init_sideAndMatchTypeDoneBtn))
                 .perform(click());
 
+        Activity activity = pmsMainActivityRule.getActivity();
+        Config config = new Config(activity);
 
-        // now we should be greeted by a QR code
-        onView(withId(R.id.qr_code))
-                .check(matches(isDisplayed()));
+        if (config.isUsingPubnub()) {
+            // now we should be greeted by a QR code
+            onView(withId(R.id.qr_code))
+                    .check(matches(isDisplayed()));
+        } else {
+            onView(withId(R.id.qr_code))
+                    .check(matches(not(isDisplayed())));
+            onView(withText(R.string.connectDisplaySearching))
+                    .check(matches(isDisplayed()));
+        }
     }
 }

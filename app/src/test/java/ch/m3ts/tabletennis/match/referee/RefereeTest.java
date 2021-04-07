@@ -14,6 +14,7 @@ import cz.fmo.util.Config;
 import helper.DetectionGenerator;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -198,6 +199,47 @@ public class RefereeTest {
     }
 
     @Test
+    public void onReturnWithOnlyAudioBounceAndTooLongOutOfFrame() {
+        simulateServe();
+        referee.onBounce(detection, Side.LEFT);
+        referee.onTableSideChange(Side.RIGHT);
+        referee.onBounce(detection, Side.RIGHT);
+        referee.onSideChange(Side.RIGHT);
+        referee.onTableSideChange(Side.LEFT);
+        referee.onAudioBounce(Side.LEFT);
+        referee.onNearlyOutOfFrame(detection, Side.LEFT);
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            Log.d(e.getMessage());
+        }
+        referee.onStrikeFound(realTrackSet.getTracks().get(0));
+        verify(gameMock, times(0)).onPoint(Side.LEFT);
+        verify(gameMock, times(1)).onPoint(Side.RIGHT);
+    }
+
+    @Test
+    public void onReturnFaultWithOnlyAudioBounceAndTooLongOutOfFrame() {
+        simulateServe();
+        referee.onBounce(detection, Side.LEFT);
+        referee.onTableSideChange(Side.RIGHT);
+        referee.onBounce(detection, Side.RIGHT);
+        referee.onSideChange(Side.RIGHT);
+        // some other noise (f.e. racket hitting the ball) got heard as audio bounce
+        referee.onAudioBounce(Side.LEFT);
+        referee.onTableSideChange(Side.LEFT);
+        referee.onNearlyOutOfFrame(detection, Side.LEFT);
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            Log.d(e.getMessage());
+        }
+        referee.onStrikeFound(realTrackSet.getTracks().get(0));
+        verify(gameMock, times(1)).onPoint(Side.LEFT);
+        verify(gameMock, times(0)).onPoint(Side.RIGHT);
+    }
+
+    @Test
     public void onReturnFaultNoBounceAndOutOfFrameButInstantBack() {
         simulateServe();
         referee.onBounce(detection, Side.LEFT);
@@ -223,6 +265,39 @@ public class RefereeTest {
         verify(gameMock, times(0)).onPoint(Side.RIGHT);
     }
 
+    @Test
+    public void onFallingOffSideWaysWithBounce() {
+        simulateServe();
+        referee.onBounce(detection, Side.LEFT);
+        referee.onSideChange(Side.RIGHT);
+        referee.onTableSideChange(Side.RIGHT);
+        referee.onBounce(detection, Side.RIGHT);
+        referee.onBallDroppedSideWays();
+        verify(gameMock, times(1)).onPoint(Side.LEFT);
+        verify(gameMock, times(0)).onPoint(Side.RIGHT);
+    }
+
+    @Test
+    public void testPointManipulation() {
+        assertSame(State.WAIT_FOR_SERVE, referee.getState());
+        verify(gameMock, times(0)).onPoint(Side.LEFT);
+        verify(gameMock, times(0)).onPoint(Side.RIGHT);
+        verify(gameMock, times(0)).onPointDeduction(Side.LEFT);
+        verify(gameMock, times(0)).onPointDeduction(Side.RIGHT);
+        referee.onPointAddition(Side.RIGHT);
+        verify(gameMock, times(0)).onPoint(Side.LEFT);
+        verify(gameMock, times(1)).onPoint(Side.RIGHT);
+        assertSame(State.PAUSE, referee.getState());
+        referee.onPointDeduction(Side.RIGHT);
+        verify(gameMock, times(0)).onPointDeduction(Side.LEFT);
+        verify(gameMock, times(1)).onPointDeduction(Side.RIGHT);
+        assertSame(State.PAUSE, referee.getState());
+        referee.onPause();
+        referee.onResume();
+        verify(gameMock, times(1)).onReadyToServe(STARTING_SIDE);
+        assertSame(State.WAIT_FOR_SERVE, referee.getState());
+    }
+
     @After
     public void tearDown() {
         referee = null;
@@ -231,7 +306,7 @@ public class RefereeTest {
 
     private void simulateServe() {
         long detectionTime = System.nanoTime();
-        int delay = 1000/FRAME_RATE;
+        int delay = 1000 / FRAME_RATE;
         Lib.Detection[] someDetections = DetectionGenerator.makeDetectionsInXDirectionOnTable(true);
         for (Lib.Detection someDetection : someDetections) {
             detectionTime = detectionTime + delay;

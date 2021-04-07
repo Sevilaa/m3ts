@@ -6,12 +6,25 @@ import ch.m3ts.tabletennis.helper.Side;
  * Represents the status of a match.
  */
 public class MatchStatus {
-    private String playerLeft;
-    private String playerRight;
-    private int scoreLeft;
-    private int scoreRight;
-    private Side nextServer;
-    private int gamesNeededToWin;
+    private final String playerLeft;
+    private final String playerRight;
+    private final int scoreLeft;
+    private final int scoreRight;
+    private final Side nextServer;
+    private final int gamesNeededToWin;
+    private final int winsLeft;
+    private final int winsRight;
+
+    public MatchStatus(String playerLeft, String playerRight, int scoreLeft, int scoreRight, int winsLeft, int winsRight, Side nextServer, int gamesNeededToWin) {
+        this.playerLeft = playerLeft;
+        this.playerRight = playerRight;
+        this.scoreLeft = scoreLeft;
+        this.scoreRight = scoreRight;
+        this.winsLeft = winsLeft;
+        this.winsRight = winsRight;
+        this.nextServer = nextServer;
+        this.gamesNeededToWin = gamesNeededToWin;
+    }
 
     public Side getNextServer() {
         return nextServer;
@@ -43,19 +56,5 @@ public class MatchStatus {
 
     public int getGamesNeededToWin() {
         return this.gamesNeededToWin;
-    }
-
-    private int winsLeft;
-    private int winsRight;
-
-    public MatchStatus(String playerLeft, String playerRight, int scoreLeft, int scoreRight, int winsLeft, int winsRight, Side nextServer, int gamesNeededToWin) {
-        this.playerLeft = playerLeft;
-        this.playerRight = playerRight;
-        this.scoreLeft = scoreLeft;
-        this.scoreRight = scoreRight;
-        this.winsLeft = winsLeft;
-        this.winsRight = winsRight;
-        this.nextServer = nextServer;
-        this.gamesNeededToWin = gamesNeededToWin;
     }
 }

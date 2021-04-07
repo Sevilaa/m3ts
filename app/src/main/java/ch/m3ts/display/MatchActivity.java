@@ -16,10 +16,13 @@ import java.util.Properties;
 import java.util.Random;
 
 import ch.m3ts.Log;
+import ch.m3ts.connection.DisplayConnection;
+import ch.m3ts.connection.NearbyDisplayConnection;
+import ch.m3ts.connection.pubnub.PubNubDisplayConnection;
+import ch.m3ts.connection.pubnub.PubNubFactory;
 import ch.m3ts.helper.QuitAlertDialogHelper;
-import ch.m3ts.pubnub.DisplayPubNub;
-import ch.m3ts.pubnub.PubNubFactory;
 import cz.fmo.R;
+import cz.fmo.util.Config;
 
 /**
  * Activity which implements main the features of the device used as a display.
@@ -28,9 +31,10 @@ import cz.fmo.R;
  */
 @SuppressWarnings("squid:S110")
 public class MatchActivity extends FragmentActivity implements FragmentReplaceCallback {
-    private DisplayPubNub pubNub;
-    private Random random = new SecureRandom();
+    private PubNubDisplayConnection pubNub;
+    private final Random random = new SecureRandom();
     private AlertDialog alertDialog;
+    private NearbyDisplayConnection nearbyDisplayConnection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,17 +50,38 @@ public class MatchActivity extends FragmentActivity implements FragmentReplaceCa
         Bundle bundle = getIntent().getExtras();
         boolean isRestartedMatch = bundle.getBoolean("isRestartedMatch");
         Fragment nextFragment = new MatchSettingsFragment();
-        if(isRestartedMatch) {
-            initPubNub(bundle.getString("room"));
-            this.pubNub.onRestartMatch();
+        if (isRestartedMatch) {
+            initRestartedMatch(bundle);
             nextFragment = new MatchScoreFragment();
         } else {
-            initPubNub(getRandomRoomID(8));
+            initConnection();
         }
         FragmentManager manager = getFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
         transaction.add(R.id.mainBackground, nextFragment);
         transaction.commit();
+    }
+
+    private void initRestartedMatch(Bundle bundle) {
+        Config mConfig = new Config(this);
+        if (mConfig.isUsingPubnub()) {
+            initPubNub(bundle.getString("room"));
+            this.pubNub.onRestartMatch();
+        } else {
+            this.nearbyDisplayConnection = NearbyDisplayConnection.getInstance();
+            this.nearbyDisplayConnection.init(this);
+            this.nearbyDisplayConnection.onRestartMatch();
+        }
+    }
+
+    private void initConnection() {
+        Config mConfig = new Config(this);
+        if (mConfig.isUsingPubnub()) {
+            initPubNub(getRandomRoomID(8));
+        } else {
+            this.nearbyDisplayConnection = NearbyDisplayConnection.getInstance();
+            this.nearbyDisplayConnection.init(this);
+        }
     }
 
     @Override
@@ -68,8 +93,16 @@ public class MatchActivity extends FragmentActivity implements FragmentReplaceCa
         transaction.commit();
     }
 
-    public DisplayPubNub getPubNub() {
+    public PubNubDisplayConnection getPubNub() {
         return pubNub;
+    }
+
+    public DisplayConnection getConnection() {
+        if (new Config(this).isUsingPubnub()) {
+            return pubNub;
+        } else {
+            return nearbyDisplayConnection;
+        }
     }
 
     private void initPubNub(String pubnubRoom) {
@@ -103,4 +136,9 @@ public class MatchActivity extends FragmentActivity implements FragmentReplaceCa
     public void onBackPressed() {
         this.alertDialog.show();
     }
+
+    public NearbyDisplayConnection getNearbyDisplayConnection() {
+        return nearbyDisplayConnection;
+    }
+
 }

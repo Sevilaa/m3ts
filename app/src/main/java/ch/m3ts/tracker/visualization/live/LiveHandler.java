@@ -4,19 +4,25 @@ import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.TextView;
 
+import com.google.android.gms.nearby.connection.PayloadCallback;
+
 import java.lang.ref.WeakReference;
 import java.util.Date;
 import java.util.Timer;
 
 import ch.m3ts.Log;
-import ch.m3ts.pubnub.PubNubFactory;
-import ch.m3ts.pubnub.TrackerPubNub;
+import ch.m3ts.connection.ConnectionCallback;
+import ch.m3ts.connection.ConnectionHelper;
+import ch.m3ts.connection.NearbyTrackerConnection;
+import ch.m3ts.connection.TrackerConnection;
+import ch.m3ts.connection.pubnub.PubNubFactory;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.Match;
 import ch.m3ts.tabletennis.match.MatchSettings;
 import ch.m3ts.tabletennis.match.MatchType;
 import ch.m3ts.tabletennis.match.Player;
 import ch.m3ts.tabletennis.match.ServeRules;
+import ch.m3ts.tabletennis.match.UICallback;
 import ch.m3ts.tabletennis.match.game.GameType;
 import ch.m3ts.tracker.visualization.DebugHandlerRefreshTimerTask;
 import ch.m3ts.tracker.visualization.MatchVisualizeActivity;
@@ -29,15 +35,15 @@ import cz.fmo.util.Config;
 
 /**
  * Renders the images received by the camera API onto the screen and also passes them to FMO.
- *
+ * <p>
  * FMO then finds detections and tracks and forwards them to the EventDetector, which then calls
  * for events on this Handler.
  **/
-public class LiveHandler extends MatchVisualizeHandler implements CameraThread.Callback {
+public class LiveHandler extends MatchVisualizeHandler implements CameraThread.Callback, ConnectionCallback {
     private static final int CAMERA_ERROR = 2;
-    private TrackerPubNub trackerPubNub;
     private final boolean doDrawDebugInfo;
     private final WeakReference<LiveActivity> mLiveActivity;
+    private TrackerConnection connection;
 
     public LiveHandler(@NonNull MatchVisualizeActivity activity, String matchID) {
         super(activity);
@@ -45,8 +51,13 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
         this.mLiveActivity = new WeakReference<>((LiveActivity) activity);
         TextView displayConnectedText = (TextView) activity.findViewById(R.id.display_connected_status);
         try {
-            this.trackerPubNub = PubNubFactory.createTrackerPubNub(activity.getApplicationContext(), matchID);
-            this.uiCallback = this.trackerPubNub;
+            if (new Config(mLiveActivity.get()).isUsingPubnub()) {
+                this.connection = (TrackerConnection) PubNubFactory.createTrackerPubNub(activity.getApplicationContext(), matchID);
+            } else {
+                this.connection = (TrackerConnection) NearbyTrackerConnection.getInstance();
+                ((NearbyTrackerConnection) this.connection).setConnectionCallback(this);
+            }
+            this.uiCallback = (UICallback) this.connection;
         } catch (PubNubFactory.NoPropertiesFileFoundException ex) {
             Log.d("No properties file found, using display of this device...");
             displayConnectedText.setText(activity.getString(R.string.trackerStatusConnectedWithDisplayFail));
@@ -69,7 +80,7 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
     @Override
     public void onCameraFrame(byte[] dataYUV420SP) {
         Lib.detectionFrame(dataYUV420SP);
-        if(isWaitingForGesture()) {
+        if (isWaitingForGesture()) {
             setWaitingForGesture(!getServeDetector().isReadyToServe(dataYUV420SP));
         }
     }
@@ -84,11 +95,14 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
     public void initMatch(Side servingSide, MatchType matchType, Player playerLeft, Player playerRight) {
         this.matchSettings = new MatchSettings(matchType, GameType.G11, ServeRules.S2, playerLeft, playerRight, servingSide);
         this.match = new Match(matchSettings, uiCallback, this);
-        this.trackerPubNub.setTrackerPubNubCallback(match);
-        this.trackerPubNub.setMatchVisualizeHandlerCallback(this);
-        this.trackerPubNub.sendStatusUpdate(playerLeft.getName(), playerRight.getName(), 0,0,0,0,servingSide, matchType.gamesNeededToWin);
+        if (mLiveActivity.get() != null)
+            this.match.getReferee().debugToFile(mLiveActivity.get().getApplicationContext());
+        this.connection.setTrackerPubNubCallback(match);
+        this.connection.setMatchVisualizeHandlerCallback(this);
+        this.connection.setScoreManipulationCallback(match.getReferee());
+        this.connection.sendStatusUpdate(playerLeft.getName(), playerRight.getName(), 0, 0, 0, 0, servingSide, matchType.gamesNeededToWin);
         startMatch();
-        if(doDrawDebugInfo) {
+        if (doDrawDebugInfo) {
             setTextInTextView(R.id.txtDebugPlayerNameLeft, playerLeft.getName());
             setTextInTextView(R.id.txtDebugPlayerNameRight, playerRight.getName());
             Timer refreshTimer = new Timer();
@@ -98,7 +112,7 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
 
     @Override
     public void onStrikeFound(Track track) {
-        if(doDrawDebugInfo) {
+        if (doDrawDebugInfo) {
             super.onStrikeFound(track);
         }
     }
@@ -106,21 +120,51 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
     @Override
     public void onSideChange(final Side side) {
         // use the referees current striker (might be different then side in parameter!)
-        if(doDrawDebugInfo) {
+        if (doDrawDebugInfo) {
             super.onSideChange(side);
         }
     }
 
     @Override
     protected void setCallbackForNewGame() {
-        this.trackerPubNub.setScoreManipulationCallback(match.getReferee());
+        this.connection.setScoreManipulationCallback(match.getReferee());
     }
 
     @Override
     public void restartMatch() {
         this.match.restartMatch();
-        this.trackerPubNub.sendStatusUpdate(this.matchSettings.getPlayerLeft().getName(), this.matchSettings.getPlayerRight().getName(), 0,0,0,0,this.matchSettings.getStartingServer(), this.matchSettings.getMatchType().gamesNeededToWin);
+        this.connection.sendStatusUpdate(this.matchSettings.getPlayerLeft().getName(), this.matchSettings.getPlayerRight().getName(), 0, 0, 0, 0, this.matchSettings.getStartingServer(), this.matchSettings.getMatchType().gamesNeededToWin);
         refreshDebugTextViews();
     }
 
+    @Override
+    public void onDiscoverFailure() {
+        // not needed
+    }
+
+    @Override
+    public void onRejection() {
+        // not needed
+    }
+
+    @Override
+    public void onConnection(String endpoint) {
+        // not needed
+    }
+
+    @Override
+    public void onConnecting(String endpointId, String endpointName, String token, PayloadCallback callback) {
+        // not needed
+    }
+
+    @Override
+    public void onDisconnection(String endpoint) {
+        ConnectionHelper.makeDisconnectDialog(mLiveActivity.get());
+    }
+
+    public void setConnectCallback(ConnectionCallback callback) {
+        if (this.connection instanceof NearbyTrackerConnection) {
+            ((NearbyTrackerConnection) this.connection).setConnectionCallback(callback);
+        }
+    }
 }

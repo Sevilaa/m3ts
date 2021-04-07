@@ -3,6 +3,10 @@ package ch.m3ts.tracker.visualization.live;
 import android.content.Context;
 
 import java.io.File;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 import cz.fmo.camera.CameraThread;
 import cz.fmo.camera.RecordingCameraTarget;
@@ -13,9 +17,9 @@ import cz.fmo.recording.SaveThread;
 import cz.fmo.util.FileManager;
 
 public class LiveRecording implements SaveThread.Callback {
-    private static LiveRecording instance;
     private static final float BUFFER_SECONDS = 8;
     private static final String FILENAME = "recording_%s.mp4";
+    private static LiveRecording instance;
     private FileManager mFileMan;
     private EncodeThread mEncode;
     private SaveThread mSaveMovie;
@@ -23,7 +27,8 @@ public class LiveRecording implements SaveThread.Callback {
     private RecordingCameraTarget mEncodeTarget;
     private boolean isRecording = false;
 
-    private LiveRecording() {}
+    private LiveRecording() {
+    }
 
     public static LiveRecording getInstance(Context ctx, CameraThread mCamera) {
         if (instance == null) {
@@ -77,7 +82,10 @@ public class LiveRecording implements SaveThread.Callback {
     public void startRecording() {
         isRecording = true;
         setEncodingEnabled(true);
-        File outFile = mFileMan.open(String.format(FILENAME, System.currentTimeMillis()/1000));
+        Date date = Calendar.getInstance().getTime();
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd_hh_mm_ss");
+        String strDate = dateFormat.format(date);
+        File outFile = mFileMan.open(String.format(FILENAME, strDate));
         mSaveTask = new ManualRecordingTask(outFile, mSaveMovie);
     }
 

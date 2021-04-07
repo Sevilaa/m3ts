@@ -11,6 +11,9 @@ import android.support.annotation.NonNull;
 import android.view.SurfaceHolder;
 import android.widget.TextView;
 
+import com.google.audio.ImplAudioRecorderCallback;
+import com.google.audio.core.Recorder;
+
 import org.opencv.android.OpenCVLoader;
 
 import java.lang.ref.WeakReference;
@@ -44,13 +47,19 @@ import cz.fmo.util.Config;
 /**
  * Renders the images received by any video source onto the screen and also passes them to FMO.
  * Use this Handler for tasks which need to be done on Replay AND live.
- *
+ * <p>
  * FMO then finds detections and tracks and forwards them to the EventDetector, which then calls
  * for events on this Handler.
  **/
 public class MatchVisualizeHandler extends android.os.Handler implements EventDetectionCallback, UICallback, MatchVisualizeHandlerCallback, GestureCallback {
     protected static final int MAX_REFRESHING_TIME_MS = 500;
     final WeakReference<MatchVisualizeActivity> mActivity;
+    private final boolean useBlackSide;
+    private final boolean useAudio;
+    private final TrackSet tracks;
+    protected Match match;
+    protected MatchSettings matchSettings;
+    protected UICallback uiCallback;
     private EventDetector eventDetector;
     private ReadyToServeDetector serveDetector;
     private Paint p;
@@ -59,7 +68,6 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     private Paint trackP;
     private VideoScaling videoScaling;
     private Config config;
-    private TrackSet tracks;
     private Table table;
     private boolean hasNewTable;
     private Lib.Detection latestNearlyOutOfFrame;
@@ -67,9 +75,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     private int newBounceCount;
     private ScoreManipulationCallback smc;
     private boolean waitingForGesture = false;
-    protected Match match;
-    protected MatchSettings matchSettings;
-    protected UICallback uiCallback;
+    private Recorder audioRecorder;
 
     public MatchVisualizeHandler(@NonNull MatchVisualizeActivity activity) {
         this.mActivity = new WeakReference<>(activity);
@@ -77,6 +83,8 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         this.tracks.clear();
         this.hasNewTable = true;
         this.uiCallback = this;
+        this.useBlackSide = new Config(activity.getApplicationContext()).isUseBlackSide();
+        this.useAudio = new Config(activity.getApplicationContext()).isUseAudio();
         initColors(activity);
         if (!OpenCVLoader.initDebug()) {
             // init async here
@@ -104,7 +112,8 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     @Override
     public void onSideChange(final Side side) {
         // use the referees current striker (might be different then side in parameter!)
-        if(match.getReferee().getCurrentStriker() != null) setTextInTextView(R.id.txtSide, match.getReferee().getCurrentStriker().toString());
+        if (match.getReferee().getCurrentStriker() != null)
+            setTextInTextView(R.id.txtSide, match.getReferee().getCurrentStriker().toString());
     }
 
     @Override
@@ -121,21 +130,21 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-            if (activity.ismSurfaceHolderReady()) {
-                SurfaceHolder surfaceHolder = activity.getmSurfaceTrack().getHolder();
-                Canvas canvas = surfaceHolder.lockCanvas();
-                if (canvas == null) {
-                    return;
+                if (activity.ismSurfaceHolderReady()) {
+                    SurfaceHolder surfaceHolder = activity.getmSurfaceTrack().getHolder();
+                    Canvas canvas = surfaceHolder.lockCanvas();
+                    if (canvas == null) {
+                        return;
+                    }
+                    initVideoScaling(canvas);
+                    drawDebugInfo(canvas, track);
+                    surfaceHolder.unlockCanvasAndPost(canvas);
                 }
-                initVideoScaling(canvas);
-                drawDebugInfo(canvas, track);
-                surfaceHolder.unlockCanvasAndPost(canvas);
-            }
-            setTextInTextView(R.id.txtPlayMovieState, match.getReferee().getState().toString());
-            setTextInTextView(R.id.txtPlayMovieServing, match.getReferee().getServer().toString());
-            if(match.getReferee().getCurrentBallSide() != null) {
-                setTextInTextView(R.id.txtBounce, String.valueOf(newBounceCount));
-            }
+                setTextInTextView(R.id.txtPlayMovieState, match.getReferee().getState().toString());
+                setTextInTextView(R.id.txtPlayMovieServing, match.getReferee().getServer().toString());
+                if (match.getReferee().getCurrentBallSide() != null) {
+                    setTextInTextView(R.id.txtBounce, String.valueOf(newBounceCount));
+                }
             }
         });
     }
@@ -170,6 +179,11 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     }
 
     @Override
+    public void onAudioBounce(Side side) {
+        // do nothing for now
+    }
+
+    @Override
     public void onBallDroppedSideWays() {
         // do nothing
     }
@@ -177,7 +191,9 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public void onMatchEnded(String winnerName) {
+        this.audioRecorder = null;
         this.match = null;
+        this.eventDetector = null;
         Lib.detectionStop();
         mActivity.get().getmSurfaceView().setOnTouchListener(null);
         resetScoreTextViews();
@@ -197,7 +213,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     @Override
     public void onWin(Side side, int wins) {
         resetScoreTextViews();
-        if(side == Side.LEFT) {
+        if (side == Side.LEFT) {
             setTextInTextView(R.id.txtPlayMovieGameLeft, String.valueOf(wins));
         } else {
             setTextInTextView(R.id.txtPlayMovieGameRight, String.valueOf(wins));
@@ -223,7 +239,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     public void refreshDebugTextViews() {
         setTextInTextView(R.id.txtPlayMovieState, match.getReferee().getState().toString());
         setTextInTextView(R.id.txtPlayMovieServing, match.getReferee().getServer().toString());
-        if(match.getReferee().getCurrentStriker() != null) {
+        if (match.getReferee().getCurrentStriker() != null) {
             setTextInTextView(R.id.txtSide, match.getReferee().getCurrentStriker().toString());
         }
     }
@@ -236,16 +252,20 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         callbacks.add(this.match.getReferee());
         callbacks.add(this);
         ZPositionCalc calc = new ZPositionCalc(viewingAngle, table.getWidth(), srcWidth);
-        eventDetector = new EventDetector(config, srcWidth, srcHeight, callbacks, tracks, this.table, calc);
+        this.eventDetector = new EventDetector(config, srcWidth, srcHeight, callbacks, tracks, this.table, calc);
+        if (useAudio)
+            this.audioRecorder = new Recorder(new ImplAudioRecorderCallback(this.eventDetector));
         this.match.getReferee().initWaitingForGesture();
     }
 
     public void startDetections() {
         Lib.detectionStart(this.videoScaling.getVideoWidth(), this.videoScaling.getVideoHeight(), this.config.getProcRes(), this.config.isGray(), eventDetector);
+        if (this.audioRecorder != null) this.audioRecorder.start();
     }
 
     public void stopDetections() {
         Lib.detectionStop();
+        if (this.audioRecorder != null) this.audioRecorder.stop();
     }
 
     public void clearCanvas(SurfaceHolder surfaceHolder) {
@@ -292,13 +312,15 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
 
     @Override
     public void onWaitingForGesture(Side server) {
-        serveDetector = new ReadyToServeDetector(table, server, this.videoScaling.getVideoWidth(), this.videoScaling.getVideoHeight(), this.match.getReferee());
+        serveDetector = new ReadyToServeDetector(table, server, this.videoScaling.getVideoWidth(),
+                this.videoScaling.getVideoHeight(), this.match.getReferee(), this.useBlackSide);
         this.waitingForGesture = true;
     }
 
     public boolean isWaitingForGesture() {
         return this.waitingForGesture;
     }
+
     public void setWaitingForGesture(boolean isWaitingForGesture) {
         this.waitingForGesture = isWaitingForGesture;
     }
@@ -354,7 +376,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     }
 
     private void drawLatestBounce(Canvas canvas) {
-        if(latestBounce != null) {
+        if (latestBounce != null) {
             bounceP.setStrokeWidth(latestBounce.radius * 2);
             canvas.drawCircle(this.videoScaling.scaleX(latestBounce.centerX), this.videoScaling.scaleY(latestBounce.centerY), latestBounce.radius * 2, bounceP);
         }
@@ -386,7 +408,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
 
     @SuppressLint("ClickableViewAccessibility")
     private void setOnSwipeListener() {
-        if(match != null) {
+        if (match != null) {
             setCallbackForNewGame();
             mActivity.get().runOnUiThread(new Runnable() {
                 public void run() {
