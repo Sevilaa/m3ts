@@ -101,6 +101,10 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         refreshTimer.scheduleAtFixedRate(new DebugHandlerRefreshTimerTask(this), new Date(), MAX_REFRESHING_TIME_MS);
     }
 
+    public void deactivateReadyToServeGesture() {
+        this.match.getReferee().deactivateReadyToServeGesture();
+    }
+
     @Override
     public void onBounce(Lib.Detection detection, Side ballBouncedOnSide) {
         latestBounce = detection;
@@ -255,7 +259,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         this.eventDetector = new EventDetector(config, srcWidth, srcHeight, callbacks, tracks, this.table, calc);
         if (useAudio)
             this.audioRecorder = new Recorder(new ImplAudioRecorderCallback(this.eventDetector));
-        this.match.getReferee().initWaitingForGesture();
+        this.match.getReferee().initState();
     }
 
     public void startDetections() {

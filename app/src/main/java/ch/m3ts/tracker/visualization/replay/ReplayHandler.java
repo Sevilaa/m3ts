@@ -23,6 +23,7 @@ public class ReplayHandler extends MatchVisualizeHandler implements ReplayDetect
 
     public void initMatch(Side servingSide) {
         super.initMatch(servingSide, MatchType.BO5, new Player("Hans"), new Player("Peter"));
+        super.deactivateReadyToServeGesture();
     }
 
     @Override

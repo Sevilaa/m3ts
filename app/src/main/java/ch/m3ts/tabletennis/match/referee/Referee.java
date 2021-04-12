@@ -51,6 +51,7 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     private int bounces;
     private int audioBounces;
     private FileManager fm;
+    private boolean isUsingReadyToServeGesture = true;
 
     public Referee(Side servingSide, GestureCallback gestureCallback) {
         this.currentStriker = servingSide;
@@ -73,13 +74,17 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
         this.gameCallback = game;
         this.currentGame = game;
         if (!firstGame) {
-            initWaitingForGesture();
+            initState();
         }
     }
 
-    public void initWaitingForGesture() {
-        this.state = State.PAUSE;
-        this.gestureCallback.onWaitingForGesture(getServer());
+    public void initState() {
+        if (isUsingReadyToServeGesture) {
+            this.state = State.PAUSE;
+            this.gestureCallback.onWaitingForGesture(getServer());
+        } else {
+            this.state = State.WAIT_FOR_SERVE;
+        }
     }
 
     public State getState() {
@@ -238,16 +243,12 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     public void onPointDeduction(Side side) {
         gameCallback.onPointDeduction(side);
         initPoint();
-        this.state = State.PAUSE;
-        gestureCallback.onWaitingForGesture(getServer());
     }
 
     @Override
     public void onPointAddition(Side side) {
         gameCallback.onPoint(side);
         initPoint();
-        this.state = State.PAUSE;
-        gestureCallback.onWaitingForGesture(getServer());
     }
 
     @Override
@@ -287,7 +288,13 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
 
     public void resume() {
         this.state = State.WAIT_FOR_SERVE;
-        this.gameCallback.onReadyToServe(getServer());
+        if (this.isUsingReadyToServeGesture) {
+            this.gameCallback.onReadyToServe(getServer());
+        }
+    }
+
+    public void deactivateReadyToServeGesture() {
+        this.isUsingReadyToServeGesture = false;
     }
 
     private void pause() {
@@ -316,25 +323,24 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
 
     private void pointBySide(Side side) {
         gameCallback.onPoint(side);
-        resetAfterPoint();
+        initPoint();
     }
 
     private void faultBySide(Side side) {
         gameCallback.onPoint(Side.getOpposite(side));
-        resetAfterPoint();
-    }
-
-    private void resetAfterPoint() {
         initPoint();
-        this.state = State.PAUSE;
-        gestureCallback.onWaitingForGesture(getServer());
     }
 
     private void initPoint() {
         this.bounces = 0;
         this.audioBounces = 0;
         this.cancelTimers();
-        this.state = State.WAIT_FOR_SERVE;
+        if (isUsingReadyToServeGesture) {
+            this.state = State.PAUSE;
+            gestureCallback.onWaitingForGesture(getServer());
+        } else {
+            this.state = State.WAIT_FOR_SERVE;
+        }
     }
 
     private void applyRuleSet() {
