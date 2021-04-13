@@ -8,7 +8,7 @@ import android.media.MediaFormat;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import ch.m3ts.Log;
+import ch.m3ts.util.Log;
 import cz.fmo.util.Config;
 
 /**

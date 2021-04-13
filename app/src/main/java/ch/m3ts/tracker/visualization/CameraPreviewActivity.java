@@ -8,7 +8,7 @@ import android.support.v4.content.ContextCompat;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-import ch.m3ts.Log;
+import ch.m3ts.util.Log;
 import cz.fmo.R;
 import cz.fmo.camera.CameraThread;
 import cz.fmo.camera.PreviewCameraTarget;

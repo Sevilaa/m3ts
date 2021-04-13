@@ -28,8 +28,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import ch.m3ts.Log;
 import ch.m3ts.tracker.visualization.replay.ReplayDetectionCallback;
+import ch.m3ts.util.Log;
 
 
 /**

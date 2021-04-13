@@ -9,8 +9,8 @@ import org.json.JSONObject;
 
 import java.util.UUID;
 
-import ch.m3ts.Log;
 import ch.m3ts.connection.ImplDisplayConnection;
+import ch.m3ts.util.Log;
 
 public class PubNubDisplayConnection extends ImplDisplayConnection {
     private final Pubnub pubnub;

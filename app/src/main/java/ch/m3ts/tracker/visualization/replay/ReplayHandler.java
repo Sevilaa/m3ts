@@ -2,12 +2,12 @@ package ch.m3ts.tracker.visualization.replay;
 
 import android.support.annotation.NonNull;
 
-import ch.m3ts.Log;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.MatchType;
 import ch.m3ts.tabletennis.match.Player;
 import ch.m3ts.tracker.visualization.MatchVisualizeActivity;
 import ch.m3ts.tracker.visualization.MatchVisualizeHandler;
+import ch.m3ts.util.Log;
 import cz.fmo.Lib;
 
 /**

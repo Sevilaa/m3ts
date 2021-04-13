@@ -2,14 +2,15 @@ package ch.m3ts.tabletennis.match.referee;
 
 import android.content.Context;
 
+import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import ch.m3ts.Log;
 import ch.m3ts.tabletennis.events.EventDetectionCallback;
 import ch.m3ts.tabletennis.events.GestureCallback;
 import ch.m3ts.tabletennis.events.ReadyToServeCallback;
@@ -19,6 +20,8 @@ import ch.m3ts.tabletennis.match.game.Game;
 import ch.m3ts.tabletennis.match.game.GameCallback;
 import ch.m3ts.tabletennis.match.game.ScoreManipulationCallback;
 import ch.m3ts.tabletennis.timeouts.OutOfFrameTimerTask;
+import ch.m3ts.util.CSVStringBuilder;
+import ch.m3ts.util.Log;
 import cz.fmo.Lib;
 import cz.fmo.data.Track;
 import cz.fmo.util.FileManager;
@@ -38,6 +41,7 @@ import cz.fmo.util.FileManager;
  */
 public class Referee implements EventDetectionCallback, ScoreManipulationCallback, ReadyToServeCallback {
     private static final String FILENAME = "recording_%s.csv";
+    private static final String DATE_FORMAT = "yyyy-mm-dd_hh_mm_ss";
     private static final int OUT_OF_FRAME_MAX_DELAY = 1500;
     private final GestureCallback gestureCallback;
     private final String currentFileName;
@@ -50,6 +54,7 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     private State state;
     private int bounces;
     private int audioBounces;
+    private int strikes;
     private FileManager fm;
     private boolean isUsingReadyToServeGesture = true;
 
@@ -61,13 +66,41 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
         this.state = State.WAIT_FOR_SERVE;
         this.gestureCallback = gestureCallback;
         Date date = Calendar.getInstance().getTime();
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd_hh_mm_ss");
+        DateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT, Locale.GERMANY);
         this.currentFileName = String.format(FILENAME, dateFormat.format(date));
     }
 
     public void debugToFile(Context context) {
         this.fm = new FileManager(context);
-        Log.d("msg;point_for_side;score;strikes_for_point;ball_side;striker_side;server_side;", this.fm.open(this.currentFileName));
+        File csvFile = this.fm.open(this.currentFileName);
+        String csvFormatString = CSVStringBuilder.builder()
+                .add("msg")
+                .add("point_for_side")
+                .add("score")
+                .add("strikes_for_point")
+                .add("ball_side")
+                .add("striker_side")
+                .add("server_side")
+                .toString();
+        Log.d(csvFormatString, csvFile);
+    }
+
+    private void logScoring(String reasonMsg, Side pointForSide) {
+        Log.d(reasonMsg);
+        if (this.fm != null) {
+            File csvFile = this.fm.open(this.currentFileName);
+            String csvString = CSVStringBuilder.builder()
+                    .add(reasonMsg)
+                    .add(pointForSide)
+                    .add(this.currentGame.getScore(Side.LEFT) + " to " + this.currentGame.getScore(Side.RIGHT))
+                    .add(this.strikes)
+                    .add(this.currentBallSide)
+                    .add(this.currentStriker)
+                    .add(this.getServer())
+                    .toString();
+            strikes = 0;
+            Log.d(csvString, csvFile);
+        }
     }
 
     public void setGame(Game game, boolean firstGame) {
@@ -143,6 +176,7 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
                     bounces = 0;
                     audioBounces = 0;
                     currentStriker = side;
+                    strikes++;
                 }
                 break;
             case SERVING:
@@ -218,14 +252,17 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
 
     @Override
     public void onBallDroppedSideWays() {
+        String msg;
         switch (this.state) {
             case PLAY:
                 if (bounces == 0) {
-                    Log.d("REFEREE:Fault by Striker: Ball has fallen off side ways and had no bounce");
+                    msg = "REFEREE:Fault by Striker: Ball has fallen off side ways and had no bounce";
                     faultBySide(currentStriker);
+                    logScoring(msg, Side.getOpposite(currentStriker));
                 } else if (bounces == 1) {
-                    Log.d("REFEREE:Point by Striker: Ball has fallen off side ways and had a bounce");
+                    msg = "REFEREE:Point by Striker: Ball has fallen off side ways and had a bounce";
                     pointBySide(currentStriker);
+                    logScoring(msg, currentStriker);
                 }
                 break;
             default:
@@ -266,20 +303,26 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     }
 
     public void onOutOfFrameForTooLong() {
+        String msg;
         if (this.state == State.OUT_OF_FRAME) {
             if (currentBallSide == currentStriker) {
-                Log.d("REFEREE:Out of Frame for too long - Striker most likely shot the ball into the net");
+                msg = "REFEREE:Out of Frame for too long - Striker most likely shot the ball into the net";
                 faultBySide(currentStriker);
+                logScoring(msg, Side.getOpposite(currentStriker));
             } else if (this.bounces >= 1 || this.audioBounces >= 1) {
-                if (this.audioBounces >= 1) {
-                    Log.d("REFEREE:Out of Frame for too long (AUDIO_BOUNCE) - Strike received no return");
+                if (this.audioBounces >= 1 && this.bounces == 0) {
+                    msg = "REFEREE:Out of Frame for too long (AUDIO_BOUNCE ONLY) - Strike received no return";
+                } else if (this.bounces >= 1 && this.audioBounces == 0) {
+                    msg = "REFEREE:Out of Frame for too long (VIDEO_BOUNCE ONLY) - Strike received no return";
                 } else {
-                    Log.d("REFEREE:Out of Frame for too long - Strike received no return");
+                    msg = "REFEREE:Out of Frame for too long (AUDIO AND VIDEO_BOUNCE DETECTED) - Strike received no return";
                 }
                 pointBySide(currentStriker);
+                logScoring(msg, currentStriker);
             } else {
-                Log.d("REFEREE:Out of Frame for too long - Strike did not bounce");
+                msg = "REFEREE:Out of Frame for too long - Strike did not bounce";
                 faultBySide(currentStriker);
+                logScoring(msg, Side.getOpposite(currentStriker));
             }
         } else {
             this.outOfFrameTimer = null;
@@ -344,23 +387,26 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     }
 
     private void applyRuleSet() {
+        String msg;
         if (bounces == 1) {
             if (this.currentStriker == this.currentBallSide) {
-                Log.d("REFEREE:currentStriker: " + this.currentStriker);
-                Log.d("REFEREE:currentBallSide: " + this.currentBallSide);
-                Log.d("REFEREE:Bounce on same Side");
+                msg = "REFEREE: Bounce on strikers' Side";
                 faultBySide(this.currentStriker);
+                logScoring(msg, Side.getOpposite(this.currentStriker));
             }
         } else if (bounces >= 2 && this.currentStriker != this.currentBallSide) {
-            Log.d("REFEREE:Double Bounce");
+            msg = "REFEREE: Bounced multiple times on strikers' opponent Side";
             pointBySide(this.currentStriker);
+            logScoring(msg, this.currentStriker);
         }
     }
 
     private void applyRuleSetServing() {
+        String msg;
         if (bounces > 1 && currentBallSide == getServer()) {
-            Log.d("REFEREE:Server Fault: Multiple Bounces on same Side");
+            msg = "REFEREE:Server Fault: Multiple Bounces on servers' Side";
             faultBySide(getServer());
+            logScoring(msg, Side.getOpposite(getServer()));
         }
     }
 

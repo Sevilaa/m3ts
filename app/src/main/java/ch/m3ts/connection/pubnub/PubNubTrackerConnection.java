@@ -10,9 +10,9 @@ import org.json.JSONObject;
 
 import java.util.UUID;
 
-import ch.m3ts.Log;
 import ch.m3ts.connection.ImplTrackerConnection;
 import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.util.Log;
 
 public class PubNubTrackerConnection extends ImplTrackerConnection {
     private static final String JSON_SEND_EXCEPTION_MESSAGE = "Unable to send JSON to channel ";

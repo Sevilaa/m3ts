@@ -4,10 +4,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import ch.m3ts.Log;
 import ch.m3ts.tabletennis.events.GestureCallback;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.game.Game;
+import ch.m3ts.util.Log;
 import cz.fmo.Lib;
 import cz.fmo.data.TrackSet;
 import cz.fmo.util.Config;

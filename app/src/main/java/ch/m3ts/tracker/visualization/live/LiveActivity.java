@@ -6,14 +6,14 @@ import android.os.Bundle;
 import android.view.Display;
 import android.view.SurfaceView;
 
-import ch.m3ts.Log;
-import ch.m3ts.helper.QuitAlertDialogHelper;
 import ch.m3ts.tabletennis.Table;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.MatchType;
 import ch.m3ts.tabletennis.match.Player;
 import ch.m3ts.tracker.visualization.CameraStatus;
 import ch.m3ts.tracker.visualization.MatchVisualizeActivity;
+import ch.m3ts.util.Log;
+import ch.m3ts.util.QuitAlertDialogHelper;
 import cz.fmo.R;
 import cz.fmo.camera.CameraThread;
 import cz.fmo.camera.PreviewCameraTarget;

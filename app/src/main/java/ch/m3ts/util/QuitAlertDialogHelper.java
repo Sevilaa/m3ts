@@ -1,4 +1,4 @@
-package ch.m3ts.helper;
+package ch.m3ts.util;
 
 import android.app.AlertDialog;
 import android.content.Context;

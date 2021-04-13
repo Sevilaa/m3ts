@@ -6,7 +6,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import ch.m3ts.Log;
 import ch.m3ts.connection.pubnub.ByteToBase64;
 import ch.m3ts.connection.pubnub.CameraBytesConversions;
 import ch.m3ts.connection.pubnub.JSONInfo;
@@ -17,6 +16,7 @@ import ch.m3ts.tabletennis.match.UICallback;
 import ch.m3ts.tabletennis.match.game.ScoreManipulationCallback;
 import ch.m3ts.tracker.init.InitTrackerCallback;
 import ch.m3ts.tracker.visualization.MatchVisualizeHandlerCallback;
+import ch.m3ts.util.Log;
 
 public abstract class ImplTrackerConnection extends Callback implements TrackerConnection, UICallback {
     protected static final int MAX_SIZE = 10000;

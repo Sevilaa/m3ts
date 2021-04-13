@@ -1,4 +1,4 @@
-package ch.m3ts;
+package ch.m3ts.util;
 
 import java.io.BufferedWriter;
 import java.io.File;

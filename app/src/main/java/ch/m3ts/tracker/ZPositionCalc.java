@@ -4,7 +4,7 @@ import android.support.annotation.NonNull;
 
 import java.util.TreeSet;
 
-import ch.m3ts.Log;
+import ch.m3ts.util.Log;
 
 /**
  * Calculates the Z-Position of the Table Tennis Ball from the radius detected by FMO and

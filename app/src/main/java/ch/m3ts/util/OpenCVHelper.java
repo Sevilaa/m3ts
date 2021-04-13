@@ -1,4 +1,4 @@
-package ch.m3ts.helper;
+package ch.m3ts.util;
 
 import android.os.Environment;
 
@@ -8,8 +8,6 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
-
-import ch.m3ts.Log;
 
 public class OpenCVHelper {
     private OpenCVHelper() {

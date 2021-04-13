@@ -32,12 +32,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import ch.m3ts.Log;
 import ch.m3ts.tabletennis.Table;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tracker.visualization.MatchVisualizeActivity;
 import ch.m3ts.tracker.visualization.replay.lib.SpeedControlCallback;
 import ch.m3ts.tracker.visualization.replay.lib.VideoPlayer;
+import ch.m3ts.util.Log;
 import cz.fmo.R;
 import cz.fmo.graphics.EGL;
 import cz.fmo.util.Config;

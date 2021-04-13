@@ -8,13 +8,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import ch.m3ts.Log;
 import ch.m3ts.connection.pubnub.ByteToBase64;
 import ch.m3ts.connection.pubnub.JSONInfo;
 import ch.m3ts.display.DisplayConnectCallback;
 import ch.m3ts.display.DisplayScoreEventCallback;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.UICallback;
+import ch.m3ts.util.Log;
 
 public abstract class ImplDisplayConnection extends Callback implements DisplayConnection {
     protected UICallback uiCallback;

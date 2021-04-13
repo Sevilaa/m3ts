@@ -31,8 +31,8 @@ import com.otaliastudios.zoom.ZoomLayout;
 
 import org.jetbrains.annotations.NotNull;
 
-import ch.m3ts.Log;
 import ch.m3ts.connection.DisplayConnection;
+import ch.m3ts.util.Log;
 import cz.fmo.R;
 
 /**

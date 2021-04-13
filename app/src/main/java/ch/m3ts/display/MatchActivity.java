@@ -15,12 +15,12 @@ import java.security.SecureRandom;
 import java.util.Properties;
 import java.util.Random;
 
-import ch.m3ts.Log;
 import ch.m3ts.connection.DisplayConnection;
 import ch.m3ts.connection.NearbyDisplayConnection;
 import ch.m3ts.connection.pubnub.PubNubDisplayConnection;
 import ch.m3ts.connection.pubnub.PubNubFactory;
-import ch.m3ts.helper.QuitAlertDialogHelper;
+import ch.m3ts.util.Log;
+import ch.m3ts.util.QuitAlertDialogHelper;
 import cz.fmo.R;
 import cz.fmo.util.Config;
 

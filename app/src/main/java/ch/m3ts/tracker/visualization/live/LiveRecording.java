@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import ch.m3ts.util.Log;
 import cz.fmo.camera.CameraThread;
 import cz.fmo.camera.RecordingCameraTarget;
 import cz.fmo.recording.CyclicBuffer;
@@ -58,7 +59,7 @@ public class LiveRecording implements SaveThread.Callback {
                 mSaveMovie.join();
             } catch (InterruptedException ie) {
                 Thread.currentThread().interrupt();
-                ch.m3ts.Log.e("Interrupted when closing SaveThread", ie);
+                Log.e("Interrupted when closing SaveThread", ie);
             }
             mSaveMovie = null;
         }
@@ -69,7 +70,7 @@ public class LiveRecording implements SaveThread.Callback {
                 mEncode.join();
             } catch (InterruptedException ie) {
                 Thread.currentThread().interrupt();
-                ch.m3ts.Log.e("Interrupted when closing EncodeThread", ie);
+                Log.e("Interrupted when closing EncodeThread", ie);
             }
             mEncode = null;
         }
