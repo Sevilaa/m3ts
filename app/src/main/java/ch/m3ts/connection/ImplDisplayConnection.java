@@ -11,22 +11,24 @@ import org.json.JSONObject;
 import ch.m3ts.connection.pubnub.ByteToBase64;
 import ch.m3ts.connection.pubnub.JSONInfo;
 import ch.m3ts.display.DisplayConnectCallback;
-import ch.m3ts.display.DisplayScoreEventCallback;
 import ch.m3ts.event.Event;
 import ch.m3ts.event.EventBus;
 import ch.m3ts.event.Subscribable;
 import ch.m3ts.event.TTEvent;
 import ch.m3ts.event.TTEventBus;
+import ch.m3ts.event.data.RestartMatchData;
+import ch.m3ts.event.data.StatusUpdateData;
+import ch.m3ts.event.data.scoremanipulation.ScoreManipulationData;
 import ch.m3ts.event.data.todisplay.InvalidServeData;
 import ch.m3ts.event.data.todisplay.MatchEndedData;
 import ch.m3ts.event.data.todisplay.ReadyToServeData;
 import ch.m3ts.event.data.todisplay.ScoreData;
 import ch.m3ts.event.data.todisplay.ToDisplayGameWinData;
 import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.tabletennis.match.game.ScoreManipulationListener;
 import ch.m3ts.util.Log;
 
-public abstract class ImplDisplayConnection extends Callback implements DisplayConnection, Subscribable {
-    protected DisplayScoreEventCallback displayScoreCallback;
+public abstract class ImplDisplayConnection extends Callback implements ScoreManipulationListener, DisplayConnection, Subscribable {
     protected DisplayConnectCallback displayConnectCallback;
     private int numberOfEncodedFrameParts;
     private String encodedFrameComplete;
@@ -35,32 +37,36 @@ public abstract class ImplDisplayConnection extends Callback implements DisplayC
 
     protected abstract void sendData(JSONObject json);
 
-    public void onRestartMatch() {
-        send("onRestartMatch", null);
-    }
-
     public void requestStatusUpdate() {
         send("requestStatus", null);
-    }
-
-    public void onPointDeduction(Side side) {
-        send("onPointDeduction", side.toString());
-    }
-
-    public void onPointAddition(Side side) {
-        send("onPointAddition", side.toString());
     }
 
     public void onRequestTableFrame() {
         send("onRequestTableFrame", null);
     }
 
+    @Override
+    public void onPointDeduction(Side side) {
+        send("onPointDeduction", side.toString());
+    }
+
+    @Override
+    public void onPointAddition(Side side) {
+        send("onPointAddition", side.toString());
+    }
+
+    @Override
     public void onPause() {
         send("onPause", null);
     }
 
+    @Override
     public void onResume() {
         send("onResume", null);
+    }
+
+    private void onRestartMatch() {
+        send("onRestartMatch", null);
     }
 
     public void onSelectTableCorners(Point[] tableCorners) {
@@ -78,10 +84,6 @@ public abstract class ImplDisplayConnection extends Callback implements DisplayC
         } catch (JSONException ex) {
             Log.d("Unable to send JSON to endpoint \n" + ex.getMessage());
         }
-    }
-
-    public void setDisplayScoreEventCallback(DisplayScoreEventCallback displayScoreCallback) {
-        this.displayScoreCallback = displayScoreCallback;
     }
 
     public void setDisplayConnectCallback(DisplayConnectCallback displayConnectCallback) {
@@ -111,10 +113,11 @@ public abstract class ImplDisplayConnection extends Callback implements DisplayC
                         eventBus.dispatch(new TTEvent<>(new InvalidServeData()));
                         break;
                     case "onStatusUpdate":
-                        displayScoreCallback.onStatusUpdate(json.getString(JSONInfo.PLAYER_NAME_LEFT_PROPERTY), json.getString(JSONInfo.PLAYER_NAME_RIGHT_PROPERTY),
+                        eventBus.dispatch(new TTEvent<>(new StatusUpdateData(
+                                json.getString(JSONInfo.PLAYER_NAME_LEFT_PROPERTY), json.getString(JSONInfo.PLAYER_NAME_RIGHT_PROPERTY),
                                 Integer.parseInt(json.getString(JSONInfo.SCORE_LEFT_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.SCORE_RIGHT_PROPERTY)),
                                 Integer.parseInt(json.getString(JSONInfo.WINS_LEFT_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.WINS_RIGHT_PROPERTY)),
-                                Side.valueOf(json.getString(JSONInfo.NEXT_SERVER_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.GAMES_NEEDED_PROPERTY)));
+                                Side.valueOf(json.getString(JSONInfo.NEXT_SERVER_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.GAMES_NEEDED_PROPERTY)))));
                         break;
                     case "onConnected":
                         if (displayConnectCallback != null) {
@@ -176,5 +179,11 @@ public abstract class ImplDisplayConnection extends Callback implements DisplayC
     @Override
     public void handle(Event<?> event) {
         Object data = event.getData();
+        if (data instanceof ScoreManipulationData) {
+            ScoreManipulationData manipulationData = (ScoreManipulationData) data;
+            manipulationData.call(this);
+        } else if (data instanceof RestartMatchData) {
+            this.onRestartMatch();
+        }
     }
 }

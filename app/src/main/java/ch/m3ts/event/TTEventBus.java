@@ -3,6 +3,9 @@ package ch.m3ts.event;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Bus for Table Tennis relevant event transmission.
+ */
 public class TTEventBus implements EventBus {
     private final Set<Subscribable> subscribables;
     private static TTEventBus instance;

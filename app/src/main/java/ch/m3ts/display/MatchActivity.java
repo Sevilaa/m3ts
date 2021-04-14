@@ -20,7 +20,9 @@ import ch.m3ts.connection.NearbyDisplayConnection;
 import ch.m3ts.connection.pubnub.PubNubDisplayConnection;
 import ch.m3ts.connection.pubnub.PubNubFactory;
 import ch.m3ts.event.EventBus;
+import ch.m3ts.event.TTEvent;
 import ch.m3ts.event.TTEventBus;
+import ch.m3ts.event.data.RestartMatchData;
 import ch.m3ts.util.Log;
 import ch.m3ts.util.QuitAlertDialogHelper;
 import cz.fmo.R;
@@ -80,12 +82,11 @@ public class MatchActivity extends FragmentActivity implements FragmentReplaceCa
         Config mConfig = new Config(this);
         if (mConfig.isUsingPubnub()) {
             initPubNub(bundle.getString("room"));
-            this.pubNub.onRestartMatch();
         } else {
             this.nearbyDisplayConnection = NearbyDisplayConnection.getInstance();
             this.nearbyDisplayConnection.init(this);
-            this.nearbyDisplayConnection.onRestartMatch();
         }
+        TTEventBus.getInstance().dispatch(new TTEvent<>(new RestartMatchData()));
     }
 
     private void initConnection() {

@@ -23,6 +23,13 @@ import ch.m3ts.connection.DisplayConnection;
 import ch.m3ts.connection.pubnub.PubNubDisplayConnection;
 import ch.m3ts.event.Event;
 import ch.m3ts.event.Subscribable;
+import ch.m3ts.event.TTEvent;
+import ch.m3ts.event.TTEventBus;
+import ch.m3ts.event.data.StatusUpdateData;
+import ch.m3ts.event.data.scoremanipulation.PauseMatch;
+import ch.m3ts.event.data.scoremanipulation.PointAddition;
+import ch.m3ts.event.data.scoremanipulation.PointDeduction;
+import ch.m3ts.event.data.scoremanipulation.ResumeMatch;
 import ch.m3ts.event.data.todisplay.ToDisplayData;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.DisplayUpdateListener;
@@ -33,7 +40,7 @@ import cz.fmo.util.Config;
  * Fragment which implements the features of a digital table tennis scoreboard.
  * Displays f.e. the current score, current amount of games won by each sides, the current servers.
  */
-public class MatchScoreFragment extends EventBusSubscribedFragment implements DisplayUpdateListener, DisplayScoreEventCallback, Subscribable {
+public class MatchScoreFragment extends EventBusSubscribedFragment implements DisplayUpdateListener, Subscribable {
     private final int MAX_SCORE = 11;
     private String ttsWin;
     private String ttsSide;
@@ -52,7 +59,6 @@ public class MatchScoreFragment extends EventBusSubscribedFragment implements Di
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_match_score, container, false);
         this.connection = ((MatchActivity) getActivity()).getConnection();
-        connection.setDisplayScoreEventCallback(this);
         initTTS();
         this.mediaPlayer = MediaPlayer.create(getContext(), R.raw.success);
         ImageButton refreshButton = v.findViewById(R.id.btnDisplayRefresh);
@@ -69,11 +75,11 @@ public class MatchScoreFragment extends EventBusSubscribedFragment implements Di
             @Override
             public void onClick(View view) {
                 if (isPaused) {
-                    connection.onResume();
+                    TTEventBus.getInstance().dispatch(new TTEvent<>(new ResumeMatch()));
                     pauseResumeButton.setTag("Play");
                     pauseResumeButton.setImageResource(android.R.drawable.ic_media_pause);
                 } else {
-                    connection.onPause();
+                    TTEventBus.getInstance().dispatch(new TTEvent<>(new PauseMatch()));
                     pauseResumeButton.setTag("Pause");
                     pauseResumeButton.setImageResource(android.R.drawable.ic_media_play);
                 }
@@ -257,16 +263,12 @@ public class MatchScoreFragment extends EventBusSubscribedFragment implements Di
             v.setOnTouchListener(new OnSwipeListener(this.getContext()) {
                 @Override
                 public void onSwipeDown(Side swipeSide) {
-                    if (connection != null) {
-                        connection.onPointDeduction(swipeSide);
-                    }
+                    TTEventBus.getInstance().dispatch(new TTEvent<>(new PointDeduction(swipeSide)));
                 }
 
                 @Override
                 public void onSwipeUp(Side swipeSide) {
-                    if (connection != null) {
-                        connection.onPointAddition(swipeSide);
-                    }
+                    TTEventBus.getInstance().dispatch(new TTEvent<>(new PointAddition(swipeSide)));
                 }
             });
         }
@@ -291,8 +293,6 @@ public class MatchScoreFragment extends EventBusSubscribedFragment implements Di
         }
     }
 
-
-    @Override
     public void onStatusUpdate(final String playerNameLeft, final String playerNameRight, final int pointsLeft, final int pointsRight, final int gamesLeft, final int gamesRight, final Side nextServer, final int gamesNeeded) {
         Activity activity = getActivity();
         activity.runOnUiThread(new Runnable() {
@@ -316,6 +316,11 @@ public class MatchScoreFragment extends EventBusSubscribedFragment implements Di
         if (data instanceof ToDisplayData) {
             ToDisplayData displayData = (ToDisplayData) data;
             displayData.call(this);
+        } else if (data instanceof StatusUpdateData) {
+            StatusUpdateData updateData = (StatusUpdateData) data;
+            this.onStatusUpdate(updateData.getPlayerNameLeft(), updateData.getPlayerNameRight(),
+                    updateData.getPointsLeft(), updateData.getPointsRight(), updateData.getGamesLeft(),
+                    updateData.getGamesRight(), updateData.getNextServer(), updateData.getGamesNeededToWin());
         }
     }
 }
