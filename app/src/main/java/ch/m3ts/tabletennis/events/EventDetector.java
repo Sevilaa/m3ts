@@ -4,12 +4,22 @@ import android.support.annotation.NonNull;
 
 import com.google.audio.ImplAudioRecorderCallback;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
+import ch.m3ts.event.EventBus;
+import ch.m3ts.event.TTEvent;
+import ch.m3ts.event.TTEventBus;
+import ch.m3ts.event.data.BallBounceAudioData;
+import ch.m3ts.event.data.BallBounceData;
+import ch.m3ts.event.data.BallDroppedSideWaysData;
+import ch.m3ts.event.data.BallNearlyOutOfFrameData;
+import ch.m3ts.event.data.BallTrackData;
+import ch.m3ts.event.data.DetectionTimeOutData;
+import ch.m3ts.event.data.StrikerSideChangeData;
+import ch.m3ts.event.data.TableSideChangeData;
 import ch.m3ts.tabletennis.Table;
 import ch.m3ts.tabletennis.events.timeouts.TimeoutTimerTask;
 import ch.m3ts.tabletennis.helper.DirectionX;
@@ -40,11 +50,9 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
     private static final int MILLISECONDS_TILL_TIMEOUT = 1500;
     private final Object mLock = new Object();
     private final TrackSet tracks;
-    private final List<EventDetectionCallback> callbacks;
     private final int[] nearlyOutOfFrameThresholds;
     private final int srcWidth;
     private final int srcHeight;
-    private Side currentBallSide;
     private Lib.Detection previousDetection;
     private int previousDirectionY;
     private int previousDirectionX;
@@ -54,12 +62,10 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
     private int numberOfDetections;
     private final ZPositionCalc zPositionCalc;
     private Track currentTrack;
+    private final EventBus eventBus;
 
-    public EventDetector(Config config, int srcWidth, int srcHeight, EventDetectionCallback callback, TrackSet tracks, @NonNull Table table, ZPositionCalc calc) {
-        this(config, srcWidth, srcHeight, Collections.singletonList(callback), tracks, table, calc);
-    }
-
-    public EventDetector(Config config, int srcWidth, int srcHeight, List<EventDetectionCallback> callbacks, TrackSet tracks, @NonNull Table table, ZPositionCalc calc) {
+    public EventDetector(Config config, int srcWidth, int srcHeight, TrackSet tracks, @NonNull Table table, ZPositionCalc calc) {
+        this.eventBus = TTEventBus.getInstance();
         this.srcHeight = srcHeight;
         this.srcWidth = srcWidth;
         this.tracks = tracks;
@@ -69,7 +75,6 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
                 (int) (srcHeight * PERCENTAGE_OF_NEARLY_OUT_OF_FRAME),
                 (int) (srcHeight * (1 - PERCENTAGE_OF_NEARLY_OUT_OF_FRAME)),
         };
-        this.callbacks = callbacks;
         this.table = table;
         this.numberOfDetections = 0;
         this.zPositionCalc = calc;
@@ -91,9 +96,7 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
         if (currentTrack != null &&
                 TimeUnit.MILLISECONDS.convert(System.nanoTime() - currentTrack.getLastDetectionTime(), TimeUnit.NANOSECONDS) < 30) {
             Side ballBouncedOnSide = table.getHorizontalSideOfDetection(previousDetection.centerX);
-            for (EventDetectionCallback callback : callbacks) {
-                callback.onAudioBounce(ballBouncedOnSide);
-            }
+            eventBus.dispatch(new TTEvent<>(new BallBounceAudioData(ballBouncedOnSide)));
         }
     }
 
@@ -111,7 +114,6 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
                     if (hasBallFallenOffSideWays(latestDetection)) {
                         callAllOnBallDroppedSideWays();
                     }
-                    // todo ev. if has table side changed, then no bounce check
                     hasTableSideChanged(latestDetection.centerX);
                     boolean tableSideChanged = hasSideChanged(latestDetection);
                     hasBouncedOnTable(latestDetection, tableSideChanged);
@@ -169,9 +171,7 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
     }
 
     public void callAllOnTimeout() {
-        for (EventDetectionCallback callback : callbacks) {
-            callback.onTimeout();
-        }
+        eventBus.dispatch(new TTEvent<>(new DetectionTimeOutData()));
     }
 
     public int getNumberOfDetections() {
@@ -182,12 +182,6 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
         TimerTask timeoutTimerTask = new TimeoutTimerTask(this, currentNumberOfDetections);
         Timer timeoutTimer = new Timer("timeoutTimer");
         timeoutTimer.schedule(timeoutTimerTask, MILLISECONDS_TILL_TIMEOUT);
-    }
-
-    private void callAllOnStrikeFound(Track track) {
-        for (EventDetectionCallback callback : callbacks) {
-            callback.onStrikeFound(track);
-        }
     }
 
     private void savePreviousDetection(Lib.Detection detection) {
@@ -201,34 +195,28 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
         }
     }
 
+    private void callAllOnStrikeFound(Track track) {
+        eventBus.dispatch(new TTEvent<>(new BallTrackData(track)));
+    }
+
     private void callAllOnBounce(Lib.Detection detection, Side side) {
-        for (EventDetectionCallback callback : callbacks) {
-            callback.onBounce(detection, side);
-        }
+        eventBus.dispatch(new TTEvent<>(new BallBounceData(detection, side)));
     }
 
     private void callAllOnSideChange(Side side) {
-        for (EventDetectionCallback callback : callbacks) {
-            callback.onSideChange(side);
-        }
+        eventBus.dispatch(new TTEvent<>(new StrikerSideChangeData(side)));
     }
 
     private void callAllOnNearlyOutOfFrame(Lib.Detection latestDetection, Side side) {
-        for (EventDetectionCallback callback : callbacks) {
-            callback.onNearlyOutOfFrame(latestDetection, side);
-        }
+        eventBus.dispatch(new TTEvent<>(new BallNearlyOutOfFrameData(latestDetection, side)));
     }
 
     private void callAllOnTableSideChange(Side side) {
-        for (EventDetectionCallback callback : callbacks) {
-            callback.onTableSideChange(side);
-        }
+        eventBus.dispatch(new TTEvent<>(new TableSideChangeData(side)));
     }
 
     private void callAllOnBallDroppedSideWays() {
-        for (EventDetectionCallback callback : callbacks) {
-            callback.onBallDroppedSideWays();
-        }
+        eventBus.dispatch(new TTEvent<>(new BallDroppedSideWaysData()));
     }
 
     private boolean hasSideChanged(Lib.Detection detection) {

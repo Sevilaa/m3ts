@@ -59,6 +59,7 @@ public final class LiveActivity extends MatchVisualizeActivity {
     protected void onStop() {
         super.onStop();
         this.mHandler.setConnectCallback(null);
+        this.mHandler.onPauseActivity();
     }
 
     @Override
@@ -119,6 +120,7 @@ public final class LiveActivity extends MatchVisualizeActivity {
     protected void onResume() {
         super.onResume();
         init();
+        this.mHandler.onResumeActivity();
     }
 
     /**
@@ -126,6 +128,7 @@ public final class LiveActivity extends MatchVisualizeActivity {
      */
     @Override
     protected void onPause() {
+        this.mHandler.onPauseActivity();
         mHandler.stopDetections();
         alertDialog.dismiss();
         super.onPause();
