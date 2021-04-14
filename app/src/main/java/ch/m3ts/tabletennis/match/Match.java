@@ -3,6 +3,7 @@ package ch.m3ts.tabletennis.match;
 import java.util.EnumMap;
 import java.util.Map;
 
+import ch.m3ts.event.TTEventBus;
 import ch.m3ts.tabletennis.events.GestureCallback;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.game.Game;
@@ -37,6 +38,7 @@ public class Match implements MatchCallback, MatchStatusCallback {
         this.uiCallback = uiCallback;
         this.serveRules = serveRules;
         this.referee = new Referee(startingServer, gestureCallback);
+        TTEventBus.getInstance().register(referee);
         startNewGame(true);
     }
 
@@ -54,6 +56,7 @@ public class Match implements MatchCallback, MatchStatusCallback {
 
     public void end(Side winner) {
         this.uiCallback.onMatchEnded(this.players.get(winner).getName());
+        TTEventBus.getInstance().unregister(this.referee);
     }
 
     @Override

@@ -25,7 +25,7 @@ import static org.mockito.Mockito.when;
 public class EventDetectorTest {
     private Config mockConfig;
     private Table table;
-    private EventDetectionCallback mockCallback;
+    private EventDetectionListener mockCallback;
     private TrackSet mockTracks;
     private ZPositionCalc mockCalc;
     private static final TrackSet realTrackSet = TrackSet.getInstance();
@@ -38,7 +38,7 @@ public class EventDetectorTest {
         table = TableGenerator.makeTableFromGarageRecording();
         mockConfig = mock(Config.class);
         mockTracks = mock(TrackSet.class);
-        mockCallback = mock(EventDetectionCallback.class);
+        mockCallback = mock(EventDetectionListener.class);
         mockCalc = mock(ZPositionCalc.class);
         when(mockConfig.isDisableDetection()).thenReturn(false);
         when(mockConfig.getFrameRate()).thenReturn(30f);

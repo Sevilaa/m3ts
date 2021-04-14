@@ -115,13 +115,14 @@ public class ReplayActivity extends MatchVisualizeActivity implements OnItemSele
     public void clickPlayStop(@SuppressWarnings("UnusedParameters") View unused) {
         if (mShowStopLabel) {
             Log.d("stopping movie");
+            this.mHandler.onPauseActivity();
             stopPlayback();
         } else {
             if (mPlayTask != null) {
                 Log.w("movie already playing");
                 return;
             }
-
+            this.mHandler.onResumeActivity();
             Log.d("starting movie");
             SpeedControlCallback callback = new SpeedControlCallback();
             SurfaceHolder holder = getmSurfaceView().getHolder();
@@ -194,13 +195,13 @@ public class ReplayActivity extends MatchVisualizeActivity implements OnItemSele
 
     @Override
     protected void onResume() {
-        Log.d("PlayMovieSurfaceActivity onResume");
         super.onResume();
+        this.mHandler.onResumeActivity();
     }
 
     @Override
     protected void onPause() {
-        Log.d("PlayMovieSurfaceActivity onPause");
+        this.mHandler.onPauseActivity();
         super.onPause();
         // We're not keeping track of the state in static fields, so we need to shut the
         // playback down.  Ideally we'd preserve the state so that the player would continue

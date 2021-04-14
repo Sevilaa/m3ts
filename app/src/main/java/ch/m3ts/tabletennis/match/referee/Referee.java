@@ -11,7 +11,11 @@ import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import ch.m3ts.tabletennis.events.EventDetectionCallback;
+import ch.m3ts.event.Event;
+import ch.m3ts.event.Subscribable;
+import ch.m3ts.event.TTEventBus;
+import ch.m3ts.event.data.EventDetectorEventData;
+import ch.m3ts.tabletennis.events.EventDetectionListener;
 import ch.m3ts.tabletennis.events.GestureCallback;
 import ch.m3ts.tabletennis.events.ReadyToServeCallback;
 import ch.m3ts.tabletennis.helper.DirectionX;
@@ -39,7 +43,7 @@ import cz.fmo.util.FileManager;
  * - OUT_OF_FRAME -> the ball is not inside the frame anymore, the referee needs to wait and see
  * if a player can shoot the ball back onto the table.
  */
-public class Referee implements EventDetectionCallback, ScoreManipulationCallback, ReadyToServeCallback {
+public class Referee implements EventDetectionListener, ScoreManipulationCallback, ReadyToServeCallback, Subscribable {
     private static final String FILENAME = "recording_%s.csv";
     private static final String DATE_FORMAT = "yyyy-mm-dd_hh_mm_ss";
     private static final int OUT_OF_FRAME_MAX_DELAY = 1500;
@@ -334,6 +338,7 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
         if (this.isUsingReadyToServeGesture) {
             this.gameCallback.onReadyToServe(getServer());
         }
+        TTEventBus.getInstance().register(this);
     }
 
     public void deactivateReadyToServeGesture() {
@@ -343,6 +348,7 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     private void pause() {
         this.state = State.PAUSE;
         cancelTimers();
+        TTEventBus.getInstance().unregister(this);
     }
 
     private void cancelTimers() {
@@ -413,5 +419,14 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     @Override
     public void onGestureDetected() {
         resume();
+    }
+
+    @Override
+    public void handle(Event<?> event) {
+        Object data = event.getData();
+        if (data instanceof EventDetectorEventData) {
+            EventDetectorEventData eventDetectorEventData = (EventDetectorEventData) data;
+            eventDetectorEventData.call(this);
+        }
     }
 }

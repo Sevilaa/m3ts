@@ -7,7 +7,7 @@ import cz.fmo.data.Track;
 /**
  * Represent the events interpreted by the EventDetector.
  */
-public interface EventDetectionCallback {
+public interface EventDetectionListener {
     void onBounce(Lib.Detection detection, Side side);
 
     void onSideChange(Side side);

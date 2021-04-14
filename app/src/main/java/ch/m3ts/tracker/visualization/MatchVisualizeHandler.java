@@ -17,14 +17,16 @@ import com.google.audio.core.Recorder;
 import org.opencv.android.OpenCVLoader;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Timer;
 
 import ch.m3ts.display.OnSwipeListener;
+import ch.m3ts.event.Event;
+import ch.m3ts.event.Subscribable;
+import ch.m3ts.event.TTEventBus;
+import ch.m3ts.event.data.EventDetectorEventData;
 import ch.m3ts.tabletennis.Table;
-import ch.m3ts.tabletennis.events.EventDetectionCallback;
+import ch.m3ts.tabletennis.events.EventDetectionListener;
 import ch.m3ts.tabletennis.events.EventDetector;
 import ch.m3ts.tabletennis.events.GestureCallback;
 import ch.m3ts.tabletennis.events.ReadyToServeDetector;
@@ -51,7 +53,7 @@ import cz.fmo.util.Config;
  * FMO then finds detections and tracks and forwards them to the EventDetector, which then calls
  * for events on this Handler.
  **/
-public class MatchVisualizeHandler extends android.os.Handler implements EventDetectionCallback, UICallback, MatchVisualizeHandlerCallback, GestureCallback {
+public class MatchVisualizeHandler extends android.os.Handler implements EventDetectionListener, UICallback, MatchVisualizeHandlerCallback, GestureCallback, Subscribable {
     protected static final int MAX_REFRESHING_TIME_MS = 500;
     final WeakReference<MatchVisualizeActivity> mActivity;
     private final boolean useBlackSide;
@@ -86,9 +88,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         this.useBlackSide = new Config(activity.getApplicationContext()).isUseBlackSide();
         this.useAudio = new Config(activity.getApplicationContext()).isUseAudio();
         initColors(activity);
-        if (!OpenCVLoader.initDebug()) {
-            // init async here
-        }
+        OpenCVLoader.initDebug();
     }
 
     public void initMatch(Side servingSide, MatchType matchType, Player playerLeft, Player playerRight) {
@@ -252,14 +252,29 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         this.table = table;
         this.videoScaling = new VideoScaling(srcWidth, srcHeight);
         this.config = config;
-        List<EventDetectionCallback> callbacks = new ArrayList<>();
-        callbacks.add(this.match.getReferee());
-        callbacks.add(this);
         ZPositionCalc calc = new ZPositionCalc(viewingAngle, table.getWidth(), srcWidth);
-        this.eventDetector = new EventDetector(config, srcWidth, srcHeight, callbacks, tracks, this.table, calc);
+        this.eventDetector = new EventDetector(config, srcWidth, srcHeight, tracks, this.table, calc);
         if (useAudio)
             this.audioRecorder = new Recorder(new ImplAudioRecorderCallback(this.eventDetector));
         this.match.getReferee().initState();
+    }
+
+    /**
+     * open connections / subscriptions when parent activity is pausing (onPause, Pause Button, etc.)
+     */
+    public void onResumeActivity() {
+        TTEventBus eventBus = TTEventBus.getInstance();
+        eventBus.register(this);
+        if (this.match != null) eventBus.register(match.getReferee());
+    }
+
+    /**
+     * Close open connections / subscriptions when parent activity is pausing (onPause, Pause Button, etc.)
+     */
+    public void onPauseActivity() {
+        TTEventBus eventBus = TTEventBus.getInstance();
+        eventBus.unregister(this);
+        if (this.match != null) eventBus.unregister(match.getReferee());
     }
 
     public void startDetections() {
@@ -446,6 +461,15 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     protected void setCallbackForNewGame() {
         if (match != null) {
             this.smc = match.getReferee();
+        }
+    }
+
+    @Override
+    public void handle(Event<?> event) {
+        Object data = event.getData();
+        if (data instanceof EventDetectorEventData) {
+            EventDetectorEventData ballBounceData = (EventDetectorEventData) data;
+            ballBounceData.call(this);
         }
     }
 }
