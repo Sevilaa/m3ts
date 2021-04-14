@@ -24,8 +24,8 @@ import java.util.Random;
 import ch.m3ts.display.DisplayConnectCallback;
 import ch.m3ts.display.DisplayScoreEventCallback;
 import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.tabletennis.match.DisplayUpdateListener;
 import ch.m3ts.tabletennis.match.MatchType;
-import ch.m3ts.tabletennis.match.UICallback;
 
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -57,7 +57,7 @@ public class PubNubDisplayConnectionTest {
 
     @Test
     public void testOnMatchEnded() throws JSONException {
-        UICallback spyCallback = spy(mock(UICallback.class));
+        DisplayUpdateListener spyCallback = spy(mock(DisplayUpdateListener.class));
         DisplayScoreEventCallback deCallback = spy(mock(DisplayScoreEventCallback.class));
         PubNubDisplayConnection pubNubDisplayConnection = new PubNubDisplayConnection(pubnub, ROOM_ID);
         pubNubDisplayConnection.setUiCallback(spyCallback);
@@ -71,7 +71,7 @@ public class PubNubDisplayConnectionTest {
 
     @Test
     public void testOnScore() throws JSONException {
-        UICallback spyCallback = spy(mock(UICallback.class));
+        DisplayUpdateListener spyCallback = spy(mock(DisplayUpdateListener.class));
         PubNubDisplayConnection pubNubDisplayConnection = new PubNubDisplayConnection(pubnub, ROOM_ID);
         pubNubDisplayConnection.setUiCallback(spyCallback);
         final Side scorer = Side.RIGHT;
@@ -86,7 +86,7 @@ public class PubNubDisplayConnectionTest {
 
     @Test
     public void testOnWin() throws JSONException {
-        UICallback spyCallback = spy(mock(UICallback.class));
+        DisplayUpdateListener spyCallback = spy(mock(DisplayUpdateListener.class));
         PubNubDisplayConnection pubNubDisplayConnection = new PubNubDisplayConnection(pubnub, ROOM_ID);
         pubNubDisplayConnection.setUiCallback(spyCallback);
         final Side winner = Side.LEFT;
@@ -101,7 +101,7 @@ public class PubNubDisplayConnectionTest {
 
     @Test
     public void testOnReadyToServe() {
-        UICallback spyCallback = spy(mock(UICallback.class));
+        DisplayUpdateListener spyCallback = spy(mock(DisplayUpdateListener.class));
         PubNubDisplayConnection pubNubDisplayConnection = new PubNubDisplayConnection(pubnub, ROOM_ID);
         pubNubDisplayConnection.setUiCallback(spyCallback);
         final Side server = Side.RIGHT;
@@ -340,7 +340,7 @@ public class PubNubDisplayConnectionTest {
     @Test
     public void testWithInvalidJSON() {
         try {
-            UICallback spyCallback = spy(mock(UICallback.class));
+            DisplayUpdateListener spyCallback = spy(mock(DisplayUpdateListener.class));
             DisplayScoreEventCallback deCallback = spy(mock(DisplayScoreEventCallback.class));
             PubNubDisplayConnection pubNubDisplayConnection = new PubNubDisplayConnection(pubnub, ROOM_ID);
             pubNubDisplayConnection.setUiCallback(spyCallback);

@@ -9,16 +9,19 @@ import org.json.JSONObject;
 import ch.m3ts.connection.pubnub.ByteToBase64;
 import ch.m3ts.connection.pubnub.CameraBytesConversions;
 import ch.m3ts.connection.pubnub.JSONInfo;
+import ch.m3ts.event.Event;
+import ch.m3ts.event.Subscribable;
+import ch.m3ts.event.data.todisplay.ToDisplayData;
 import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.tabletennis.match.DisplayUpdateListener;
 import ch.m3ts.tabletennis.match.MatchStatus;
 import ch.m3ts.tabletennis.match.MatchStatusCallback;
-import ch.m3ts.tabletennis.match.UICallback;
 import ch.m3ts.tabletennis.match.game.ScoreManipulationCallback;
 import ch.m3ts.tracker.init.InitTrackerCallback;
 import ch.m3ts.tracker.visualization.MatchVisualizeHandlerCallback;
 import ch.m3ts.util.Log;
 
-public abstract class ImplTrackerConnection extends Callback implements TrackerConnection, UICallback {
+public abstract class ImplTrackerConnection extends Callback implements TrackerConnection, DisplayUpdateListener, Subscribable {
     protected static final int MAX_SIZE = 10000;
     protected static final String ROLE = "tracker";
     private static final String JSON_SEND_EXCEPTION_MESSAGE = "Unable to send JSON to endpoint ";
@@ -186,6 +189,15 @@ public abstract class ImplTrackerConnection extends Callback implements TrackerC
             sendData(json);
         } catch (JSONException ex) {
             Log.d(JSON_SEND_EXCEPTION_MESSAGE + "\n" + ex.getMessage());
+        }
+    }
+
+    @Override
+    public void handle(Event<?> event) {
+        Object data = event.getData();
+        if (data instanceof ToDisplayData) {
+            ToDisplayData displayData = (ToDisplayData) data;
+            displayData.call(this);
         }
     }
 }

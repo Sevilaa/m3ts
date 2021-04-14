@@ -2,7 +2,6 @@ package ch.m3ts.display;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Bundle;
@@ -19,10 +18,14 @@ import android.widget.TextView;
 
 import java.util.Locale;
 
+import ch.m3ts.EventBusSubscribedFragment;
 import ch.m3ts.connection.DisplayConnection;
 import ch.m3ts.connection.pubnub.PubNubDisplayConnection;
+import ch.m3ts.event.Event;
+import ch.m3ts.event.Subscribable;
+import ch.m3ts.event.data.todisplay.ToDisplayData;
 import ch.m3ts.tabletennis.helper.Side;
-import ch.m3ts.tabletennis.match.UICallback;
+import ch.m3ts.tabletennis.match.DisplayUpdateListener;
 import cz.fmo.R;
 import cz.fmo.util.Config;
 
@@ -30,7 +33,7 @@ import cz.fmo.util.Config;
  * Fragment which implements the features of a digital table tennis scoreboard.
  * Displays f.e. the current score, current amount of games won by each sides, the current servers.
  */
-public class MatchScoreFragment extends Fragment implements UICallback, DisplayScoreEventCallback {
+public class MatchScoreFragment extends EventBusSubscribedFragment implements DisplayUpdateListener, DisplayScoreEventCallback, Subscribable {
     private final int MAX_SCORE = 11;
     private String ttsWin;
     private String ttsSide;
@@ -50,7 +53,6 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
         View v = inflater.inflate(R.layout.fragment_match_score, container, false);
         this.connection = ((MatchActivity) getActivity()).getConnection();
         connection.setDisplayScoreEventCallback(this);
-        connection.setUiCallback(this);
         initTTS();
         this.mediaPlayer = MediaPlayer.create(getContext(), R.raw.success);
         ImageButton refreshButton = v.findViewById(R.id.btnDisplayRefresh);
@@ -306,5 +308,14 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
                 gamesNeededToWin = gamesNeeded;
             }
         });
+    }
+
+    @Override
+    public void handle(Event<?> event) {
+        Object data = event.getData();
+        if (data instanceof ToDisplayData) {
+            ToDisplayData displayData = (ToDisplayData) data;
+            displayData.call(this);
+        }
     }
 }

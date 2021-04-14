@@ -1,4 +1,4 @@
-package ch.m3ts.event.data;
+package ch.m3ts.event.data.eventdetector;
 
 import ch.m3ts.tabletennis.events.EventDetectionListener;
 import cz.fmo.data.Track;

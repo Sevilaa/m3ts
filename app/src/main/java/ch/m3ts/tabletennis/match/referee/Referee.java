@@ -15,8 +15,11 @@ import java.util.TimerTask;
 
 import ch.m3ts.event.Event;
 import ch.m3ts.event.Subscribable;
+import ch.m3ts.event.TTEvent;
 import ch.m3ts.event.TTEventBus;
-import ch.m3ts.event.data.EventDetectorEventData;
+import ch.m3ts.event.data.eventdetector.EventDetectorEventData;
+import ch.m3ts.event.data.todisplay.InvalidServeData;
+import ch.m3ts.event.data.todisplay.ReadyToServeData;
 import ch.m3ts.tabletennis.events.EventDetectionListener;
 import ch.m3ts.tabletennis.events.GestureCallback;
 import ch.m3ts.tabletennis.events.ReadyToServeCallback;
@@ -202,7 +205,7 @@ public class Referee implements EventDetectionListener, ScoreManipulationCallbac
                 break;
             case PAUSE:
                 if (side == getServer()) {
-                    this.gameCallback.onNotReadyButPlaying();
+                    TTEventBus.getInstance().dispatch(new TTEvent<>(new InvalidServeData()));
                 }
                 currentStriker = side;
                 break;
@@ -349,7 +352,7 @@ public class Referee implements EventDetectionListener, ScoreManipulationCallbac
     public void resume() {
         this.state = State.WAIT_FOR_SERVE;
         if (this.isUsingReadyToServeGesture) {
-            this.gameCallback.onReadyToServe(getServer());
+            TTEventBus.getInstance().dispatch(new TTEvent<>(new ReadyToServeData(getServer())));
         }
         TTEventBus.getInstance().register(this);
     }

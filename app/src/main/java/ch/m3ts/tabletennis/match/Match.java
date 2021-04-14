@@ -3,7 +3,14 @@ package ch.m3ts.tabletennis.match;
 import java.util.EnumMap;
 import java.util.Map;
 
+import ch.m3ts.event.Event;
+import ch.m3ts.event.Subscribable;
+import ch.m3ts.event.TTEvent;
 import ch.m3ts.event.TTEventBus;
+import ch.m3ts.event.data.game.GameEventData;
+import ch.m3ts.event.data.game.GameWinData;
+import ch.m3ts.event.data.todisplay.MatchEndedData;
+import ch.m3ts.event.data.todisplay.ToDisplayGameWinData;
 import ch.m3ts.tabletennis.events.GestureCallback;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.game.Game;
@@ -15,19 +22,18 @@ import ch.m3ts.tabletennis.match.referee.Referee;
  * Represents a match of table tennis.
  * Notifies when a game or a match is over and provides information about the current match status.
  */
-public class Match implements MatchCallback, MatchStatusCallback {
+public class Match implements GameListener, MatchStatusCallback, Subscribable {
     private Game[] games;
     private final MatchType type;
     private final Map<Side, Player> players;
     private Map<Side, Integer> wins;
-    private final UICallback uiCallback;
     private final Referee referee;
     private Side serverSide;
     private final Side startingServer;
     private final ServeRules serveRules;
     private final GameType gameType;
 
-    public Match(MatchType type, GameType gameType, ServeRules serveRules, Player playerLeft, Player playerRight, UICallback uiCallback, Side startingServer, GestureCallback gestureCallback) {
+    public Match(MatchType type, GameType gameType, ServeRules serveRules, Player playerLeft, Player playerRight, Side startingServer, GestureCallback gestureCallback) {
         this.type = type;
         this.gameType = gameType;
         this.startingServer = startingServer;
@@ -35,35 +41,33 @@ public class Match implements MatchCallback, MatchStatusCallback {
         this.players = new EnumMap<>(Side.class);
         this.players.put(Side.LEFT, playerLeft);
         this.players.put(Side.RIGHT, playerRight);
-        this.uiCallback = uiCallback;
         this.serveRules = serveRules;
         this.referee = new Referee(startingServer, gestureCallback);
         TTEventBus.getInstance().register(referee);
         startNewGame(true);
     }
 
-    public Match(MatchSettings settings, UICallback uiCallback, GestureCallback gestureCallback) {
+    public Match(MatchSettings settings, GestureCallback gestureCallback) {
         this(settings.getMatchType(), settings.getGameType(), settings.getServeRules(),
-                settings.getPlayerLeft(), settings.getPlayerRight(), uiCallback, settings.getStartingServer(), gestureCallback);
+                settings.getPlayerLeft(), settings.getPlayerRight(), settings.getStartingServer(), gestureCallback);
     }
 
     void startNewGame(boolean firstInit) {
         if (!firstInit) switchServers();
-        Game game = new Game(this, uiCallback, gameType, serveRules, this.serverSide);
+        Game game = new Game(gameType, serveRules, this.serverSide);
         this.games[this.wins.get(Side.RIGHT) + this.wins.get(Side.LEFT)] = game;
         this.referee.setGame(game, firstInit);
     }
 
     public void end(Side winner) {
-        this.uiCallback.onMatchEnded(this.players.get(winner).getName());
-        TTEventBus.getInstance().unregister(this.referee);
+        TTEventBus.getInstance().dispatch(new TTEvent<>(new MatchEndedData(this.players.get(winner).getName())));
     }
 
     @Override
-    public void onWin(Side side) {
+    public void onGameWin(Side side) {
         int win = wins.get(side) + 1;
         wins.put(side, win);
-        uiCallback.onWin(side, win);
+        TTEventBus.getInstance().dispatch(new TTEvent<>(new ToDisplayGameWinData(side, win)));
         if (isMatchOver(win)) {
             end(side);
         } else {
@@ -112,5 +116,14 @@ public class Match implements MatchCallback, MatchStatusCallback {
     public MatchStatus onRequestMatchStatus() {
         return new MatchStatus(players.get(Side.LEFT).getName(), players.get(Side.RIGHT).getName(), getCurrentGame().getScore(Side.LEFT),
                 getCurrentGame().getScore(Side.RIGHT), wins.get(Side.LEFT), wins.get(Side.RIGHT), getCurrentGame().getServer(), this.type.gamesNeededToWin);
+    }
+
+    @Override
+    public void handle(Event<?> event) {
+        Object data = event.getData();
+        if (data instanceof GameWinData) {
+            GameEventData gameEventData = (GameWinData) data;
+            gameEventData.call(this);
+        }
     }
 }
