@@ -11,6 +11,9 @@ import ch.m3ts.connection.pubnub.CameraBytesConversions;
 import ch.m3ts.connection.pubnub.JSONInfo;
 import ch.m3ts.event.Event;
 import ch.m3ts.event.Subscribable;
+import ch.m3ts.event.TTEvent;
+import ch.m3ts.event.TTEventBus;
+import ch.m3ts.event.data.RestartMatchData;
 import ch.m3ts.event.data.todisplay.ToDisplayData;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.DisplayUpdateListener;
@@ -18,7 +21,6 @@ import ch.m3ts.tabletennis.match.MatchStatus;
 import ch.m3ts.tabletennis.match.MatchStatusCallback;
 import ch.m3ts.tabletennis.match.game.ScoreManipulationCallback;
 import ch.m3ts.tracker.init.InitTrackerCallback;
-import ch.m3ts.tracker.visualization.MatchVisualizeHandlerCallback;
 import ch.m3ts.util.Log;
 
 public abstract class ImplTrackerConnection extends Callback implements TrackerConnection, DisplayUpdateListener, Subscribable {
@@ -28,8 +30,6 @@ public abstract class ImplTrackerConnection extends Callback implements TrackerC
     protected MatchStatusCallback callback;
     protected ScoreManipulationCallback scoreManipulationCallback;
     protected InitTrackerCallback initTrackerCallback;
-    protected MatchVisualizeHandlerCallback matchVisualizeHandlerCallback;
-
     protected abstract void send(String event, String side, Integer score, Integer wins, Side nextServer);
 
     protected abstract void sendData(JSONObject json);
@@ -46,10 +46,6 @@ public abstract class ImplTrackerConnection extends Callback implements TrackerC
 
     public void setInitTrackerCallback(InitTrackerCallback initTrackerCallback) {
         this.initTrackerCallback = initTrackerCallback;
-    }
-
-    public void setMatchVisualizeHandlerCallback(MatchVisualizeHandlerCallback matchVisualizeHandlerCallback) {
-        this.matchVisualizeHandlerCallback = matchVisualizeHandlerCallback;
     }
 
     @Override
@@ -124,9 +120,7 @@ public abstract class ImplTrackerConnection extends Callback implements TrackerC
                         this.initTrackerCallback.switchToLiveActivity(Integer.parseInt(json.getString(JSONInfo.TYPE_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.SERVER_PROPERTY)));
                         break;
                     case "onRestartMatch":
-                        if (this.matchVisualizeHandlerCallback != null) {
-                            this.matchVisualizeHandlerCallback.restartMatch();
-                        }
+                        TTEventBus.getInstance().dispatch(new TTEvent<>(new RestartMatchData()));
                         break;
                     default:
                         Log.d("Invalid event received.\nevent:" + event);

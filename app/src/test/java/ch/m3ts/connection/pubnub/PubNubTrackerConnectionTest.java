@@ -23,7 +23,7 @@ import ch.m3ts.tabletennis.match.MatchStatus;
 import ch.m3ts.tabletennis.match.MatchStatusCallback;
 import ch.m3ts.tabletennis.match.game.ScoreManipulationCallback;
 import ch.m3ts.tracker.init.InitTrackerCallback;
-import ch.m3ts.tracker.visualization.MatchVisualizeHandlerCallback;
+import ch.m3ts.tracker.visualization.RestartMatchListener;
 
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -104,12 +104,12 @@ public class PubNubTrackerConnectionTest {
 
     @Test
     public void testRestartingMatch() throws Exception {
-        MatchVisualizeHandlerCallback spyCallback = PowerMockito.spy(PowerMockito.mock(MatchVisualizeHandlerCallback.class));
+        RestartMatchListener spyCallback = PowerMockito.spy(PowerMockito.mock(RestartMatchListener.class));
         JSONObject jsonObject = makeJSONObject("onRestartMatch");
         // check for exception
         pubNubTrackerConnection.successCallback("test", jsonObject);
         verify(spyCallback, times(0)).restartMatch();
-        pubNubTrackerConnection.setMatchVisualizeHandlerCallback(spyCallback);
+        pubNubTrackerConnection.setRestartMatchListener(spyCallback);
         pubNubTrackerConnection.successCallback("test", jsonObject);
         verify(spyCallback, times(1)).restartMatch();
     }

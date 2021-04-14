@@ -25,12 +25,12 @@ import ch.m3ts.event.Event;
 import ch.m3ts.event.EventBus;
 import ch.m3ts.event.Subscribable;
 import ch.m3ts.event.TTEventBus;
+import ch.m3ts.event.data.GestureData;
 import ch.m3ts.event.data.eventdetector.EventDetectorEventData;
 import ch.m3ts.event.data.todisplay.ToDisplayData;
 import ch.m3ts.tabletennis.Table;
 import ch.m3ts.tabletennis.events.EventDetectionListener;
 import ch.m3ts.tabletennis.events.EventDetector;
-import ch.m3ts.tabletennis.events.GestureCallback;
 import ch.m3ts.tabletennis.events.ReadyToServeDetector;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.DisplayUpdateListener;
@@ -55,7 +55,7 @@ import cz.fmo.util.Config;
  * FMO then finds detections and tracks and forwards them to the EventDetector, which then calls
  * for events on this Handler.
  **/
-public class MatchVisualizeHandler extends android.os.Handler implements EventDetectionListener, DisplayUpdateListener, MatchVisualizeHandlerCallback, GestureCallback, Subscribable {
+public class MatchVisualizeHandler extends android.os.Handler implements EventDetectionListener, DisplayUpdateListener, Subscribable {
     protected static final int MAX_REFRESHING_TIME_MS = 500;
     final WeakReference<MatchVisualizeActivity> mActivity;
     private final boolean useBlackSide;
@@ -98,7 +98,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
             eventBus.unregister(match);
             eventBus.unregister(match.getReferee());
         }
-        match = new Match(matchSettings, this);
+        match = new Match(matchSettings);
         eventBus.register(match);
         startMatch();
         setTextInTextView(R.id.txtDebugPlayerNameLeft, playerLeft.getName());
@@ -109,6 +109,21 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
 
     public void deactivateReadyToServeGesture() {
         this.match.getReferee().deactivateReadyToServeGesture();
+    }
+
+    @Override
+    public void handle(Event<?> event) {
+        Object data = event.getData();
+        if (data instanceof EventDetectorEventData) {
+            EventDetectorEventData ballBounceData = (EventDetectorEventData) data;
+            ballBounceData.call(this);
+        } else if (data instanceof ToDisplayData) {
+            ToDisplayData toDisplayData = (ToDisplayData) data;
+            toDisplayData.call(this);
+        } else if (data instanceof GestureData) {
+            GestureData gestureData = (GestureData) data;
+            this.setWaitForGesture(gestureData.getServer());
+        }
     }
 
     @Override
@@ -238,11 +253,6 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         // do nothing for now
     }
 
-    @Override
-    public void restartMatch() {
-        // no implementation needed in here
-    }
-
     public void refreshDebugTextViews() {
         setTextInTextView(R.id.txtPlayMovieState, match.getReferee().getState().toString());
         setTextInTextView(R.id.txtPlayMovieServing, match.getReferee().getServer().toString());
@@ -338,8 +348,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         surfaceHolderTable.unlockCanvasAndPost(canvas);
     }
 
-    @Override
-    public void onWaitingForGesture(Side server) {
+    private void setWaitForGesture(Side server) {
         if (this.match != null) {
             serveDetector = new ReadyToServeDetector(table, server, this.match.getReferee(), this.useBlackSide);
             this.waitingForGesture = true;
@@ -472,18 +481,6 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     protected void setCallbackForNewGame() {
         if (match != null) {
             this.smc = match.getReferee();
-        }
-    }
-
-    @Override
-    public void handle(Event<?> event) {
-        Object data = event.getData();
-        if (data instanceof EventDetectorEventData) {
-            EventDetectorEventData ballBounceData = (EventDetectorEventData) data;
-            ballBounceData.call(this);
-        } else if (data instanceof ToDisplayData) {
-            ToDisplayData toDisplayData = (ToDisplayData) data;
-            toDisplayData.call(this);
         }
     }
 }

@@ -17,11 +17,11 @@ import ch.m3ts.event.Event;
 import ch.m3ts.event.Subscribable;
 import ch.m3ts.event.TTEvent;
 import ch.m3ts.event.TTEventBus;
+import ch.m3ts.event.data.GestureData;
 import ch.m3ts.event.data.eventdetector.EventDetectorEventData;
 import ch.m3ts.event.data.todisplay.InvalidServeData;
 import ch.m3ts.event.data.todisplay.ReadyToServeData;
 import ch.m3ts.tabletennis.events.EventDetectionListener;
-import ch.m3ts.tabletennis.events.GestureCallback;
 import ch.m3ts.tabletennis.events.ReadyToServeCallback;
 import ch.m3ts.tabletennis.helper.DirectionX;
 import ch.m3ts.tabletennis.helper.Duration;
@@ -53,7 +53,6 @@ public class Referee implements EventDetectionListener, ScoreManipulationCallbac
     private static final String FILENAME = "recording_%s.csv";
     private static final String DATE_FORMAT = "yyyy-mm-dd_hh_mm_ss";
     private static final int OUT_OF_FRAME_MAX_DELAY = 1500;
-    private final GestureCallback gestureCallback;
     private final String currentFileName;
     private Timer outOfFrameTimer;
     private Timer timeOutNextServeTimer;
@@ -70,13 +69,12 @@ public class Referee implements EventDetectionListener, ScoreManipulationCallbac
     private List<Track> strikeLogs = new ArrayList<>();
     private final Duration duration;
 
-    public Referee(Side servingSide, GestureCallback gestureCallback) {
+    public Referee(Side servingSide) {
         this.currentStriker = servingSide;
         this.currentBallSide = servingSide;
         this.bounces = 0;
         this.audioBounces = 0;
         this.state = State.WAIT_FOR_SERVE;
-        this.gestureCallback = gestureCallback;
         Date date = Calendar.getInstance().getTime();
         DateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT, Locale.GERMANY);
         this.currentFileName = String.format(FILENAME, dateFormat.format(date));
@@ -134,7 +132,7 @@ public class Referee implements EventDetectionListener, ScoreManipulationCallbac
     public void initState() {
         if (isUsingReadyToServeGesture) {
             this.state = State.PAUSE;
-            this.gestureCallback.onWaitingForGesture(getServer());
+            TTEventBus.getInstance().dispatch(new TTEvent<>(new GestureData(getServer())));
         } else {
             this.state = State.WAIT_FOR_SERVE;
         }
@@ -409,7 +407,7 @@ public class Referee implements EventDetectionListener, ScoreManipulationCallbac
         this.duration.stop();
         if (isUsingReadyToServeGesture) {
             this.state = State.PAUSE;
-            gestureCallback.onWaitingForGesture(getServer());
+            TTEventBus.getInstance().dispatch(new TTEvent<>(new GestureData(getServer())));
         } else {
             this.state = State.WAIT_FOR_SERVE;
         }

@@ -16,7 +16,9 @@ import ch.m3ts.connection.ImplTrackerConnection;
 import ch.m3ts.connection.NearbyTrackerConnection;
 import ch.m3ts.connection.TrackerConnection;
 import ch.m3ts.connection.pubnub.PubNubFactory;
+import ch.m3ts.event.Event;
 import ch.m3ts.event.TTEventBus;
+import ch.m3ts.event.data.RestartMatchData;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.Match;
 import ch.m3ts.tabletennis.match.MatchSettings;
@@ -108,11 +110,10 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
     @Override
     public void initMatch(Side servingSide, MatchType matchType, Player playerLeft, Player playerRight) {
         this.matchSettings = new MatchSettings(matchType, GameType.G11, ServeRules.S2, playerLeft, playerRight, servingSide);
-        this.match = new Match(matchSettings, this);
+        this.match = new Match(matchSettings);
         if (mLiveActivity.get() != null)
             this.match.getReferee().debugToFile(mLiveActivity.get().getApplicationContext());
         this.connection.setTrackerPubNubCallback(match);
-        this.connection.setMatchVisualizeHandlerCallback(this);
         this.connection.setScoreManipulationCallback(match.getReferee());
         this.connection.sendStatusUpdate(playerLeft.getName(), playerRight.getName(), 0,0,0,0,servingSide, matchType.gamesNeededToWin);
         startMatch();
@@ -144,8 +145,7 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
         this.connection.setScoreManipulationCallback(match.getReferee());
     }
 
-    @Override
-    public void restartMatch() {
+    private void restartMatch() {
         this.match.restartMatch();
         this.startDetections();
         this.connection.sendStatusUpdate(this.matchSettings.getPlayerLeft().getName(), this.matchSettings.getPlayerRight().getName(), 0, 0, 0, 0, this.matchSettings.getStartingServer(), this.matchSettings.getMatchType().gamesNeededToWin);
@@ -180,6 +180,15 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
     public void setConnectCallback(ConnectionCallback callback) {
         if (this.connection instanceof NearbyTrackerConnection) {
             ((NearbyTrackerConnection) this.connection).setConnectionCallback(callback);
+        }
+    }
+
+    @Override
+    public void handle(Event<?> event) {
+        super.handle(event);
+        Object data = event.getData();
+        if (data instanceof RestartMatchData) {
+            this.restartMatch();
         }
     }
 }

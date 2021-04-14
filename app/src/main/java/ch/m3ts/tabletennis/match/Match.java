@@ -11,7 +11,6 @@ import ch.m3ts.event.data.game.GameEventData;
 import ch.m3ts.event.data.game.GameWinData;
 import ch.m3ts.event.data.todisplay.MatchEndedData;
 import ch.m3ts.event.data.todisplay.ToDisplayGameWinData;
-import ch.m3ts.tabletennis.events.GestureCallback;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.game.Game;
 import ch.m3ts.tabletennis.match.game.GameType;
@@ -33,7 +32,7 @@ public class Match implements GameListener, MatchStatusCallback, Subscribable {
     private final ServeRules serveRules;
     private final GameType gameType;
 
-    public Match(MatchType type, GameType gameType, ServeRules serveRules, Player playerLeft, Player playerRight, Side startingServer, GestureCallback gestureCallback) {
+    public Match(MatchType type, GameType gameType, ServeRules serveRules, Player playerLeft, Player playerRight, Side startingServer) {
         this.type = type;
         this.gameType = gameType;
         this.startingServer = startingServer;
@@ -42,14 +41,14 @@ public class Match implements GameListener, MatchStatusCallback, Subscribable {
         this.players.put(Side.LEFT, playerLeft);
         this.players.put(Side.RIGHT, playerRight);
         this.serveRules = serveRules;
-        this.referee = new Referee(startingServer, gestureCallback);
+        this.referee = new Referee(startingServer);
         TTEventBus.getInstance().register(referee);
         startNewGame(true);
     }
 
-    public Match(MatchSettings settings, GestureCallback gestureCallback) {
+    public Match(MatchSettings settings) {
         this(settings.getMatchType(), settings.getGameType(), settings.getServeRules(),
-                settings.getPlayerLeft(), settings.getPlayerRight(), settings.getStartingServer(), gestureCallback);
+                settings.getPlayerLeft(), settings.getPlayerRight(), settings.getStartingServer());
     }
 
     void startNewGame(boolean firstInit) {
