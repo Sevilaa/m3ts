@@ -24,9 +24,12 @@ import ch.m3ts.display.OnSwipeListener;
 import ch.m3ts.event.Event;
 import ch.m3ts.event.EventBus;
 import ch.m3ts.event.Subscribable;
+import ch.m3ts.event.TTEvent;
 import ch.m3ts.event.TTEventBus;
 import ch.m3ts.event.data.GestureData;
 import ch.m3ts.event.data.eventdetector.EventDetectorEventData;
+import ch.m3ts.event.data.scoremanipulation.PointAddition;
+import ch.m3ts.event.data.scoremanipulation.PointDeduction;
 import ch.m3ts.event.data.todisplay.ToDisplayData;
 import ch.m3ts.tabletennis.Table;
 import ch.m3ts.tabletennis.events.EventDetectionListener;
@@ -40,7 +43,6 @@ import ch.m3ts.tabletennis.match.MatchType;
 import ch.m3ts.tabletennis.match.Player;
 import ch.m3ts.tabletennis.match.ServeRules;
 import ch.m3ts.tabletennis.match.game.GameType;
-import ch.m3ts.tabletennis.match.game.ScoreManipulationCallback;
 import ch.m3ts.tracker.ZPositionCalc;
 import cz.fmo.Lib;
 import cz.fmo.R;
@@ -76,7 +78,6 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     private Lib.Detection latestNearlyOutOfFrame;
     private Lib.Detection latestBounce;
     private int newBounceCount;
-    private ScoreManipulationCallback smc;
     private boolean waitingForGesture = false;
     private Recorder audioRecorder;
 
@@ -240,7 +241,6 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         } else {
             setTextInTextView(R.id.txtPlayMovieGameRight, String.valueOf(wins));
         }
-        setCallbackForNewGame();
     }
 
     @Override
@@ -455,32 +455,21 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     @SuppressLint("ClickableViewAccessibility")
     private void setOnSwipeListener() {
         if (match != null) {
-            setCallbackForNewGame();
             mActivity.get().runOnUiThread(new Runnable() {
                 public void run() {
                     mActivity.get().getmSurfaceView().setOnTouchListener(new OnSwipeListener(mActivity.get()) {
                         @Override
                         public void onSwipeDown(Side swipeSide) {
-                            if (smc != null) {
-                                smc.onPointDeduction(swipeSide);
-                            }
+                            TTEventBus.getInstance().dispatch(new TTEvent<>(new PointDeduction(swipeSide)));
                         }
 
                         @Override
                         public void onSwipeUp(Side swipeSide) {
-                            if (smc != null) {
-                                smc.onPointAddition(swipeSide);
-                            }
+                            TTEventBus.getInstance().dispatch(new TTEvent<>(new PointAddition(swipeSide)));
                         }
                     });
                 }
             });
-        }
-    }
-
-    protected void setCallbackForNewGame() {
-        if (match != null) {
-            this.smc = match.getReferee();
         }
     }
 }

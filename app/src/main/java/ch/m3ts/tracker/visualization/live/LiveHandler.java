@@ -114,7 +114,6 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
         if (mLiveActivity.get() != null)
             this.match.getReferee().debugToFile(mLiveActivity.get().getApplicationContext());
         this.connection.setTrackerPubNubCallback(match);
-        this.connection.setScoreManipulationCallback(match.getReferee());
         this.connection.sendStatusUpdate(playerLeft.getName(), playerRight.getName(), 0,0,0,0,servingSide, matchType.gamesNeededToWin);
         startMatch();
         if(doDrawDebugInfo) {
@@ -138,11 +137,6 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
         if(doDrawDebugInfo) {
             super.onSideChange(side);
         }
-    }
-
-    @Override
-    protected void setCallbackForNewGame() {
-        this.connection.setScoreManipulationCallback(match.getReferee());
     }
 
     private void restartMatch() {
