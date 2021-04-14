@@ -130,6 +130,7 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
         // first tag all tracks which have crossed the table once
         for (Track t : tracks) {
             Lib.Detection latestDetection = t.getLatest();
+            latestDetection.centerZ = (int) Math.round(zPositionCalc.findZPosMmOfBall(latestDetection.radius));
             if (table.isOnOrAbove(latestDetection.centerX, latestDetection.centerY) && zPositionCalc.isBallZPositionOnTable(latestDetection.radius)) {
                 t.setTableCrossed();
             }
@@ -246,6 +247,7 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
                 (table.isBounceOn(previousCenterX, previousCenterY) || table.isBounceOn(detection.centerX, detection.centerY)) &&
                 ((previousDirectionY == DirectionY.DOWN) && (detection.directionY == DirectionY.UP))) {
             Side ballBouncedOnSide = table.getHorizontalSideOfDetection(previousDetection.centerX);
+            detection.isBounce = true;
             callAllOnBounce(previousDetection, ballBouncedOnSide);
         }
     }

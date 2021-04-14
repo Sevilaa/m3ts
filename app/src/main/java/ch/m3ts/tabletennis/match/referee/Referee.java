@@ -5,8 +5,10 @@ import android.content.Context;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -57,6 +59,7 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     private int strikes;
     private FileManager fm;
     private boolean isUsingReadyToServeGesture = true;
+    private List<Track> strikeLogs = new ArrayList<>();
 
     public Referee(Side servingSide, GestureCallback gestureCallback) {
         this.currentStriker = servingSide;
@@ -76,11 +79,13 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
         String csvFormatString = CSVStringBuilder.builder()
                 .add("msg")
                 .add("point_for_side")
-                .add("score")
+                .add("score_left")
+                .add("score_right")
                 .add("strikes_for_point")
                 .add("ball_side")
                 .add("striker_side")
                 .add("server_side")
+                .add("detections_grouped_by_strikes(track_x_y_z_velocity_isbounce)")
                 .toString();
         Log.d(csvFormatString, csvFile);
     }
@@ -92,14 +97,17 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
             String csvString = CSVStringBuilder.builder()
                     .add(reasonMsg)
                     .add(pointForSide)
-                    .add(this.currentGame.getScore(Side.LEFT) + " to " + this.currentGame.getScore(Side.RIGHT))
+                    .add(this.currentGame.getScore(Side.LEFT))
+                    .add(this.currentGame.getScore(Side.RIGHT))
                     .add(this.strikes)
                     .add(this.currentBallSide)
                     .add(this.currentStriker)
                     .add(this.getServer())
+                    .add(this.strikeLogs)
                     .toString();
             strikes = 0;
             Log.d(csvString, csvFile);
+            this.strikeLogs.clear();
         }
     }
 
@@ -228,6 +236,9 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
             default:
                 break;
         }
+        if (this.state != State.PAUSE) {
+            this.strikeLogs.add(track);
+        }
     }
 
     @Override
@@ -279,12 +290,14 @@ public class Referee implements EventDetectionCallback, ScoreManipulationCallbac
     @Override
     public void onPointDeduction(Side side) {
         gameCallback.onPointDeduction(side);
+        logScoring("REFEREE: On point deduction ", side);
         initPoint();
     }
 
     @Override
     public void onPointAddition(Side side) {
         gameCallback.onPoint(side);
+        logScoring("REFEREE: On point addition ", side);
         initPoint();
     }
 
