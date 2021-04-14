@@ -24,6 +24,7 @@ import ch.m3ts.tabletennis.events.EventDetectionListener;
 import ch.m3ts.tabletennis.events.GestureCallback;
 import ch.m3ts.tabletennis.events.ReadyToServeCallback;
 import ch.m3ts.tabletennis.helper.DirectionX;
+import ch.m3ts.tabletennis.helper.Duration;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.game.Game;
 import ch.m3ts.tabletennis.match.game.GameCallback;
@@ -67,6 +68,7 @@ public class Referee implements EventDetectionListener, ScoreManipulationCallbac
     private FileManager fm;
     private boolean isUsingReadyToServeGesture = true;
     private List<Track> strikeLogs = new ArrayList<>();
+    private final Duration duration;
 
     public Referee(Side servingSide, GestureCallback gestureCallback) {
         this.currentStriker = servingSide;
@@ -78,6 +80,7 @@ public class Referee implements EventDetectionListener, ScoreManipulationCallbac
         Date date = Calendar.getInstance().getTime();
         DateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT, Locale.GERMANY);
         this.currentFileName = String.format(FILENAME, dateFormat.format(date));
+        this.duration = new Duration();
     }
 
     public void debugToFile(Context context) {
@@ -92,6 +95,7 @@ public class Referee implements EventDetectionListener, ScoreManipulationCallbac
                 .add("ball_side")
                 .add("striker_side")
                 .add("server_side")
+                .add("duration_seconds")
                 .add("detections_grouped_by_strikes(track_x_y_z_velocity_isbounce)")
                 .toString();
         Log.d(csvFormatString, csvFile);
@@ -110,6 +114,7 @@ public class Referee implements EventDetectionListener, ScoreManipulationCallbac
                     .add(this.currentBallSide)
                     .add(this.currentStriker)
                     .add(this.getServer())
+                    .add(this.duration.getSeconds())
                     .add(this.strikeLogs)
                     .toString();
             strikes = 0;
@@ -297,15 +302,15 @@ public class Referee implements EventDetectionListener, ScoreManipulationCallbac
     @Override
     public void onPointDeduction(Side side) {
         gameCallback.onPointDeduction(side);
-        logScoring("REFEREE: On point deduction ", side);
         initPoint();
+        logScoring("REFEREE: On point deduction ", side);
     }
 
     @Override
     public void onPointAddition(Side side) {
         gameCallback.onPoint(side);
-        logScoring("REFEREE: On point addition ", side);
         initPoint();
+        logScoring("REFEREE: On point addition ", side);
     }
 
     @Override
@@ -354,6 +359,7 @@ public class Referee implements EventDetectionListener, ScoreManipulationCallbac
         if (this.isUsingReadyToServeGesture) {
             TTEventBus.getInstance().dispatch(new TTEvent<>(new ReadyToServeData(getServer())));
         }
+        this.duration.reset();
         TTEventBus.getInstance().register(this);
     }
 
@@ -400,6 +406,7 @@ public class Referee implements EventDetectionListener, ScoreManipulationCallbac
         this.bounces = 0;
         this.audioBounces = 0;
         this.cancelTimers();
+        this.duration.stop();
         if (isUsingReadyToServeGesture) {
             this.state = State.PAUSE;
             gestureCallback.onWaitingForGesture(getServer());
