@@ -93,7 +93,7 @@ public class Referee implements EventDetectionListener, ScoreManipulationCallbac
                 .add("striker_side")
                 .add("server_side")
                 .add("duration_seconds")
-                .add("detections_grouped_by_strikes(track_x_y_z_velocity_isbounce)")
+                .add("detections_grouped_by_strikes(track_x_y_z_velocity_striker_isbounce)")
                 .toString();
         Log.d(csvFormatString, csvFile);
     }
@@ -246,6 +246,7 @@ public class Referee implements EventDetectionListener, ScoreManipulationCallbac
                 break;
         }
         if (this.state != State.PAUSE) {
+            track.setStriker(this.currentStriker);
             this.strikeLogs.add(track);
         }
     }

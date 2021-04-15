@@ -2,6 +2,7 @@ package cz.fmo.data;
 
 import java.util.Locale;
 
+import ch.m3ts.tabletennis.helper.Side;
 import cz.fmo.Lib;
 import cz.fmo.graphics.FontRenderer;
 import cz.fmo.graphics.TriangleStripRenderer;
@@ -24,6 +25,7 @@ public class Track {
     private int mVelocityNumFrames = 0;
     private boolean hasCrossedTable = false;
     private boolean isZPosOnTable = false;
+    private Side striker;
 
     Track(Config config) {
         mConfig = config;
@@ -44,6 +46,14 @@ public class Track {
     public void setTableCrossed() {
         this.hasCrossedTable = true;
         this.isZPosOnTable = true;
+    }
+
+    public void setStriker(Side striker) {
+        this.striker = striker;
+    }
+
+    public Side getStriker() {
+        return this.striker;
     }
 
     public boolean hasCrossedTable() {

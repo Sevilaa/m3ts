@@ -2,8 +2,12 @@ package ch.m3ts.util;
 
 import org.junit.Test;
 
+import java.util.List;
+import java.util.Random;
+
 import ch.m3ts.tabletennis.helper.Side;
 import cz.fmo.Lib;
+import cz.fmo.data.Track;
 import cz.fmo.data.TrackSet;
 import cz.fmo.util.Config;
 import helper.DetectionGenerator;
@@ -49,14 +53,17 @@ public class CSVStringBuilderTest {
         realTrackSet.setConfig(mockConfig);
         Lib.Detection[] detections = DetectionGenerator.makeFullDetections();
         realTrackSet.addDetections(detections, 1920, 1080, 0);
-        assertEquals(createCSVStringFromDetections(detections), CSVStringBuilder.builder()
+        assertEquals(createCSVStringFromDetections(detections, realTrackSet.getTracks()), CSVStringBuilder.builder()
                 .add(realTrackSet.getTracks()).toString());
     }
 
-    private String createCSVStringFromDetections(Lib.Detection[] detections) {
+    private String createCSVStringFromDetections(Lib.Detection[] detections, List<Track> tracks) {
         StringBuilder result = new StringBuilder();
+        Random rd = new Random();
         for(int i = 0; i < detections.length; i++) {
-            result.append(formatCSVString(new Object[]{i, detections[i].centerX, detections[i].centerY, detections[i].centerZ, detections[i].velocity, detections[i].isBounce}));
+            Side striker = rd.nextBoolean() ? Side.LEFT : Side.RIGHT;
+            tracks.get(i).setStriker(striker);
+            result.append(formatCSVString(new Object[]{i, detections[i].centerX, detections[i].centerY, detections[i].centerZ, detections[i].velocity, striker, detections[i].isBounce}));
         }
         return result.toString();
     }

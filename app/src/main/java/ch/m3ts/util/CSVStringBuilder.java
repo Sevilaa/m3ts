@@ -38,7 +38,7 @@ public class CSVStringBuilder {
         for (Track track : tracks) {
             Lib.Detection latest = track.getLatest();
             while (latest != null) {
-                add(trackId + IN_CELL_SEPARATOR + latest.centerX + IN_CELL_SEPARATOR + latest.centerY + IN_CELL_SEPARATOR + latest.centerZ + IN_CELL_SEPARATOR + latest.velocity + IN_CELL_SEPARATOR + latest.isBounce);
+                add(trackId + IN_CELL_SEPARATOR + latest.centerX + IN_CELL_SEPARATOR + latest.centerY + IN_CELL_SEPARATOR + latest.centerZ + IN_CELL_SEPARATOR + latest.velocity + IN_CELL_SEPARATOR + track.getStriker() + IN_CELL_SEPARATOR + latest.isBounce);
                 latest = latest.predecessor;
             }
             trackId++;
