@@ -51,8 +51,7 @@ public final class LiveActivity extends MatchVisualizeActivity {
         cameraCallback = this.mHandler;
         this.alertDialog = QuitAlertDialogHelper.makeDialog(this);
         Log.d("Found match: " + matchId);
-        this.onPause();
-
+        mHandler.stopDetections();
     }
 
     @Override

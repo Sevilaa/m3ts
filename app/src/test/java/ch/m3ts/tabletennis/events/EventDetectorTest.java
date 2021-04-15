@@ -7,7 +7,7 @@ import org.junit.Test;
 import ch.m3ts.event.Event;
 import ch.m3ts.event.Subscribable;
 import ch.m3ts.event.TTEventBus;
-import ch.m3ts.event.data.EventDetectorEventData;
+import ch.m3ts.event.data.eventdetector.EventDetectorEventData;
 import ch.m3ts.tabletennis.Table;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tracker.ZPositionCalc;

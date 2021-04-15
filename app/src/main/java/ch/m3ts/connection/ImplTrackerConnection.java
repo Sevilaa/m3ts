@@ -9,24 +9,29 @@ import org.json.JSONObject;
 import ch.m3ts.connection.pubnub.ByteToBase64;
 import ch.m3ts.connection.pubnub.CameraBytesConversions;
 import ch.m3ts.connection.pubnub.JSONInfo;
+import ch.m3ts.event.Event;
+import ch.m3ts.event.Subscribable;
+import ch.m3ts.event.TTEvent;
+import ch.m3ts.event.TTEventBus;
+import ch.m3ts.event.data.RestartMatchData;
+import ch.m3ts.event.data.scoremanipulation.PauseMatch;
+import ch.m3ts.event.data.scoremanipulation.PointAddition;
+import ch.m3ts.event.data.scoremanipulation.PointDeduction;
+import ch.m3ts.event.data.scoremanipulation.ResumeMatch;
+import ch.m3ts.event.data.todisplay.ToDisplayData;
 import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.tabletennis.match.DisplayUpdateListener;
 import ch.m3ts.tabletennis.match.MatchStatus;
 import ch.m3ts.tabletennis.match.MatchStatusCallback;
-import ch.m3ts.tabletennis.match.UICallback;
-import ch.m3ts.tabletennis.match.game.ScoreManipulationCallback;
 import ch.m3ts.tracker.init.InitTrackerCallback;
-import ch.m3ts.tracker.visualization.MatchVisualizeHandlerCallback;
 import ch.m3ts.util.Log;
 
-public abstract class ImplTrackerConnection extends Callback implements TrackerConnection, UICallback {
+public abstract class ImplTrackerConnection extends Callback implements TrackerConnection, DisplayUpdateListener, Subscribable {
     protected static final int MAX_SIZE = 10000;
     protected static final String ROLE = "tracker";
     private static final String JSON_SEND_EXCEPTION_MESSAGE = "Unable to send JSON to endpoint ";
     protected MatchStatusCallback callback;
-    protected ScoreManipulationCallback scoreManipulationCallback;
     protected InitTrackerCallback initTrackerCallback;
-    protected MatchVisualizeHandlerCallback matchVisualizeHandlerCallback;
-
     protected abstract void send(String event, String side, Integer score, Integer wins, Side nextServer);
 
     protected abstract void sendData(JSONObject json);
@@ -37,16 +42,8 @@ public abstract class ImplTrackerConnection extends Callback implements TrackerC
         this.callback = callback;
     }
 
-    public void setScoreManipulationCallback(ScoreManipulationCallback scoreManipulationCallback) {
-        this.scoreManipulationCallback = scoreManipulationCallback;
-    }
-
     public void setInitTrackerCallback(InitTrackerCallback initTrackerCallback) {
         this.initTrackerCallback = initTrackerCallback;
-    }
-
-    public void setMatchVisualizeHandlerCallback(MatchVisualizeHandlerCallback matchVisualizeHandlerCallback) {
-        this.matchVisualizeHandlerCallback = matchVisualizeHandlerCallback;
     }
 
     @Override
@@ -90,11 +87,11 @@ public abstract class ImplTrackerConnection extends Callback implements TrackerC
                 switch (event) {
                     case "onPointDeduction":
                         side = json.getString(JSONInfo.SIDE_PROPERTY);
-                        this.scoreManipulationCallback.onPointDeduction(Side.valueOf(side));
+                        TTEventBus.getInstance().dispatch(new TTEvent<>(new PointDeduction(Side.valueOf(side))));
                         break;
                     case "onPointAddition":
                         side = json.getString(JSONInfo.SIDE_PROPERTY);
-                        this.scoreManipulationCallback.onPointAddition(Side.valueOf(side));
+                        TTEventBus.getInstance().dispatch(new TTEvent<>(new PointAddition(Side.valueOf(side))));
                         break;
                     case "requestStatus":
                         if (this.callback != null) {
@@ -105,10 +102,10 @@ public abstract class ImplTrackerConnection extends Callback implements TrackerC
                         }
                         break;
                     case "onPause":
-                        this.scoreManipulationCallback.onPause();
+                        TTEventBus.getInstance().dispatch(new TTEvent<>(new PauseMatch()));
                         break;
                     case "onResume":
-                        this.scoreManipulationCallback.onResume();
+                        TTEventBus.getInstance().dispatch(new TTEvent<>(new ResumeMatch()));
                         break;
                     case "onRequestTableFrame":
                         handleOnRequestTableFrame();
@@ -121,9 +118,7 @@ public abstract class ImplTrackerConnection extends Callback implements TrackerC
                         this.initTrackerCallback.switchToLiveActivity(Integer.parseInt(json.getString(JSONInfo.TYPE_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.SERVER_PROPERTY)));
                         break;
                     case "onRestartMatch":
-                        if (this.matchVisualizeHandlerCallback != null) {
-                            this.matchVisualizeHandlerCallback.restartMatch();
-                        }
+                        TTEventBus.getInstance().dispatch(new TTEvent<>(new RestartMatchData()));
                         break;
                     default:
                         Log.d("Invalid event received.\nevent:" + event);
@@ -186,6 +181,15 @@ public abstract class ImplTrackerConnection extends Callback implements TrackerC
             sendData(json);
         } catch (JSONException ex) {
             Log.d(JSON_SEND_EXCEPTION_MESSAGE + "\n" + ex.getMessage());
+        }
+    }
+
+    @Override
+    public void handle(Event<?> event) {
+        Object data = event.getData();
+        if (data instanceof ToDisplayData) {
+            ToDisplayData displayData = (ToDisplayData) data;
+            displayData.call(this);
         }
     }
 }

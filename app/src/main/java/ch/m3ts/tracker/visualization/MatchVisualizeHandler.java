@@ -22,23 +22,27 @@ import java.util.Timer;
 
 import ch.m3ts.display.OnSwipeListener;
 import ch.m3ts.event.Event;
+import ch.m3ts.event.EventBus;
 import ch.m3ts.event.Subscribable;
+import ch.m3ts.event.TTEvent;
 import ch.m3ts.event.TTEventBus;
-import ch.m3ts.event.data.EventDetectorEventData;
+import ch.m3ts.event.data.GestureData;
+import ch.m3ts.event.data.eventdetector.EventDetectorEventData;
+import ch.m3ts.event.data.scoremanipulation.PointAddition;
+import ch.m3ts.event.data.scoremanipulation.PointDeduction;
+import ch.m3ts.event.data.todisplay.ToDisplayData;
 import ch.m3ts.tabletennis.Table;
 import ch.m3ts.tabletennis.events.EventDetectionListener;
 import ch.m3ts.tabletennis.events.EventDetector;
-import ch.m3ts.tabletennis.events.GestureCallback;
 import ch.m3ts.tabletennis.events.ReadyToServeDetector;
 import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.tabletennis.match.DisplayUpdateListener;
 import ch.m3ts.tabletennis.match.Match;
 import ch.m3ts.tabletennis.match.MatchSettings;
 import ch.m3ts.tabletennis.match.MatchType;
 import ch.m3ts.tabletennis.match.Player;
 import ch.m3ts.tabletennis.match.ServeRules;
-import ch.m3ts.tabletennis.match.UICallback;
 import ch.m3ts.tabletennis.match.game.GameType;
-import ch.m3ts.tabletennis.match.game.ScoreManipulationCallback;
 import ch.m3ts.tracker.ZPositionCalc;
 import cz.fmo.Lib;
 import cz.fmo.R;
@@ -53,7 +57,7 @@ import cz.fmo.util.Config;
  * FMO then finds detections and tracks and forwards them to the EventDetector, which then calls
  * for events on this Handler.
  **/
-public class MatchVisualizeHandler extends android.os.Handler implements EventDetectionListener, UICallback, MatchVisualizeHandlerCallback, GestureCallback, Subscribable {
+public class MatchVisualizeHandler extends android.os.Handler implements EventDetectionListener, DisplayUpdateListener, Subscribable {
     protected static final int MAX_REFRESHING_TIME_MS = 500;
     final WeakReference<MatchVisualizeActivity> mActivity;
     private final boolean useBlackSide;
@@ -61,7 +65,6 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     private final TrackSet tracks;
     protected Match match;
     protected MatchSettings matchSettings;
-    protected UICallback uiCallback;
     private EventDetector eventDetector;
     private ReadyToServeDetector serveDetector;
     private Paint p;
@@ -75,7 +78,6 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     private Lib.Detection latestNearlyOutOfFrame;
     private Lib.Detection latestBounce;
     private int newBounceCount;
-    private ScoreManipulationCallback smc;
     private boolean waitingForGesture = false;
     private Recorder audioRecorder;
 
@@ -84,7 +86,6 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         this.tracks = TrackSet.getInstance();
         this.tracks.clear();
         this.hasNewTable = true;
-        this.uiCallback = this;
         this.useBlackSide = new Config(activity.getApplicationContext()).isUseBlackSide();
         this.useAudio = new Config(activity.getApplicationContext()).isUseAudio();
         initColors(activity);
@@ -93,7 +94,13 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
 
     public void initMatch(Side servingSide, MatchType matchType, Player playerLeft, Player playerRight) {
         this.matchSettings = new MatchSettings(matchType, GameType.G11, ServeRules.S2, playerLeft, playerRight, servingSide);
-        match = new Match(matchSettings, uiCallback, this);
+        EventBus eventBus = TTEventBus.getInstance();
+        if (this.match != null) {
+            eventBus.unregister(match);
+            eventBus.unregister(match.getReferee());
+        }
+        match = new Match(matchSettings);
+        eventBus.register(match);
         startMatch();
         setTextInTextView(R.id.txtDebugPlayerNameLeft, playerLeft.getName());
         setTextInTextView(R.id.txtDebugPlayerNameRight, playerRight.getName());
@@ -103,6 +110,21 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
 
     public void deactivateReadyToServeGesture() {
         this.match.getReferee().deactivateReadyToServeGesture();
+    }
+
+    @Override
+    public void handle(Event<?> event) {
+        Object data = event.getData();
+        if (data instanceof EventDetectorEventData) {
+            EventDetectorEventData ballBounceData = (EventDetectorEventData) data;
+            ballBounceData.call(this);
+        } else if (data instanceof ToDisplayData) {
+            ToDisplayData toDisplayData = (ToDisplayData) data;
+            toDisplayData.call(this);
+        } else if (data instanceof GestureData) {
+            GestureData gestureData = (GestureData) data;
+            this.setWaitForGesture(gestureData.getServer());
+        }
     }
 
     @Override
@@ -195,10 +217,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public void onMatchEnded(String winnerName) {
-        this.audioRecorder = null;
-        this.match = null;
-        this.eventDetector = null;
-        Lib.detectionStop();
+        this.stopDetections();
         mActivity.get().getmSurfaceView().setOnTouchListener(null);
         resetScoreTextViews();
         resetGamesTextViews();
@@ -222,7 +241,6 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         } else {
             setTextInTextView(R.id.txtPlayMovieGameRight, String.valueOf(wins));
         }
-        setCallbackForNewGame();
     }
 
     @Override
@@ -233,11 +251,6 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     @Override
     public void onNotReadyButPlaying() {
         // do nothing for now
-    }
-
-    @Override
-    public void restartMatch() {
-        // no implementation needed in here
     }
 
     public void refreshDebugTextViews() {
@@ -265,7 +278,10 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     public void onResumeActivity() {
         TTEventBus eventBus = TTEventBus.getInstance();
         eventBus.register(this);
-        if (this.match != null) eventBus.register(match.getReferee());
+        if (this.match != null) {
+            eventBus.register(match);
+            eventBus.register(match.getReferee());
+        }
     }
 
     /**
@@ -274,7 +290,10 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     public void onPauseActivity() {
         TTEventBus eventBus = TTEventBus.getInstance();
         eventBus.unregister(this);
-        if (this.match != null) eventBus.unregister(match.getReferee());
+        if (this.match != null) {
+            eventBus.unregister(match);
+            eventBus.unregister(match.getReferee());
+        }
     }
 
     public void startDetections() {
@@ -329,10 +348,11 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         surfaceHolderTable.unlockCanvasAndPost(canvas);
     }
 
-    @Override
-    public void onWaitingForGesture(Side server) {
-        serveDetector = new ReadyToServeDetector(table, server, this.match.getReferee(), this.useBlackSide);
-        this.waitingForGesture = true;
+    private void setWaitForGesture(Side server) {
+        if (this.match != null) {
+            serveDetector = new ReadyToServeDetector(table, server, this.match.getReferee(), this.useBlackSide);
+            this.waitingForGesture = true;
+        }
     }
 
     public boolean isWaitingForGesture() {
@@ -435,41 +455,21 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     @SuppressLint("ClickableViewAccessibility")
     private void setOnSwipeListener() {
         if (match != null) {
-            setCallbackForNewGame();
             mActivity.get().runOnUiThread(new Runnable() {
                 public void run() {
                     mActivity.get().getmSurfaceView().setOnTouchListener(new OnSwipeListener(mActivity.get()) {
                         @Override
                         public void onSwipeDown(Side swipeSide) {
-                            if (smc != null) {
-                                smc.onPointDeduction(swipeSide);
-                            }
+                            TTEventBus.getInstance().dispatch(new TTEvent<>(new PointDeduction(swipeSide)));
                         }
 
                         @Override
                         public void onSwipeUp(Side swipeSide) {
-                            if (smc != null) {
-                                smc.onPointAddition(swipeSide);
-                            }
+                            TTEventBus.getInstance().dispatch(new TTEvent<>(new PointAddition(swipeSide)));
                         }
                     });
                 }
             });
-        }
-    }
-
-    protected void setCallbackForNewGame() {
-        if (match != null) {
-            this.smc = match.getReferee();
-        }
-    }
-
-    @Override
-    public void handle(Event<?> event) {
-        Object data = event.getData();
-        if (data instanceof EventDetectorEventData) {
-            EventDetectorEventData ballBounceData = (EventDetectorEventData) data;
-            ballBounceData.call(this);
         }
     }
 }

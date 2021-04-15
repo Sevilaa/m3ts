@@ -5,12 +5,12 @@ import ch.m3ts.tabletennis.helper.Side;
 /**
  * Provides methods on which a Table Tennis Scoreboard needs to be refreshed on.
  */
-public interface UICallback {
+public interface DisplayUpdateListener {
     void onMatchEnded(String winnerName);
 
-    void onScore(Side side, int score, Side nextServer, Side lastServer);
+    void onScore(Side scorer, int score, Side nextServer, Side lastServer);
 
-    void onWin(Side side, int wins);
+    void onWin(Side winner, int wins);
 
     void onReadyToServe(Side server);
 

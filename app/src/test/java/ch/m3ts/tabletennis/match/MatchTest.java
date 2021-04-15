@@ -18,22 +18,22 @@ import static org.mockito.Mockito.verify;
 public class MatchTest {
     private Match match;
     private GestureCallback gestureCallback;
-    private UICallback uiCallback;
+    private DisplayUpdateListener displayUpdateListener;
     private final String PLAYER_1_NAME = "Test_Spieler";
     private final String PLAYER_2_NAME = "Test_Spieler_Der_Zweite";
     private final Side startingServerSide = Side.LEFT;
 
     @Before
     public void setUp() {
-        uiCallback = mock(UICallback.class);
+        displayUpdateListener = mock(DisplayUpdateListener.class);
         gestureCallback = mock(GestureCallback.class);
-        match = new Match(MatchType.BO1, GameType.G11, ServeRules.S2, new Player(PLAYER_1_NAME), new Player(PLAYER_2_NAME), uiCallback, startingServerSide, gestureCallback);
+        match = new Match(MatchType.BO1, GameType.G11, ServeRules.S2, new Player(PLAYER_1_NAME), new Player(PLAYER_2_NAME), displayUpdateListener, startingServerSide, gestureCallback);
     }
 
     @After
     public void tearDown() {
         match = null;
-        uiCallback = null;
+        displayUpdateListener = null;
         gestureCallback = null;
     }
 
@@ -88,9 +88,9 @@ public class MatchTest {
     public void onWinInBO1Match() {
         match = spy(match);
         assertNotNull(match.getReferee());
-        match.onWin(Side.RIGHT);
-        verify(uiCallback, times(1)).onMatchEnded(PLAYER_2_NAME);
-        verify(uiCallback, times(1)).onWin(Side.RIGHT, 1);
+        match.onGameWin(Side.RIGHT);
+        verify(displayUpdateListener, times(1)).onMatchEnded(PLAYER_2_NAME);
+        verify(displayUpdateListener, times(1)).onWin(Side.RIGHT, 1);
         verify(match, times(1)).end(Side.RIGHT);
     }
 
@@ -105,19 +105,19 @@ public class MatchTest {
     }
 
     private void testWithMatchType(MatchType type) {
-        match = new Match(type, GameType.G11, ServeRules.S2, new Player(PLAYER_1_NAME), new Player(PLAYER_2_NAME), uiCallback, Side.LEFT, gestureCallback);
+        match = new Match(type, GameType.G11, ServeRules.S2, new Player(PLAYER_1_NAME), new Player(PLAYER_2_NAME), displayUpdateListener, Side.LEFT, gestureCallback);
         int winsToEnd = type.gamesNeededToWin;
-        for(int i = 0; i<winsToEnd-1; i++) {
-            match.onWin(Side.LEFT);
-            match.onWin(Side.RIGHT);
-            verify(uiCallback, times(1)).onWin(Side.LEFT, i+1);
-            verify(uiCallback, times(1)).onWin(Side.RIGHT, i+1);
-            verify(uiCallback, times(0)).onMatchEnded(PLAYER_1_NAME);
-            verify(uiCallback, times(0)).onMatchEnded(PLAYER_2_NAME);
+        for (int i = 0; i < winsToEnd - 1; i++) {
+            match.onGameWin(Side.LEFT);
+            match.onGameWin(Side.RIGHT);
+            verify(displayUpdateListener, times(1)).onWin(Side.LEFT, i + 1);
+            verify(displayUpdateListener, times(1)).onWin(Side.RIGHT, i + 1);
+            verify(displayUpdateListener, times(0)).onMatchEnded(PLAYER_1_NAME);
+            verify(displayUpdateListener, times(0)).onMatchEnded(PLAYER_2_NAME);
         }
         // finally let one side win
-        match.onWin(Side.RIGHT);
-        verify(uiCallback, times(1)).onWin(Side.RIGHT, winsToEnd);
-        verify(uiCallback, times(1)).onMatchEnded(PLAYER_2_NAME);
+        match.onGameWin(Side.RIGHT);
+        verify(displayUpdateListener, times(1)).onWin(Side.RIGHT, winsToEnd);
+        verify(displayUpdateListener, times(1)).onMatchEnded(PLAYER_2_NAME);
     }
 }

@@ -11,6 +11,7 @@ import org.json.JSONObject;
 import java.util.UUID;
 
 import ch.m3ts.connection.ImplTrackerConnection;
+import ch.m3ts.event.TTEventBus;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.util.Log;
 
@@ -22,6 +23,7 @@ public class PubNubTrackerConnection extends ImplTrackerConnection {
     public PubNubTrackerConnection(final Pubnub pubnub, final String roomID) {
         this.pubnub = pubnub;
         this.roomID = roomID;
+        TTEventBus.getInstance().register(this);
         try {
             pubnub.setUUID(UUID.randomUUID());
             pubnub.subscribe(roomID, this);

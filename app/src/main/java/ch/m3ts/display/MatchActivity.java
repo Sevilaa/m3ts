@@ -19,6 +19,10 @@ import ch.m3ts.connection.DisplayConnection;
 import ch.m3ts.connection.NearbyDisplayConnection;
 import ch.m3ts.connection.pubnub.PubNubDisplayConnection;
 import ch.m3ts.connection.pubnub.PubNubFactory;
+import ch.m3ts.event.EventBus;
+import ch.m3ts.event.TTEvent;
+import ch.m3ts.event.TTEventBus;
+import ch.m3ts.event.data.RestartMatchData;
 import ch.m3ts.util.Log;
 import ch.m3ts.util.QuitAlertDialogHelper;
 import cz.fmo.R;
@@ -62,16 +66,27 @@ public class MatchActivity extends FragmentActivity implements FragmentReplaceCa
         transaction.commit();
     }
 
+    @Override
+    protected void onResume() {
+        Config mConfig = new Config(this);
+        EventBus eventBus = TTEventBus.getInstance();
+        if (mConfig.isUsingPubnub()) {
+            eventBus.register(this.pubNub);
+        } else {
+            eventBus.register(this.nearbyDisplayConnection);
+        }
+        super.onResume();
+    }
+
     private void initRestartedMatch(Bundle bundle) {
         Config mConfig = new Config(this);
         if (mConfig.isUsingPubnub()) {
             initPubNub(bundle.getString("room"));
-            this.pubNub.onRestartMatch();
         } else {
             this.nearbyDisplayConnection = NearbyDisplayConnection.getInstance();
             this.nearbyDisplayConnection.init(this);
-            this.nearbyDisplayConnection.onRestartMatch();
         }
+        TTEventBus.getInstance().dispatch(new TTEvent<>(new RestartMatchData()));
     }
 
     private void initConnection() {
@@ -129,6 +144,13 @@ public class MatchActivity extends FragmentActivity implements FragmentReplaceCa
     @Override
     protected void onPause() {
         alertDialog.dismiss();
+        Config mConfig = new Config(this);
+        EventBus eventBus = TTEventBus.getInstance();
+        if (mConfig.isUsingPubnub()) {
+            eventBus.unregister(this.pubNub);
+        } else {
+            eventBus.unregister(this.nearbyDisplayConnection);
+        }
         super.onPause();
     }
 
