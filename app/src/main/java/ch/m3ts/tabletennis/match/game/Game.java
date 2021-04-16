@@ -4,6 +4,7 @@ import ch.m3ts.event.EventBus;
 import ch.m3ts.event.TTEvent;
 import ch.m3ts.event.TTEventBus;
 import ch.m3ts.event.data.game.GameWinData;
+import ch.m3ts.event.data.game.GameWinResetData;
 import ch.m3ts.event.data.todisplay.ScoreData;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.ServeRules;
@@ -16,7 +17,6 @@ import ch.m3ts.tabletennis.match.ServeRules;
  * However, there is an overtime mechanism when both players reach ten points.
  */
 public class Game implements GameCallback {
-    private int maxScore;
     private final ScoreManager scoreManager;
     private Side server;
     private final GameType type;
@@ -24,10 +24,9 @@ public class Game implements GameCallback {
     private final EventBus eventBus;
 
     public Game(GameType type, ServeRules serveRules, Side server) {
-        scoreManager = new ScoreManager(server);
+        scoreManager = new ScoreManager(server, type);
         this.server = server;
         this.type = type;
-        this.maxScore = type.amountOfPoints;
         this.serveRules = serveRules;
         this.eventBus = TTEventBus.getInstance();
     }
@@ -39,7 +38,7 @@ public class Game implements GameCallback {
         Side lastServer = server;
         changeServer();
         this.eventBus.dispatch(new TTEvent<>(new ScoreData(side, score, this.server, lastServer)));
-        if (hasReachedMax(score)) {
+        if (this.scoreManager.hasReachedMax(score)) {
             this.eventBus.dispatch(new TTEvent<>(new GameWinData(side)));
         }
     }
@@ -52,9 +51,11 @@ public class Game implements GameCallback {
             score = scoreManager.getScore(side);
             this.server = lastServer;
             this.eventBus.dispatch(new TTEvent<>(new ScoreData(side, score, this.server, lastServer)));
-            if (hasReachedMax(score)) {
-                this.eventBus.dispatch(new TTEvent<>(new GameWinData(side)));
+            if (this.scoreManager.hasReachedMax(scoreManager.getScore(Side.getOpposite(side)))) {
+                this.eventBus.dispatch(new TTEvent<>(new GameWinData(Side.getOpposite(side))));
             }
+        } else if (getSumOfScores() == 0) {
+            this.eventBus.dispatch(new TTEvent<>(new GameWinResetData()));
         }
     }
 
@@ -64,17 +65,6 @@ public class Game implements GameCallback {
 
     public int getScore(Side player) {
         return scoreManager.getScore(player);
-    }
-
-    private boolean hasReachedMax(int score) {
-        if ((scoreManager.getScore(Side.LEFT) == scoreManager.getScore(Side.RIGHT)) && (score == maxScore - 1)) {
-            increaseMaxScore();
-        }
-        return (score >= maxScore);
-    }
-
-    private void increaseMaxScore() {
-        maxScore++;
     }
 
     private int getSumOfScores() {

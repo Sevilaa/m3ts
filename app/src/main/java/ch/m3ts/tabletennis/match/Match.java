@@ -7,8 +7,11 @@ import ch.m3ts.event.Event;
 import ch.m3ts.event.Subscribable;
 import ch.m3ts.event.TTEvent;
 import ch.m3ts.event.TTEventBus;
+import ch.m3ts.event.data.StatusUpdateData;
 import ch.m3ts.event.data.game.GameEventData;
 import ch.m3ts.event.data.game.GameWinData;
+import ch.m3ts.event.data.game.GameWinResetData;
+import ch.m3ts.event.data.scoremanipulation.PointDeduction;
 import ch.m3ts.event.data.todisplay.MatchEndedData;
 import ch.m3ts.event.data.todisplay.ToDisplayGameWinData;
 import ch.m3ts.tabletennis.helper.Side;
@@ -74,6 +77,23 @@ public class Match implements GameListener, MatchStatusCallback, Subscribable {
         }
     }
 
+    @Override
+    public void onGameWinReset() {
+        int gamesPlayed = this.wins.get(Side.LEFT) + this.wins.get(Side.RIGHT);
+        if (gamesPlayed <= 0) return;
+        Game lastGame = this.games[gamesPlayed - 1];
+        Side lastWinner = lastGame.getScore(Side.LEFT) > lastGame.getScore(Side.RIGHT) ? Side.LEFT : Side.RIGHT;
+        if (gamesPlayed == 1) {
+            this.wins.put(Side.LEFT, 0);
+            this.wins.put(Side.RIGHT, 0);
+        } else {
+            this.wins.put(lastWinner, this.wins.get(lastWinner) - 1);
+        }
+        this.referee.setGame(lastGame, gamesPlayed == 1);
+        TTEventBus.getInstance().dispatch(new TTEvent<>(new PointDeduction(lastWinner)));
+        TTEventBus.getInstance().dispatch(new TTEvent<>(new StatusUpdateData(onRequestMatchStatus())));
+    }
+
     public Referee getReferee() {
         return referee;
     }
@@ -122,6 +142,9 @@ public class Match implements GameListener, MatchStatusCallback, Subscribable {
         Object data = event.getData();
         if (data instanceof GameWinData) {
             GameEventData gameEventData = (GameWinData) data;
+            gameEventData.call(this);
+        } else if (data instanceof GameWinResetData) {
+            GameEventData gameEventData = (GameWinResetData) data;
             gameEventData.call(this);
         }
     }

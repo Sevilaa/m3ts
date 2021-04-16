@@ -1,6 +1,7 @@
 package ch.m3ts.event.data;
 
 import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.tabletennis.match.MatchStatus;
 
 public class StatusUpdateData {
     private String playerNameLeft;
@@ -21,6 +22,10 @@ public class StatusUpdateData {
         this.gamesRight = gamesRight;
         this.nextServer = nextServer;
         this.gamesNeededToWin = gamesNeededToWin;
+    }
+
+    public StatusUpdateData(MatchStatus status) {
+        this(status.getPlayerLeft(), status.getPlayerRight(), status.getScoreLeft(), status.getScoreRight(), status.getWinsLeft(), status.getWinsRight(), status.getNextServer(), status.getGamesNeededToWin());
     }
 
     public int getGamesNeededToWin() {

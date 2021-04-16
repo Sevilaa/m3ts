@@ -166,6 +166,13 @@
     <!-- MatchScore Fragment -->
     <string name="msInitialValue">00</string>
     <string name="msDivider">:</string>
+    <string name="msDialogTitle">Match ended</string>
+    <string name="msDialogMsg">%1$s won the match! Do you want to continue or replay the last point?</string>
+    <string name="msDialogContinue">Continue</string>
+    <string name="msDialogReplay">Replay</string>
+
+    <!-- MatchStats Fragment -->
+    <string name="mstTitle">Match Stats</string>
 
     <!-- Scan Overlay -->
     <string name="scanText">Scan the QR code from the display</string>

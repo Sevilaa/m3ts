@@ -80,11 +80,15 @@ public class MatchActivity extends FragmentActivity implements FragmentReplaceCa
 
     private void initRestartedMatch(Bundle bundle) {
         Config mConfig = new Config(this);
+        EventBus eventBus = TTEventBus.getInstance();
         if (mConfig.isUsingPubnub()) {
             initPubNub(bundle.getString("room"));
+            eventBus.register(this.pubNub);
+
         } else {
             this.nearbyDisplayConnection = NearbyDisplayConnection.getInstance();
             this.nearbyDisplayConnection.init(this);
+            eventBus.register(this.nearbyDisplayConnection);
         }
         TTEventBus.getInstance().dispatch(new TTEvent<>(new RestartMatchData()));
     }

@@ -15,13 +15,17 @@ public class ScoreManager {
     private final Map<Side, Integer> pointsMap;
     private final Deque<Side> servers;
     private final Side startServingSide;
+    private GameType type;
+    private int maxScore;
 
-    public ScoreManager(Side startServingSide) {
+    public ScoreManager(Side startServingSide, GameType type) {
         this.startServingSide = startServingSide;
         this.pointsMap = new EnumMap<>(Side.class);
         pointsMap.put(Side.LEFT, 0);
         pointsMap.put(Side.RIGHT, 0);
         this.servers = new LinkedList<>();
+        this.type = type;
+        this.maxScore = type.amountOfPoints;
     }
 
     public void score(Side winner, Side server) {
@@ -39,6 +43,11 @@ public class ScoreManager {
         if (!this.servers.isEmpty()) {
             this.servers.removeLast();
             updatePoints(player, false);
+            int oppositeScore = getScore(Side.getOpposite(player));
+            int score = getScore(player);
+            if (oppositeScore >= type.amountOfPoints && score >= type.amountOfPoints - 2 && oppositeScore % getScore(player) >= 2) {
+                maxScore--;
+            }
         }
         return lastServer;
     }
@@ -53,6 +62,17 @@ public class ScoreManager {
             server = startServingSide;
         }
         return server;
+    }
+
+    public void increaseMaxScore() {
+        this.maxScore++;
+    }
+
+    public boolean hasReachedMax(int score) {
+        if ((getScore(Side.LEFT) == getScore(Side.RIGHT)) && (score == this.maxScore - 1)) {
+            this.increaseMaxScore();
+        }
+        return (score >= this.maxScore);
     }
 
     /**

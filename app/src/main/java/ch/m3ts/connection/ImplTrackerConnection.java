@@ -14,6 +14,7 @@ import ch.m3ts.event.Subscribable;
 import ch.m3ts.event.TTEvent;
 import ch.m3ts.event.TTEventBus;
 import ch.m3ts.event.data.RestartMatchData;
+import ch.m3ts.event.data.StatusUpdateData;
 import ch.m3ts.event.data.scoremanipulation.PauseMatch;
 import ch.m3ts.event.data.scoremanipulation.PointAddition;
 import ch.m3ts.event.data.scoremanipulation.PointDeduction;
@@ -190,6 +191,11 @@ public abstract class ImplTrackerConnection extends Callback implements TrackerC
         if (data instanceof ToDisplayData) {
             ToDisplayData displayData = (ToDisplayData) data;
             displayData.call(this);
+        } else if (data instanceof StatusUpdateData) {
+            StatusUpdateData updateData = (StatusUpdateData) data;
+            this.sendStatusUpdate(updateData.getPlayerNameLeft(), updateData.getPlayerNameRight(),
+                    updateData.getPointsLeft(), updateData.getPointsRight(), updateData.getGamesLeft(),
+                    updateData.getGamesRight(), updateData.getNextServer(), updateData.getGamesNeededToWin());
         }
     }
 }
