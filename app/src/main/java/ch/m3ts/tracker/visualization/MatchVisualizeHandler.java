@@ -95,7 +95,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         activity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int height = displayMetrics.heightPixels;
         int width = displayMetrics.widthPixels;
-        this.zPosVisualizer = new ZPosVisualizer(bouncePaint, tablePaint, (float) width / 2 - ZPosVisualizer.WIDTH_PX / 2, height * 0.65f);
+        this.zPosVisualizer = new ZPosVisualizer(bouncePaint, tablePaint, (float) width / 2 - ZPosVisualizer.WIDTH_PX / 2, height * 0.2f);
         OpenCVLoader.initDebug();
     }
 
