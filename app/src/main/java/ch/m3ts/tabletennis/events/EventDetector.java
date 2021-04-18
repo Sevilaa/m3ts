@@ -63,6 +63,7 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
     private final ZPositionCalc zPositionCalc;
     private Track currentTrack;
     private final EventBus eventBus;
+    private Timer timeoutTimer;
 
     public EventDetector(Config config, int srcWidth, int srcHeight, TrackSet tracks, @NonNull Table table, ZPositionCalc calc) {
         this.eventBus = TTEventBus.getInstance();
@@ -78,6 +79,7 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
         this.table = table;
         this.numberOfDetections = 0;
         this.zPositionCalc = calc;
+        this.timeoutTimer = new Timer("timeoutTimer");
         tracks.setConfig(config);
     }
 
@@ -132,7 +134,7 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
         // first tag all tracks which have crossed the table once
         for (Track t : tracks) {
             Lib.Detection latestDetection = t.getLatest();
-            latestDetection.centerZ = (int) Math.round(zPositionCalc.findZPosMmOfBall(latestDetection.radius));
+            latestDetection.centerZ = zPositionCalc.findZPosOfBallRel(latestDetection.radius);
             if (table.isOnOrAbove(latestDetection.centerX, latestDetection.centerY) && zPositionCalc.isBallZPositionOnTable(latestDetection.radius)) {
                 t.setTableCrossed();
             }
@@ -180,7 +182,6 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
 
     private void setTimeoutTimer(int currentNumberOfDetections) {
         TimerTask timeoutTimerTask = new TimeoutTimerTask(this, currentNumberOfDetections);
-        Timer timeoutTimer = new Timer("timeoutTimer");
         timeoutTimer.schedule(timeoutTimerTask, MILLISECONDS_TILL_TIMEOUT);
     }
 

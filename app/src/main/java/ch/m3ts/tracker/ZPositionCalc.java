@@ -11,11 +11,11 @@ import ch.m3ts.util.Log;
  * the selected table by the user.
  */
 public class ZPositionCalc {
-    private final double TABLE_TENNIS_TABLE_LENGTH_MM = 2740; // normed, see https://en.wikipedia.org/wiki/Table_tennis
-    private final double TABLE_TENNIS_TABLE_WIDTH_MM = 1525; // normed, see https://en.wikipedia.org/wiki/Table_tennis
-    private final double TABLE_TENNIS_BALL_DIAMETER_MM = 40; // normed, see https://www.sport-thieme.ch/Tischtennisb%C3%A4lle#:~:text=Ein%20klassischer%20Tischtennisball%20hat%20einen,Zelluloid%20und%20ist%20innen%20hohl.
-    private final int ACCURACY = 500;
-    private final int MAX_OFFSET_MM = 100;
+    public static final double TABLE_TENNIS_TABLE_LENGTH_MM = 2740; // normed, see https://en.wikipedia.org/wiki/Table_tennis
+    public static final double TABLE_TENNIS_TABLE_WIDTH_MM = 1525; // normed, see https://en.wikipedia.org/wiki/Table_tennis
+    public static final int MAX_OFFSET_MM = 100;
+    private static final double TABLE_TENNIS_BALL_DIAMETER_MM = 40; // normed, see https://www.sport-thieme.ch/Tischtennisb%C3%A4lle#:~:text=Ein%20klassischer%20Tischtennisball%20hat%20einen,Zelluloid%20und%20ist%20innen%20hohl.
+    private static final int ACCURACY = 500;
     private TreeSet<RadiusToZPosObj> radiusToZPosObjTreeSet;
     private final double horizontalViewAngle;
     private final double videoWidthMM;
@@ -85,7 +85,7 @@ public class ZPositionCalc {
         return (ballRadiusPx <= ballRadiusFrontEdgePx * 1.05);
     }
 
-    public double findZPosMmOfBall(double ballRadiusPx) {
+    public double findZPosOfBallMm(double ballRadiusPx) {
         RadiusToZPosObj obj = radiusToZPosObjTreeSet.higher(new RadiusToZPosObj(ballRadiusPx, 0, 0, 0));
         if (obj == null) {
             if (ballRadiusPx > ballRadiusFrontEdgePx) {
@@ -94,7 +94,23 @@ public class ZPositionCalc {
                 obj = radiusToZPosObjTreeSet.first();
             }
         }
-        return obj.zPosMm;
+        return obj.zPosMm + MAX_OFFSET_MM;
+    }
+
+
+    /**
+     * Returns the z-Position of the ball relative to the table width.
+     * Examples:
+     * returns val = 0 => ball is on the closest edge of the table
+     * returns val = 1 => ball is on the furthest edge of the table
+     * returns val < 0 => ball is in front of the closest edge of the table
+     * returns val > 1 => ball is further away than the furthest edge of the table
+     *
+     * @param ballRadiusPx ball (Lib.Detection) radius in pixel
+     * @return the z-Position of the ball relative to the table width.
+     */
+    public double findZPosOfBallRel(double ballRadiusPx) {
+        return findZPosOfBallMm(ballRadiusPx) / (TABLE_TENNIS_TABLE_WIDTH_MM + 2 * MAX_OFFSET_MM);
     }
 
     public double[] getTableDistanceMM() {

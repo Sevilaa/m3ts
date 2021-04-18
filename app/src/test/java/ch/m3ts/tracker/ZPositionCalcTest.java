@@ -35,21 +35,21 @@ public class ZPositionCalcTest {
 
     @Test
     public void testBallRadiusToZPos() {
-        double zPosMm = calc.findZPosMmOfBall(BALL_RADIUS_FURTHEST_EDGE_PX);
+        double zPosMm = calc.findZPosOfBallMm(BALL_RADIUS_FURTHEST_EDGE_PX);
         assertEquals(TABLE_TENNIS_TABLE_WIDTH_MM, zPosMm, ACCURACY_OF_CALCULATIONS_MM);
-        zPosMm = calc.findZPosMmOfBall(BALL_RADIUS_CLOSEST_EDGE_PX);
+        zPosMm = calc.findZPosOfBallMm(BALL_RADIUS_CLOSEST_EDGE_PX);
         assertEquals(0, zPosMm, ACCURACY_OF_CALCULATIONS_MM);
 
         // going over the table
-        zPosMm = calc.findZPosMmOfBall(BALL_RADIUS_CLOSEST_EDGE_PX+0.03);
+        zPosMm = calc.findZPosOfBallMm(BALL_RADIUS_CLOSEST_EDGE_PX + 0.03);
         assertTrue(zPosMm < 0);
-        zPosMm = calc.findZPosMmOfBall(BALL_RADIUS_FURTHEST_EDGE_PX - 0.03);
+        zPosMm = calc.findZPosOfBallMm(BALL_RADIUS_FURTHEST_EDGE_PX - 0.03);
         assertTrue(zPosMm > TABLE_TENNIS_TABLE_WIDTH_MM);
 
         // checking for min and max zpos
-        zPosMm = calc.findZPosMmOfBall(BALL_RADIUS_CLOSEST_EDGE_PX*300);
+        zPosMm = calc.findZPosOfBallMm(BALL_RADIUS_CLOSEST_EDGE_PX * 300);
         assertEquals(-MAX_OFFSET_MM, zPosMm, 1);
-        zPosMm = calc.findZPosMmOfBall(BALL_RADIUS_FURTHEST_EDGE_PX * 0.1);
+        zPosMm = calc.findZPosOfBallMm(BALL_RADIUS_FURTHEST_EDGE_PX * 0.1);
         assertEquals(TABLE_TENNIS_TABLE_WIDTH_MM + MAX_OFFSET_MM, zPosMm, ACCURACY_OF_CALCULATIONS_MM);
     }
 }

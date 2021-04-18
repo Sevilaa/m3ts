@@ -26,7 +26,7 @@ import cz.fmo.R;
  * A player can here specify whether to use his/her device as a Display or Tracker.
  */
 public class MainActivity extends Activity {
-    private final static String[] perms = new String[]{
+    private static final String[] perms = new String[]{
             Manifest.permission.RECORD_AUDIO,
             Manifest.permission.CAMERA,
             Manifest.permission.WRITE_EXTERNAL_STORAGE,

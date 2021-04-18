@@ -385,6 +385,10 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
     }
 
     private void handleOutOfFrame() {
+        if (this.outOfFrameTimer != null) {
+            this.outOfFrameTimer.cancel();
+            this.outOfFrameTimer = null;
+        }
         // schedule out of frame timer
         TimerTask outOfFrameTask = new OutOfFrameTimerTask(this);
         outOfFrameTimer = new Timer("outOfFrameTimer");

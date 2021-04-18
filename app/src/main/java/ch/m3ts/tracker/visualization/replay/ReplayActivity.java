@@ -76,7 +76,7 @@ import cz.fmo.util.FileManager;
  * TextureView and SurfaceView.
  */
 @SuppressWarnings("squid:S110")
-public class ReplayActivity extends MatchVisualizeActivity implements OnItemSelectedListener, VideoPlayer.PlayerFeedback {
+public class ReplayActivity extends MatchVisualizeActivity implements OnItemSelectedListener, VideoPlayer.PlayerFeedback, View.OnClickListener {
     private final double VIEWING_ANGLE_HORIZONTAL = 66.56780242919922; // viewing angle of phone which we used for recordings
     private final FileManager mFileMan = new FileManager(this);
     private String[] mMovieFiles;
@@ -100,65 +100,15 @@ public class ReplayActivity extends MatchVisualizeActivity implements OnItemSele
         // Apply the adapter to the spinner.
         spinner.setAdapter(adapter);
         spinner.setOnItemSelectedListener(this);
+
+        Button playStopButton = findViewById(R.id.play_stop_button);
+        playStopButton.setOnClickListener(this);
         updateControls();
     }
 
     @Override
     public double getCameraHorizontalViewAngle() {
         return VIEWING_ANGLE_HORIZONTAL;
-    }
-
-    /**
-     * onClick handler for "play"/"stop" button.
-     */
-    @SuppressWarnings("squid:S1172")
-    public void clickPlayStop(@SuppressWarnings("UnusedParameters") View unused) {
-        if (mShowStopLabel) {
-            Log.d("stopping movie");
-            this.mHandler.onPauseActivity();
-            stopPlayback();
-        } else {
-            if (mPlayTask != null) {
-                Log.w("movie already playing");
-                return;
-            }
-            this.mHandler.onResumeActivity();
-            Log.d("starting movie");
-            SpeedControlCallback callback = new SpeedControlCallback();
-            SurfaceHolder holder = getmSurfaceView().getHolder();
-            SurfaceHolder holderTracks = getmSurfaceTrack().getHolder();
-            Surface surface = holder.getSurface();
-
-            // Don't leave the last frame of the previous video hanging on the screen.
-            // Looks weird if the aspect ratio changes.
-            clearSurface(surface);
-            mHandler.clearCanvas(holderTracks);
-
-            VideoPlayer player;
-            try {
-                Side servingSide = tryGettingServingSideFromXML(mMovieFiles[mSelectedMovie]);
-                mHandler.initMatch(servingSide);
-                player = new VideoPlayer(mFileMan.open(mMovieFiles[mSelectedMovie]), surface,
-                        callback, mHandler);
-                Config mConfig = new Config(this);
-                Table table = trySettingTableLocationFromXML(mMovieFiles[mSelectedMovie]);
-                if (table != null) {
-                    mHandler.init(mConfig, player.getVideoWidth(), player.getVideoHeight(), table, VIEWING_ANGLE_HORIZONTAL);
-                    mHandler.startDetections();
-                } else {
-                    Toast.makeText(this, "unable to initialize, please select the table again", Toast.LENGTH_LONG).show();
-                }
-            } catch (IOException ioe) {
-                Log.e("Unable to play movie", ioe);
-                surface.release();
-                return;
-            }
-
-            mPlayTask = new VideoPlayer.PlayTask(player, this, true);
-            mShowStopLabel = true;
-            updateControls();
-            mPlayTask.execute();
-        }
     }
 
     @Override
@@ -294,5 +244,59 @@ public class ReplayActivity extends MatchVisualizeActivity implements OnItemSele
             Log.e(ex.getMessage(), ex);
         }
         return servingSide;
+    }
+
+    /**
+     * onClick handler for "play"/"stop" button.
+     */
+    @Override
+    public void onClick(View view) {
+        if (mShowStopLabel) {
+            Log.d("stopping movie");
+            this.mHandler.onPauseActivity();
+            this.mHandler.stopDetections();
+            stopPlayback();
+        } else {
+            if (mPlayTask != null) {
+                Log.w("movie already playing");
+                return;
+            }
+            this.mHandler.onResumeActivity();
+            Log.d("starting movie");
+            SpeedControlCallback callback = new SpeedControlCallback();
+            SurfaceHolder holder = getmSurfaceView().getHolder();
+            SurfaceHolder holderTracks = getmSurfaceTrack().getHolder();
+            Surface surface = holder.getSurface();
+
+            // Don't leave the last frame of the previous video hanging on the screen.
+            // Looks weird if the aspect ratio changes.
+            clearSurface(surface);
+            mHandler.clearCanvas(holderTracks);
+
+            VideoPlayer player;
+            try {
+                Side servingSide = tryGettingServingSideFromXML(mMovieFiles[mSelectedMovie]);
+                mHandler.initMatch(servingSide);
+                player = new VideoPlayer(mFileMan.open(mMovieFiles[mSelectedMovie]), surface,
+                        callback, mHandler);
+                Config mConfig = new Config(this);
+                Table table = trySettingTableLocationFromXML(mMovieFiles[mSelectedMovie]);
+                if (table != null) {
+                    mHandler.init(mConfig, player.getVideoWidth(), player.getVideoHeight(), table, VIEWING_ANGLE_HORIZONTAL);
+                    mHandler.startDetections();
+                } else {
+                    Toast.makeText(this, "unable to initialize, please select the table again", Toast.LENGTH_LONG).show();
+                }
+            } catch (IOException ioe) {
+                Log.e("Unable to play movie", ioe);
+                surface.release();
+                return;
+            }
+
+            mPlayTask = new VideoPlayer.PlayTask(player, this, true);
+            mShowStopLabel = true;
+            updateControls();
+            mPlayTask.execute();
+        }
     }
 }
