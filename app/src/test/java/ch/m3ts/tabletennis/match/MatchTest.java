@@ -4,7 +4,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import ch.m3ts.tabletennis.events.GestureCallback;
+import ch.m3ts.event.Event;
+import ch.m3ts.event.Subscribable;
+import ch.m3ts.event.TTEventBus;
+import ch.m3ts.event.data.todisplay.ToDisplayData;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.game.GameType;
 
@@ -15,26 +18,42 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+class StubListenerMatch implements Subscribable {
+    private final DisplayUpdateListener displayUpdateListener;
+
+    StubListenerMatch(DisplayUpdateListener displayUpdateListener) {
+        this.displayUpdateListener = displayUpdateListener;
+    }
+
+    @Override
+    public void handle(Event<?> event) {
+        Object data = event.getData();
+        if (data instanceof ToDisplayData) {
+            ToDisplayData toDisplayData = (ToDisplayData) data;
+            toDisplayData.call(displayUpdateListener);
+        }
+    }
+}
+
 public class MatchTest {
     private Match match;
-    private GestureCallback gestureCallback;
     private DisplayUpdateListener displayUpdateListener;
     private final String PLAYER_1_NAME = "Test_Spieler";
     private final String PLAYER_2_NAME = "Test_Spieler_Der_Zweite";
     private final Side startingServerSide = Side.LEFT;
+    private StubListenerMatch stubListenerMatch;
 
     @Before
     public void setUp() {
         displayUpdateListener = mock(DisplayUpdateListener.class);
-        gestureCallback = mock(GestureCallback.class);
-        match = new Match(MatchType.BO1, GameType.G11, ServeRules.S2, new Player(PLAYER_1_NAME), new Player(PLAYER_2_NAME), displayUpdateListener, startingServerSide, gestureCallback);
+        stubListenerMatch = new StubListenerMatch(displayUpdateListener);
+        TTEventBus.getInstance().register(stubListenerMatch);
+        match = new Match(MatchType.BO1, GameType.G11, ServeRules.S2, new Player(PLAYER_1_NAME), new Player(PLAYER_2_NAME), startingServerSide);
     }
 
     @After
-    public void tearDown() {
-        match = null;
-        displayUpdateListener = null;
-        gestureCallback = null;
+    public void cleanUp() {
+        TTEventBus.getInstance().unregister(stubListenerMatch);
     }
 
     @Test
@@ -44,7 +63,7 @@ public class MatchTest {
 
         // check server side on restart matches in different scenarios
         // Scenario 1: One Player still ends the match with a serve left
-        for (int i = 0; i<11; i++) {
+        for (int i = 0; i < 11; i++) {
             match.getReferee().onPointAddition(Side.LEFT);
         }
         checkStartingServerAfterAMatchRestart();
@@ -105,7 +124,7 @@ public class MatchTest {
     }
 
     private void testWithMatchType(MatchType type) {
-        match = new Match(type, GameType.G11, ServeRules.S2, new Player(PLAYER_1_NAME), new Player(PLAYER_2_NAME), displayUpdateListener, Side.LEFT, gestureCallback);
+        match = new Match(type, GameType.G11, ServeRules.S2, new Player(PLAYER_1_NAME), new Player(PLAYER_2_NAME), Side.LEFT);
         int winsToEnd = type.gamesNeededToWin;
         for (int i = 0; i < winsToEnd - 1; i++) {
             match.onGameWin(Side.LEFT);

@@ -3,9 +3,15 @@ package ch.m3ts.tabletennis.match.referee;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
-import ch.m3ts.tabletennis.events.GestureCallback;
+import ch.m3ts.event.Event;
+import ch.m3ts.event.Subscribable;
+import ch.m3ts.event.TTEvent;
+import ch.m3ts.event.TTEventBus;
+import ch.m3ts.event.data.todisplay.ReadyToServeData;
 import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.tabletennis.match.DisplayUpdateListener;
 import ch.m3ts.tabletennis.match.game.Game;
 import ch.m3ts.util.Log;
 import cz.fmo.Lib;
@@ -20,6 +26,23 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+class StubListener implements Subscribable {
+    private final DisplayUpdateListener displayUpdateListener;
+
+    StubListener(DisplayUpdateListener displayUpdateListener) {
+        this.displayUpdateListener = displayUpdateListener;
+    }
+
+    @Override
+    public void handle(Event<?> event) {
+        Object data = event.getData();
+        if (data instanceof ReadyToServeData) {
+            ReadyToServeData readyToServeData = (ReadyToServeData) data;
+            readyToServeData.call(displayUpdateListener);
+        }
+    }
+}
+
 public class RefereeTest {
     private Referee referee;
     private Game gameMock;
@@ -28,24 +51,32 @@ public class RefereeTest {
     private static final int SOME_HEIGHT = 1080;
     private TrackSet realTrackSet = TrackSet.getInstance();
     private Config mockConfig;
-    private GestureCallback mockGesture;
     private static final Side STARTING_SIDE = Side.LEFT;
     private Lib.Detection detection;
+    private StubListener stubListener;
+    private DisplayUpdateListener displayUpdateListener;
 
     @Before
-    public void setUp(){
+    public void setUp() {
+        displayUpdateListener = mock(DisplayUpdateListener.class);
         mockConfig = mock(Config.class);
-        mockGesture = mock(GestureCallback.class);
         when(mockConfig.isDisableDetection()).thenReturn(false);
         when(mockConfig.getFrameRate()).thenReturn(30f);
         when(mockConfig.getVelocityEstimationMode()).thenReturn(Config.VelocityEstimationMode.PX_FR);
         when(mockConfig.getObjectRadius()).thenReturn(10f);
         realTrackSet.setConfig(mockConfig);
-        referee = new Referee(STARTING_SIDE, mockGesture);
+        referee = new Referee(STARTING_SIDE);
         gameMock = mock(Game.class);
         when(gameMock.getServer()).thenReturn(Side.LEFT);
         referee.setGame(gameMock, true);
         detection = new Lib.Detection();
+        stubListener = new StubListener(displayUpdateListener);
+        TTEventBus.getInstance().register(stubListener);
+    }
+
+    @After
+    public void cleanUp() {
+        TTEventBus.getInstance().unregister(stubListener);
     }
 
     @Test
@@ -279,6 +310,10 @@ public class RefereeTest {
 
     @Test
     public void testPointManipulation() {
+        Subscribable subscribable = mock(Subscribable.class);
+        ArgumentCaptor<TTEvent> argumentCaptor = ArgumentCaptor.forClass(TTEvent.class);
+        TTEventBus.getInstance().register(subscribable);
+
         assertSame(State.WAIT_FOR_SERVE, referee.getState());
         verify(gameMock, times(0)).onPoint(Side.LEFT);
         verify(gameMock, times(0)).onPoint(Side.RIGHT);
@@ -294,7 +329,7 @@ public class RefereeTest {
         assertSame(State.PAUSE, referee.getState());
         referee.onPause();
         referee.onResume();
-        verify(gameMock, times(1)).onReadyToServe(STARTING_SIDE);
+        verify(displayUpdateListener, times(1)).onReadyToServe(STARTING_SIDE);
         assertSame(State.WAIT_FOR_SERVE, referee.getState());
     }
 

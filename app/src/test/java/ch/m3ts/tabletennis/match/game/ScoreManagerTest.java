@@ -16,7 +16,7 @@ public class ScoreManagerTest {
     @Before
     public void init() {
         random = new Random();
-        scoreManager = new ScoreManager(Side.LEFT);
+        scoreManager = new ScoreManager(Side.LEFT, GameType.G11);
     }
 
     @Test

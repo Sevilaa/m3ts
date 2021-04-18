@@ -22,7 +22,12 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import java.util.Random;
 
 import ch.m3ts.display.DisplayConnectCallback;
-import ch.m3ts.display.DisplayScoreEventCallback;
+import ch.m3ts.display.GameListener;
+import ch.m3ts.event.Event;
+import ch.m3ts.event.Subscribable;
+import ch.m3ts.event.TTEventBus;
+import ch.m3ts.event.data.StatusUpdateData;
+import ch.m3ts.event.data.todisplay.ToDisplayData;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.DisplayUpdateListener;
 import ch.m3ts.tabletennis.match.MatchType;
@@ -38,30 +43,58 @@ import static org.powermock.api.mockito.PowerMockito.doNothing;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.spy;
 
+class StubListenerDisplay implements Subscribable {
+    private final GameListener gameListener;
+    private final DisplayUpdateListener displayUpdateListener;
+
+    StubListenerDisplay(DisplayUpdateListener displayUpdateListener, GameListener gameListener) {
+        this.displayUpdateListener = displayUpdateListener;
+        this.gameListener = gameListener;
+    }
+
+    @Override
+    public void handle(Event<?> event) {
+        Object data = event.getData();
+        if (data instanceof ToDisplayData) {
+            ToDisplayData toDisplayData = (ToDisplayData) data;
+            toDisplayData.call(displayUpdateListener);
+        } else if (data instanceof StatusUpdateData) {
+            StatusUpdateData updateData = (StatusUpdateData) data;
+            gameListener.onStatusUpdate(updateData.getPlayerNameLeft(), updateData.getPlayerNameRight(),
+                    updateData.getPointsLeft(), updateData.getPointsRight(), updateData.getGamesLeft(),
+                    updateData.getGamesRight(), updateData.getNextServer(), updateData.getGamesNeededToWin());
+        }
+    }
+}
+
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(Pubnub.class)
 public class PubNubDisplayConnectionTest {
     private Random random = new Random();
     private Pubnub pubnub;
     private final static String ROOM_ID = "invalid";
+    private DisplayUpdateListener spyCallback;
+    private GameListener deCallback;
+    private StubListenerDisplay stubListener;
 
     @Before
     public void setup() {
         this.pubnub = spy(mock(Pubnub.class));
+        this.spyCallback = spy(mock(DisplayUpdateListener.class));
+        this.deCallback = spy(mock(GameListener.class));
+        this.stubListener = new StubListenerDisplay(spyCallback, deCallback);
+        TTEventBus.getInstance().register(stubListener);
     }
 
     @After
     public void tearDown() {
         this.pubnub = null;
+        TTEventBus.getInstance().unregister(stubListener);
     }
 
     @Test
     public void testOnMatchEnded() throws JSONException {
-        DisplayUpdateListener spyCallback = spy(mock(DisplayUpdateListener.class));
-        DisplayScoreEventCallback deCallback = spy(mock(DisplayScoreEventCallback.class));
         PubNubDisplayConnection pubNubDisplayConnection = new PubNubDisplayConnection(pubnub, ROOM_ID);
-        pubNubDisplayConnection.setUiCallback(spyCallback);
-        pubNubDisplayConnection.setDisplayScoreEventCallback(deCallback);
         JSONObject jsonMatchEnded = makeJSONObject("onMatchEnded", Side.LEFT, null, null, null);
         pubNubDisplayConnection.connectCallback(ROOM_ID, jsonMatchEnded);
         verify(spyCallback, times(0)).onMatchEnded(Side.LEFT.toString());
@@ -71,9 +104,7 @@ public class PubNubDisplayConnectionTest {
 
     @Test
     public void testOnScore() throws JSONException {
-        DisplayUpdateListener spyCallback = spy(mock(DisplayUpdateListener.class));
         PubNubDisplayConnection pubNubDisplayConnection = new PubNubDisplayConnection(pubnub, ROOM_ID);
-        pubNubDisplayConnection.setUiCallback(spyCallback);
         final Side scorer = Side.RIGHT;
         final Side server = Side.LEFT;
         final int score = random.nextInt(999);
@@ -86,9 +117,7 @@ public class PubNubDisplayConnectionTest {
 
     @Test
     public void testOnWin() throws JSONException {
-        DisplayUpdateListener spyCallback = spy(mock(DisplayUpdateListener.class));
         PubNubDisplayConnection pubNubDisplayConnection = new PubNubDisplayConnection(pubnub, ROOM_ID);
-        pubNubDisplayConnection.setUiCallback(spyCallback);
         final Side winner = Side.LEFT;
         final Side server = Side.RIGHT;
         final int wins = random.nextInt(999);
@@ -101,9 +130,7 @@ public class PubNubDisplayConnectionTest {
 
     @Test
     public void testOnReadyToServe() {
-        DisplayUpdateListener spyCallback = spy(mock(DisplayUpdateListener.class));
         PubNubDisplayConnection pubNubDisplayConnection = new PubNubDisplayConnection(pubnub, ROOM_ID);
-        pubNubDisplayConnection.setUiCallback(spyCallback);
         final Side server = Side.RIGHT;
         JSONObject jsonReadyToServe = makeJSONObject("onReadyToServe", server, null, null, null);
         pubNubDisplayConnection.connectCallback(ROOM_ID, jsonReadyToServe);
@@ -114,9 +141,7 @@ public class PubNubDisplayConnectionTest {
 
     @Test
     public void testOnStatusUpdate() throws JSONException {
-        DisplayScoreEventCallback spyCallback = spy(mock(DisplayScoreEventCallback.class));
         PubNubDisplayConnection pubNubDisplayConnection = new PubNubDisplayConnection(pubnub, ROOM_ID);
-        pubNubDisplayConnection.setDisplayScoreEventCallback(spyCallback);
         String pL = "leftDude";
         String pR = "rightDude";
         int sL = random.nextInt(999);
@@ -136,22 +161,22 @@ public class PubNubDisplayConnectionTest {
         jsonStatus.put(JSONInfo.NEXT_SERVER_PROPERTY, nextServer);
         jsonStatus.put(JSONInfo.GAMES_NEEDED_PROPERTY, gN);
         pubNubDisplayConnection.connectCallback(ROOM_ID, jsonStatus);
-        verify(spyCallback, times(0)).onStatusUpdate(pL, pR, sL, sR, wL, wR, nextServer, gN);
+        verify(deCallback, times(0)).onStatusUpdate(pL, pR, sL, sR, wL, wR, nextServer, gN);
         pubNubDisplayConnection.successCallback(ROOM_ID, jsonStatus);
-        verify(spyCallback, times(1)).onStatusUpdate(pL, pR, sL, sR, wL, wR, nextServer, gN);
+        verify(deCallback, times(1)).onStatusUpdate(pL, pR, sL, sR, wL, wR, nextServer, gN);
     }
 
     @Test
     public void testOnConnected() throws JSONException {
-        DisplayConnectCallback spyCallback = spy(mock(DisplayConnectCallback.class));
+        DisplayConnectCallback connectCallback = spy(mock(DisplayConnectCallback.class));
         PubNubDisplayConnection pubNubDisplayConnection = new PubNubDisplayConnection(pubnub, ROOM_ID);
         JSONObject jsonStatus = new JSONObject();
         jsonStatus.put(JSONInfo.EVENT_PROPERTY, "onConnected");
         pubNubDisplayConnection.successCallback(ROOM_ID, jsonStatus);
-        verify(spyCallback, times(0)).onConnected();
-        pubNubDisplayConnection.setDisplayConnectCallback(spyCallback);
+        verify(connectCallback, times(0)).onConnected();
+        pubNubDisplayConnection.setDisplayConnectCallback(connectCallback);
         pubNubDisplayConnection.successCallback(ROOM_ID, jsonStatus);
-        verify(spyCallback, times(1)).onConnected();
+        verify(connectCallback, times(1)).onConnected();
     }
 
     @Test
@@ -340,12 +365,7 @@ public class PubNubDisplayConnectionTest {
     @Test
     public void testWithInvalidJSON() {
         try {
-            DisplayUpdateListener spyCallback = spy(mock(DisplayUpdateListener.class));
-            DisplayScoreEventCallback deCallback = spy(mock(DisplayScoreEventCallback.class));
             PubNubDisplayConnection pubNubDisplayConnection = new PubNubDisplayConnection(pubnub, ROOM_ID);
-            pubNubDisplayConnection.setUiCallback(spyCallback);
-            pubNubDisplayConnection.setDisplayScoreEventCallback(deCallback);
-
             for (int i = 0; i < 100; i++) {
                 JSONObject invalidJSON = makeJSONObject(generateRandomAlphabeticString(random.nextInt(20)),
                         Side.values()[random.nextInt(4)], random.nextInt(999), random.nextInt(999), Side.values()[random.nextInt(4)]);

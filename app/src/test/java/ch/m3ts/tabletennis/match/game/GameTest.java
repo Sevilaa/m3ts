@@ -4,6 +4,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import ch.m3ts.event.Event;
+import ch.m3ts.event.Subscribable;
+import ch.m3ts.event.TTEventBus;
+import ch.m3ts.event.data.game.GameEventData;
+import ch.m3ts.event.data.todisplay.ToDisplayData;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.DisplayUpdateListener;
 import ch.m3ts.tabletennis.match.GameListener;
@@ -15,39 +20,59 @@ import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+
+class StubListenerGame implements Subscribable {
+    private final GameListener gameListener;
+    private final DisplayUpdateListener displayUpdateListener;
+
+    StubListenerGame(DisplayUpdateListener displayUpdateListener, GameListener gameListener) {
+        this.displayUpdateListener = displayUpdateListener;
+        this.gameListener = gameListener;
+    }
+
+    @Override
+    public void handle(Event<?> event) {
+        Object data = event.getData();
+        if (data instanceof GameEventData) {
+            GameEventData gameEventData = (GameEventData) data;
+            gameEventData.call(gameListener);
+        } else if (data instanceof ToDisplayData) {
+            ToDisplayData toDisplayData = (ToDisplayData) data;
+            toDisplayData.call(displayUpdateListener);
+        }
+    }
+}
 
 public class GameTest {
     private GameListener gameListener;
     private DisplayUpdateListener displayUpdateListener;
     private Game game;
-    // TODO change to dynamic implementation
     private final Side STARTING_SIDE = Side.LEFT;
+    private StubListenerGame stubListenerGame;
 
     @Before
     public void setUp() {
-        gameListener = mock(GameListener.class);
+        gameListener = mock(ch.m3ts.tabletennis.match.GameListener.class);
         displayUpdateListener = mock(DisplayUpdateListener.class);
-        game = new Game(gameListener, displayUpdateListener, GameType.G11, ServeRules.S2, STARTING_SIDE);
+        stubListenerGame = new StubListenerGame(displayUpdateListener, gameListener);
+        TTEventBus.getInstance().register(stubListenerGame);
+        game = new Game(GameType.G11, ServeRules.S2, STARTING_SIDE);
     }
 
     @After
-    public void tearDown() {
-        game = null;
-        gameListener = null;
-        displayUpdateListener = null;
+    public void cleanUp() {
+        TTEventBus.getInstance().unregister(stubListenerGame);
     }
 
     @Test
     public void testOnPointDeduction() {
-        DisplayUpdateListener displayUpdateListenerSpy = spy(DisplayUpdateListener.class);
-        game = new Game(gameListener, displayUpdateListenerSpy, GameType.G11, ServeRules.S2, STARTING_SIDE);
+        game = new Game(GameType.G11, ServeRules.S2, STARTING_SIDE);
         game.onPointDeduction(Side.RIGHT);
         game.onPointDeduction(Side.LEFT);
-        verify(displayUpdateListenerSpy, never()).onScore(any(Side.class), anyInt(), any(Side.class), any(Side.class));
-        verify(displayUpdateListenerSpy, never()).onWin(any(Side.class), anyInt());
+        verify(displayUpdateListener, never()).onScore(any(Side.class), anyInt(), any(Side.class), any(Side.class));
+        verify(displayUpdateListener, never()).onWin(any(Side.class), anyInt());
         assertEquals(0, game.getScore(Side.RIGHT));
         assertEquals(0, game.getScore(Side.LEFT));
         game.onPoint(Side.RIGHT);
@@ -61,7 +86,7 @@ public class GameTest {
         game.onPointDeduction(Side.LEFT);
         assertEquals(0, game.getScore(Side.LEFT));
         // expect 6 times on score -> 3 for onPoint, 3 for onPointDeduction
-        verify(displayUpdateListenerSpy, times(6)).onScore(any(Side.class), anyInt(), any(Side.class), any(Side.class));
+        verify(displayUpdateListener, times(6)).onScore(any(Side.class), anyInt(), any(Side.class), any(Side.class));
     }
 
     @Test
@@ -107,7 +132,7 @@ public class GameTest {
         verify(gameListener, times(1)).onGameWin(Side.LEFT);
 
         // let the right side win 11:0
-        game = new Game(gameListener, displayUpdateListener, GameType.G11, ServeRules.S2, STARTING_SIDE);
+        game = new Game(GameType.G11, ServeRules.S2, STARTING_SIDE);
         for (int i = 0; i<11; i++) {
             game.onPoint(Side.RIGHT);
             verify(displayUpdateListener, times(1)).onScore(eq(Side.RIGHT), eq(i + 1), any(Side.class), any(Side.class));
@@ -128,7 +153,7 @@ public class GameTest {
         verify(gameListener, times(0)).onGameWin(Side.RIGHT);
         verify(gameListener, times(0)).onGameWin(Side.LEFT);
 
-        game = new Game(gameListener, displayUpdateListener, GameType.G11, ServeRules.S2, STARTING_SIDE);
+        game = new Game(GameType.G11, ServeRules.S2, STARTING_SIDE);
         for (int i = 0; i < 20; i++) {
             if (i < 10) {
                 game.onPoint(Side.RIGHT);
@@ -175,7 +200,7 @@ public class GameTest {
 
     @Test
     public void changeServerWithServeRuleS5() {
-        game = new Game(gameListener, displayUpdateListener, GameType.G11, ServeRules.S5, STARTING_SIDE);
+        game = new Game(GameType.G11, ServeRules.S5, STARTING_SIDE);
         Side currentServer = STARTING_SIDE;
         for(int i = 0; i < 2; i++) {
             for(int j = 1; j < 6; j++) {
@@ -208,7 +233,7 @@ public class GameTest {
     @Test
     public void changeServerServeRuleS5OverTime() {
         Side currentServer = STARTING_SIDE;
-        game = new Game(gameListener, displayUpdateListener, GameType.G11, ServeRules.S5, STARTING_SIDE);
+        game = new Game(GameType.G11, ServeRules.S5, STARTING_SIDE);
         for(int i = 0; i < GameType.G11.amountOfPoints-1; i++) {
             game.onPoint(Side.LEFT);
             game.onPoint(Side.RIGHT);
