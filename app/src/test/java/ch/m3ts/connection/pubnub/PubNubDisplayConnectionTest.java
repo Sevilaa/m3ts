@@ -22,7 +22,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import java.util.Random;
 
 import ch.m3ts.display.DisplayConnectCallback;
-import ch.m3ts.display.GameListener;
+import ch.m3ts.display.MatchStatusListener;
 import ch.m3ts.event.Event;
 import ch.m3ts.event.Subscribable;
 import ch.m3ts.event.TTEventBus;
@@ -44,12 +44,12 @@ import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.spy;
 
 class StubListenerDisplay implements Subscribable {
-    private final GameListener gameListener;
+    private final MatchStatusListener matchStatusListener;
     private final DisplayUpdateListener displayUpdateListener;
 
-    StubListenerDisplay(DisplayUpdateListener displayUpdateListener, GameListener gameListener) {
+    StubListenerDisplay(DisplayUpdateListener displayUpdateListener, MatchStatusListener matchStatusListener) {
         this.displayUpdateListener = displayUpdateListener;
-        this.gameListener = gameListener;
+        this.matchStatusListener = matchStatusListener;
     }
 
     @Override
@@ -60,7 +60,7 @@ class StubListenerDisplay implements Subscribable {
             toDisplayData.call(displayUpdateListener);
         } else if (data instanceof StatusUpdateData) {
             StatusUpdateData updateData = (StatusUpdateData) data;
-            gameListener.onStatusUpdate(updateData.getPlayerNameLeft(), updateData.getPlayerNameRight(),
+            matchStatusListener.onStatusUpdate(updateData.getPlayerNameLeft(), updateData.getPlayerNameRight(),
                     updateData.getPointsLeft(), updateData.getPointsRight(), updateData.getGamesLeft(),
                     updateData.getGamesRight(), updateData.getNextServer(), updateData.getGamesNeededToWin());
         }
@@ -74,14 +74,14 @@ public class PubNubDisplayConnectionTest {
     private Pubnub pubnub;
     private final static String ROOM_ID = "invalid";
     private DisplayUpdateListener spyCallback;
-    private GameListener deCallback;
+    private MatchStatusListener deCallback;
     private StubListenerDisplay stubListener;
 
     @Before
     public void setup() {
         this.pubnub = spy(mock(Pubnub.class));
         this.spyCallback = spy(mock(DisplayUpdateListener.class));
-        this.deCallback = spy(mock(GameListener.class));
+        this.deCallback = spy(mock(MatchStatusListener.class));
         this.stubListener = new StubListenerDisplay(spyCallback, deCallback);
         TTEventBus.getInstance().register(stubListener);
     }
