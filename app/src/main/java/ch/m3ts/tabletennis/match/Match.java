@@ -9,8 +9,6 @@ import ch.m3ts.event.TTEvent;
 import ch.m3ts.event.TTEventBus;
 import ch.m3ts.event.data.StatusUpdateData;
 import ch.m3ts.event.data.game.GameEventData;
-import ch.m3ts.event.data.game.GameWinData;
-import ch.m3ts.event.data.game.GameWinResetData;
 import ch.m3ts.event.data.scoremanipulation.PointDeduction;
 import ch.m3ts.event.data.todisplay.MatchEndedData;
 import ch.m3ts.event.data.todisplay.ToDisplayGameWinData;
@@ -140,11 +138,8 @@ public class Match implements GameListener, MatchStatusCallback, Subscribable {
     @Override
     public void handle(Event<?> event) {
         Object data = event.getData();
-        if (data instanceof GameWinData) {
-            GameEventData gameEventData = (GameWinData) data;
-            gameEventData.call(this);
-        } else if (data instanceof GameWinResetData) {
-            GameEventData gameEventData = (GameWinResetData) data;
+        if (data instanceof GameEventData) {
+            GameEventData gameEventData = (GameEventData) data;
             gameEventData.call(this);
         }
     }

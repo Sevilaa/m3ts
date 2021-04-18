@@ -5,8 +5,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import ch.m3ts.event.Event;
+import ch.m3ts.event.EventBus;
 import ch.m3ts.event.Subscribable;
+import ch.m3ts.event.TTEvent;
 import ch.m3ts.event.TTEventBus;
+import ch.m3ts.event.data.game.GameWinData;
+import ch.m3ts.event.data.game.GameWinResetData;
 import ch.m3ts.event.data.todisplay.ToDisplayData;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.game.GameType;
@@ -54,6 +58,58 @@ public class MatchTest {
     @After
     public void cleanUp() {
         TTEventBus.getInstance().unregister(stubListenerMatch);
+    }
+
+    @Test
+    public void testHandlingEvents() {
+        match = spy(match);
+        EventBus eventBus = TTEventBus.getInstance();
+        eventBus.register(match);
+        eventBus.dispatch(new TTEvent<>(new GameWinResetData()));
+        eventBus.dispatch(new TTEvent<>(new GameWinData(Side.LEFT)));
+        verify(match, times(1)).onGameWinReset();
+        verify(match, times(1)).onGameWin(Side.LEFT);
+        eventBus.unregister(match);
+    }
+
+    @Test
+    public void testGameWinReset() {
+        match = new Match(MatchType.BO1, GameType.G11, ServeRules.S2, new Player(PLAYER_1_NAME), new Player(PLAYER_2_NAME), startingServerSide);
+        TTEventBus.getInstance().register(match);
+        for (int i = 0; i < 11; i++) {
+            match.getReferee().onPointAddition(Side.RIGHT);
+        }
+        MatchStatus status = match.onRequestMatchStatus();
+        assertEquals(0, status.getWinsLeft());
+        assertEquals(1, status.getWinsRight());
+        assertEquals(11, status.getScoreRight());
+        assertEquals(0, status.getScoreLeft());
+
+        match.onGameWinReset();
+        status = match.onRequestMatchStatus();
+        assertEquals(0, status.getWinsLeft());
+        assertEquals(0, status.getWinsRight());
+        assertEquals(10, status.getScoreRight());
+        assertEquals(0, status.getScoreLeft());
+        TTEventBus.getInstance().unregister(match);
+
+        // same test but in BO3 instead of BO1
+        match = new Match(MatchType.BO3, GameType.G11, ServeRules.S2, new Player(PLAYER_1_NAME), new Player(PLAYER_2_NAME), startingServerSide);
+        TTEventBus.getInstance().register(match);
+        for (int i = 0; i < 11; i++) {
+            match.getReferee().onPointAddition(Side.LEFT);
+        }
+        status = match.onRequestMatchStatus();
+        assertEquals(1, status.getWinsLeft());
+        assertEquals(0, status.getWinsRight());
+        assertEquals(0, status.getScoreRight());
+        assertEquals(0, status.getScoreLeft());
+        match.onGameWinReset();
+        status = match.onRequestMatchStatus();
+        assertEquals(0, status.getWinsLeft());
+        assertEquals(0, status.getWinsRight());
+        assertEquals(0, status.getScoreRight());
+        assertEquals(10, status.getScoreLeft());
     }
 
     @Test
