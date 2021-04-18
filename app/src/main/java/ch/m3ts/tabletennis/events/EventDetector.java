@@ -140,31 +140,34 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
             }
         }
 
-        if (tracks.size() > 1) {
-            // check if the distance between the two latest detections is humanly possible
-            Lib.Detection d0 = tracks.get(tracks.size() - 1).getLatest();
-            Lib.Detection d1 = tracks.get(tracks.size() - 2).getLatest();
-            double mmPerPixelOnFrontPlane = zPositionCalc.getMmPerPixelFrontEdge();
-            int dx = Math.abs(d0.centerX - d1.centerX);
-            int dy = Math.abs(d0.centerY - d1.centerY);
-            double distanceInMm = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2)) * mmPerPixelOnFrontPlane;
-            double dTime = (double) Math.abs(tracks.get(tracks.size() - 1).getLastDetectionTime() - tracks.get(tracks.size() - 2).getLastDetectionTime()) / 1_000_000_000;
-            if (dTime == 0) dTime = 1.0 / 30.0;
-            if ((distanceInMm / 1000) / (dTime) >= 32) {
-                tracks.remove(1);
-            }
-
-        }
-
-        // now select a track which has crossed the table, preferably the newer one (index high), if there are none return null
+        // if there are multiple tracks, select the one with the minimum distance to previous detection
         Track selectedTrack = null;
-        for (int i = tracks.size() - 1; i >= 0; i--) {
-            if (isOnTable(tracks.get(i))) {
-                selectedTrack = tracks.get(i);
-                currentTrack = selectedTrack;
-                break;
+        if (tracks.size() > 1) {
+            double distance = Double.MAX_VALUE;
+            for (Track t : tracks) {
+                Lib.Detection d = t.getLatest();
+                double a = Math.abs(d.centerX - previousDetection.centerX);
+                double b = Math.abs(d.centerY - previousDetection.centerY);
+                double distanceToLast = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
+                if (distanceToLast < distance) {
+                    selectedTrack = t;
+                    distance = distanceToLast;
+                    currentTrack = t;
+                }
             }
         }
+
+        // if there's only one track, select the newest track (highest index)
+        if (selectedTrack == null) {
+            for (int i = tracks.size() - 1; i >= 0; i--) {
+                if (isOnTable(tracks.get(i))) {
+                    selectedTrack = tracks.get(i);
+                    currentTrack = selectedTrack;
+                    break;
+                }
+            }
+        }
+
         return selectedTrack;
     }
 
