@@ -36,6 +36,7 @@ import ch.m3ts.tabletennis.Table;
 import ch.m3ts.tabletennis.events.EventDetectionListener;
 import ch.m3ts.tabletennis.events.EventDetector;
 import ch.m3ts.tabletennis.events.ReadyToServeDetector;
+import ch.m3ts.tabletennis.helper.DirectionY;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.DisplayUpdateListener;
 import ch.m3ts.tabletennis.match.Match;
@@ -50,6 +51,7 @@ import cz.fmo.R;
 import cz.fmo.data.Track;
 import cz.fmo.data.TrackSet;
 import cz.fmo.util.Config;
+import edu.princeton.cs.algs4.LinearRegression;
 
 /**
  * Renders the images received by any video source onto the screen and also passes them to FMO.
@@ -411,7 +413,11 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         trackPaint.setColor(c);
         trackPaint.setStrokeWidth(pre.radius);
         int count = 0;
-        while (pre != null && count < 2) {
+        double[] x = new double[3];
+        double[] y = new double[3];
+        while (pre != null && count < 3) {
+            x[count] = this.videoScaling.scaleX(pre.centerX);
+            y[count] = this.videoScaling.scaleY(pre.centerY);
             canvas.drawCircle(this.videoScaling.scaleX(pre.centerX), this.videoScaling.scaleY(pre.centerY), this.videoScaling.scaleY(pre.radius), trackPaint);
             if (pre.predecessor != null) {
                 int x1 = this.videoScaling.scaleX(pre.centerX);
@@ -422,6 +428,17 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
             }
             pre = pre.predecessor;
             count++;
+        }
+
+        if (count == 3 && t.getLatest().directionY == DirectionY.DOWN && t.getLatest().predecessor.directionY == DirectionY.DOWN &&
+                t.getLatest().centerY < table.getCornerDownRight().y) {
+            LinearRegression linearRegression = new LinearRegression(x, y);
+            Point c1 = this.videoScaling.scalePoint(table.getCornerDownLeft());
+            Point c2 = this.videoScaling.scalePoint(table.getCornerDownRight());
+            double predictedX = linearRegression.predictX(c1.y);
+            if (predictedX >= c1.x && predictedX <= c2.x) {
+                canvas.drawLine((float) predictedX, c1.y, (float) x[0], (float) y[0], tablePaint);
+            }
         }
     }
 
