@@ -134,7 +134,6 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
         // first tag all tracks which have crossed the table once
         for (Track t : tracks) {
             Lib.Detection latestDetection = t.getLatest();
-            if (latestDetection == null) continue;
             latestDetection.centerZ = zPositionCalc.findZPosOfBallRel(latestDetection.radius);
             if (table.isOnOrAbove(latestDetection.centerX, latestDetection.centerY) && zPositionCalc.isBallZPositionOnTable(latestDetection.radius)) {
                 t.setTableCrossed();
@@ -147,9 +146,8 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
             double distance = Double.MAX_VALUE;
             for (Track t : tracks) {
                 Lib.Detection d = t.getLatest();
-                if (d == null) continue;
-                double a = Math.abs(d.centerX - previousDetection.centerX);
-                double b = Math.abs(d.centerY - previousDetection.centerY);
+                double a = Math.abs(d.centerX - previousCenterX);
+                double b = Math.abs(d.centerY - previousCenterY);
                 double distanceToLast = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
                 if (distanceToLast < distance) {
                     selectedTrack = t;
