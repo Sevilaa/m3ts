@@ -2,6 +2,8 @@ package ch.m3ts.display;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Bundle;
@@ -101,17 +103,7 @@ public class MatchScoreFragment extends EventBusSubscribedFragment implements Di
 
     @Override
     public void onMatchEnded(String winnerName) {
-        Intent intent = new Intent(getActivity(), MatchWonActivity.class);
-        Bundle bundle = new Bundle();
-        bundle.putString("winner", winnerName);
-        if (new Config(getContext()).isUsingPubnub()) {
-            bundle.putString("room", ((PubNubDisplayConnection) this.connection).getRoomID());
-        }
-        intent.putExtras(bundle);
-        while (tts.isSpeaking()) {
-        }
-        startActivity(intent);
-        getActivity().finish();
+        showMatchEndDialog(winnerName);
     }
 
     @Override
@@ -291,6 +283,43 @@ public class MatchScoreFragment extends EventBusSubscribedFragment implements Di
         } else {
             setTextInTextView(R.id.right_games, winsToDisplay);
         }
+    }
+
+    private void switchToMatchWonActivity(String winnerName) {
+        Intent intent = new Intent(getActivity(), MatchWonActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putString("winner", winnerName);
+        if (new Config(getContext()).isUsingPubnub()) {
+            bundle.putString("room", ((PubNubDisplayConnection) this.connection).getRoomID());
+        }
+        intent.putExtras(bundle);
+        while (tts.isSpeaking()) {
+        }
+        startActivity(intent);
+        getActivity().finish();
+    }
+
+    private void showMatchEndDialog(final String winnerName) {
+        final Activity activity = getActivity();
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+                builder.setTitle(String.format(getString(R.string.msDialogTitle), winnerName));
+                builder.setMessage(getString(R.string.msDialogMsg));
+                builder.setPositiveButton(R.string.msDialogContinue, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        switchToMatchWonActivity(winnerName);
+                    }
+                });
+                builder.setNegativeButton(R.string.msDialogReplay, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        TTEventBus.getInstance().dispatch(new TTEvent<>(new PointDeduction(getPlayerNameBySide(Side.LEFT).equals(winnerName) ? Side.LEFT : Side.RIGHT)));
+                    }
+                });
+                builder.create().show();
+            }
+        });
     }
 
     public void onStatusUpdate(final String playerNameLeft, final String playerNameRight, final int pointsLeft, final int pointsRight, final int gamesLeft, final int gamesRight, final Side nextServer, final int gamesNeeded) {

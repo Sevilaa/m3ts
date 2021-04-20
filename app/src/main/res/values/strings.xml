@@ -166,8 +166,8 @@
     <!-- MatchScore Fragment -->
     <string name="msInitialValue">00</string>
     <string name="msDivider">:</string>
-    <string name="msDialogTitle">Match ended</string>
-    <string name="msDialogMsg">%1$s won the match! Do you want to continue or replay the last point?</string>
+    <string name="msDialogTitle">%1$s won the match!</string>
+    <string name="msDialogMsg">Do you want to continue or replay the last point?</string>
     <string name="msDialogContinue">Continue</string>
     <string name="msDialogReplay">Replay</string>
 

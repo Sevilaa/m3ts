@@ -66,11 +66,12 @@ public class Match implements GameListener, MatchStatusCallback, Subscribable {
     @Override
     public void onGameWin(Side side) {
         int win = wins.get(side) + 1;
+        if (win > type.gamesNeededToWin) win = type.gamesNeededToWin;
         wins.put(side, win);
-        TTEventBus.getInstance().dispatch(new TTEvent<>(new ToDisplayGameWinData(side, win)));
         if (isMatchOver(win)) {
             end(side);
         } else {
+            TTEventBus.getInstance().dispatch(new TTEvent<>(new ToDisplayGameWinData(side, win)));
             startNewGame(false);
         }
     }

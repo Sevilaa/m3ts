@@ -84,6 +84,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     private boolean waitingForGesture = false;
     private Recorder audioRecorder;
     private ZPosVisualizer zPosVisualizer;
+    private boolean hasEnded = false;
 
     public MatchVisualizeHandler(@NonNull MatchVisualizeActivity activity) {
         this.mActivity = new WeakReference<>(activity);
@@ -229,12 +230,12 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     public void onMatchEnded(String winnerName) {
         this.stopDetections();
         mActivity.get().getmSurfaceView().setOnTouchListener(null);
-        resetScoreTextViews();
-        resetGamesTextViews();
+        hasEnded = true;
     }
 
     @Override
     public void onScore(Side side, int score, Side nextServer, Side lastServer) {
+        if (hasEnded) reinitialise();
         if (side == Side.LEFT) {
             setTextInTextView(R.id.txtPlayMovieScoreLeft, String.valueOf(score));
         } else {
@@ -402,6 +403,11 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     protected void startMatch() {
         setOnSwipeListener();
         refreshDebugTextViews();
+    }
+
+    private void reinitialise() {
+        this.startDetections();
+        setOnSwipeListener();
     }
 
     private void drawTrack(Canvas canvas, Track t) {
