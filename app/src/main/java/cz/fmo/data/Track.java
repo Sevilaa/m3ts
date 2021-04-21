@@ -1,11 +1,7 @@
 package cz.fmo.data;
 
-import java.util.Locale;
-
 import ch.m3ts.tabletennis.helper.Side;
 import cz.fmo.Lib;
-import cz.fmo.graphics.FontRenderer;
-import cz.fmo.graphics.TriangleStripRenderer;
 import cz.fmo.util.Color;
 import cz.fmo.util.Config;
 
@@ -14,6 +10,9 @@ import cz.fmo.util.Config;
  * captured at different times.
  */
 public class Track {
+    private static final float MAX_VELOCITY_POSSIBLE_KM_H = 112.654f;
+    private static final float MAX_VELOCITY_POSSIBLE_MPH = 70f;
+    private static final float MAX_VELOCITY_POSSIBLE_M_S = 31.3f;
     private final Config mConfig;
     private Lib.Detection mLatest;
     private float mLatestDx = 0;
@@ -22,6 +21,8 @@ public class Track {
     private Color.RGBA mColorRGBA = new Color.RGBA();
     private long mLastDetectionTime;
     private float mMaxVelocity;
+    private float mAvgVelocity;
+    private float mSumVelocity;
     private int mVelocityNumFrames = 0;
     private boolean hasCrossedTable = false;
     private boolean isZPosOnTable = false;
@@ -78,21 +79,24 @@ public class Track {
 
             // convert m/s to other units
             switch (mConfig.getVelocityEstimationMode()) {
-                default:
-                case PX_FR:
                 case M_S:
+                    velocity = Math.max(velocity, MAX_VELOCITY_POSSIBLE_M_S);
                     break;
                 case KM_H:
                     velocity *= 3.6f;
+                    velocity = Math.max(velocity, MAX_VELOCITY_POSSIBLE_KM_H);
                     break;
                 case MPH:
                     velocity *= 2.23694f;
+                    velocity = Math.max(velocity, MAX_VELOCITY_POSSIBLE_MPH);
+                    break;
+                default:
                     break;
             }
-
+            ++mVelocityNumFrames;
+            mSumVelocity += velocity;
             mMaxVelocity = Math.max(velocity, mMaxVelocity);
-
-            mVelocityNumFrames++;
+            mAvgVelocity = mSumVelocity / mVelocityNumFrames;
         } else {
             latest.directionY = 0;
             latest.directionX = 0;
@@ -102,6 +106,14 @@ public class Track {
         mLatest = latest;
     }
 
+    public float getAvgVelocity() {
+        return mAvgVelocity;
+    }
+
+    public float getMaxVelocity() {
+        return mMaxVelocity;
+    }
+
     public void updateColor() {
         if (mLatestDx == 0 && mLatestDy == 0) return;
         float sinceDetectionSec = ((float) (System.nanoTime() - mLastDetectionTime)) / 1e9f;
@@ -109,17 +121,5 @@ public class Track {
         mColorHSV.hsv[1] = Math.min(1.0f, .2f + 0.4f * sinceDetectionSec);
         mColorHSV.hsv[2] = Math.max((mLatestDx > 0) ? 0.6f : 0.8f, 1.f - 0.3f * sinceDetectionSec);
         Color.convert(mColorHSV, mColorRGBA);
-    }
-
-    void generateCurve(TriangleStripRenderer.Buffers b) {
-        updateColor();
-        Lib.generateCurve(mLatest, mColorRGBA.rgba, b);
-    }
-
-    void generateLabel(FontRenderer fontRender, float hs, float ws, float left, float top, int i) {
-        if (mVelocityNumFrames != 0) {
-            String str = String.format(Locale.US, "%5.1f", mMaxVelocity);
-            fontRender.addString(str, left + ws, top + (i + 1.5f) * hs, hs, mColorRGBA);
-        }
     }
 }

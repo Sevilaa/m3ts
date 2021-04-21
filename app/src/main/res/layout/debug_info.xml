@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/playMovie_debugGrid"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_alignParentTop="true"
+    android:layout_alignParentEnd="true"
+    android:background="@drawable/radius_background"
+    android:columnCount="2"
+    android:padding="10dp"
+    android:rowCount="8">
+
+    <TextView
+        android:id="@+id/txtLabelSide"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:text="@string/debugBallShotLabel"
+        android:textAlignment="viewStart"
+        android:textColor="@android:color/secondary_text_light"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/txtSide"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:text="@string/debugBallShotStart"
+        android:textAlignment="textEnd"
+        android:textColor="@android:color/secondary_text_light"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/txtLabelBounce"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:text="@string/debugBallBounceLabel"
+        android:textAlignment="viewStart"
+        android:textColor="@android:color/secondary_text_light"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/txtBounce"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:text="@string/debugBallCountStart"
+        android:textAlignment="textStart"
+        android:textColor="@android:color/secondary_text_light"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:text="Current state:"
+        android:textAlignment="textStart"
+        android:textColor="@android:color/secondary_text_light"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/txtPlayMovieState"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:text="NONE"
+        android:textAlignment="textStart"
+        android:textColor="@android:color/secondary_text_light"
+        android:textSize="12sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:text="Server:"
+        android:textAlignment="textStart"
+        android:textColor="@android:color/secondary_text_light"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/txtPlayMovieServing"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:text="true"
+        android:textAlignment="textStart"
+        android:textColor="@android:color/secondary_text_light"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:text="Frequency:"
+        android:textAlignment="textStart"
+        android:textColor="@android:color/secondary_text_light"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/txtPlayMovieFrequency"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:text="0 Hz"
+        android:textAlignment="textStart"
+        android:textColor="@android:color/secondary_text_light"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:text="Audio Bounce:"
+        android:textAlignment="textStart"
+        android:textColor="@android:color/secondary_text_light"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/txtAudioBounce"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:text="0"
+        android:textAlignment="textStart"
+        android:textColor="@android:color/secondary_text_light"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:text="Velocity:"
+        android:textAlignment="textStart"
+        android:textColor="@android:color/secondary_text_light"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/txtPlayMovieVelocity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:text="0"
+        android:textAlignment="textStart"
+        android:textColor="@android:color/secondary_text_light"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+</GridLayout>

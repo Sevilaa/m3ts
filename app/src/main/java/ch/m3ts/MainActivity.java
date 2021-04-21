@@ -90,7 +90,6 @@ public class MainActivity extends Activity {
         animationDrawable.setExitFadeDuration(4000);
         animationDrawable.start();
         this.audioRecorder = new Recorder(new DebugImplAudioRecorderCallback(
-                (TextView) findViewById(R.id.txtPlayMovieAmp),
                 (TextView) findViewById(R.id.txtPlayMovieFrequency),
                 (TextView) findViewById(R.id.txtAudioBounce)
         ));
