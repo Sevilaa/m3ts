@@ -275,12 +275,10 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
     }
 
     private void hasTableSideChanged(int currentXPosition) {
-        if (previousDetection != null) {
-            if (currentXPosition > table.getCloseNetEnd().x && previousCenterX < table.getCloseNetEnd().x) {
-                callAllOnTableSideChange(Side.RIGHT);
-            } else if (currentXPosition < table.getCloseNetEnd().x && previousCenterX > table.getCloseNetEnd().x) {
-                callAllOnTableSideChange(Side.LEFT);
-            }
+        if (currentXPosition > table.getCloseNetEnd().x && previousCenterX < table.getCloseNetEnd().x) {
+            callAllOnTableSideChange(Side.RIGHT);
+        } else if (currentXPosition < table.getCloseNetEnd().x && previousCenterX > table.getCloseNetEnd().x) {
+            callAllOnTableSideChange(Side.LEFT);
         }
     }
 
