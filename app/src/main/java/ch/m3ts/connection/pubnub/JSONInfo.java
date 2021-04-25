@@ -9,6 +9,7 @@ public final class JSONInfo {
     public static final String SIDE_PROPERTY = "side";
     public static final String WINS_PROPERTY = "wins";
     public static final String TYPE_PROPERTY = "type";
+    public static final String STATS_SERIALIZED = "stats";
     public static final String SERVER_PROPERTY = "server";
     public static final String GAMES_NEEDED_PROPERTY = "gamesNeeded";
     public static final String WINS_LEFT_PROPERTY = "winsLeft";

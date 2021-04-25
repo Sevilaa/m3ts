@@ -1,5 +1,6 @@
 package ch.m3ts.tabletennis.match.game;
 
+import ch.m3ts.display.stats.StatsCreator;
 import ch.m3ts.event.EventBus;
 import ch.m3ts.event.TTEvent;
 import ch.m3ts.event.TTEventBus;
@@ -39,6 +40,7 @@ public class Game implements GameCallback {
         changeServer();
         this.eventBus.dispatch(new TTEvent<>(new ScoreData(side, score, this.server, lastServer)));
         if (this.scoreManager.hasReachedMax(score)) {
+            StatsCreator.getInstance().addGame();
             this.eventBus.dispatch(new TTEvent<>(new GameWinData(side)));
         }
     }

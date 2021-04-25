@@ -20,4 +20,8 @@ public class ScoreData implements ToDisplayData {
     public void call(DisplayUpdateListener displayUpdateListener) {
         displayUpdateListener.onScore(scorer, score, nextServer, lastServer);
     }
+
+    public Side getLastServer() {
+        return lastServer;
+    }
 }

@@ -1,14 +1,21 @@
 package ch.m3ts.connection;
 
+import android.util.Base64;
+
 import com.pubnub.api.Callback;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectOutputStream;
+
 import ch.m3ts.connection.pubnub.ByteToBase64;
 import ch.m3ts.connection.pubnub.CameraBytesConversions;
 import ch.m3ts.connection.pubnub.JSONInfo;
+import ch.m3ts.display.stats.MatchStats;
+import ch.m3ts.display.stats.StatsCreator;
 import ch.m3ts.event.Event;
 import ch.m3ts.event.Subscribable;
 import ch.m3ts.event.TTEvent;
@@ -64,6 +71,25 @@ public abstract class ImplTrackerConnection extends Callback implements TrackerC
         }
     }
 
+    private void sendStats() {
+        try {
+            ByteArrayOutputStream bo = new ByteArrayOutputStream();
+            ObjectOutputStream so = new ObjectOutputStream(bo);
+            MatchStats stats = StatsCreator.getInstance().createStats();
+            so.writeObject(stats);
+            so.flush();
+            String statsString = android.util.Base64.encodeToString(bo.toByteArray(), Base64.DEFAULT);
+            JSONObject json = new JSONObject();
+            json.put(JSONInfo.EVENT_PROPERTY, "onStatsCreated");
+            json.put(JSONInfo.STATS_SERIALIZED, statsString);
+            sendData(json);
+        } catch (JSONException ex) {
+            Log.d(JSON_SEND_EXCEPTION_MESSAGE + ex.getMessage());
+        } catch (Exception e) {
+            Log.d("Failed to serialize Stats");
+        }
+    }
+
     public void onWin(Side side, int wins) {
         send("onWin", side.toString(), null, wins, null);
     }
@@ -101,6 +127,9 @@ public abstract class ImplTrackerConnection extends Callback implements TrackerC
                                     status.getScoreLeft(), status.getScoreRight(), status.getWinsLeft(),
                                     status.getWinsRight(), status.getNextServer(), status.getGamesNeededToWin());
                         }
+                        break;
+                    case "requestStats":
+                        sendStats();
                         break;
                     case "onPause":
                         TTEventBus.getInstance().dispatch(new TTEvent<>(new PauseMatch()));

@@ -8,15 +8,21 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayInputStream;
+import java.io.ObjectInputStream;
+
 import ch.m3ts.connection.pubnub.ByteToBase64;
 import ch.m3ts.connection.pubnub.JSONInfo;
 import ch.m3ts.display.DisplayConnectCallback;
+import ch.m3ts.display.stats.MatchStats;
 import ch.m3ts.event.Event;
 import ch.m3ts.event.EventBus;
 import ch.m3ts.event.Subscribable;
 import ch.m3ts.event.TTEvent;
 import ch.m3ts.event.TTEventBus;
+import ch.m3ts.event.data.RequestStatsData;
 import ch.m3ts.event.data.RestartMatchData;
+import ch.m3ts.event.data.StatsData;
 import ch.m3ts.event.data.StatusUpdateData;
 import ch.m3ts.event.data.scoremanipulation.ScoreManipulationData;
 import ch.m3ts.event.data.todisplay.InvalidServeData;
@@ -39,6 +45,10 @@ public abstract class ImplDisplayConnection extends Callback implements ScoreMan
 
     public void requestStatusUpdate() {
         send("requestStatus", null);
+    }
+
+    private void requestStats() {
+        send("requestStats", null);
     }
 
     public void onRequestTableFrame() {
@@ -127,6 +137,13 @@ public abstract class ImplDisplayConnection extends Callback implements ScoreMan
                     case "onTableFrame":
                         this.handleOnTableFrame(json);
                         break;
+                    case "onStatsCreated":
+                        byte[] b = android.util.Base64.decode((String) json.get(JSONInfo.STATS_SERIALIZED), android.util.Base64.DEFAULT);
+                        ByteArrayInputStream bi = new ByteArrayInputStream(b);
+                        ObjectInputStream si = new ObjectInputStream(bi);
+                        MatchStats stats = (MatchStats) si.readObject();
+                        eventBus.dispatch(new TTEvent<>(new StatsData(stats)));
+                        break;
                     default:
                         Log.d("Unhandled event received:\n" + json.toString());
                         break;
@@ -184,6 +201,8 @@ public abstract class ImplDisplayConnection extends Callback implements ScoreMan
             manipulationData.call(this);
         } else if (data instanceof RestartMatchData) {
             this.onRestartMatch();
+        } else if (data instanceof RequestStatsData) {
+            this.requestStats();
         }
     }
 }
