@@ -86,7 +86,7 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
         this.isUsingReadyToServeGesture = true;
         this.state = State.WAIT_FOR_SERVE;
         this.startTime = Calendar.getInstance().getTime();
-        DateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT, Locale.GERMANY);
+        DateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT, Locale.US);
         this.currentFileName = String.format(FILENAME, dateFormat.format(startTime));
         this.duration = new Duration();
     }
@@ -322,20 +322,16 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
 
     @Override
     public void onBallDroppedSideWays() {
-        switch (this.state) {
-            case PLAY:
-                if (bounces == 0) {
-                    lastDecision = "Fault by Striker: Ball has fallen off side ways and had no bounce";
-                    lastPointWinner = Side.getOpposite(currentStriker);
-                    faultBySide(currentStriker);
-                } else if (bounces == 1) {
-                    lastDecision = "Point by Striker: Ball has fallen off side ways and had a bounce";
-                    lastPointWinner = currentStriker;
-                    pointBySide(currentStriker);
-                }
-                break;
-            default:
-                break;
+        if (this.state == State.PLAY) {
+            if (bounces == 0) {
+                lastDecision = "Fault by Striker: Ball has fallen off side ways and had no bounce";
+                lastPointWinner = Side.getOpposite(currentStriker);
+                faultBySide(currentStriker);
+            } else if (bounces == 1) {
+                lastDecision = "Point by Striker: Ball has fallen off side ways and had a bounce";
+                lastPointWinner = currentStriker;
+                pointBySide(currentStriker);
+            }
         }
     }
 
