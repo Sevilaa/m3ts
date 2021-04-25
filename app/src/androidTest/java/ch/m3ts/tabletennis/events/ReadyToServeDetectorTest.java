@@ -2,10 +2,6 @@ package ch.m3ts.tabletennis.events;
 
 import android.graphics.Point;
 
-import androidx.test.filters.LargeTest;
-import androidx.test.rule.ActivityTestRule;
-import androidx.test.runner.AndroidJUnit4;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -16,8 +12,13 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 
+import androidx.test.filters.LargeTest;
+import androidx.test.rule.ActivityTestRule;
+import androidx.test.runner.AndroidJUnit4;
 import ch.m3ts.MainActivity;
 import ch.m3ts.tabletennis.Table;
+import ch.m3ts.tabletennis.events.gesture.ReadyToServeCallback;
+import ch.m3ts.tabletennis.events.gesture.ReadyToServeDetector;
 import ch.m3ts.tabletennis.helper.Side;
 
 import static org.junit.Assert.assertFalse;

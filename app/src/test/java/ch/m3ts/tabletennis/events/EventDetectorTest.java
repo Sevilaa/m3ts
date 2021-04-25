@@ -4,10 +4,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import ch.m3ts.event.Event;
-import ch.m3ts.event.Subscribable;
-import ch.m3ts.event.TTEventBus;
-import ch.m3ts.event.data.eventdetector.EventDetectorEventData;
+import ch.m3ts.eventbus.Event;
+import ch.m3ts.eventbus.Subscribable;
+import ch.m3ts.eventbus.TTEventBus;
+import ch.m3ts.eventbus.data.eventdetector.EventDetectorEventData;
 import ch.m3ts.tabletennis.Table;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tracker.ZPositionCalc;

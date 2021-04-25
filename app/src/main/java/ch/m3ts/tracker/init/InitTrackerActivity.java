@@ -23,7 +23,7 @@ import ch.m3ts.connection.ConnectionHelper;
 import ch.m3ts.connection.NearbyTrackerConnection;
 import ch.m3ts.connection.pubnub.PubNubFactory;
 import ch.m3ts.connection.pubnub.PubNubTrackerConnection;
-import ch.m3ts.event.TTEventBus;
+import ch.m3ts.eventbus.TTEventBus;
 import ch.m3ts.tracker.visualization.CameraPreviewActivity;
 import ch.m3ts.tracker.visualization.live.LiveActivity;
 import cz.fmo.R;

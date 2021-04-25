@@ -11,7 +11,7 @@ import org.json.JSONObject;
 import java.util.UUID;
 
 import ch.m3ts.connection.ImplTrackerConnection;
-import ch.m3ts.event.TTEventBus;
+import ch.m3ts.eventbus.TTEventBus;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.util.Log;
 

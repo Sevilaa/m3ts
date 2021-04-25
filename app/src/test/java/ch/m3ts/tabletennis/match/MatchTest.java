@@ -4,14 +4,14 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import ch.m3ts.event.Event;
-import ch.m3ts.event.EventBus;
-import ch.m3ts.event.Subscribable;
-import ch.m3ts.event.TTEvent;
-import ch.m3ts.event.TTEventBus;
-import ch.m3ts.event.data.game.GameWinData;
-import ch.m3ts.event.data.game.GameWinResetData;
-import ch.m3ts.event.data.todisplay.ToDisplayData;
+import ch.m3ts.eventbus.Event;
+import ch.m3ts.eventbus.EventBus;
+import ch.m3ts.eventbus.Subscribable;
+import ch.m3ts.eventbus.TTEvent;
+import ch.m3ts.eventbus.TTEventBus;
+import ch.m3ts.eventbus.data.game.GameWinData;
+import ch.m3ts.eventbus.data.game.GameWinResetData;
+import ch.m3ts.eventbus.data.todisplay.ToDisplayData;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.game.GameType;
 

@@ -2,8 +2,8 @@ package ch.m3ts;
 
 import android.app.Fragment;
 
-import ch.m3ts.event.Subscribable;
-import ch.m3ts.event.TTEventBus;
+import ch.m3ts.eventbus.Subscribable;
+import ch.m3ts.eventbus.TTEventBus;
 
 public abstract class EventBusSubscribedFragment extends Fragment implements Subscribable {
 
