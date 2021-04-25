@@ -15,8 +15,11 @@ import ch.m3ts.tabletennis.helper.Side;
  * assets folder.
  */
 public class Table {
+    private static final double NET_HEIGHT_TO_LENGTH_RATIO = 0.055;
     private final Point[] corners;
     private final Point net;
+    private final Point netTop;
+    private final int tableLength;
 
     public Table(@NonNull Point[] corners, @NonNull Point net) {
         if (corners.length != 2) {
@@ -24,6 +27,8 @@ public class Table {
         }
         this.corners = corners;
         this.net = net;
+        this.tableLength = getCornerDownRight().x - getCornerDownLeft().x;
+        this.netTop = new Point(this.net.x, (int) Math.round(net.y - tableLength * NET_HEIGHT_TO_LENGTH_RATIO));
     }
 
     public static Table makeTableFromProperties(Properties properties) {
@@ -64,8 +69,12 @@ public class Table {
         return points;
     }
 
-    public Point getCloseNetEnd() {
+    public Point getNetBottom() {
         return net;
+    }
+
+    public Point getNetTop() {
+        return netTop;
     }
 
     public Point getCornerDownLeft() {
@@ -83,14 +92,14 @@ public class Table {
     public boolean isOnOrAbove(int x, int y) {
         double leftThreshold = this.getCornerDownLeft().x;
         double rightThreshold = this.getCornerDownRight().x;
-        double bottomThreshold = this.getCloseNetEnd().y;
+        double bottomThreshold = this.getNetBottom().y;
         return (x >= leftThreshold && x <= rightThreshold && y <= bottomThreshold);
     }
 
     public boolean isBounceOn(int x, int y) {
         double leftThreshold = this.getCornerDownLeft().x;
         double rightThreshold = this.getCornerDownRight().x;
-        double bottomThreshold = this.getCloseNetEnd().y;
+        double bottomThreshold = this.getNetBottom().y;
         double topThreshold = this.net.y * 0.85;    // 0.85 evaluated by play testing
         return (x >= leftThreshold && x <= rightThreshold && y <= bottomThreshold && y >= topThreshold);
     }
@@ -98,18 +107,18 @@ public class Table {
     public boolean isBelow(int x, int y) {
         double leftThreshold = this.getCornerDownLeft().x;
         double rightThreshold = this.getCornerDownRight().x;
-        double bottomThreshold = this.getCloseNetEnd().y * 1.05;
+        double bottomThreshold = this.getNetBottom().y * 1.05;
         return (x >= leftThreshold && x <= rightThreshold && y > bottomThreshold);
     }
 
     public int getWidth() {
-        return getCornerDownRight().x - getCornerDownLeft().x;
+        return tableLength;
     }
 
     public Side getHorizontalSideOfDetection(int centerX) {
         Side horizontalSide = null;
-        if (centerX < this.getCloseNetEnd().x * 0.95) horizontalSide = Side.LEFT;
-        else if (centerX > this.getCloseNetEnd().x * 1.05) horizontalSide = Side.RIGHT;
+        if (centerX < this.getNetBottom().x * 0.95) horizontalSide = Side.LEFT;
+        else if (centerX > this.getNetBottom().x * 1.05) horizontalSide = Side.RIGHT;
         return horizontalSide;
     }
 

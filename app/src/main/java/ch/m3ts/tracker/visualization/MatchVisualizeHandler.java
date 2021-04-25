@@ -37,7 +37,6 @@ import ch.m3ts.tabletennis.Table;
 import ch.m3ts.tabletennis.events.EventDetectionListener;
 import ch.m3ts.tabletennis.events.EventDetector;
 import ch.m3ts.tabletennis.events.ReadyToServeDetector;
-import ch.m3ts.tabletennis.helper.DirectionY;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.DisplayUpdateListener;
 import ch.m3ts.tabletennis.match.Match;
@@ -47,12 +46,12 @@ import ch.m3ts.tabletennis.match.Player;
 import ch.m3ts.tabletennis.match.ServeRules;
 import ch.m3ts.tabletennis.match.game.GameType;
 import ch.m3ts.tracker.ZPositionCalc;
+import ch.m3ts.util.Log;
 import cz.fmo.Lib;
 import cz.fmo.R;
 import cz.fmo.data.Track;
 import cz.fmo.data.TrackSet;
 import cz.fmo.util.Config;
-import edu.princeton.cs.algs4.LinearRegression;
 
 /**
  * Renders the images received by any video source onto the screen and also passes them to FMO.
@@ -239,6 +238,12 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     }
 
     @Override
+    public void onBallMovingIntoNet() {
+        // do nothing for now
+        Log.d("Ball moving into net!");
+    }
+
+    @Override
     public void onBallDroppedSideWays() {
         // do nothing
     }
@@ -368,13 +373,13 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
             c2 = this.videoScaling.scalePoint(c2);
             canvas.drawLine(c1.x, c1.y, c2.x, c2.y, tablePaint);
         }
-        Point closeNetEnd = this.videoScaling.scalePoint(table.getCloseNetEnd());
+        Point closeNetEnd = this.videoScaling.scalePoint(table.getNetBottom());
         canvas.drawCircle(closeNetEnd.x, closeNetEnd.y, 10f, tablePaint);
         canvas.drawLine(
                 closeNetEnd.x,
                 closeNetEnd.y,
                 closeNetEnd.x,
-                Math.round(closeNetEnd.y - 0.06 * this.videoScaling.scaleX(this.table.getWidth())), // 0.06 is relative length of a table tennis net to the table width
+                this.videoScaling.scaleY(table.getNetTop().y),
                 tablePaint);
         zPosVisualizer.drawTableBirdView(canvas);
         surfaceHolderTable.unlockCanvasAndPost(canvas);
@@ -437,11 +442,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         trackPaint.setColor(c);
         trackPaint.setStrokeWidth(pre.radius);
         int count = 0;
-        double[] x = new double[3];
-        double[] y = new double[3];
         while (pre != null && count < 3) {
-            x[count] = this.videoScaling.scaleX(pre.centerX);
-            y[count] = this.videoScaling.scaleY(pre.centerY);
             canvas.drawCircle(this.videoScaling.scaleX(pre.centerX), this.videoScaling.scaleY(pre.centerY), this.videoScaling.scaleY(pre.radius), trackPaint);
             if (pre.predecessor != null) {
                 int x1 = this.videoScaling.scaleX(pre.centerX);
@@ -452,17 +453,6 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
             }
             pre = pre.predecessor;
             count++;
-        }
-
-        if (count == 3 && t.getLatest().directionY == DirectionY.DOWN && t.getLatest().predecessor.directionY == DirectionY.DOWN &&
-                t.getLatest().centerY < table.getCornerDownRight().y) {
-            LinearRegression linearRegression = new LinearRegression(x, y);
-            Point c1 = this.videoScaling.scalePoint(table.getCornerDownLeft());
-            Point c2 = this.videoScaling.scalePoint(table.getCornerDownRight());
-            double predictedX = linearRegression.predictX(c1.y);
-            if (predictedX >= c1.x && predictedX <= c2.x) {
-                canvas.drawLine((float) predictedX, c1.y, (float) x[0], (float) y[0], tablePaint);
-            }
         }
     }
 
@@ -483,11 +473,6 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     private void resetScoreTextViews() {
         setTextInTextView(R.id.txtPlayMovieScoreLeft, String.valueOf(0));
         setTextInTextView(R.id.txtPlayMovieScoreRight, String.valueOf(0));
-    }
-
-    private void resetGamesTextViews() {
-        setTextInTextView(R.id.txtPlayMovieGameLeft, String.valueOf(0));
-        setTextInTextView(R.id.txtPlayMovieGameRight, String.valueOf(0));
     }
 
     protected void setTextInTextView(int id, final String text) {

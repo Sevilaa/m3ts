@@ -8,6 +8,7 @@ import org.mockito.Mockito;
 import ch.m3ts.event.data.eventdetector.BallBounceAudioData;
 import ch.m3ts.event.data.eventdetector.BallBounceData;
 import ch.m3ts.event.data.eventdetector.BallDroppedSideWaysData;
+import ch.m3ts.event.data.eventdetector.BallMovingIntoNetData;
 import ch.m3ts.event.data.eventdetector.BallNearlyOutOfFrameData;
 import ch.m3ts.event.data.eventdetector.BallTrackData;
 import ch.m3ts.event.data.eventdetector.DetectionTimeOutData;
@@ -167,6 +168,7 @@ public class TTEventBusTest {
         eventBus.dispatch(new TTEvent<>(new DetectionTimeOutData()));
         eventBus.dispatch(new TTEvent<>(new StrikerSideChangeData(Side.RIGHT)));
         eventBus.dispatch(new TTEvent<>(new TableSideChangeData(Side.LEFT)));
+        eventBus.dispatch(new TTEvent<>(new BallMovingIntoNetData()));
         Mockito.verify(eventDetectionListener, times(1)).onAudioBounce(Side.LEFT);
         Mockito.verify(eventDetectionListener, times(1)).onBounce(detection, Side.RIGHT);
         Mockito.verify(eventDetectionListener, times(1)).onBallDroppedSideWays();
@@ -175,6 +177,7 @@ public class TTEventBusTest {
         Mockito.verify(eventDetectionListener, times(1)).onTimeout();
         Mockito.verify(eventDetectionListener, times(1)).onSideChange(Side.RIGHT);
         Mockito.verify(eventDetectionListener, times(1)).onTableSideChange(Side.LEFT);
+        Mockito.verify(eventDetectionListener, times(1)).onBallMovingIntoNet();
     }
 
 }

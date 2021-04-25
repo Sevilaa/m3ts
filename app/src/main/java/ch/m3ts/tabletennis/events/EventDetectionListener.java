@@ -23,4 +23,6 @@ public interface EventDetectionListener {
     void onTimeout();
 
     void onAudioBounce(Side side);
+
+    void onBallMovingIntoNet();
 }

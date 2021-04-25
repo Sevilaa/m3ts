@@ -66,18 +66,21 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
     private int audioBounces;
     private int strikes;
     private FileManager fm;
-    private boolean isUsingReadyToServeGesture = true;
+    private boolean isUsingReadyToServeGesture;
     private List<Track> strikeLogs = new ArrayList<>();
     private final Duration duration;
+    private boolean isBallMovingIntoNet;
 
     public Referee(Side servingSide) {
         this.currentStriker = servingSide;
         this.currentBallSide = servingSide;
         this.bounces = 0;
         this.audioBounces = 0;
+        this.isBallMovingIntoNet = false;
+        this.isUsingReadyToServeGesture = true;
         this.state = State.WAIT_FOR_SERVE;
         Date date = Calendar.getInstance().getTime();
-        DateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT, Locale.GERMANY);
+        DateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT, Locale.US);
         this.currentFileName = String.format(FILENAME, dateFormat.format(date));
         this.duration = new Duration();
     }
@@ -187,6 +190,18 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
     }
 
     @Override
+    public void onBallMovingIntoNet() {
+        switch (this.state) {
+            case PLAY:
+            case SERVING:
+                this.isBallMovingIntoNet = true;
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
     public void onSideChange(Side side) {
         switch (this.state) {
             case PLAY:
@@ -258,6 +273,7 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
         // set the currentStriker in case the tracker didn't find any detections
         this.currentStriker = Side.getOpposite(side);
         this.currentBallSide = side;
+        this.isBallMovingIntoNet = false;
         switch (this.state) {
             case SERVING:
                 if (this.getServer() != side) {
@@ -276,27 +292,25 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
     @Override
     public void onBallDroppedSideWays() {
         String msg;
-        switch (this.state) {
-            case PLAY:
-                if (bounces == 0) {
-                    msg = "REFEREE:Fault by Striker: Ball has fallen off side ways and had no bounce";
-                    faultBySide(currentStriker);
-                    logScoring(msg, Side.getOpposite(currentStriker));
-                } else if (bounces == 1) {
-                    msg = "REFEREE:Point by Striker: Ball has fallen off side ways and had a bounce";
-                    pointBySide(currentStriker);
-                    logScoring(msg, currentStriker);
-                }
-                break;
-            default:
-                break;
+        if (this.state == State.PLAY) {
+            if (bounces == 0) {
+                msg = "REFEREE:Fault by Striker: Ball has fallen off side ways and had no bounce";
+                faultBySide(currentStriker);
+                logScoring(msg, Side.getOpposite(currentStriker));
+            } else if (bounces == 1) {
+                msg = "REFEREE:Point by Striker: Ball has fallen off side ways and had a bounce";
+                pointBySide(currentStriker);
+                logScoring(msg, currentStriker);
+            }
         }
     }
 
     @Override
     public void onTimeout() {
-        if (this.state == State.PLAY || this.state == State.SERVING)
+        if (this.state == State.PLAY ||
+                (this.state == State.SERVING && (this.audioBounces > 0 || this.bounces > 0 || this.isBallMovingIntoNet))) {
             handleOutOfFrame();
+        }
     }
 
     @Override
