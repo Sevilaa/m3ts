@@ -63,14 +63,36 @@
                     android:layout_gravity="center"
                     android:text="@string/mwStartNew"
                     android:textColor="#fff"
-                    android:textSize="18sp"/>
+                    android:textSize="18sp" />
+
+                <Button
+                    android:id="@+id/show_stats"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/radius_background"
+                    android:backgroundTint="@android:color/secondary_text_light"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:paddingStart="72dp"
+                    android:paddingEnd="72dp"
+                    android:textAllCaps="false"
+                    android:textStyle="normal"
+                    android:elevation="8dp"
+                    android:onClick="showStats"
+                    android:layout_marginBottom="8dp"
+                    android:layout_gravity="center"
+                    android:text="@string/mwStats"
+                    android:textColor="#fff"
+                    android:textSize="18sp" />
+
                 <Button
                     android:id="@+id/back_to_menu"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="@drawable/radius_background"
                     android:backgroundTint="@android:color/secondary_text_light"
-                    android:layout_marginTop="40dp"
+                    android:layout_marginTop="20dp"
                     android:layout_marginStart="4dp"
                     android:layout_marginEnd="4dp"
                     android:paddingStart="72dp"
@@ -83,8 +105,13 @@
                     android:layout_marginBottom="8dp"
                     android:text="@string/mwMenu"
                     android:textColor="#fff"
-                    android:textSize="18sp"/>
+                    android:textSize="18sp" />
             </GridLayout>
+
+            <FrameLayout
+                android:id="@+id/match_stats"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
         </RelativeLayout>
     </RelativeLayout>
 </RelativeLayout>

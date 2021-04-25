@@ -160,6 +160,7 @@
 
     <!-- MatchWin Fragment -->
     <string name="mwStartNew">Play another Match</string>
+    <string name="mwStats">Show Stats</string>
     <string name="mwMenu">Main Menu</string>
     <string name="mwWon">\u0020won!</string>
 
@@ -173,6 +174,36 @@
 
     <!-- MatchStats Fragment -->
     <string name="mstTitle">Match Stats</string>
+    <string name="mstScore">%1$d:%2$d</string>
+    <string name="mstTotalDuration">Total Duration</string>
+    <string name="mstAvgDuration">Ø Point Duration</string>
+    <string name="mstErrorRate">Error Rate</string>
+    <string name="mstFastestStrike">fastest strike</string>
+    <string name="mstStrikes">strikes</string>
+    <string name="mstTitlePlayer">Player Stats</string>
+    <string name="mstTitleOverall">Overall Stats</string>
+    <string name="mstTitleHistory">Match History</string>
+    <string name="mstClose">Close Stats</string>
+    <string name="mstSeconds">%1$ds</string>
+    <string name="mstPercentage">%1$.2f%%</string>
+    <string name="mstLoadingMsg">Wait for the match stats to load.</string>
+    <string name="mstLoadingTitle">Match Stats Loading</string>
+
+    <!-- GameStats Fragment -->
+    <string name="gstTitle">Game %1$d</string>
+    <string name="gstHistory">Game History</string>
+    <string name="gstBtn">Stats</string>
+    <string name="gstWinner">Winner: %1$s</string>
+
+    <!-- MatchHistory -->
+    <string name="mhServer">Server:</string>
+    <string name="mhWinner">Winner:</string>
+    <string name="mhDuration">Duration:</string>
+    <string name="mhStrikes">Strikes:</string>
+    <string name="mhDecision">Decision:</string>
+    <string name="mhScore">%1$d:%2$d</string>
+    <string name="mhFastestStrike">Fastest Strike:</string>
+    <string name="mhKmh">%1$d km/h</string>
 
     <!-- Scan Overlay -->
     <string name="scanText">Scan the QR code from the display</string>

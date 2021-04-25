@@ -55,6 +55,7 @@ public class MatchScoreFragment extends EventBusSubscribedFragment implements Di
     private int gamesNeededToWin;
     private int scoreLeft;
     private int scoreRight;
+    private AlertDialog matchEndDialog;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -304,20 +305,23 @@ public class MatchScoreFragment extends EventBusSubscribedFragment implements Di
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-                builder.setTitle(String.format(getString(R.string.msDialogTitle), winnerName));
-                builder.setMessage(getString(R.string.msDialogMsg));
-                builder.setPositiveButton(R.string.msDialogContinue, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        switchToMatchWonActivity(winnerName);
-                    }
-                });
-                builder.setNegativeButton(R.string.msDialogReplay, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        TTEventBus.getInstance().dispatch(new TTEvent<>(new PointDeduction(getPlayerNameBySide(Side.LEFT).equals(winnerName) ? Side.LEFT : Side.RIGHT)));
-                    }
-                });
-                builder.create().show();
+                if (matchEndDialog == null) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+                    builder.setTitle(String.format(getString(R.string.msDialogTitle), winnerName));
+                    builder.setMessage(getString(R.string.msDialogMsg));
+                    builder.setPositiveButton(R.string.msDialogContinue, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            switchToMatchWonActivity(winnerName);
+                        }
+                    });
+                    builder.setNegativeButton(R.string.msDialogReplay, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            TTEventBus.getInstance().dispatch(new TTEvent<>(new PointDeduction(getPlayerNameBySide(Side.LEFT).equals(winnerName) ? Side.LEFT : Side.RIGHT)));
+                        }
+                    });
+                    matchEndDialog = builder.create();
+                }
+                if (!matchEndDialog.isShowing()) matchEndDialog.show();
             }
         });
     }

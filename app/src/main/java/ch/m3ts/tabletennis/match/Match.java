@@ -3,6 +3,7 @@ package ch.m3ts.tabletennis.match;
 import java.util.EnumMap;
 import java.util.Map;
 
+import ch.m3ts.display.stats.StatsCreator;
 import ch.m3ts.event.Event;
 import ch.m3ts.event.Subscribable;
 import ch.m3ts.event.TTEvent;
@@ -78,6 +79,7 @@ public class Match implements GameListener, MatchStatusCallback, Subscribable {
 
     @Override
     public void onGameWinReset() {
+        StatsCreator.getInstance().resetGame();
         int gamesPlayed = this.wins.get(Side.LEFT) + this.wins.get(Side.RIGHT);
         if (gamesPlayed <= 0) return;
         Game lastGame = this.games[gamesPlayed - 1];

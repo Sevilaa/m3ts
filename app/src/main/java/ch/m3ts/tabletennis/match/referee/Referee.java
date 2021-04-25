@@ -13,6 +13,7 @@ import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import ch.m3ts.display.stats.StatsCreator;
 import ch.m3ts.event.Event;
 import ch.m3ts.event.Subscribable;
 import ch.m3ts.event.TTEvent;
@@ -22,6 +23,7 @@ import ch.m3ts.event.data.eventdetector.EventDetectorEventData;
 import ch.m3ts.event.data.scoremanipulation.ScoreManipulationData;
 import ch.m3ts.event.data.todisplay.InvalidServeData;
 import ch.m3ts.event.data.todisplay.ReadyToServeData;
+import ch.m3ts.event.data.todisplay.ScoreData;
 import ch.m3ts.tabletennis.events.EventDetectionListener;
 import ch.m3ts.tabletennis.events.ReadyToServeCallback;
 import ch.m3ts.tabletennis.helper.DirectionX;
@@ -35,6 +37,7 @@ import ch.m3ts.util.CSVStringBuilder;
 import ch.m3ts.util.Log;
 import cz.fmo.Lib;
 import cz.fmo.data.Track;
+import cz.fmo.util.Config;
 import cz.fmo.util.FileManager;
 
 /**
@@ -69,6 +72,9 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
     private boolean isUsingReadyToServeGesture;
     private List<Track> strikeLogs = new ArrayList<>();
     private final Duration duration;
+    private final Date startTime;
+    private String lastDecision;
+    private Side lastPointWinner;
     private boolean isBallMovingIntoNet;
 
     public Referee(Side servingSide) {
@@ -79,15 +85,24 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
         this.isBallMovingIntoNet = false;
         this.isUsingReadyToServeGesture = true;
         this.state = State.WAIT_FOR_SERVE;
-        Date date = Calendar.getInstance().getTime();
-        DateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT, Locale.US);
-        this.currentFileName = String.format(FILENAME, dateFormat.format(date));
+        this.startTime = Calendar.getInstance().getTime();
+        DateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT, Locale.GERMANY);
+        this.currentFileName = String.format(FILENAME, dateFormat.format(startTime));
         this.duration = new Duration();
     }
 
     public void debugToFile(Context context) {
         this.fm = new FileManager(context);
+        Config config = new Config(context);
         File csvFile = this.fm.open(this.currentFileName);
+        String start = new SimpleDateFormat(DATE_FORMAT, Locale.GERMANY).format(startTime);
+        String metaData = CSVStringBuilder.builder()
+                .add(start)
+                .add(config.getPlayer1Name())
+                .add(config.getPlayer2Name())
+                .toString();
+        StatsCreator.getInstance().addMetaData(start, config.getPlayer1Name(), config.getPlayer2Name());
+        Log.d(metaData, csvFile);
         String csvFormatString = CSVStringBuilder.builder()
                 .add("msg")
                 .add("point_for_side")
@@ -103,25 +118,38 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
         Log.d(csvFormatString, csvFile);
     }
 
-    private void logScoring(String reasonMsg, Side pointForSide) {
-        Log.d(reasonMsg);
+    private void logScoring(Side lastServer) {
+        Log.d(lastDecision);
         if (this.fm != null) {
             File csvFile = this.fm.open(this.currentFileName);
             String csvString = CSVStringBuilder.builder()
-                    .add(reasonMsg)
-                    .add(pointForSide)
+                    .add(this.lastDecision)
+                    .add(this.lastPointWinner)
                     .add(this.currentGame.getScore(Side.LEFT))
                     .add(this.currentGame.getScore(Side.RIGHT))
                     .add(this.strikes)
                     .add(this.currentBallSide)
                     .add(this.currentStriker)
-                    .add(this.getServer())
+                    .add(lastServer)
                     .add(this.duration.getSeconds())
                     .add(this.strikeLogs)
                     .toString();
             strikes = 0;
             Log.d(csvString, csvFile);
-            this.strikeLogs.clear();
+        }
+        int scoreLeft = this.currentGame.getScore(Side.LEFT);
+        int scoreRight = this.currentGame.getScore(Side.RIGHT);
+        StatsCreator.getInstance().addPoint(lastDecision, lastPointWinner, scoreLeft, scoreRight, this.strikes, this.currentBallSide, this.currentStriker, lastServer, this.duration.getSeconds(), this.strikeLogs);
+        this.strikeLogs = new ArrayList<>();
+    }
+
+    private void logNewGame() {
+        if (this.fm != null) {
+            File csvFile = this.fm.open(this.currentFileName);
+            String csvFormatString = CSVStringBuilder.builder()
+                    .add("newGame")
+                    .toString();
+            Log.d(csvFormatString, csvFile);
         }
     }
 
@@ -130,7 +158,9 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
         this.currentGame = game;
         if (!firstGame) {
             initState();
+            logNewGame();
         }
+        this.duration.reset();
     }
 
     public void initState() {
@@ -180,7 +210,7 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
             case SERVING:
             case PLAY:
                 if (ballBouncedOnSide == currentBallSide) {
-                    Log.d("REFEREE:Referee: Audio bounce detected in PLAY state");
+                    Log.d("Referee: Audio bounce detected in PLAY state");
                     audioBounces++;
                 }
                 break;
@@ -211,6 +241,7 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
                     audioBounces = 0;
                     currentStriker = side;
                     strikes++;
+                    StatsCreator.getInstance().addStrike(side);
                 }
                 break;
             case SERVING:
@@ -264,7 +295,7 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
         }
         if (this.state != State.PAUSE) {
             track.setStriker(this.currentStriker);
-            this.strikeLogs.add(track);
+            if (!this.strikeLogs.contains(track)) this.strikeLogs.add(track);
         }
     }
 
@@ -277,7 +308,7 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
         switch (this.state) {
             case SERVING:
                 if (this.getServer() != side) {
-                    Log.d("REFEREE:Table Side Change:Changing to PLAY");
+                    Log.d("Table Side Change:Changing to PLAY");
                     this.state = State.PLAY;
                 }
             case PLAY:
@@ -291,17 +322,20 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
 
     @Override
     public void onBallDroppedSideWays() {
-        String msg;
-        if (this.state == State.PLAY) {
-            if (bounces == 0) {
-                msg = "REFEREE:Fault by Striker: Ball has fallen off side ways and had no bounce";
-                faultBySide(currentStriker);
-                logScoring(msg, Side.getOpposite(currentStriker));
-            } else if (bounces == 1) {
-                msg = "REFEREE:Point by Striker: Ball has fallen off side ways and had a bounce";
-                pointBySide(currentStriker);
-                logScoring(msg, currentStriker);
-            }
+        switch (this.state) {
+            case PLAY:
+                if (bounces == 0) {
+                    lastDecision = "Fault by Striker: Ball has fallen off side ways and had no bounce";
+                    lastPointWinner = Side.getOpposite(currentStriker);
+                    faultBySide(currentStriker);
+                } else if (bounces == 1) {
+                    lastDecision = "Point by Striker: Ball has fallen off side ways and had a bounce";
+                    lastPointWinner = currentStriker;
+                    pointBySide(currentStriker);
+                }
+                break;
+            default:
+                break;
         }
     }
 
@@ -315,16 +349,20 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
 
     @Override
     public void onPointDeduction(Side side) {
+        this.duration.reset();
+        lastDecision = "On point deduction";
+        lastPointWinner = side;
         gameCallback.onPointDeduction(side);
         initPoint();
-        logScoring("REFEREE: On point deduction ", side);
     }
 
     @Override
     public void onPointAddition(Side side) {
+        this.duration.reset();
+        lastDecision = "On point addition";
+        lastPointWinner = side;
         gameCallback.onPoint(side);
         initPoint();
-        logScoring("REFEREE: On point addition ", side);
     }
 
     @Override
@@ -345,23 +383,24 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
         String msg;
         if (this.state == State.OUT_OF_FRAME) {
             if (currentBallSide == currentStriker) {
-                msg = "REFEREE:Out of Frame for too long - Striker most likely shot the ball into the net";
+                lastDecision = "Out of Frame for too long - Striker most likely shot the ball into the net";
+                lastPointWinner = Side.getOpposite(currentStriker);
                 faultBySide(currentStriker);
-                logScoring(msg, Side.getOpposite(currentStriker));
             } else if (this.bounces >= 1 || this.audioBounces >= 1) {
                 if (this.audioBounces >= 1 && this.bounces == 0) {
-                    msg = "REFEREE:Out of Frame for too long (AUDIO_BOUNCE ONLY) - Strike received no return";
+                    msg = "Out of Frame for too long (AUDIO_BOUNCE ONLY) - Strike received no return";
                 } else if (this.bounces >= 1 && this.audioBounces == 0) {
-                    msg = "REFEREE:Out of Frame for too long (VIDEO_BOUNCE ONLY) - Strike received no return";
+                    msg = "Out of Frame for too long (VIDEO_BOUNCE ONLY) - Strike received no return";
                 } else {
-                    msg = "REFEREE:Out of Frame for too long (AUDIO AND VIDEO_BOUNCE DETECTED) - Strike received no return";
+                    msg = "Out of Frame for too long (AUDIO AND VIDEO_BOUNCE DETECTED) - Strike received no return";
                 }
+                lastDecision = msg;
+                lastPointWinner = currentStriker;
                 pointBySide(currentStriker);
-                logScoring(msg, currentStriker);
             } else {
-                msg = "REFEREE:Out of Frame for too long - Strike did not bounce";
+                lastDecision = "Out of Frame for too long - Strike did not bounce";
+                lastPointWinner = Side.getOpposite(currentStriker);
                 faultBySide(currentStriker);
-                logScoring(msg, Side.getOpposite(currentStriker));
             }
         } else {
             this.outOfFrameTimer = null;
@@ -434,26 +473,24 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
     }
 
     private void applyRuleSet() {
-        String msg;
         if (bounces == 1) {
             if (this.currentStriker == this.currentBallSide) {
-                msg = "REFEREE: Bounce on strikers' Side";
+                lastDecision = "Bounce on strikers' Side";
+                lastPointWinner = Side.getOpposite(this.currentStriker);
                 faultBySide(this.currentStriker);
-                logScoring(msg, Side.getOpposite(this.currentStriker));
             }
         } else if (bounces >= 2 && this.currentStriker != this.currentBallSide) {
-            msg = "REFEREE: Bounced multiple times on strikers' opponent Side";
+            lastDecision = "Bounced multiple times on strikers' opponent Side";
+            lastPointWinner = this.currentStriker;
             pointBySide(this.currentStriker);
-            logScoring(msg, this.currentStriker);
         }
     }
 
     private void applyRuleSetServing() {
-        String msg;
         if (bounces > 1 && currentBallSide == getServer()) {
-            msg = "REFEREE:Server Fault: Multiple Bounces on servers' Side";
+            lastDecision = "Server Fault: Multiple Bounces on servers' Side";
+            lastPointWinner = Side.getOpposite(getServer());
             faultBySide(getServer());
-            logScoring(msg, Side.getOpposite(getServer()));
         }
     }
 
@@ -471,6 +508,9 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
         } else if (data instanceof ScoreManipulationData) {
             ScoreManipulationData scoreManipulationData = (ScoreManipulationData) data;
             scoreManipulationData.call(this);
+        } else if (data instanceof ScoreData) {
+            ScoreData scoreData = (ScoreData) data;
+            logScoring(scoreData.getLastServer());
         }
     }
 }
