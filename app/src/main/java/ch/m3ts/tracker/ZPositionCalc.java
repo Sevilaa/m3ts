@@ -97,14 +97,11 @@ public class ZPositionCalc {
         return obj.zPosMm + MAX_OFFSET_MM;
     }
 
-
     /**
      * Returns the z-Position of the ball relative to the table width.
      * Examples:
-     * returns val = 0 => ball is on the closest edge of the table
-     * returns val = 1 => ball is on the furthest edge of the table
-     * returns val < 0 => ball is in front of the closest edge of the table
-     * returns val > 1 => ball is further away than the furthest edge of the table
+     * returns val = 0 => ball is on the closest edge of the table (with offset)
+     * returns val = 1 => ball is on the furthest edge of the table (with offset)
      *
      * @param ballRadiusPx ball (Lib.Detection) radius in pixel
      * @return the z-Position of the ball relative to the table width.
