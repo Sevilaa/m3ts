@@ -7,8 +7,6 @@ import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -97,20 +95,5 @@ public class GameHistoryAdapter extends BaseExpandableListAdapter {
     @Override
     public boolean isChildSelectable(int listPosition, int expandedListPosition) {
         return true;
-    }
-
-    private Map<String, List<String>> pointDataToAdapterData(List<PointData> points) {
-        Map<String, List<String>> result = new HashMap<>();
-        for (PointData point : points) {
-            List<String> values = new ArrayList<>();
-            values.add(point.getRefereeDecision());
-            values.add(playerNames.get(point.getWinner()));
-            values.add(playerNames.get(point.getServer()));
-            values.add(String.format(context.getString(R.string.mstSeconds), point.getDuration()));
-            values.add("0");
-            values.add(String.format(context.getString(R.string.mhKmh), (int) point.getFastestStrike()));
-
-        }
-        return result;
     }
 }

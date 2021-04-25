@@ -165,7 +165,7 @@ public class MatchTest {
         assertNotNull(match.getReferee());
         match.onGameWin(Side.RIGHT);
         verify(displayUpdateListener, times(1)).onMatchEnded(PLAYER_2_NAME);
-        verify(displayUpdateListener, times(1)).onWin(Side.RIGHT, 1);
+        verify(displayUpdateListener, times(0)).onWin(Side.RIGHT, 1);
         verify(match, times(1)).end(Side.RIGHT);
     }
 
@@ -192,7 +192,7 @@ public class MatchTest {
         }
         // finally let one side win
         match.onGameWin(Side.RIGHT);
-        verify(displayUpdateListener, times(1)).onWin(Side.RIGHT, winsToEnd);
+        verify(displayUpdateListener, times(0)).onWin(Side.RIGHT, winsToEnd);
         verify(displayUpdateListener, times(1)).onMatchEnded(PLAYER_2_NAME);
     }
 }

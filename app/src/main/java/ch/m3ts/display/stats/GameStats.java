@@ -51,7 +51,7 @@ public class GameStats implements Serializable {
         winner = lastPoint.getScore(Side.LEFT) > lastPoint.getScore(Side.RIGHT) ? Side.LEFT : Side.RIGHT;
         amountOfCorrections = corrections;
         this.duration = duration;
-        if (points.size() > 0) {
+        if (amountOfPoints > 0) {
             averagePointDuration = duration / amountOfPoints;
         }
     }

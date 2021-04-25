@@ -73,7 +73,7 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
     private List<Track> strikeLogs = new ArrayList<>();
     private final Duration duration;
     private final Date startTime;
-    private String lastDecision;
+    private String lastDecision = "";
     private Side lastPointWinner;
     private boolean isBallMovingIntoNet;
 
