@@ -80,15 +80,15 @@ public class Track {
             // convert m/s to other units
             switch (mConfig.getVelocityEstimationMode()) {
                 case M_S:
-                    velocity = Math.max(velocity, MAX_VELOCITY_POSSIBLE_M_S);
+                    velocity = Math.min(velocity, MAX_VELOCITY_POSSIBLE_M_S);
                     break;
                 case KM_H:
                     velocity *= 3.6f;
-                    velocity = Math.max(velocity, MAX_VELOCITY_POSSIBLE_KM_H);
+                    velocity = Math.min(velocity, MAX_VELOCITY_POSSIBLE_KM_H);
                     break;
                 case MPH:
                     velocity *= 2.23694f;
-                    velocity = Math.max(velocity, MAX_VELOCITY_POSSIBLE_MPH);
+                    velocity = Math.min(velocity, MAX_VELOCITY_POSSIBLE_MPH);
                     break;
                 default:
                     break;
