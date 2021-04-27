@@ -82,7 +82,7 @@ Each time a commit is pushed into master, a GitHub Actions workflow is triggered
 Workflows are defined here: https://github.com/sverbach/m3ts/actions
 
 ## Maintainers
-As mentioned before, this project is being developed as a bachelor thesis by [ZHAW School of Engineering](https://www.zhaw.ch) and:
+As mentioned before this project is being developed as a bachelor thesis by [ZHAW School of Engineering](https://www.zhaw.ch) and:
 
 - Christian Studer  (studech3@students.zhaw.ch | [chrisslazzz](https://github.com/chrisslazzz))
 - Sven Erbach       (erbacsve@students.zhaw.ch | [sverbach](https://github.com/sverbach))
