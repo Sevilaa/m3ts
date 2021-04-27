@@ -113,7 +113,6 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
                 .add("striker_side")
                 .add("server_side")
                 .add("duration_seconds")
-                .add("detections_grouped_by_strikes(track_x_y_z_velocity_striker_isbounce)")
                 .toString();
         Log.d(csvFormatString, csvFile);
     }
@@ -132,7 +131,6 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
                     .add(this.currentStriker)
                     .add(lastServer)
                     .add(this.duration.getSeconds())
-                    .add(this.strikeLogs)
                     .toString();
             strikes = 0;
             Log.d(csvString, csvFile);
