@@ -30,7 +30,6 @@ public class ReadyToServeDetector {
         } else {
             this.gestureDetectionStrategy = new RedThresholdingStrategy();
         }
-        OpenCVLoader.initDebug();
     }
 
     /**
@@ -43,15 +42,17 @@ public class ReadyToServeDetector {
      */
     public boolean isReadyToServe(Mat bgrMat) {
         boolean isReady = false;
-        gestureFrameCounter++;
-        if (gestureFrameCounter % 3 == 0) {
-            if (isRacketInArea(bgrMat)) {
-                if (gestureFrameCounter >= GESTURE_HOLD_TIME_IN_FRAMES) {
-                    this.callback.onGestureDetected();
-                    isReady = true;
+        if (OpenCVLoader.initDebug()) {
+            gestureFrameCounter++;
+            if (gestureFrameCounter % 3 == 0) {
+                if (isRacketInArea(bgrMat)) {
+                    if (gestureFrameCounter >= GESTURE_HOLD_TIME_IN_FRAMES) {
+                        this.callback.onGestureDetected();
+                        isReady = true;
+                    }
+                } else {
+                    gestureFrameCounter = 0;
                 }
-            } else {
-                gestureFrameCounter = 0;
             }
         }
         return isReady;
