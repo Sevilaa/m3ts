@@ -18,7 +18,7 @@
             <RelativeLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="0.5">
+                android:layout_weight="0.8">
 
                 <GridLayout
                     android:id="@+id/match_stats_container"
