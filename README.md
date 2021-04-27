@@ -1,44 +1,88 @@
-# PA - Mobile Table Tennis Tracking System (M3TS)
+# Bachelor Thesis - Mobile Table Tennis Tracking System (M3TS)
 ![Build](https://github.com/sverbach/m3ts/workflows/Unit%20and%20Instrumentation%20Tests/badge.svg)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=sverbach_fmo-android&metric=alert_status)](https://sonarcloud.io/dashboard?id=sverbach_fmo-android)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=sverbach_fmo-android&metric=coverage)](https://sonarcloud.io/dashboard?id=sverbach_fmo-android)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=sverbach_fmo-android&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=sverbach_fmo-android)
 
-## Ziel
-Ziel der Arbeit ist es, ein mobiles App zu entwickeln, welches den Punktestand eines Tischtennis-Spiels tracked und anzeigt / ausgibt. Das Tracking und Anzeigen des Matches soll in Echtzeit durchgeführt werden.
-Es soll hierbei kein neuartiger Object-Tracking Algorithmus entwickelt werden, dieser Aspekt wird von bestehenden Open Source Projekte / Libraries übernommen.
+## Goal
+The bachelor thesis' goal is to develop a system which automatically keeps track of a ping pong match (like a "virtual referee"). 
 
-### Aufnahme des Tisches
-Der Tischtennistisch soll seitlich mit einem Smartphone-Rückkamera gefilmt werden, dabei kann ein Stativ o.Ä. zur Unterstützung genutzt werden. 
+![M3TS Preview](./readme_content/m3ts_preview.gif)
 
-Folgendes Bild verdeutlicht den Aufbau der Aufnahme:
-![Seitliche Aufnahme eines Tischtennistisches](https://i.ibb.co/kyFCQfZ/M3TS.jpg)
+The system must run on two mobile phones:
 
-## Technologie
-Für das Tracking des Balles soll eine Library verwendet werden.
-Mögliche Tracking Libraries 
-- [fmo-android](https://github.com/hrabalik/fmo-android "fast moving objects algorithm")
-- [detection / tracking mittels Farbfilterung](https://www.pyimagesearch.com/2015/09/14/ball-tracking-with-opencv/)
-- [Home surveillance and motion detection](https://www.pyimagesearch.com/2015/06/01/home-surveillance-and-motion-detection-with-the-raspberry-pi-python-and-opencv/)
-- [FastMCD](https://github.com/vcg-uvic/fastMCD)
-- [TTNet](https://github.com/maudzung/TTNet-Real-time-Analysis-System-for-Table-Tennis-Pytorch)
-- [YoloV3 with Darknet](https://pjreddie.com/darknet/yolo/)
+- One smartphone is the "tracker" -> it films the ping pong table and does the tracking
+- The other smartphone is the "display" -> it displays the trackers state (match status) to the players
 
+## Demo
+Checkout this demo on youtube for a first impression of the system (currently outdated and in german, we're working on an update):
+https://www.youtube.com/watch?v=8kcC1KHvh3Y
 
-Die Lösung soll unter dem **Android** Betriebssystem lauffähig sein.
+## Get it running
+To get the app running, simply clone this repo and open it in Android Studio.
+After Android Studio installed all dependencies via Gradle, you should be good to go for using the app.
 
-## Testkonzept
-Das Testkonzept setzt sich zusammen aus CI und Code Test Coverage Monitoring in SonarQube.
-Es werden Unit Tests (JUnit 4, Mockito, PowerMock) sowie Instrumentation Tests (JUnit 4, Mockito, Android Runner) erstellt um den Quellcode zu testen.
+### Using Replays
+You can let the app apply the object detection (and game logic) on recordings.
 
+To do that on a custom recording, you need to:
+
+1. Create a 720p (1280x720) recording
+2. Save it onto the emulator via adb push:
+```console
+adb push path/to/recording.mp4 /storage/emulated/0/DCIM/camera
+```
+3. Create an XML file which tells the app where the corners of the tables (and net) are, save it to the Assets Folder (*./app/src/main/assets*)
+```xml
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <entry key="c1_x">65</entry>    <!-- X Position of left corner-->
+    <entry key="c1_y">580</entry>   <!-- Y Position of left corner-->
+    <entry key="c2_x">1162</entry>  <!-- X Position of right corner-->
+    <entry key="c2_y">560</entry>   <!-- Y Position of right corner-->
+    <entry key="n1_x">624</entry>   <!-- X Position of net (middle) -->
+    <entry key="n1_y">565</entry>   <!-- Y Position of net -->
+</properties>
+```
+4. Done! The video should appear in the aropdown in the replay activity.
+
+**Be warned:** This feature is very experimental and currently only works on the **Nexus 6 API 26 Emulator** (for some reason)!
+
+### Using the app w/ PubNub
+We've implemented a feature which allows communication between display and tracker via [PubNub](https://www.pubnub.com/)
+
+To use this feature, you'll have to provide your pubnub API keys to the project.
+For that simply:
+
+1. Create a [PubNub Account](https://www.pubnub.com)
+2. Generate a KeySet in your accounts admin panel
+
+![Example PubNub Keys](./readme_content/pubnub_keyset.png)
+
+3. Create a file called **app.properties** and save it to the apps Assets Folder (*./app/src/main/assets*)
+4. Paste your Pub & Sub Keys in there as follows (do NOT push this file!):
+```properties
+pub_key=pub-c-your-publish-key-here
+sub_key=sub-c-your-subscribe-key-here
+```
+5. Done! Now you can use PubNub for means of communication between the 2 devices (enable it in the apps settings if you haven't already)
+
+## Architecture
+Brief description of the architecture to assist further development.
+### Object Detection / Tracking
+Is done using the [FMO (Fast Moving Object) Android implementation](https://github.com/hrabalik/fmo-android). Basically a JNI which gets called each time the library finds detections.
 ### CI
-Bei jedem Push / PR in den master werden 2 Github Workflows getriggert:
+This project uses SonarQube for code quality inspection.
 
-- **Build** - Buildet das Projekt
-- **Unit and Instrumentation Tests** - Lässt Unit und Instrumentation Tests laufen (benötigt Android Emulator) und erstellt mit JaCoCo einen Coverage Report, welcher anschliessend auf SonarQube geladen wird.
+You can find the panel here: https://sonarcloud.io/dashboard?id=sverbach_fmo-android
 
-Link zur Übersicht der Workflows: https://github.com/sverbach/m3ts/actions
-### SonarQube
-Link zum Dashboard: https://sonarcloud.io/dashboard?id=sverbach_fmo-android
+### Workflows
+Each time a commit is pushed into master, a GitHub Actions workflow is triggered to run all unit tests and to build & run the app.
 
-## Abgrenzungen
-Für das Tracken des Spiels und die Berechnung der Ballposition darf lediglich ein Smartphone verwendet werden.
-Die Anzeige / Ausgabe des aktuellen Punktestand soll bzw. darf auf einem zweiten Smartphone geschehen.
+Workflows are defined here: https://github.com/sverbach/m3ts/actions
+
+## Maintainers
+As mentioned before, this project is being developped as a bachelor thesis by [ZHAW School of Engineering](https://www.zhaw.ch) and:
+
+- Christian Studer  (studech3@students.zhaw.ch | [chrisslazzz](https://github.com/chrisslazzz))
+- Sven Erbach       (erbacsve@students.zhaw.ch | [sverbach](https://github.com/sverbach))
