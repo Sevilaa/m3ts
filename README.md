@@ -44,7 +44,7 @@ adb push path/to/recording.mp4 /storage/emulated/0/DCIM/camera
     <entry key="n1_y">565</entry>   <!-- Y Position of net -->
 </properties>
 ```
-4. Done! The video should appear in the aropdown in the replay activity.
+4. Done! The video should appear in the dropdown in the replay activity.
 
 **Be warned:** This feature is very experimental and currently only works on the **Nexus 6 API 26 Emulator** (for some reason)!
 
@@ -82,7 +82,7 @@ Each time a commit is pushed into master, a GitHub Actions workflow is triggered
 Workflows are defined here: https://github.com/sverbach/m3ts/actions
 
 ## Maintainers
-As mentioned before, this project is being developped as a bachelor thesis by [ZHAW School of Engineering](https://www.zhaw.ch) and:
+As mentioned before, this project is being developed as a bachelor thesis by [ZHAW School of Engineering](https://www.zhaw.ch) and:
 
 - Christian Studer  (studech3@students.zhaw.ch | [chrisslazzz](https://github.com/chrisslazzz))
 - Sven Erbach       (erbacsve@students.zhaw.ch | [sverbach](https://github.com/sverbach))
