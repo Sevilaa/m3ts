@@ -60,7 +60,7 @@ public class RefereeTest {
     public void setUp() {
         displayUpdateListener = mock(DisplayUpdateListener.class);
         mockConfig = mock(Config.class);
-        when(mockConfig.isDisableDetection()).thenReturn(false);
+        when(mockConfig.isDetectionDisabled()).thenReturn(false);
         when(mockConfig.getFrameRate()).thenReturn(30f);
         when(mockConfig.getVelocityEstimationMode()).thenReturn(Config.VelocityEstimationMode.PX_FR);
         when(mockConfig.getObjectRadius()).thenReturn(10f);

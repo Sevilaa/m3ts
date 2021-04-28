@@ -63,7 +63,7 @@ public class EventDetectorTest {
         mockTracks = mock(TrackSet.class);
         mockCallback = mock(EventDetectionListener.class);
         mockCalc = mock(ZPositionCalc.class);
-        when(mockConfig.isDisableDetection()).thenReturn(false);
+        when(mockConfig.isDetectionDisabled()).thenReturn(false);
         when(mockConfig.getFrameRate()).thenReturn(30f);
         when(mockConfig.getVelocityEstimationMode()).thenReturn(Config.VelocityEstimationMode.PX_FR);
         when(mockConfig.getObjectRadius()).thenReturn(10f);
