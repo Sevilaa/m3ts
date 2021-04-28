@@ -109,8 +109,6 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
                 .add("score_left")
                 .add("score_right")
                 .add("strikes_for_point")
-                .add("ball_side")
-                .add("striker_side")
                 .add("server_side")
                 .add("duration_seconds")
                 .toString();
@@ -127,8 +125,6 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
                     .add(this.currentGame.getScore(Side.LEFT))
                     .add(this.currentGame.getScore(Side.RIGHT))
                     .add(this.strikes)
-                    .add(this.currentBallSide)
-                    .add(this.currentStriker)
                     .add(lastServer)
                     .add(this.duration.getSeconds())
                     .toString();

@@ -37,7 +37,7 @@ public class StatsCreator {
                 latest = latest.predecessor;
             }
             trackData.add(new TrackData(detections, track.getAvgVelocity(), track.getStriker()));
-            detections.clear();
+            detections = new ArrayList<>();
         }
         if (this.strikes.get(Side.LEFT) == null) this.strikes.put(Side.LEFT, 0);
         if (this.strikes.get(Side.RIGHT) == null) this.strikes.put(Side.RIGHT, 0);
