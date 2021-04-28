@@ -112,44 +112,34 @@ public class MainActivityTest {
 
         boolean isUseDebug = config.isUseDebug();
         boolean recordMatches = config.doRecordMatches();
-        onView(withText(R.string.prefDisplayDebug)).perform(click());
-        onView(withText(R.string.prefRecord)).perform(click());
+        boolean useBlackSide = config.isUseBlackSide();
+        boolean useAudio = config.isUseAudio();
 
         // check rest of the settings...
-        // Video Capture
-        onView(withText(R.string.prefHeaderCapture)).check(matches(isDisplayed()));
-        onView(withText(R.string.prefHeaderCapture)).perform(click());
-        onView(withText(R.string.prefResolution)).check(matches(isDisplayed()));
-        onView(withText(R.string.prefCameraFacing)).check(matches(isDisplayed()));
-        onView(withText(R.string.prefRecordMode)).check(matches(isDisplayed()));
-        onView(withText(R.string.prefSlowPreview)).check(matches(isDisplayed()));
+        // Tracking Settings
+        onView(withText(R.string.prefHeaderTracker)).check(matches(isDisplayed()));
+        onView(withText(R.string.prefHeaderTracker)).perform(click());
+        onView(withText(R.string.prefUseBlackSideTitle)).check(matches(isDisplayed()));
+        onView(withText(R.string.prefUseBlackSideTitle)).perform(click());
+        onView(withText(R.string.prefUseAudioTitle)).check(matches(isDisplayed()));
+        onView(withText(R.string.prefUseAudioTitle)).perform(click());
 
-        // Detection
-        onView(withText(R.string.prefHeaderDetection)).check(matches(isDisplayed()));
-        onView(withText(R.string.prefHeaderDetection)).perform(click());
-        onView(withText(R.string.prefColorSpace)).check(matches(isDisplayed()));
-        onView(withText(R.string.prefProcRes)).check(matches(isDisplayed()));
-
-        // Velocity estimation
-        onView(withText(R.string.prefHeaderVelocity)).check(matches(isDisplayed()));
-        onView(withText(R.string.prefHeaderVelocity)).perform(click());
-        onView(withText(R.string.prefVelocityEstimationMode)).check(matches(isDisplayed()));
-        onView(withText(R.string.prefObjectDiameterCustom)).check(matches(isDisplayed()));
-        onView(withText(R.string.prefObjectDiameterPicker)).check(matches(isDisplayed()));
-        onView(withText(R.string.prefFrameRate)).check(matches(isDisplayed()));
-
-        // Advanced
-        onView(withText(R.string.prefHeaderAdvanced)).check(matches(isDisplayed()));
-        onView(withText(R.string.prefHeaderAdvanced)).perform(click());
+        // Dev Options
+        onView(withText(R.string.prefHeaderDebug)).check(matches(isDisplayed()));
+        onView(withText(R.string.prefHeaderDebug)).perform(click());
         onView(withText(R.string.runVideoPlayer)).check(matches(isDisplayed()));
-        onView(withText(R.string.prefDisableDetection)).check(matches(isDisplayed()));
-        onView(withText(R.string.prefPubnub)).check(matches(isDisplayed()));
+        onView(withText(R.string.prefDisplayDebug)).check(matches(isDisplayed()));
+        onView(withText(R.string.prefDisplayDebug)).perform(click());
+        onView(withText(R.string.prefRecord)).check(matches(isDisplayed()));
+        onView(withText(R.string.prefRecord)).perform(click());
 
         // now check the edited settings in main activity
         pressBack();
         config = new Config(activity);
         assertEquals(!isUseDebug, config.isUseDebug());
         assertEquals(!recordMatches, config.doRecordMatches());
+        assertEquals(!useBlackSide, config.isUseBlackSide());
+        assertEquals(!useAudio, config.isUseAudio());
         assertEquals(newPlayer1Name, config.getPlayer1Name());
         assertEquals(newPlayer2Name, config.getPlayer2Name());
     }

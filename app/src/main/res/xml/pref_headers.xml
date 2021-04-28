@@ -2,9 +2,13 @@
     <header
         android:fragment="ch.m3ts.SettingsActivity$GamePreferenceFragment"
         android:icon="@drawable/game_settings_icon"
-        android:title="@string/prefGame"/>
+        android:title="@string/prefHeaderGame" />
     <header
-        android:fragment="ch.m3ts.SettingsActivity$AdvancedPreferenceFragment"
+        android:fragment="ch.m3ts.SettingsActivity$TrackerPreferenceFragment"
+        android:icon="@drawable/tracker_icon"
+        android:title="@string/prefHeaderTracker" />
+    <header
+        android:fragment="ch.m3ts.SettingsActivity$DebugPreferenceFragment"
         android:icon="@drawable/settings_advanced"
-        android:title="@string/prefHeaderAdvanced"/>
+        android:title="@string/prefHeaderDebug" />
 </preference-headers>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <SwitchPreference
+        android:defaultValue="@string/prefUseBlackSideDefault"
+        android:key="@string/prefUseBlackSideKey"
+        android:summary="@string/prefUseBlackSideSummary"
+        android:title="@string/prefUseBlackSideTitle" />
+    <SwitchPreference
+        android:defaultValue="@string/prefUseAudioDefault"
+        android:key="@string/prefUseAudioKey"
+        android:summary="@string/prefUseAudioSummary"
+        android:title="@string/prefUseAudioTitle" />
+</PreferenceScreen>
