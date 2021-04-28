@@ -41,6 +41,7 @@ public class PointData implements Serializable {
 
     private void setFastestStrikes() {
         for (TrackData track : tracks) {
+            if(fastestStrikes == null || track == null || fastestStrikes.get(track.getStriker()) == null) continue;
             if (track.getAverageVelocity() > fastestStrikes.get(track.getStriker()))
                 fastestStrikes.put(track.getStriker(), track.getAverageVelocity());
         }
