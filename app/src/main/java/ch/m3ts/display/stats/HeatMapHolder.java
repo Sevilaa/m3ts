@@ -42,8 +42,8 @@ public class HeatMapHolder {
 
     public void addDetection(DetectionData detection) {
         if (detection.wasBounce()) {
+            zPosVisualizer.drawZPos(canvas, detection, tableCorners.get(Side.LEFT), tableCorners.get(Side.RIGHT));
         }
-        zPosVisualizer.drawZPos(canvas, detection, tableCorners.get(Side.LEFT), tableCorners.get(Side.RIGHT));
     }
 
     public void draw() {
