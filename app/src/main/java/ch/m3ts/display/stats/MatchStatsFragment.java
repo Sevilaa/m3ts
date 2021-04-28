@@ -4,8 +4,11 @@ import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
+import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -16,6 +19,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import ch.m3ts.EventBusSubscribedFragment;
 import ch.m3ts.connection.NearbyDisplayConnection;
@@ -33,20 +38,22 @@ import cz.fmo.R;
 import cz.fmo.util.Config;
 import edu.princeton.cs.algs4.LinearRegression;
 
-public class MatchStatsFragment extends EventBusSubscribedFragment {
+public class MatchStatsFragment extends EventBusSubscribedFragment implements SurfaceHolder.Callback {
     private PubNubDisplayConnection pubNub;
     private NearbyDisplayConnection nearbyDisplayConnection;
     private String pubnubRoom;
     private MatchStats stats;
     private ProgressDialog loadingSpinner;
+    private SurfaceHolder heatMapSurfaceHolder;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_match_stats, container, false);
         this.stats = ((StatsActivity) getActivity()).getStats();
+        initHeatMap((SurfaceView) v.findViewById(R.id.heatmap));
+        createLoadingSpinner();
         if (stats == null) {
             retrieveStats(this.getArguments());
-            createLoadingSpinner();
         } else {
             setStatViews(v);
         }
@@ -147,7 +154,6 @@ public class MatchStatsFragment extends EventBusSubscribedFragment {
     }
 
     private void setStatViews(final View v) {
-        loadingSpinner.dismiss();
         ((TextView) v.findViewById(R.id.player_left)).setText(stats.getPlayerName(Side.LEFT));
         ((TextView) v.findViewById(R.id.player_right)).setText(stats.getPlayerName(Side.RIGHT));
         ((TextView) v.findViewById(R.id.score)).setText(String.format(getString(R.string.mstScore), stats.getWins(Side.LEFT), stats.getWins(Side.RIGHT)));
@@ -200,5 +206,57 @@ public class MatchStatsFragment extends EventBusSubscribedFragment {
                 }
             });
         }
+    }
+
+    private void initHeatMap(SurfaceView surface) {
+        surface.setZOrderOnTop(true);
+        heatMapSurfaceHolder = surface.getHolder();
+        heatMapSurfaceHolder.setFormat(PixelFormat.TRANSPARENT);
+        heatMapSurfaceHolder.addCallback(this);
+    }
+
+    private void displayHeatMap(View v) {
+        if (this.stats != null) {
+            HeatMapHolder heatMapHolder = new HeatMapHolder(v.findViewById(R.id.match_stats), heatMapSurfaceHolder, getActivity().getColor(R.color.primary_light), ((StatsActivity) getActivity()).getStats().getTableCorners());
+            for (GameStats game : this.stats.getGameStats()) {
+                for (PointData point : game.getPoints()) {
+                    for (TrackData track : point.getTracks()) {
+                        for (DetectionData detection : track.getDetections()) {
+                            heatMapHolder.addDetection(detection);
+                        }
+                    }
+                }
+            }
+            heatMapHolder.draw();
+            loadingSpinner.dismiss();
+        }
+    }
+
+    private void tryToDisplayHeatMap() {
+        final Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if (stats != null) {
+                    displayHeatMap(getView());
+                    timer.cancel();
+                }
+            }
+        }, 0, 500);
+    }
+
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+        tryToDisplayHeatMap();
+    }
+
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+
     }
 }

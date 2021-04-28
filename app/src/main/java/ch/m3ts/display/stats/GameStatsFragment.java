@@ -2,8 +2,6 @@ package ch.m3ts.display.stats;
 
 import android.annotation.SuppressLint;
 import android.app.Fragment;
-import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -13,14 +11,12 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
-import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
 import java.util.Map;
 
 import ch.m3ts.tabletennis.helper.Side;
-import ch.m3ts.tracker.visualization.ZPosVisualizer;
 import cz.fmo.R;
 
 public class GameStatsFragment extends Fragment implements SurfaceHolder.Callback {
@@ -81,31 +77,15 @@ public class GameStatsFragment extends Fragment implements SurfaceHolder.Callbac
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        Canvas canvas = holder.lockCanvas();
-        Paint tablePaint = new Paint();
-        tablePaint.setColor(getActivity().getColor(R.color.primary_light));
-        tablePaint.setStrokeWidth(5f);
-        Paint bouncePaint = new Paint();
-        bouncePaint.setColor(getActivity().getColor(R.color.primary_light));
-        bouncePaint.setAlpha(20);
-        RelativeLayout container = getActivity().findViewById(R.id.game_stats);
-        int height = container.getHeight();
-        float canvasWidth = container.getWidth() * 0.6f;
-        ZPosVisualizer zPosVisualizer = new ZPosVisualizer(bouncePaint, tablePaint, (float) container.getWidth() / 2 - canvasWidth / 2, height * 0.01f, canvasWidth);
-        zPosVisualizer.drawTableBirdView(canvas);
-
-        Map<Side, Integer> tableCorners = ((StatsActivity) getActivity()).getStats().getTableCorners();
+        HeatMapHolder heatMapHolder = new HeatMapHolder(getActivity().findViewById(R.id.game_stats), holder, getActivity().getColor(R.color.primary_light), ((StatsActivity) getActivity()).getStats().getTableCorners());
         for (PointData point : this.game.getPoints()) {
             for (TrackData track : point.getTracks()) {
                 for (DetectionData detection : track.getDetections()) {
-                    if (detection.wasBounce()) {
-                    }
-
-                    zPosVisualizer.drawZPos(canvas, detection, tableCorners.get(Side.LEFT), tableCorners.get(Side.RIGHT));
+                    heatMapHolder.addDetection(detection);
                 }
             }
         }
-        holder.unlockCanvasAndPost(canvas);
+        heatMapHolder.draw();
     }
 
     @Override

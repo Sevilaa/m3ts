@@ -16,6 +16,7 @@
             android:weightSum="1">
 
             <RelativeLayout
+                android:id="@+id/match_stats"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="0.8">
@@ -271,6 +272,30 @@
                             android:textSize="20sp"
                             android:gravity="center" />
                     </LinearLayout>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="25dp"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="4dp"
+                        android:text="@string/mstTitleHeatMap"
+                        android:textAlignment="center"
+                        android:textColor="@color/primary_light"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:gravity="center" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dip"
+                        android:background="#C1C1C1" />
+
+                    <SurfaceView
+                        android:id="@+id/heatmap"
+                        android:layout_width="match_parent"
+                        android:layout_height="250dp"
+                        android:layout_marginTop="25dp"
+                        android:layout_marginBottom="25dp" />
 
                     <TextView
                         android:layout_width="match_parent"
