@@ -50,7 +50,7 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
     private static final double PERCENTAGE_OF_NEARLY_OUT_OF_FRAME = 0.07;
     private static final int MILLISECONDS_TILL_TIMEOUT = 1500;
     private final Object mLock = new Object();
-    private final TrackSet tracks;
+    private final TrackSet trackSet;
     private final int[] nearlyOutOfFrameThresholds;
     private final int srcWidth;
     private final int srcHeight;
@@ -68,11 +68,11 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
     private BallCurvePredictor ballCurvePredictor;
     private boolean checkForBallMovingIntoNet;
 
-    public EventDetector(Config config, int srcWidth, int srcHeight, TrackSet tracks, @NonNull Table table, ZPositionCalc calc) {
+    public EventDetector(Config config, int srcWidth, int srcHeight, TrackSet trackSet, @NonNull Table table, ZPositionCalc calc) {
         this.eventBus = TTEventBus.getInstance();
         this.srcHeight = srcHeight;
         this.srcWidth = srcWidth;
-        this.tracks = tracks;
+        this.trackSet = trackSet;
         this.nearlyOutOfFrameThresholds = new int[]{
                 (int) (srcWidth * PERCENTAGE_OF_NEARLY_OUT_OF_FRAME),
                 (int) (srcWidth * (1 - PERCENTAGE_OF_NEARLY_OUT_OF_FRAME)),
@@ -85,7 +85,7 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
         this.timeoutTimer = new Timer("timeoutTimer");
         this.ballCurvePredictor = new LinearBallCurvePredictor();
         this.checkForBallMovingIntoNet = true;
-        tracks.setConfig(config);
+        trackSet.setConfig(config);
     }
 
     @Override
@@ -109,9 +109,9 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
 
     public void onObjectsDetected(Lib.Detection[] detections, long detectionTime) {
         synchronized (mLock) {
-            tracks.addDetections(detections, this.srcWidth, this.srcHeight, detectionTime); // after this, object direction is up to date
-            if (!tracks.getTracks().isEmpty()) {
-                Track track = selectTrack(tracks.getTracks());
+            trackSet.addDetections(detections, this.srcWidth, this.srcHeight, detectionTime); // after this, object direction is up to date
+            if (!trackSet.getTracks().isEmpty()) {
+                Track track = selectTrack(trackSet.getTracks());
                 if (track != null && track.getLatest() != previousDetection) {
                     numberOfDetections++;
                     Lib.Detection latestDetection = track.getLatest();
@@ -135,6 +135,12 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
         }
     }
 
+    /**
+     * Selects the ball track out of several tracks
+     *
+     * @param tracks all current tracks (detected by FMO)
+     * @return a track or null (if no track is the ball)
+     */
     public Track selectTrack(List<Track> tracks) {
         // first tag all tracks which have crossed the table once
         for (Track t : tracks) {
@@ -154,22 +160,16 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
                 double a = Math.abs(d.centerX - previousCenterX);
                 double b = Math.abs(d.centerY - previousCenterY);
                 double distanceToLast = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
-                if (distanceToLast < distance) {
+                if (distanceToLast < distance && isOnTable(t)) {
                     selectedTrack = t;
                     distance = distanceToLast;
                     currentTrack = t;
                 }
             }
-        }
-
-        // if there's only one track, select the newest track (highest index)
-        if (selectedTrack == null) {
-            for (int i = tracks.size() - 1; i >= 0; i--) {
-                if (isOnTable(tracks.get(i))) {
-                    selectedTrack = tracks.get(i);
-                    currentTrack = selectedTrack;
-                    break;
-                }
+        } else {
+            // if there's only one track, select it
+            if (isOnTable(tracks.get(0))) {
+                selectedTrack = tracks.get(0);
             }
         }
 

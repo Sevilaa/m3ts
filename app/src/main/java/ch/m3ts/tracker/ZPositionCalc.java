@@ -81,6 +81,7 @@ public class ZPositionCalc {
         }
     }
 
+    // checks if the ball radius is too big for it to be on the table
     public boolean isBallZPositionOnTable(double ballRadiusPx) {
         return (ballRadiusPx <= ballRadiusFrontEdgePx * 1.05);
     }
