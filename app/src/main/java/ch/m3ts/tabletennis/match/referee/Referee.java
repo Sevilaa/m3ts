@@ -55,7 +55,7 @@ import cz.fmo.util.FileManager;
  */
 public class Referee implements EventDetectionListener, ScoreManipulationListener, ReadyToServeCallback, Subscribable {
     private static final String FILENAME = "recording_%s.csv";
-    private static final String DATE_FORMAT = "yyyy-mm-dd_hh_mm_ss";
+    private static final String DATE_FORMAT = "yyyy-MM-dd_hh_mm_ss";
     private static final int OUT_OF_FRAME_MAX_DELAY = 1500;
     private final String currentFileName;
     private Timer outOfFrameTimer;

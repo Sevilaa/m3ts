@@ -84,7 +84,7 @@ public class LiveRecording implements SaveThread.Callback {
         isRecording = true;
         setEncodingEnabled(true);
         Date date = Calendar.getInstance().getTime();
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd_hh_mm_ss");
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_hh_mm_ss");
         String strDate = dateFormat.format(date);
         File outFile = mFileMan.open(String.format(FILENAME, strDate));
         mSaveTask = new ManualRecordingTask(outFile, mSaveMovie);
