@@ -12,4 +12,8 @@
         android:defaultValue="@string/prefRecordDefault"
         android:key="@string/prefRecordKey"
         android:title="@string/prefRecord" />
+    <SwitchPreference
+        android:defaultValue="@string/prefPubnubDefault"
+        android:key="@string/prefPubnubKey"
+        android:title="@string/prefPubnub" />
 </PreferenceScreen>

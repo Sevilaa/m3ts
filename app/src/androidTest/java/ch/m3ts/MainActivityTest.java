@@ -114,6 +114,7 @@ public class MainActivityTest {
         boolean recordMatches = config.doRecordMatches();
         boolean useBlackSide = config.isUseBlackSide();
         boolean useAudio = config.isUseAudio();
+        boolean usePubNub = config.isUsingPubnub();
 
         // check rest of the settings...
         // Tracking Settings
@@ -132,6 +133,8 @@ public class MainActivityTest {
         onView(withText(R.string.prefDisplayDebug)).perform(click());
         onView(withText(R.string.prefRecord)).check(matches(isDisplayed()));
         onView(withText(R.string.prefRecord)).perform(click());
+        onView(withText(R.string.prefPubnub)).check(matches(isDisplayed()));
+        onView(withText(R.string.prefPubnub)).perform(click());
 
         // now check the edited settings in main activity
         pressBack();
@@ -140,6 +143,7 @@ public class MainActivityTest {
         assertEquals(!recordMatches, config.doRecordMatches());
         assertEquals(!useBlackSide, config.isUseBlackSide());
         assertEquals(!useAudio, config.isUseAudio());
+        assertEquals(!usePubNub, config.isUsingPubnub());
         assertEquals(newPlayer1Name, config.getPlayer1Name());
         assertEquals(newPlayer2Name, config.getPlayer2Name());
     }

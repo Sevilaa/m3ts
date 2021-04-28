@@ -94,6 +94,7 @@
 
     <!-- Advanced settings -->
     <string name="prefPubnub">Connect with pubnub</string>
+    <string name="prefPubnubDefault">false</string>
     <string name="prefPubnubKey">connect_pubnub</string>
 
     <string name="playerLeftDefaultName">Player 1</string>

@@ -156,6 +156,7 @@ public class SettingsActivity extends PreferenceActivity {
             super.onCreate(savedInstanceState);
             bindToSummaryUpdaterBoolean(findPreference(getString(R.string.prefDisplayDebugKey)), sSummaryUpdater);
             bindToSummaryUpdaterBoolean(findPreference(getString(R.string.prefRecordKey)), sSummaryUpdater);
+            bindToSummaryUpdaterBoolean(findPreference(getString(R.string.prefPubnubKey)), sSummaryUpdater);
         }
     }
 }
