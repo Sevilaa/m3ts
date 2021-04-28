@@ -47,8 +47,8 @@ public class MatchStats implements Serializable {
             wins.put(winner, wins.get(winner) + 1);
             updateFastestStrike(game, Side.LEFT);
             updateFastestStrike(game, Side.RIGHT);
-            this.strikes.put(Side.LEFT, game.getPlayerStats().get(Side.LEFT).getStrikes());
-            this.strikes.put(Side.RIGHT, game.getPlayerStats().get(Side.RIGHT).getStrikes());
+            this.strikes.put(Side.LEFT, this.strikes.get(Side.LEFT) + game.getPlayerStats().get(Side.LEFT).getStrikes());
+            this.strikes.put(Side.RIGHT, this.strikes.get(Side.RIGHT) + game.getPlayerStats().get(Side.RIGHT).getStrikes());
         }
         if (gameStats.size() > 0) {
             averagePointDuration = duration / amountOfPoints;

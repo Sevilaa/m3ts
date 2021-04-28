@@ -175,8 +175,8 @@
     <!-- MatchStats Fragment -->
     <string name="mstTitle">Match Stats</string>
     <string name="mstScore">%1$d:%2$d</string>
-    <string name="mstTotalDuration">Total Duration</string>
-    <string name="mstAvgDuration">Ø Point Duration</string>
+    <string name="mstTotalDuration">Total Play Time</string>
+    <string name="mstAvgDuration">Ø Point Play Time</string>
     <string name="mstErrorRate">Error Rate</string>
     <string name="mstFastestStrike">fastest strike</string>
     <string name="mstStrikes">strikes</string>
@@ -198,7 +198,7 @@
     <!-- MatchHistory -->
     <string name="mhServer">Server:</string>
     <string name="mhWinner">Winner:</string>
-    <string name="mhDuration">Duration:</string>
+    <string name="mhDuration">Play Time:</string>
     <string name="mhStrikes">Strikes:</string>
     <string name="mhDecision">Decision:</string>
     <string name="mhScore">%1$d:%2$d</string>
