@@ -183,6 +183,7 @@
     <string name="mstStrikes">strikes</string>
     <string name="mstTitlePlayer">Player Stats</string>
     <string name="mstTitleOverall">Overall Stats</string>
+    <string name="mstTitleHeatMap">Heat Map</string>
     <string name="mstTitleHistory">Match History</string>
     <string name="mstClose">Close Stats</string>
     <string name="mstSeconds">%1$ds</string>

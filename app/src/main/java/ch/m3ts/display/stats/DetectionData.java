@@ -5,11 +5,11 @@ import java.io.Serializable;
 public class DetectionData implements Serializable {
     private final int x;
     private final int y;
-    private final int z;
+    private double z;
     private final float velocity;
     private final boolean wasBounce;
 
-    public DetectionData(int x, int y, int z, float velocity, boolean wasBounce) {
+    public DetectionData(int x, int y, double z, float velocity, boolean wasBounce) {
         this.x = x;
         this.y = y;
         this.z = z;
@@ -25,7 +25,7 @@ public class DetectionData implements Serializable {
         return y;
     }
 
-    public int getZ() {
+    public double getZ() {
         return z;
     }
 
@@ -35,5 +35,9 @@ public class DetectionData implements Serializable {
 
     public boolean wasBounce() {
         return wasBounce;
+    }
+
+    public void setZ(double z) {
+        this.z = z;
     }
 }

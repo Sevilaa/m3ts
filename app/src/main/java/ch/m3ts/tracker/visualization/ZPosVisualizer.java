@@ -3,17 +3,18 @@ package ch.m3ts.tracker.visualization;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 
+import ch.m3ts.display.stats.DetectionData;
 import ch.m3ts.tracker.ZPositionCalc;
 import cz.fmo.Lib;
 
 public class ZPosVisualizer {
-    public static final float WIDTH_PX = 400;
+    public static float WIDTH_PX = 400;
     private static final double TABLE_WIDTH_MM = ZPositionCalc.TABLE_TENNIS_TABLE_WIDTH_MM;
     private static final double FULL_WIDTH_MM = ZPositionCalc.MAX_OFFSET_MM * 2 + TABLE_WIDTH_MM;
     private static final double RATIO = FULL_WIDTH_MM / ZPositionCalc.TABLE_TENNIS_TABLE_LENGTH_MM;
-    private static final int HEIGHT_FULL_PX = (int) Math.round(WIDTH_PX * RATIO);
-    private static final int HEIGHT_TABLE_PX = (int) Math.round((HEIGHT_FULL_PX * TABLE_WIDTH_MM) / FULL_WIDTH_MM);
-    private static final int OFFSET_PX = (int) Math.round((HEIGHT_FULL_PX - HEIGHT_TABLE_PX) / 2.0);
+    private static int HEIGHT_FULL_PX;
+    private static int HEIGHT_TABLE_PX;
+    private static int OFFSET_PX;
     private final Paint detectionPaint;
     private final Paint tablePaint;
     private final float originX;
@@ -24,6 +25,19 @@ public class ZPosVisualizer {
         this.tablePaint = tablePaint;
         this.originX = x;
         this.originY = y;
+        calculateSizes();
+    }
+
+    public ZPosVisualizer(Paint detectionPaint, Paint tablePaint, float x, float y, float width) {
+        this(detectionPaint, tablePaint, x, y);
+        WIDTH_PX = width;
+        calculateSizes();
+    }
+
+    private void calculateSizes() {
+        HEIGHT_FULL_PX = (int) Math.round(WIDTH_PX * RATIO);
+        HEIGHT_TABLE_PX = (int) Math.round((HEIGHT_FULL_PX * TABLE_WIDTH_MM) / FULL_WIDTH_MM);
+        OFFSET_PX = (int) Math.round((HEIGHT_FULL_PX - HEIGHT_TABLE_PX) / 2.0);
     }
 
     public void drawTableBirdView(Canvas canvas) {
@@ -48,7 +62,14 @@ public class ZPosVisualizer {
             float ratio = (float) detection.centerX / (Math.abs(rightCornerX - leftCornerX));
             float x = originX + WIDTH_PX * ratio;
             float y = Math.round(originY + HEIGHT_FULL_PX - (float) detection.centerZ * HEIGHT_FULL_PX);
-            canvas.drawCircle(x, y, 10, detectionPaint);
+            canvas.drawCircle(x, y, 20, detectionPaint);
         }
+    }
+
+    public void drawZPos(Canvas canvas, DetectionData detectionData, int leftCornerX, int rightCornerX) {
+        Lib.Detection detection = new Lib.Detection();
+        detection.centerX = detectionData.getX();
+        detection.centerZ = detectionData.getZ();
+        drawZPos(canvas, detection, leftCornerX, rightCornerX);
     }
 }

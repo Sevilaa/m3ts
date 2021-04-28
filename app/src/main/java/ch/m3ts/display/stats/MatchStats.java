@@ -16,10 +16,11 @@ public class MatchStats implements Serializable {
     private String formattedTimestamp;
     private Map<Side, String> playerNames;
     private Map<Side, Float> fastestStrikes;
+    private Map<Side, Integer> tableCorners;
     private Map<Side, Integer> strikes;
     private final Map<Side, Integer> wins;
 
-    public MatchStats(List<GameStats> gameStats, String playerLeft, String playerRight, String matchStart) {
+    public MatchStats(List<GameStats> gameStats, String playerLeft, String playerRight, String matchStart, Map<Side, Integer> tableCorners) {
         this.gameStats = gameStats;
         this.formattedTimestamp = matchStart;
         this.playerNames = new HashMap<>();
@@ -32,8 +33,9 @@ public class MatchStats implements Serializable {
         this.fastestStrikes = new HashMap<>();
         this.fastestStrikes.put(Side.LEFT, 0f);
         this.fastestStrikes.put(Side.RIGHT, 0f);
-        playerNames.put(Side.LEFT, playerLeft);
-        playerNames.put(Side.RIGHT, playerRight);
+        this.playerNames.put(Side.LEFT, playerLeft);
+        this.playerNames.put(Side.RIGHT, playerRight);
+        this.tableCorners = tableCorners;
         calculateStatistics();
     }
 
@@ -115,5 +117,9 @@ public class MatchStats implements Serializable {
 
     public Map<Side, Float> getFastestStrikes() {
         return fastestStrikes;
+    }
+
+    public Map<Side, Integer> getTableCorners() {
+        return tableCorners;
     }
 }

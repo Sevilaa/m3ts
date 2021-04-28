@@ -23,6 +23,7 @@ import java.util.Locale;
 import java.util.Timer;
 
 import ch.m3ts.display.OnSwipeListener;
+import ch.m3ts.display.stats.StatsCreator;
 import ch.m3ts.eventbus.Event;
 import ch.m3ts.eventbus.EventBus;
 import ch.m3ts.eventbus.Subscribable;
@@ -305,6 +306,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         if (useAudio)
             this.audioRecorder = new Recorder(new ImplAudioRecorderCallback(this.eventDetector));
         this.match.getReferee().initState();
+        StatsCreator.getInstance().addTableCorners(table.getCornerDownLeft().x, table.getCornerDownRight().x);
     }
 
     /**

@@ -16,6 +16,7 @@ public class StatsCreator {
     private String formattedMatchStart;
     private Map<Side, String> playerNames = new HashMap<>();
     private Map<Side, Integer> strikes = new HashMap<>();
+    private Map<Side, Integer> tableCorners = new HashMap<>();
 
     private StatsCreator() {
     }
@@ -27,13 +28,18 @@ public class StatsCreator {
         return StatsCreator.instance;
     }
 
+    public void addTableCorners(int tableCornerLeft, int tableCornerRight) {
+        this.tableCorners.put(Side.LEFT, tableCornerLeft);
+        this.tableCorners.put(Side.RIGHT, tableCornerRight);
+    }
+
     public void addPoint(String decision, Side winner, int scoreLeft, int scoreRight, int strikes, Side ballSide, Side striker, Side server, int duration, List<Track> tracks) {
         List<DetectionData> detections = new ArrayList<>();
         List<TrackData> trackData = new ArrayList<>();
         for (Track track : tracks) {
             Lib.Detection latest = track.getLatest();
             while (latest != null) {
-                detections.add(new DetectionData(latest.centerX, latest.centerY, (int) latest.centerZ, latest.velocity, latest.isBounce));
+                detections.add(new DetectionData(latest.centerX, latest.centerY, latest.centerZ, latest.velocity, latest.isBounce));
                 latest = latest.predecessor;
             }
             trackData.add(new TrackData(detections, track.getAvgVelocity(), track.getStriker()));
@@ -82,6 +88,6 @@ public class StatsCreator {
     }
 
     public MatchStats createStats() {
-        return new MatchStats(games, playerNames.get(Side.LEFT), playerNames.get(Side.RIGHT), formattedMatchStart);
+        return new MatchStats(games, playerNames.get(Side.LEFT), playerNames.get(Side.RIGHT), formattedMatchStart, tableCorners);
     }
 }
