@@ -81,11 +81,7 @@ public class Game implements GameCallback {
         int sumOfScores = getSumOfScores();
         if (sumOfScores % this.serveRules.amountOfServes == 0 ||
                 isOneServeRuleActive()) {
-            if (server == Side.LEFT) {
-                server = Side.RIGHT;
-            } else {
-                server = Side.LEFT;
-            }
+            server = Side.getOpposite(server);
         }
     }
 }

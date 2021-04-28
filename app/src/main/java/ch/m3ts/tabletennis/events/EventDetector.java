@@ -117,6 +117,7 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
                     Lib.Detection latestDetection = track.getLatest();
                     calcDirectionY(latestDetection);
                     calcDirectionX(latestDetection);
+                    if (latestDetection.directionX == 0 || latestDetection.directionY == 0) return;
                     callAllOnStrikeFound(track);
                     hasBallFallenOffSideWays(latestDetection);
                     isMovingIntoNet(latestDetection);
