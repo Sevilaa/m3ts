@@ -177,22 +177,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
                     drawDebugInfo(canvas, track);
                     surfaceHolder.unlockCanvasAndPost(canvas);
                 }
-                String velocityLabel = "";
-                switch (config.getVelocityEstimationMode()) {
-                    case M_S:
-                        velocityLabel = "m/s";
-                        break;
-                    case KM_H:
-                        velocityLabel = "km/h";
-                        break;
-                    case MPH:
-                        velocityLabel = "mps";
-                        break;
-                    case PX_FR:
-                        velocityLabel = "px/fr";
-                        break;
-                }
-                String velocity = String.format(Locale.US, "%.2f %s", track.getAvgVelocity(), velocityLabel);
+                String velocity = String.format(Locale.US, "%.2f km/h", track.getAvgVelocity());
                 setTextInTextView(R.id.txtPlayMovieVelocity, velocity);
                 setTextInTextView(R.id.txtPlayMovieState, match.getReferee().getState().toString());
                 setTextInTextView(R.id.txtPlayMovieServing, match.getReferee().getServer().toString());
