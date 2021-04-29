@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ch.m3ts.display.stats.processing.StatsProcessing;
 import ch.m3ts.tabletennis.helper.Side;
 
 public class PointData implements Serializable {
@@ -18,7 +19,7 @@ public class PointData implements Serializable {
     private final Side server;
     private final int duration;
     private final boolean isCorrection;
-    private Map<Side, Float> fastestStrikes;
+    private final Map<Side, Float> fastestStrikes;
 
     public PointData(String refereeDecision, List<TrackData> tracks, Side winner, int scoreLeft, int scoreRight, Side lastBallSide, Side lastStriker, Side server, int duration, Map<Side, Integer> strikes) {
         this.refereeDecision = refereeDecision;
@@ -27,24 +28,15 @@ public class PointData implements Serializable {
         this.score = new HashMap<>();
         this.score.put(Side.LEFT, scoreLeft);
         this.score.put(Side.RIGHT, scoreRight);
-        this.fastestStrikes = new HashMap<>();
-        this.fastestStrikes.put(Side.LEFT, 0f);
-        this.fastestStrikes.put(Side.RIGHT, 0f);
         this.strikes = strikes;
         this.lastStriker = lastStriker;
         this.lastBallSide = lastBallSide;
         this.server = server;
         this.duration = duration;
         this.isCorrection = refereeDecision.contains("deduction");
-        setFastestStrikes();
-    }
-
-    private void setFastestStrikes() {
-        for (TrackData track : tracks) {
-            if(fastestStrikes == null || track == null || fastestStrikes.get(track.getStriker()) == null) continue;
-            if (track.getAverageVelocity() > fastestStrikes.get(track.getStriker()))
-                fastestStrikes.put(track.getStriker(), track.getAverageVelocity());
-        }
+        StatsProcessing.putTogetherTracksOfSameStrikes(tracks);
+        StatsProcessing.averageZPositions(tracks);
+        this.fastestStrikes = StatsProcessing.findFastestStrikeOfBothSides(tracks);
     }
 
     public List<TrackData> getTracks() {

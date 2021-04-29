@@ -6,15 +6,17 @@ public class DetectionData implements Serializable {
     private final int x;
     private final int y;
     private double z;
+    private final int directionX;
     private final float velocity;
     private final boolean wasBounce;
 
-    public DetectionData(int x, int y, double z, float velocity, boolean wasBounce) {
+    public DetectionData(int x, int y, double z, float velocity, boolean wasBounce, int directionX) {
         this.x = x;
         this.y = y;
         this.z = z;
         this.velocity = velocity;
         this.wasBounce = wasBounce;
+        this.directionX = directionX;
     }
 
     public int getX() {
@@ -39,5 +41,9 @@ public class DetectionData implements Serializable {
 
     public void setZ(double z) {
         this.z = z;
+    }
+
+    public int getDirectionX() {
+        return directionX;
     }
 }

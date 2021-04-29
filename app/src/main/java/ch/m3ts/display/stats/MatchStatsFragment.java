@@ -17,7 +17,6 @@ import android.widget.TextView;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -36,7 +35,6 @@ import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.util.Log;
 import cz.fmo.R;
 import cz.fmo.util.Config;
-import edu.princeton.cs.algs4.LinearRegression;
 
 public class MatchStatsFragment extends EventBusSubscribedFragment implements SurfaceHolder.Callback {
     private PubNubDisplayConnection pubNub;
@@ -167,36 +165,12 @@ public class MatchStatsFragment extends EventBusSubscribedFragment implements Su
         createGameOverviews(v);
     }
 
-    private void averageZPositions() {
-        for (GameStats game : this.stats.getGameStats()) {
-            for (PointData point : game.getPoints()) {
-                for (TrackData track : point.getTracks()) {
-                    List<DetectionData> detections = track.getDetections();
-                    double[] x = new double[detections.size()];
-                    double[] z = new double[detections.size()];
-
-                    for (int i = 0; i < detections.size(); i++) {
-                        x[i] = detections.get(i).getX();
-                        z[i] = detections.get(i).getZ();
-                    }
-
-                    LinearRegression linearRegression = new LinearRegression(x, z);
-                    for (int i = 0; i < detections.size(); i++) {
-                        DetectionData detection = detections.get(i);
-                        detection.setZ(linearRegression.predict(detection.getX()));
-                    }
-                }
-            }
-        }
-    }
-
     @Override
     public void handle(Event<?> event) {
         Object data = event.getData();
         if (data instanceof StatsData) {
             StatsData statsData = (StatsData) data;
             this.stats = statsData.getStats();
-            averageZPositions();
             ((StatsActivity) getActivity()).setStats(stats);
             final Activity activity = getActivity();
             activity.runOnUiThread(new Runnable() {
@@ -252,11 +226,11 @@ public class MatchStatsFragment extends EventBusSubscribedFragment implements Su
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-
+        // no implementation needed
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-
+        // no implementation needed
     }
 }

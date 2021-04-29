@@ -39,7 +39,7 @@ public class StatsCreator {
         for (Track track : tracks) {
             Lib.Detection latest = track.getLatest();
             while (latest != null) {
-                detections.add(new DetectionData(latest.centerX, latest.centerY, latest.centerZ, latest.velocity, latest.isBounce));
+                detections.add(new DetectionData(latest.centerX, latest.centerY, latest.centerZ, latest.velocity, latest.isBounce, (int) latest.directionX));
                 latest = latest.predecessor;
             }
             trackData.add(new TrackData(detections, track.getAvgVelocity(), track.getStriker()));
