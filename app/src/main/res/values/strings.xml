@@ -242,6 +242,9 @@
     <string name="adjustDeviceRollDegreeText">Roll: %1$d°</string>
     <string name="adjustDeviceTiltDegreeText">Tilt: %1$d°</string>
 
+    <!-- Video Testing -->
+    <string name="testSetOutdoor">test_outdoor_1</string>
+
     <!-- Movie Player Activity -->
     <string-array name="prefCameraFacingNames">
         <item>Front-facing</item>

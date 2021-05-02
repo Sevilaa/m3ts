@@ -149,6 +149,7 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
         // first tag all tracks which have crossed the table once
         for (Track t : tracks) {
             Lib.Detection latestDetection = t.getLatest();
+            calcDirectionOfDetection(latestDetection);
             latestDetection.centerZ = zPositionCalc.findZPosOfBallRel(latestDetection.radius);
             if (table.isOnOrAbove(latestDetection.centerX, latestDetection.centerY) && zPositionCalc.isBallZPositionOnTable(latestDetection.radius)) {
                 t.setTableCrossed();
@@ -161,12 +162,20 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
             double distance = Double.MAX_VALUE;
             for (Track t : tracks) {
                 Lib.Detection d = t.getLatest();
-                double a = Math.abs(d.centerX - previousCenterX);
-                double b = Math.abs(d.centerY - previousCenterY);
-                double distanceToLast = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
-                if (distanceToLast < distance && isOnTable(t)) {
+                if (d.directionX == previousDirectionX && d.directionY == previousDirectionY && isOnTable(t)) {
                     selectedTrack = t;
-                    distance = distanceToLast;
+                }
+            }
+            if (selectedTrack == null) {
+                for (Track t : tracks) {
+                    Lib.Detection d = t.getLatest();
+                    double a = Math.abs(d.centerX - previousCenterX);
+                    double b = Math.abs(d.centerY - previousCenterY);
+                    double distanceToLast = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
+                    if (distanceToLast < distance && isOnTable(t)) {
+                        selectedTrack = t;
+                        distance = distanceToLast;
+                    }
                 }
             }
         } else {
@@ -249,9 +258,9 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
     private void hasBouncedOnTable(Lib.Detection detection, boolean hasSideChanged) {
         if (!hasSideChanged && previousDirectionY != detection.directionY &&
                 (previousDirectionX == detection.directionX) &&
-                (table.isBounceOn(previousCenterX, previousCenterY) || table.isBounceOn(detection.centerX, detection.centerY)) &&
+                table.isBounceOn(previousCenterX, previousCenterY) &&
                 ((previousDirectionY == DirectionY.DOWN) && (detection.directionY == DirectionY.UP))) {
-            Side ballBouncedOnSide = table.getHorizontalSideOfDetection(previousDetection.centerX);
+            Side ballBouncedOnSide = table.getHorizontalSideOfDetection(previousCenterX);
             detection.isBounce = true;
             callAllOnBounce(previousDetection, ballBouncedOnSide);
         }

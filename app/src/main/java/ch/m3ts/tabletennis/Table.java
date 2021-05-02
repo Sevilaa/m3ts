@@ -100,8 +100,10 @@ public class Table {
         double leftThreshold = this.getCornerDownLeft().x;
         double rightThreshold = this.getCornerDownRight().x;
         double bottomThreshold = this.getNetBottom().y;
-        double topThreshold = this.net.y * 0.85;    // 0.85 evaluated by play testing
-        return (x >= leftThreshold && x <= rightThreshold && y <= bottomThreshold && y >= topThreshold);
+        double topThreshold = this.getNetTop().y * 0.95;
+        double leftNetThreshold = this.getNetBottom().x * 0.95;
+        double rightNetThreshold = this.getNetBottom().x * 1.05;
+        return (x >= leftThreshold && x <= rightThreshold && y <= bottomThreshold && y >= topThreshold && !(x > leftNetThreshold && x < rightNetThreshold));
     }
 
     public boolean isBelow(int x, int y) {

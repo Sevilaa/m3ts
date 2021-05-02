@@ -429,7 +429,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         trackPaint.setColor(c);
         trackPaint.setStrokeWidth(pre.radius);
         int count = 0;
-        while (pre != null && count < 3) {
+        while (pre != null && count < 2) {
             canvas.drawCircle(this.videoScaling.scaleX(pre.centerX), this.videoScaling.scaleY(pre.centerY), this.videoScaling.scaleY(pre.radius), trackPaint);
             if (pre.predecessor != null) {
                 int x1 = this.videoScaling.scaleX(pre.centerX);

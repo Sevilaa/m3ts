@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE properties SYSTEM
+    "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <comment>table location (2 corners)</comment>
+    <entry key="c1_x">6</entry>
+    <entry key="c1_y">387</entry>
+    <entry key="c2_x">1271</entry>
+    <entry key="c2_y">389</entry>
+    <entry key="n1_x">640</entry>
+    <entry key="n1_y">383</entry>
+</properties>
