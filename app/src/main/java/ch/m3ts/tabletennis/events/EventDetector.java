@@ -102,7 +102,7 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
     public void onAudioBounceDetected() {
         if (currentTrack != null &&
                 TimeUnit.MILLISECONDS.convert(System.nanoTime() - currentTrack.getLastDetectionTime(), TimeUnit.NANOSECONDS) < 30) {
-            Side ballBouncedOnSide = table.getHorizontalSideOfDetection(previousDetection.centerX);
+            Side ballBouncedOnSide = table.getHorizontalSideOfDetection(previousCenterX);
             eventBus.dispatch(new TTEvent<>(new BallBounceAudioData(ballBouncedOnSide)));
         }
     }
@@ -115,21 +115,25 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
                 if (track != null && track.getLatest() != previousDetection) {
                     numberOfDetections++;
                     Lib.Detection latestDetection = track.getLatest();
-                    calcDirectionY(latestDetection);
-                    calcDirectionX(latestDetection);
-                    if (latestDetection.directionX == 0 || latestDetection.directionY == 0) return;
-                    callAllOnStrikeFound(track);
-                    hasBallFallenOffSideWays(latestDetection);
-                    isMovingIntoNet(latestDetection);
-                    hasTableSideChanged(latestDetection.centerX);
-                    boolean tableSideChanged = hasSideChanged(latestDetection);
-                    hasBouncedOnTable(latestDetection, tableSideChanged);
-                    Side nearlyOutOfFrameSide = getNearlyOutOfFrameSide(latestDetection);
-                    if (nearlyOutOfFrameSide != null) {
-                        callAllOnNearlyOutOfFrame(latestDetection, nearlyOutOfFrameSide);
+                    calcDirectionOfDetection(latestDetection);
+                    if (latestDetection.directionX != DirectionX.NONE || latestDetection.directionY != DirectionY.NONE) {
+                        callAllOnStrikeFound(track);
+                        hasBallFallenOffSideWays(latestDetection);
+                        if (latestDetection.directionX != DirectionX.NONE) {
+                            hasTableSideChanged(latestDetection.centerX);
+                            boolean tableSideChanged = hasSideChanged(latestDetection);
+                            if (latestDetection.directionY != DirectionY.NONE) {
+                                isMovingIntoNet(latestDetection);
+                                hasBouncedOnTable(latestDetection, tableSideChanged);
+                                Side nearlyOutOfFrameSide = getNearlyOutOfFrameSide(latestDetection);
+                                if (nearlyOutOfFrameSide != null) {
+                                    callAllOnNearlyOutOfFrame(latestDetection, nearlyOutOfFrameSide);
+                                }
+                            }
+                        }
+                        savePreviousDetection(latestDetection);
+                        setTimeoutTimer(numberOfDetections);
                     }
-                    savePreviousDetection(latestDetection);
-                    setTimeoutTimer(numberOfDetections);
                 }
             }
         }
@@ -163,7 +167,6 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
                 if (distanceToLast < distance && isOnTable(t)) {
                     selectedTrack = t;
                     distance = distanceToLast;
-                    currentTrack = t;
                 }
             }
         } else {
@@ -171,6 +174,10 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
             if (isOnTable(tracks.get(0))) {
                 selectedTrack = tracks.get(0);
             }
+        }
+
+        if (selectedTrack != null) {
+            currentTrack = selectedTrack;
         }
 
         return selectedTrack;
@@ -270,14 +277,20 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
         return track.hasCrossedTable();
     }
 
-    private void calcDirectionY(Lib.Detection detection) {
-        detection.directionY = Integer.compare(detection.centerY, previousCenterY);
-    }
-
-    private void calcDirectionX(Lib.Detection detection) {
-        if (detection.predecessor != null)
+    /**
+     * Calculates the x and y direction of a detection using the detections predecessor or the latest saved
+     * position.
+     *
+     * @param detection Detection of which to calculate the direction to.
+     */
+    private void calcDirectionOfDetection(Lib.Detection detection) {
+        if (detection.predecessor != null) {
+            detection.directionY = Integer.compare(detection.centerY, detection.predecessor.centerY);
             detection.directionX = Integer.compare(detection.centerX, detection.predecessor.centerX);
-        else detection.directionX = Integer.compare(detection.centerX, previousCenterX);
+        } else {
+            detection.directionY = Integer.compare(detection.centerY, previousCenterY);
+            detection.directionX = Integer.compare(detection.centerX, previousCenterX);
+        }
     }
 
     private void hasTableSideChanged(int currentXPosition) {

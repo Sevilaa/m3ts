@@ -25,6 +25,7 @@ public class Track {
     private float mSumVelocity;
     private int mVelocityNumFrames = 0;
     private boolean hasCrossedTable = false;
+    private boolean ignore = false;
     private boolean isZPosOnTable = false;
     private Side striker;
 
@@ -49,6 +50,10 @@ public class Track {
         this.isZPosOnTable = true;
     }
 
+    public void setIgnore() {
+        this.ignore = true;
+    }
+
     public void setStriker(Side striker) {
         this.striker = striker;
     }
@@ -58,7 +63,7 @@ public class Track {
     }
 
     public boolean hasCrossedTable() {
-        return this.hasCrossedTable && this.isZPosOnTable;
+        return this.hasCrossedTable && this.isZPosOnTable && !ignore;
     }
 
     void setLatest(Lib.Detection latest, long detectionTime) {
