@@ -80,24 +80,6 @@ public class ReadyToServeDetectorTest {
     }
 
     @Test
-    public void holdBAnySideFor15FramesWithUseBackgroundModelingActive() {
-        detector = new ReadyToServeDetector(table, Side.RIGHT, callback, true);
-        boolean result;
-        result = detector.isReadyToServe(getRedMat());
-        result = detector.isReadyToServe(getRedMat());
-        result = detector.isReadyToServe(getRedMat());
-        result = detector.isReadyToServe(getRedMat());
-        result = detector.isReadyToServe(getRedMat());
-        result = detector.isReadyToServe(getRedMat());
-        for (int i = 0; i < 8; i++) {
-            result = detector.isReadyToServe(getGreenMat());
-            assertFalse(result);
-        }
-        result = detector.isReadyToServe(getGreenMat());
-        assertTrue(result);
-    }
-
-    @Test
     public void holdBlackSideFor15FramesWithUseBlackSideInActive() {
         detector = new ReadyToServeDetector(table, Side.RIGHT, callback, false);
         boolean result;

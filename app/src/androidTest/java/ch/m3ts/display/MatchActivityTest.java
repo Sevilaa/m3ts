@@ -234,19 +234,19 @@ public class MatchActivityTest extends InstrumentationTestCase {
         assertEquals("0"+winsLeft, textView.getText());
         textView = matchActivity.findViewById(R.id.right_games);
         assertEquals("0"+winsRight, textView.getText());
-        getInstrumentation().runOnMainSync(new Runnable(){
-            public void run(){
+        getInstrumentation().runOnMainSync(new Runnable() {
+            public void run() {
                 matchScoreFragment.onMatchEnded(Side.LEFT.toString());
             }
         });
-        try{
+        try {
             Thread.sleep(100);
         } catch (InterruptedException ex) {
             // Unfortunately need to wait for a moment otherwise it won't find the textView
         }
-        onView(withText(Side.LEFT.toString()))
-                .check(matches(isDisplayed()));
-        onView(withText(R.string.mwWon))
+        String title = matchActivity.getString(R.string.msDialogTitle);
+        title = String.format(title, Side.LEFT.toString());
+        onView(withText(title))
                 .check(matches(isDisplayed()));
     }
 
