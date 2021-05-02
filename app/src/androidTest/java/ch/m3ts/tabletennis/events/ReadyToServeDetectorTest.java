@@ -28,8 +28,8 @@ import static org.junit.Assert.assertTrue;
 @LargeTest
 public class ReadyToServeDetectorTest {
     private Table table;
-    private static final int CAMERA_WIDTH = 1920;
-    private static final int CAMERA_HEIGHT = 1080;
+    private static final int CAMERA_WIDTH = 1280;
+    private static final int CAMERA_HEIGHT = 720;
     private ReadyToServeCallback callback;
     private ReadyToServeDetector detector;
 
@@ -39,7 +39,7 @@ public class ReadyToServeDetectorTest {
     @Before
     public void setUp() {
         OpenCVLoader.initDebug();
-        table = Mockito.spy(new Table(new Point[]{new Point(100, 500), new Point(1000, 500)}, new Point(550, 500)));
+        table = Mockito.spy(new Table(new Point[]{new Point(26, 496), new Point(1257, 474)}, new Point(624, 485)));     // table points of gesture_indoor_1.xml
         callback = Mockito.mock(ReadyToServeCallback.class);
     }
 
@@ -80,6 +80,24 @@ public class ReadyToServeDetectorTest {
     }
 
     @Test
+    public void holdBAnySideFor15FramesWithUseBackgroundModelingActive() {
+        detector = new ReadyToServeDetector(table, Side.RIGHT, callback, true);
+        boolean result;
+        result = detector.isReadyToServe(getRedMat());
+        result = detector.isReadyToServe(getRedMat());
+        result = detector.isReadyToServe(getRedMat());
+        result = detector.isReadyToServe(getRedMat());
+        result = detector.isReadyToServe(getRedMat());
+        result = detector.isReadyToServe(getRedMat());
+        for (int i = 0; i < 8; i++) {
+            result = detector.isReadyToServe(getGreenMat());
+            assertFalse(result);
+        }
+        result = detector.isReadyToServe(getGreenMat());
+        assertTrue(result);
+    }
+
+    @Test
     public void holdBlackSideFor15FramesWithUseBlackSideInActive() {
         detector = new ReadyToServeDetector(table, Side.RIGHT, callback, false);
         boolean result;
@@ -105,14 +123,14 @@ public class ReadyToServeDetectorTest {
     }
 
     private Mat getRedMat() {
-        return new Mat(CAMERA_WIDTH, CAMERA_HEIGHT, CvType.CV_8UC3, new Scalar(0, 0, 255));
+        return new Mat(CAMERA_HEIGHT, CAMERA_WIDTH, CvType.CV_8UC3, new Scalar(0, 0, 255));
     }
 
     private Mat getBlackMat() {
-        return new Mat(CAMERA_WIDTH, CAMERA_HEIGHT, CvType.CV_8UC3, new Scalar(0, 0, 0));
+        return new Mat(CAMERA_HEIGHT, CAMERA_WIDTH, CvType.CV_8UC3, new Scalar(0, 0, 0));
     }
 
     private Mat getGreenMat() {
-        return new Mat(CAMERA_WIDTH, CAMERA_HEIGHT, CvType.CV_8UC3, new Scalar(0, 255, 0));
+        return new Mat(CAMERA_HEIGHT, CAMERA_WIDTH, CvType.CV_8UC3, new Scalar(0, 255, 0));
     }
 }
