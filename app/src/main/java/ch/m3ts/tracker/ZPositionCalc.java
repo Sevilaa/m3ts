@@ -100,6 +100,7 @@ public class ZPositionCalc {
 
     /**
      * Returns the z-Position of the ball relative to the table width.
+     * (z-Position <= 1 && z-Position >= 0)
      * Examples:
      * returns val = 0 => ball is on the closest edge of the table (with offset)
      * returns val = 1 => ball is on the furthest edge of the table (with offset)
