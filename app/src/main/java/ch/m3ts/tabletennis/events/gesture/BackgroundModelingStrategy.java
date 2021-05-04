@@ -7,7 +7,7 @@ import org.opencv.video.BackgroundSubtractor;
 import org.opencv.video.Video;
 
 public class BackgroundModelingStrategy implements GestureDetectionStrategy {
-    private static final double PERCENTAGE_THRESHOLD = 0.8;
+    private static final double PERCENTAGE_THRESHOLD = 0.6;
     private Mat fgMask;
     private final BackgroundSubtractor backSub;
 
