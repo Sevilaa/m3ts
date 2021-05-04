@@ -235,7 +235,6 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
                     audioBounces = 0;
                     currentStriker = side;
                     strikes++;
-                    StatsCreator.getInstance().addStrike(side);
                 }
                 break;
             case SERVING:

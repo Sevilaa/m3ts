@@ -21,14 +21,13 @@ public class PointData implements Serializable {
     private final boolean isCorrection;
     private final Map<Side, Float> fastestStrikes;
 
-    public PointData(String refereeDecision, List<TrackData> tracks, Side winner, int scoreLeft, int scoreRight, Side lastBallSide, Side lastStriker, Side server, int duration, Map<Side, Integer> strikes) {
+    public PointData(String refereeDecision, List<TrackData> tracks, Side winner, int scoreLeft, int scoreRight, Side lastBallSide, Side lastStriker, Side server, int duration) {
         this.refereeDecision = refereeDecision;
         this.tracks = tracks;
         this.winner = winner;
         this.score = new HashMap<>();
         this.score.put(Side.LEFT, scoreLeft);
         this.score.put(Side.RIGHT, scoreRight);
-        this.strikes = strikes;
         this.lastStriker = lastStriker;
         this.lastBallSide = lastBallSide;
         this.server = server;
@@ -37,6 +36,7 @@ public class PointData implements Serializable {
         StatsProcessing.putTogetherTracksOfSameStrikes(tracks);
         StatsProcessing.averageZPositions(tracks);
         this.fastestStrikes = StatsProcessing.findFastestStrikeOfBothSides(tracks);
+        this.strikes = StatsProcessing.countAmountOfStrikesOfBothSides(this.tracks);
     }
 
     public List<TrackData> getTracks() {

@@ -81,4 +81,11 @@ public class StatsProcessingTest {
         assertEquals(200f, fastestStrikes.get(Side.RIGHT), 0f);
         assertEquals(300f, fastestStrikes.get(Side.LEFT), 0f);
     }
+
+    @Test
+    public void countStrikes() {
+        Map<Side, Integer> strikes = StatsProcessing.countAmountOfStrikesOfBothSides(trackDataList);
+        assertEquals(2, (int) strikes.get(Side.RIGHT));
+        assertEquals(3, (int) strikes.get(Side.LEFT));
+    }
 }

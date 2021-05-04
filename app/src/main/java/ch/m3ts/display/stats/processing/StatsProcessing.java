@@ -1,6 +1,7 @@
 package ch.m3ts.display.stats.processing;
 
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -88,5 +89,21 @@ public class StatsProcessing {
                 fastestStrikes.put(track.getStriker(), track.getAverageVelocity());
         }
         return fastestStrikes;
+    }
+
+    /**
+     * Counts the amount of strikes per side.
+     *
+     * @param tracks list of all tracks (f.e. of a point)
+     * @return Map with values of the amount of strikes per side
+     */
+    public static Map<Side, Integer> countAmountOfStrikesOfBothSides(List<TrackData> tracks) {
+        Map<Side, Integer> strikes = new HashMap<>();
+        strikes.put(Side.LEFT, 0);
+        strikes.put(Side.RIGHT, 0);
+        for (TrackData track : tracks) {
+            strikes.put(track.getStriker(), strikes.get(track.getStriker()) + 1);
+        }
+        return strikes;
     }
 }

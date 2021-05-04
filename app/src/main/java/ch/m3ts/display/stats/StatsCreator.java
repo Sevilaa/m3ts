@@ -15,7 +15,6 @@ public class StatsCreator {
     private List<GameStats> games = new ArrayList<>();
     private String formattedMatchStart;
     private Map<Side, String> playerNames = new HashMap<>();
-    private Map<Side, Integer> strikes = new HashMap<>();
     private Map<Side, Integer> tableCorners = new HashMap<>();
 
     private StatsCreator() {
@@ -45,21 +44,12 @@ public class StatsCreator {
             trackData.add(new TrackData(detections, track.getAvgVelocity(), track.getStriker()));
             detections = new ArrayList<>();
         }
-        if (this.strikes.get(Side.LEFT) == null) this.strikes.put(Side.LEFT, 0);
-        if (this.strikes.get(Side.RIGHT) == null) this.strikes.put(Side.RIGHT, 0);
-        PointData point = new PointData(decision, trackData, winner, scoreLeft, scoreRight, ballSide, striker, server, duration, this.strikes);
+        PointData point = new PointData(decision, trackData, winner, scoreLeft, scoreRight, ballSide, striker, server, duration);
         if (points.isEmpty() && !games.isEmpty() && scoreLeft + scoreRight > 1) {
             GameStats lastGame = games.get(games.size() - 1);
             lastGame.getPoints().add(point);
             games.set(games.size() - 1, new GameStats(lastGame.getPoints()));
         } else points.add(point);
-        this.strikes = new HashMap<>();
-    }
-
-    public void addStrike(Side side) {
-        Integer strikes = this.strikes.get(side);
-        if (strikes == null) strikes = 0;
-        this.strikes.put(side, strikes + 1);
     }
 
     public void addMetaData(String start, String playerLeft, String playerRight) {
