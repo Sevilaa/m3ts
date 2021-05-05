@@ -118,9 +118,9 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
                     calcDirectionOfDetection(latestDetection);
                     if (latestDetection.directionX != DirectionX.NONE || latestDetection.directionY != DirectionY.NONE) {
                         callAllOnStrikeFound(track);
+                        hasTableSideChanged(latestDetection.centerX);
                         hasBallFallenOffSideWays(latestDetection);
                         if (latestDetection.directionX != DirectionX.NONE) {
-                            hasTableSideChanged(latestDetection.centerX);
                             boolean tableSideChanged = hasSideChanged(latestDetection);
                             if (latestDetection.directionY != DirectionY.NONE) {
                                 isMovingIntoNet(latestDetection);
