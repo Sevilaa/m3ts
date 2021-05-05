@@ -34,8 +34,28 @@ import cz.fmo.data.Track;
  * for events on this Handler.
  **/
 public class BenchmarkHandler extends MatchVisualizeHandler implements ReplayDetectionCallback {
+    private Side whoShouldScore;
+    private int correctJudgementCalls;
+    private int countOnScoreEventsPerClip;
+
     public BenchmarkHandler(@NonNull MatchVisualizeActivity activity) {
         super(activity);
+    }
+
+    public int getCorrectJudgementCalls() {
+        int calls = correctJudgementCalls;
+        this.correctJudgementCalls = 0;
+        return calls;
+    }
+
+    /**
+     * Gets called when a new clip is loaded, sets the "truth" on which side should win.
+     *
+     * @param whoShouldScore Side which should score on the next onScore event.
+     */
+    public void setWhoShouldScore(Side whoShouldScore) {
+        this.whoShouldScore = whoShouldScore;
+        this.countOnScoreEventsPerClip = 0;
     }
 
     public void initBenchmarkMatch(Side servingSide) {
@@ -79,6 +99,16 @@ public class BenchmarkHandler extends MatchVisualizeHandler implements ReplayDet
         } else if (data instanceof BallTrackData) {
             EventDetectorEventData eventDetectorEventData = (EventDetectorEventData) data;
             eventDetectorEventData.call(this);
+        }
+    }
+
+    @Override
+    public void onScore(Side scorer, int score, Side nextServer, Side lastServer) {
+        Log.d("JOE BIDEN => Score: " + score + " Side: " + scorer.toString());
+        countOnScoreEventsPerClip++;
+        if (scorer == whoShouldScore && countOnScoreEventsPerClip == 1) {
+            correctJudgementCalls++;
+            Log.d("JOE BIDEN => CORRECTO!!!");
         }
     }
 
@@ -132,11 +162,6 @@ public class BenchmarkHandler extends MatchVisualizeHandler implements ReplayDet
     @Override
     public void onMatchEnded(String winnerName) {
 
-    }
-
-    @Override
-    public void onScore(Side scorer, int score, Side nextServer, Side lastServer) {
-        Log.d("JOE BIDEN => Score: " + score + " Side: " + scorer.toString());
     }
 
     @Override

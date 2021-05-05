@@ -47,6 +47,7 @@ public class ReadyToServeDetector {
             if (gestureFrameCounter % 3 == 0) {
                 if (isRacketInArea(bgrMat)) {
                     if (gestureFrameCounter >= GESTURE_HOLD_TIME_IN_FRAMES) {
+                        // TODO: change this to use eventbus
                         this.callback.onGestureDetected();
                         isReady = true;
                     }

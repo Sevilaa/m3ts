@@ -26,7 +26,7 @@ import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
+import java.util.Locale;
 import java.util.Properties;
 
 import ch.m3ts.tabletennis.Table;
@@ -80,6 +80,8 @@ public class BenchmarkActivity extends MatchVisualizeActivity implements VideoPl
     };
     private FileManager[] mFileManagers;
     private String[] mTestSetClips;
+    private int[] nTotalJudgements;
+    private int[] nCorrectJudgements;
     private int currentClip;
     private int currentTestSet;
     private boolean mShowStopLabel;
@@ -93,17 +95,28 @@ public class BenchmarkActivity extends MatchVisualizeActivity implements VideoPl
         this.currentTestSet = 0;
         this.currentClip = 0;
         this.mFileManagers = new FileManager[mTestSets.length];
+        this.nCorrectJudgements = new int[mTestSets.length];
+        this.nTotalJudgements = new int[mTestSets.length];
 
         for (int i = 0; i < mTestSets.length; i++) {
-            mFileManagers[i] = new FileManager(this, mTestSets[i]);
+            this.mFileManagers[i] = new FileManager(this, mTestSets[i]);
+            this.nTotalJudgements[i] = mFileManagers[i].listMP4().length;
         }
-
-        Log.d("JOE: " + mTestSets[currentTestSet] + " " + Arrays.toString(mTestSetClips));
 
         Button playStopButton = findViewById(R.id.benchmark_start_button);
         playStopButton.setOnClickListener(this);
         updateControls();
         setCurrentClips();
+    }
+
+    /**
+     * onClick handler of "start benchmark" button
+     */
+    @Override
+    public void onClick(View view) {
+        initCurrentTestSet();
+        setWhoShouldScore();
+        playCurrentClip();
     }
 
     private void setCurrentClips() {
@@ -143,12 +156,24 @@ public class BenchmarkActivity extends MatchVisualizeActivity implements VideoPl
                 return;
             }
         }
+        setWhoShouldScore();
         playCurrentClip();
     }
 
-    private void finishBenchmark() {
-        this.onPause();
-        updateControls();
+    private void setWhoShouldScore() {
+        String clipName = mTestSetClips[currentClip];
+        clipName = clipName.split(".mp4")[0];
+        String[] scoresAsString = clipName.split("_");
+        int[] scores = {
+                Integer.parseInt(scoresAsString[0]), Integer.parseInt(scoresAsString[1])
+        };
+        Side sideToScore;
+        if (scores[0] > scores[1]) {
+            sideToScore = Side.LEFT;
+        } else {
+            sideToScore = Side.RIGHT;
+        }
+        mHandler.setWhoShouldScore(sideToScore);
     }
 
     private boolean advanceToNextTestSet() {
@@ -158,9 +183,43 @@ public class BenchmarkActivity extends MatchVisualizeActivity implements VideoPl
         } else {
             currentClip = 0;
             currentTestSet++;
+            setCurrentClips();
             this.initCurrentTestSet();
             return true;
         }
+    }
+
+    private void finishBenchmark() {
+        this.onPause();
+        updateControls();
+        printStatistics();
+    }
+
+    private void printStatistics() {
+        int allJudgements = 0;
+        for (int j : this.nTotalJudgements) {
+            allJudgements += j;
+        }
+
+        if (allJudgements == 0) allJudgements = 1;
+
+        int allCorrectJudgements = 0;
+        for (int c : this.nCorrectJudgements) {
+            allCorrectJudgements += c;
+        }
+
+        Log.d("-------------------- BENCHMARK DONE --------------------");
+        Log.d(String.format(Locale.US, "%-45s%d", "Total amount of Judgements:", allJudgements));
+        Log.d(String.format(Locale.US, "%-45s%d", "Total amount of correct Judgements:", allCorrectJudgements));
+        Log.d(String.format(Locale.US, "%-45s%.1f%%", "In percentage:", ((double) allCorrectJudgements / allJudgements) * 100));
+        Log.d("Stats per test set =>");
+        for (int i = 0; i < mTestSets.length; i++) {
+            String testSet = mTestSets[i];
+            String formattedTestSetString = String.format(Locale.US, "set '%s':", testSet);
+            Log.d(String.format(Locale.US, "%-38s%d/%d => %.1f%%", formattedTestSetString, nTotalJudgements[i], nCorrectJudgements[i],
+                    ((double) nTotalJudgements[i] / nCorrectJudgements[i]) * 100));
+        }
+        Log.d("--------------------------------------------------------");
     }
 
     private boolean advanceToNextClip() {
@@ -276,6 +335,7 @@ public class BenchmarkActivity extends MatchVisualizeActivity implements VideoPl
     }
 
     private void finishCurrentTestSet() {
+        this.nCorrectJudgements[currentTestSet] = mHandler.getCorrectJudgementCalls();
         mHandler.stopDetections();
         mHandler.onPauseActivity();
     }
@@ -328,14 +388,5 @@ public class BenchmarkActivity extends MatchVisualizeActivity implements VideoPl
             Log.e("Unable to play movie", ex);
             surface.release();
         }
-    }
-
-    /**
-     * onClick handler for "play"/"stop" button.
-     */
-    @Override
-    public void onClick(View view) {
-        initCurrentTestSet();
-        playCurrentClip();
     }
 }
