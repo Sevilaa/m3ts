@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <Preference android:title="@string/runVideoPlayer">
-        <intent android:action="com.android.grafika.PlayMovieSurfaceActivity"/>
+        <intent android:action="com.android.grafika.PlayMovieSurfaceActivity" />
+    </Preference>
+    <Preference android:title="Benchmark">
+        <intent android:action="com.android.grafika.Joe" />
     </Preference>
     <SwitchPreference
         android:defaultValue="@string/prefDisplayDebugDefault"

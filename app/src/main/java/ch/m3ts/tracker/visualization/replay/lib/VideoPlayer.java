@@ -394,8 +394,10 @@ class VideoPlayer {
         // get a copy of the Data from encoder to pass it to Lib
         try {
             ByteBuffer readOnlyCopyOfBuffer = decoder.getOutputBuffer(decoderStatus);
-            readOnlyCopyOfBuffer.get(frame);
-            mDataCallback.onEncodedFrame(frame);
+            if (readOnlyCopyOfBuffer.hasRemaining()) {
+                readOnlyCopyOfBuffer.get(frame);
+                mDataCallback.onEncodedFrame(frame);
+            }
         } catch (Exception ex) {
             Log.e(ex.getMessage(), ex);
         }

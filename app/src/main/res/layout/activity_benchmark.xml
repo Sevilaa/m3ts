@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="ch.m3ts.tracker.visualization.replay.ReplayActivity"
+    android:keepScreenOn="true">
+
+    <include layout="@layout/camera_and_tracks_surface_views" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <Button
+            android:id="@+id/benchmark_start_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Start Benchmarking!"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:elevation="8dp"
+            android:textAllCaps="false"
+            android:textStyle="normal"
+            android:textColor="#fff"
+            android:textSize="18sp"
+            android:background="@drawable/radius_background"
+            android:backgroundTint="@android:color/secondary_text_light"
+            android:paddingStart="32dp"
+            android:paddingEnd="32dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp" />
+    </RelativeLayout>
+</merge>

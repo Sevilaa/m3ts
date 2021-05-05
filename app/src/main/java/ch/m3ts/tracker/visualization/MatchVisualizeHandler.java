@@ -63,7 +63,7 @@ import cz.fmo.util.Config;
  **/
 public class MatchVisualizeHandler extends android.os.Handler implements EventDetectionListener, DisplayUpdateListener, Subscribable {
     protected static final int MAX_REFRESHING_TIME_MS = 500;
-    final WeakReference<MatchVisualizeActivity> mActivity;
+    protected final WeakReference<MatchVisualizeActivity> mActivity;
     private final boolean useBlackSide;
     private final boolean useAudio;
     private final TrackSet tracks;
@@ -75,7 +75,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     private Paint outOfFramePaint;
     private Paint bouncePaint;
     private Paint trackPaint;
-    private VideoScaling videoScaling;
+    protected VideoScaling videoScaling;
     private Config config;
     private Table table;
     private boolean hasNewTable;

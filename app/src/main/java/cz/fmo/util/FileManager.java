@@ -14,6 +14,9 @@ import java.util.regex.Pattern;
  */
 public final class FileManager {
     private final Context mContext;
+    private String testSet;
+    private static final String M3TS_DIR = "/M3TS";
+    private static final String BENCHMARK_DIR = "/benchmark/";
 
     /**
      * @param context for activities, you should generally pass "this" here
@@ -22,14 +25,20 @@ public final class FileManager {
         mContext = context;
     }
 
+    public FileManager(Context context, String testSet) {
+        mContext = context;
+        this.testSet = testSet;
+    }
+
     private File publicDir() {
         String state = Environment.getExternalStorageState();
 
         if (!state.equals(Environment.MEDIA_MOUNTED)) {
             return fallbackPublicDir();
         }
-
-        File path =  new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getPath()+"/Camera/");
+        String videoPaths = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getPath() + M3TS_DIR;
+        if (testSet != null) videoPaths += BENCHMARK_DIR + testSet;
+        File path = new File(videoPaths);
         if (!path.exists()) {
             if (!path.mkdirs()) {
                 return fallbackPublicDir();
