@@ -21,9 +21,9 @@ public final class JSONInfo {
     public static final String PLAYER_NAME_RIGHT_PROPERTY = "playerNameRight";
     public static final String NEXT_SERVER_PROPERTY = "nextServer";
     public static final String LAST_SERVER_PROPERTY = "lastServer";
-    public static final String TABLE_FRAME = "tableFrame";
-    public static final String TABLE_FRAME_INDEX = "tableFrameIndex";
-    public static final String TABLE_FRAME_NUMBER_OF_PARTS = "tableFrameNumberOfParts";
+    public static final String PART_DATA = "partData";
+    public static final String PART_INDEX = "partIndex";
+    public static final String MULTIPART_NUMBER_OF_PARTS = "numberOfParts";
     public static final String TABLE_FRAME_WIDTH = "tableFrameWidth";
     public static final String TABLE_FRAME_HEIGHT = "tableFrameHeight";
     public static final String CORNERS = "corners";

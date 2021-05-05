@@ -40,11 +40,34 @@ public abstract class ImplTrackerConnection extends Callback implements TrackerC
     private static final String JSON_SEND_EXCEPTION_MESSAGE = "Unable to send JSON to endpoint ";
     protected MatchStatusCallback callback;
     protected InitTrackerCallback initTrackerCallback;
+
     protected abstract void send(String event, String side, Integer score, Integer wins, Side nextServer);
 
     protected abstract void sendData(JSONObject json);
 
-    protected abstract void sendTableFramePart(final String encodedFrame, final int index, final int numberOfPackages, boolean doContinue);
+    protected abstract void sendPart(JSONObject json, int index, int numberOfPackages, String encodedPart);
+
+    public void sentPart(String event, int index) {
+        switch (event) {
+            case ConnectionEvent.TABLE_FRAME:
+                this.initTrackerCallback.updateLoadingBar(index);
+                break;
+            case ConnectionEvent.STATS_PART:
+                // not needed so far
+                break;
+        }
+    }
+
+    public void sentMultipartCompletely(String event) {
+        switch (event) {
+            case ConnectionEvent.TABLE_FRAME:
+                this.initTrackerCallback.frameSent();
+                break;
+            case ConnectionEvent.STATS_PART:
+                // not needed so far
+                break;
+        }
+    }
 
     public void setTrackerPubNubCallback(MatchStatusCallback callback) {
         this.callback = callback;
@@ -54,15 +77,38 @@ public abstract class ImplTrackerConnection extends Callback implements TrackerC
         this.initTrackerCallback = initTrackerCallback;
     }
 
+    protected void createPart(JSONObject header, final String encodedData, final int index, final int numberOfPackages, boolean doContinue) {
+        String encodedPart;
+        if (index == numberOfPackages - 1) {
+            encodedPart = encodedData.substring(index * MAX_SIZE);
+        } else {
+            encodedPart = encodedData.substring(index * MAX_SIZE, (index + 1) * MAX_SIZE);
+        }
+        if (numberOfPackages == 1) doContinue = false;
+        Log.d("encodedFrame part length: " + encodedPart.length());
+        try {
+            header.put(JSONInfo.PART_INDEX, index);
+            header.put(JSONInfo.MULTIPART_NUMBER_OF_PARTS, numberOfPackages);
+            header.put(JSONInfo.PART_DATA, encodedPart);
+            if (doContinue) {
+                sendPart(header, index, numberOfPackages, encodedData);
+            } else {
+                sendData(header);
+            }
+        } catch (JSONException ex) {
+            Log.d(JSON_SEND_EXCEPTION_MESSAGE + "\n" + ex.getMessage());
+        }
+    }
+
     @Override
     public void onScore(Side side, int score, Side nextServer, Side lastServer) {
-        send("onScore", side.toString(), score, null, nextServer);
+        send(ConnectionEvent.SCORE, side.toString(), score, null, nextServer);
         try {
             JSONObject json = new JSONObject();
             json.put(JSONInfo.SIDE_PROPERTY, side);
             json.put(JSONInfo.SCORE_PROPERTY, score);
             json.put(JSONInfo.LAST_SERVER_PROPERTY, lastServer);
-            json.put(JSONInfo.EVENT_PROPERTY, "onScore");
+            json.put(JSONInfo.EVENT_PROPERTY, ConnectionEvent.SCORE);
             json.put(JSONInfo.NEXT_SERVER_PROPERTY, nextServer);
             json.put(JSONInfo.ROLE_PROPERTY, ROLE);
             sendData(json);
@@ -78,11 +124,10 @@ public abstract class ImplTrackerConnection extends Callback implements TrackerC
             MatchStats stats = StatsCreator.getInstance().createStats();
             so.writeObject(stats);
             so.flush();
-            String statsString = android.util.Base64.encodeToString(bo.toByteArray(), Base64.DEFAULT);
+            String encodedStats = android.util.Base64.encodeToString(bo.toByteArray(), Base64.DEFAULT);
             JSONObject json = new JSONObject();
-            json.put(JSONInfo.EVENT_PROPERTY, "onStatsCreated");
-            json.put(JSONInfo.STATS_SERIALIZED, statsString);
-            sendData(json);
+            json.put(JSONInfo.EVENT_PROPERTY, ConnectionEvent.STATS_PART);
+            sendMultipartData(json, encodedStats);
         } catch (JSONException ex) {
             Log.d(JSON_SEND_EXCEPTION_MESSAGE + ex.getMessage());
         } catch (Exception e) {
@@ -91,19 +136,19 @@ public abstract class ImplTrackerConnection extends Callback implements TrackerC
     }
 
     public void onWin(Side side, int wins) {
-        send("onWin", side.toString(), null, wins, null);
+        send(ConnectionEvent.WIN, side.toString(), null, wins, null);
     }
 
     public void onReadyToServe(Side server) {
-        send("onReadyToServe", server.toString(), null, null, null);
+        send(ConnectionEvent.READY_TO_SERVE, server.toString(), null, null, null);
     }
 
     public void onMatchEnded(String winnerName) {
-        send("onMatchEnded", winnerName, null, null, null);
+        send(ConnectionEvent.MATCH_ENDED, winnerName, null, null, null);
     }
 
     public void onNotReadyButPlaying() {
-        send("onNotReadyButPlaying", null, null, null, null);
+        send(ConnectionEvent.NOT_READY_BUT_PLAYING, null, null, null, null);
     }
 
     protected void handleMessage(JSONObject json) {
@@ -112,15 +157,15 @@ public abstract class ImplTrackerConnection extends Callback implements TrackerC
             String side;
             if (event != null) {
                 switch (event) {
-                    case "onPointDeduction":
+                    case ConnectionEvent.POINT_DEDUCTION:
                         side = json.getString(JSONInfo.SIDE_PROPERTY);
                         TTEventBus.getInstance().dispatch(new TTEvent<>(new PointDeduction(Side.valueOf(side))));
                         break;
-                    case "onPointAddition":
+                    case ConnectionEvent.POINT_ADDITION:
                         side = json.getString(JSONInfo.SIDE_PROPERTY);
                         TTEventBus.getInstance().dispatch(new TTEvent<>(new PointAddition(Side.valueOf(side))));
                         break;
-                    case "requestStatus":
+                    case ConnectionEvent.STATUS_REQUEST:
                         if (this.callback != null) {
                             MatchStatus status = this.callback.onRequestMatchStatus();
                             sendStatusUpdate(status.getPlayerLeft(), status.getPlayerRight(),
@@ -128,30 +173,29 @@ public abstract class ImplTrackerConnection extends Callback implements TrackerC
                                     status.getWinsRight(), status.getNextServer(), status.getGamesNeededToWin());
                         }
                         break;
-                    case "requestStats":
+                    case ConnectionEvent.STATS_REQUEST:
                         sendStats();
                         break;
-                    case "onPause":
+                    case ConnectionEvent.PAUSE:
                         TTEventBus.getInstance().dispatch(new TTEvent<>(new PauseMatch()));
                         break;
-                    case "onResume":
+                    case ConnectionEvent.RESUME:
                         TTEventBus.getInstance().dispatch(new TTEvent<>(new ResumeMatch()));
                         break;
-                    case "onRequestTableFrame":
+                    case ConnectionEvent.TABLE_FRAME_REQUEST:
                         handleOnRequestTableFrame();
                         break;
-                    case "onSelectTableCorner":
+                    case ConnectionEvent.TABLE_CORNER_SELECTION:
                         JSONArray tableCorners = json.getJSONArray(JSONInfo.CORNERS);
                         handleOnSelectTableCorner(tableCorners);
                         break;
-                    case "onStartMatch":
+                    case ConnectionEvent.MATCH_START:
                         this.initTrackerCallback.switchToLiveActivity(Integer.parseInt(json.getString(JSONInfo.TYPE_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.SERVER_PROPERTY)));
                         break;
-                    case "onRestartMatch":
+                    case ConnectionEvent.MATCH_RESTART:
                         TTEventBus.getInstance().dispatch(new TTEvent<>(new RestartMatchData()));
                         break;
                     default:
-                        Log.d("Invalid event received.\nevent:" + event);
                         break;
                 }
             }
@@ -161,29 +205,32 @@ public abstract class ImplTrackerConnection extends Callback implements TrackerC
     }
 
     protected void handleOnRequestTableFrame() {
-        Log.d("onRequestTableFrame");
         byte[] frame = this.initTrackerCallback.onCaptureFrame();
         byte[] compressedJPGBytes = CameraBytesConversions.compressCameraImageBytes(frame, this.initTrackerCallback.getCameraWidth(), this.initTrackerCallback.getCameraHeight());
         Log.d("frame length of compressed image: " + compressedJPGBytes.length + "Bytes");
         try {
             String encodedFrame = ByteToBase64.encodeToString(compressedJPGBytes);
             Log.d("encodedFrame length: " + encodedFrame.length());
-            sendTableFrame(encodedFrame);
+            JSONObject json = new JSONObject();
+            json.put(JSONInfo.EVENT_PROPERTY, ConnectionEvent.TABLE_FRAME);
+            json.put(JSONInfo.TABLE_FRAME_WIDTH, this.initTrackerCallback.getCameraWidth());
+            json.put(JSONInfo.TABLE_FRAME_HEIGHT, this.initTrackerCallback.getCameraHeight());
+            sendMultipartData(json, encodedFrame);
         } catch (Exception ex) {
             Log.d("UNSUPPORTED ENCODING EXCEPTION:");
             Log.d(ex.getMessage());
         }
     }
 
-    private void sendTableFrame(String encodedFrame) {
-        int numberOfPackages = (int) Math.ceil(encodedFrame.length() / (double) MAX_SIZE);
+    private void sendMultipartData(JSONObject header, String encodedData) throws JSONException {
+        int numberOfPackages = (int) Math.ceil(encodedData.length() / (double) MAX_SIZE);
         Log.d("numberOfPackages: " + numberOfPackages);
-        this.initTrackerCallback.setLoadingBarSize(numberOfPackages);
-        sendTableFramePart(encodedFrame, 0, numberOfPackages, true);
+        if (header.getString(JSONInfo.EVENT_PROPERTY).equals(ConnectionEvent.TABLE_FRAME))
+            this.initTrackerCallback.setLoadingBarSize(numberOfPackages);
+        createPart(header, encodedData, 0, numberOfPackages, true);
     }
 
     private void handleOnSelectTableCorner(JSONArray tableCorners) {
-        Log.d("onTableCorner: " + tableCorners);
         if (tableCorners != null) {
             int[] coordinates = new int[tableCorners.length()];
             for (int i = 0; i < tableCorners.length(); ++i) {
@@ -204,7 +251,7 @@ public abstract class ImplTrackerConnection extends Callback implements TrackerC
             json.put(JSONInfo.SCORE_RIGHT_PROPERTY, scoreRight);
             json.put(JSONInfo.WINS_LEFT_PROPERTY, winsLeft);
             json.put(JSONInfo.WINS_RIGHT_PROPERTY, winsRight);
-            json.put(JSONInfo.EVENT_PROPERTY, "onStatusUpdate");
+            json.put(JSONInfo.EVENT_PROPERTY, ConnectionEvent.STATUS_UPDATE);
             json.put(JSONInfo.ROLE_PROPERTY, ROLE);
             json.put(JSONInfo.NEXT_SERVER_PROPERTY, nextServer);
             json.put(JSONInfo.GAMES_NEEDED_PROPERTY, gamesNeededToWin);

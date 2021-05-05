@@ -10,6 +10,7 @@ import org.json.JSONObject;
 
 import java.util.UUID;
 
+import ch.m3ts.connection.ConnectionEvent;
 import ch.m3ts.connection.ImplTrackerConnection;
 import ch.m3ts.eventbus.TTEventBus;
 import ch.m3ts.tabletennis.helper.Side;
@@ -34,8 +35,7 @@ public class PubNubTrackerConnection extends ImplTrackerConnection {
 
     @Override
     public void connectCallback(String channel, Object message) {
-        send("onConnected", null, null, null, null);
-        Log.d("onConnected!");
+        send(ConnectionEvent.CONNECTION, null, null, null, null);
     }
 
     @Override
@@ -56,47 +56,32 @@ public class PubNubTrackerConnection extends ImplTrackerConnection {
         });
     }
 
-    protected void sendTableFramePart(final String encodedFrame, final int index, final int numberOfPackages, boolean doContinue) {
-        String encodedFramePart;
-        if (index == numberOfPackages - 1) {
-            encodedFramePart = encodedFrame.substring(index * MAX_SIZE);
-        } else {
-            encodedFramePart = encodedFrame.substring(index * MAX_SIZE, (index + 1) * MAX_SIZE);
-        }
-        try {
-            JSONObject json = new JSONObject();
-            json.put(JSONInfo.EVENT_PROPERTY, "onTableFrame");
-            json.put(JSONInfo.TABLE_FRAME_INDEX, index);
-            json.put(JSONInfo.TABLE_FRAME_NUMBER_OF_PARTS, numberOfPackages);
-            json.put(JSONInfo.TABLE_FRAME_WIDTH, this.initTrackerCallback.getCameraWidth());
-            json.put(JSONInfo.TABLE_FRAME_HEIGHT, this.initTrackerCallback.getCameraHeight());
-            json.put(JSONInfo.TABLE_FRAME, encodedFramePart);
-            if (doContinue) {
-                pubnub.publish(this.roomID, json, new Callback() {
-                    @Override
-                    public void successCallback(String channel, Object message) {
-                        boolean doContinue = true;
-                        initTrackerCallback.updateLoadingBar(index + 2);
-                        if (index >= numberOfPackages - 2) {
-                            doContinue = false;
-                            initTrackerCallback.frameSent();
-                        }
-                        sendTableFramePart(encodedFrame, index + 1, numberOfPackages, doContinue);
-                    }
-
-                    @Override
-                    public void errorCallback(String channel, PubnubError error) {
-                        Log.d("ERROR_CALLBACK CODE:" + error.getErrorString() + " ERROR_CODE: " + error.errorCode);
-                        // TODO display error message -> user should try again
-                    }
-                });
-            } else {
-                pubnub.publish(this.roomID, json, new Callback() {
-                });
+    @Override
+    protected void sendPart(final JSONObject json, final int index, final int numberOfPackages, final String encodedData) {
+        pubnub.publish(this.roomID, json, new Callback() {
+            @Override
+            public void successCallback(String channel, Object message) {
+                boolean doContinue = true;
+                String event = "";
+                try {
+                    event = json.getString(JSONInfo.EVENT_PROPERTY);
+                } catch (JSONException e) {
+                    Log.d("failed to update loading bar");
+                }
+                sentPart(event, index + 2);
+                if (index >= numberOfPackages - 2) {
+                    doContinue = false;
+                    sentMultipartCompletely(event);
+                }
+                createPart(json, encodedData, index + 1, numberOfPackages, doContinue);
             }
-        } catch (JSONException ex) {
-            Log.d(JSON_SEND_EXCEPTION_MESSAGE + this.roomID + "\n" + ex.getMessage());
-        }
+
+            @Override
+            public void errorCallback(String channel, PubnubError error) {
+                Log.d("ERROR_CALLBACK CODE:" + error.getErrorString() + " ERROR_CODE: " + error.errorCode);
+                // TODO display error message -> user should try again
+            }
+        });
     }
 
     protected void send(String event, String side, Integer score, Integer wins, Side nextServer) {
