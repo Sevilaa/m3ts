@@ -426,9 +426,9 @@ public class PubNubDisplayConnectionTest {
         JSONObject json = new JSONObject();
         try {
             json.put(JSONInfo.EVENT_PROPERTY, event);
-            json.put(JSONInfo.TABLE_FRAME_INDEX, tableFrameIndex);
-            json.put(JSONInfo.TABLE_FRAME_NUMBER_OF_PARTS, tableFrameNoOfParts);
-            json.put(JSONInfo.TABLE_FRAME, base64EncodedPart);
+            json.put(JSONInfo.PART_INDEX, tableFrameIndex);
+            json.put(JSONInfo.MULTIPART_NUMBER_OF_PARTS, tableFrameNoOfParts);
+            json.put(JSONInfo.PART_DATA, base64EncodedPart);
             json.put(JSONInfo.TABLE_FRAME_HEIGHT, height);
             json.put(JSONInfo.TABLE_FRAME_WIDTH, width);
         } catch (JSONException ex) {

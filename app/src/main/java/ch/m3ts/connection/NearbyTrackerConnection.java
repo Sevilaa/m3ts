@@ -179,34 +179,13 @@ public class NearbyTrackerConnection extends ImplTrackerConnection {
             this.connection.sendPayload(this.advertiserEndpointID, payload);    // needed Null Check for testing in LiveActivity...
     }
 
-    protected void sendTableFramePart(final String encodedFrame, final int index, final int numberOfPackages, boolean doContinue) {
-        String encodedFramePart;
-        if (index == numberOfPackages - 1) {
-            encodedFramePart = encodedFrame.substring(index * MAX_SIZE);
-        } else {
-            encodedFramePart = encodedFrame.substring(index * MAX_SIZE, (index + 1) * MAX_SIZE);
+    @Override
+    protected void sendPart(JSONObject json, int index, int numberOfPackages, String encodedData) {
+        sendData(json);
+        boolean doContinue = true;
+        if (index >= numberOfPackages - 2) {
+            doContinue = false;
         }
-        try {
-            JSONObject json = new JSONObject();
-            json.put(JSONInfo.EVENT_PROPERTY, "onTableFrame");
-            json.put(JSONInfo.TABLE_FRAME_INDEX, index);
-            json.put(JSONInfo.TABLE_FRAME_NUMBER_OF_PARTS, numberOfPackages);
-            json.put(JSONInfo.TABLE_FRAME_WIDTH, this.initTrackerCallback.getCameraWidth());
-            json.put(JSONInfo.TABLE_FRAME_HEIGHT, this.initTrackerCallback.getCameraHeight());
-            json.put(JSONInfo.TABLE_FRAME, encodedFramePart);
-            if (doContinue) {
-                sendData(json);
-                doContinue = true;
-                initTrackerCallback.updateLoadingBar(index + 2);
-                if (index >= numberOfPackages - 2) {
-                    doContinue = false;
-                }
-                sendTableFramePart(encodedFrame, index + 1, numberOfPackages, doContinue);
-            } else {
-                sendData(json);
-            }
-        } catch (JSONException ex) {
-            Log.d(JSON_SEND_EXCEPTION_MESSAGE + this.advertiserEndpointID + "\n" + ex.getMessage());
-        }
+        createPart(json, encodedData, index + 1, numberOfPackages, doContinue);
     }
 }
