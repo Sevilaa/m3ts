@@ -21,14 +21,14 @@ public class ReadyToServeDetector {
     private final GestureDetectionStrategy gestureDetectionStrategy;
     private int gestureFrameCounter = 0;
 
-    public ReadyToServeDetector(Table table, Side server, ReadyToServeCallback callback, boolean useBlackSide) {
+    public ReadyToServeDetector(Table table, Side server, ReadyToServeCallback callback, boolean useRedSideOnly) {
         this.table = table;
         this.server = server;
         this.callback = callback;
-        if (useBlackSide) {
-            this.gestureDetectionStrategy = new BackgroundModelingStrategy();  // for testing purposes, black side now uses backgroundModeling instead of RedBlackThreshold
-        } else {
+        if (useRedSideOnly) {
             this.gestureDetectionStrategy = new RedThresholdingStrategy();
+        } else {
+            this.gestureDetectionStrategy = new BackgroundModelingStrategy();
         }
     }
 

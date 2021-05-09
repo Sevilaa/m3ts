@@ -72,9 +72,9 @@
     <string name="prefRecordKey">record_matches</string>
     <string name="prefRecordDefault">false</string>
     <string name="prefUseBlackSideDefault">false</string>
-    <string name="prefUseBlackSideKey">use_black_side</string>
-    <string name="prefUseBlackSideTitle">Use black side of racket for serving</string>
-    <string name="prefUseBlackSideSummary">Allows the use of the black side of the racket (in addition to the red one) to signal that a player is ready for serve</string>
+    <string name="prefUseBlackSideKey">use_red_side</string>
+    <string name="prefUseBlackSideTitle">Use only red side of racket for serving</string>
+    <string name="prefUseBlackSideSummary">Allows the use of only the red side of the racket to signal that a player is ready for serve</string>
     <string name="prefUseAudioDefault">true</string>
     <string name="prefUseAudioKey">use_audio</string>
     <string name="prefUseAudioSummary">Allows the use of audio of the tracker device to assist ball detection</string>

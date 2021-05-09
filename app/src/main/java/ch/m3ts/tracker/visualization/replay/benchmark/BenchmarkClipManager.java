@@ -1,5 +1,7 @@
 package ch.m3ts.tracker.visualization.replay.benchmark;
 
+import java.security.InvalidParameterException;
+
 import ch.m3ts.tabletennis.helper.Side;
 
 public class BenchmarkClipManager {
@@ -12,7 +14,7 @@ public class BenchmarkClipManager {
 
     public BenchmarkClipManager(String[][] clips, String[] sets) {
         if (clips.length != sets.length)
-            throw new RuntimeException("Amount of clips do not match test sets!");
+            throw new InvalidParameterException("Amount of clips do not match test sets!");
         this.sets = sets;
         this.clips = clips;
     }
