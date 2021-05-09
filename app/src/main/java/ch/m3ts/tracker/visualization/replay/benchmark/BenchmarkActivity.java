@@ -25,7 +25,6 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import java.io.IOException;
-import java.util.Locale;
 
 import ch.m3ts.tabletennis.Table;
 import ch.m3ts.tabletennis.helper.Side;
@@ -145,31 +144,8 @@ public class BenchmarkActivity extends MatchVisualizeActivity implements VideoPl
     }
 
     private void printStatistics() {
-        int allJudgements = 0;
-        for (int j : this.nTotalJudgements) {
-            allJudgements += j;
-        }
-
-        if (allJudgements == 0) allJudgements = 1;
-
-        int allCorrectJudgements = 0;
-        for (int c : this.nCorrectJudgements) {
-            allCorrectJudgements += c;
-        }
-
-        Log.d("-------------------- BENCHMARK DONE --------------------");
-        Log.d(String.format(Locale.US, "%-45s%d", "Total amount of Judgements:", allJudgements));
-        Log.d(String.format(Locale.US, "%-45s%d", "Total amount of correct Judgements:", allCorrectJudgements));
-        Log.d(String.format(Locale.US, "%-45s%.1f%%", "In percentage:", ((double) allCorrectJudgements / allJudgements) * 100));
-        Log.d("Stats per test set =>");
-        String[] sets = clipManager.getSets();
-        for (int i = 0; i < sets.length; i++) {
-            String testSet = sets[i];
-            String formattedTestSetString = String.format(Locale.US, "set '%s':", testSet);
-            Log.d(String.format(Locale.US, "%-38s%d/%d => %.1f%%", formattedTestSetString, nCorrectJudgements[i], nTotalJudgements[i],
-                    ((double) nCorrectJudgements[i] / nTotalJudgements[i]) * 100));
-        }
-        Log.d("--------------------------------------------------------");
+        String stats = BenchmarkClipManager.makeStatisticsString(nTotalJudgements, nCorrectJudgements, clipManager);
+        Log.d(stats);
     }
 
     @Override

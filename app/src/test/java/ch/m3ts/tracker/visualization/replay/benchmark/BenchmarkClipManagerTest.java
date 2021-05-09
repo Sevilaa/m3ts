@@ -2,10 +2,13 @@ package ch.m3ts.tracker.visualization.replay.benchmark;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import ch.m3ts.tabletennis.helper.Side;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.times;
 
 public class BenchmarkClipManagerTest {
     private BenchmarkClipManager clipManager;
@@ -53,6 +56,25 @@ public class BenchmarkClipManagerTest {
                 }
             }
         }
+    }
+
+    @Test
+    public void testMakeStatistics() {
+        String[] someSets = {"set_uno", "other_set"};
+        int[] totalJudgements = {10, 30};
+        int[] correctJudgements = {10, 15};
+        BenchmarkClipManager clipManager = Mockito.mock(BenchmarkClipManager.class);
+        Mockito.when(clipManager.getSets()).thenReturn(someSets);
+        String stats = BenchmarkClipManager.makeStatisticsString(totalJudgements, correctJudgements, clipManager);
+        Mockito.verify(clipManager, times(1)).getSets();
+        assertTrue(stats.contains(someSets[0]));
+        assertTrue(stats.contains(someSets[1]));
+        assertTrue(stats.contains(String.valueOf(totalJudgements[0])));
+        assertTrue(stats.contains(String.valueOf(totalJudgements[1])));
+        assertTrue(stats.contains(String.valueOf(correctJudgements[0])));
+        assertTrue(stats.contains(String.valueOf(correctJudgements[1])));
+        assertTrue(stats.contains("100.0%"));
+        assertTrue(stats.contains("50.0%"));
     }
 
     @Test(expected = RuntimeException.class)

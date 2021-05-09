@@ -1,6 +1,7 @@
 package ch.m3ts.tracker.visualization.replay.benchmark;
 
 import java.security.InvalidParameterException;
+import java.util.Locale;
 
 import ch.m3ts.tabletennis.helper.Side;
 
@@ -82,5 +83,35 @@ public class BenchmarkClipManager {
             }
         }
         return sideToScore;
+    }
+
+    public static String makeStatisticsString(int[] nTotalJudgements, int[] nCorrectJudgements, BenchmarkClipManager clipManager) {
+        StringBuilder stringBuilder = new StringBuilder();
+        int allJudgements = 0;
+        for (int j : nTotalJudgements) {
+            allJudgements += j;
+        }
+
+        if (allJudgements == 0) allJudgements = 1;
+
+        int allCorrectJudgements = 0;
+        for (int c : nCorrectJudgements) {
+            allCorrectJudgements += c;
+        }
+
+        stringBuilder.append("-------------------- BENCHMARK DONE --------------------\n");
+        stringBuilder.append(String.format(Locale.US, "%-45s%d\n", "Total amount of Judgements:", allJudgements));
+        stringBuilder.append(String.format(Locale.US, "%-45s%d\n", "Total amount of correct Judgements:", allCorrectJudgements));
+        stringBuilder.append(String.format(Locale.US, "%-45s%.1f%%\n", "In percentage:", ((double) allCorrectJudgements / allJudgements) * 100));
+        stringBuilder.append("Stats per test set =>\n");
+        String[] sets = clipManager.getSets();
+        for (int i = 0; i < sets.length; i++) {
+            String testSet = sets[i];
+            String formattedTestSetString = String.format(Locale.US, "set '%s':", testSet);
+            stringBuilder.append(String.format(Locale.US, "%-38s%d/%d => %.1f%%\n", formattedTestSetString, nCorrectJudgements[i], nTotalJudgements[i],
+                    ((double) nCorrectJudgements[i] / nTotalJudgements[i]) * 100));
+        }
+        stringBuilder.append("--------------------------------------------------------\n");
+        return stringBuilder.toString();
     }
 }
