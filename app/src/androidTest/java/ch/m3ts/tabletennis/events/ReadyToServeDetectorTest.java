@@ -45,7 +45,7 @@ public class ReadyToServeDetectorTest {
 
     @Test
     public void skipTwoOfThreeFrames() {
-        detector = new ReadyToServeDetector(table, Side.RIGHT, callback, false);
+        detector = new ReadyToServeDetector(table, Side.RIGHT, callback, true);
         Mat redMat = getRedMat();
         detector.isReadyToServe(redMat);
         Mockito.verify(table, Mockito.times(0)).getWidth();
@@ -57,7 +57,7 @@ public class ReadyToServeDetectorTest {
 
     @Test
     public void holdRedSideFor15Frames() {
-        detector = new ReadyToServeDetector(table, Side.RIGHT, callback, false);
+        detector = new ReadyToServeDetector(table, Side.RIGHT, callback, true);
         boolean result;
         for (int i = 0; i < 14; i++) {
             result = detector.isReadyToServe(getRedMat());
@@ -68,30 +68,8 @@ public class ReadyToServeDetectorTest {
     }
 
     @Test
-    public void holdBlackSideFor15FramesWithUseBlackSideActive() {
-        detector = new ReadyToServeDetector(table, Side.RIGHT, callback, true);
-        boolean result;
-        for (int i = 0; i < 14; i++) {
-            result = detector.isReadyToServe(getBlackMat());
-            assertFalse(result);
-        }
-        result = detector.isReadyToServe(getBlackMat());
-        assertTrue(result);
-    }
-
-    @Test
-    public void holdBlackSideFor15FramesWithUseBlackSideInActive() {
-        detector = new ReadyToServeDetector(table, Side.RIGHT, callback, false);
-        boolean result;
-        for (int i = 0; i < 15; i++) {
-            result = detector.isReadyToServe(getBlackMat());
-            assertFalse(result);
-        }
-    }
-
-    @Test
     public void invalidColorAfter14Frames() {
-        detector = new ReadyToServeDetector(table, Side.RIGHT, callback, false);
+        detector = new ReadyToServeDetector(table, Side.RIGHT, callback, true);
         boolean result;
         for (int i = 0; i < 15; i++) {
             Mat mat = getBlackMat();

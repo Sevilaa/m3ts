@@ -105,7 +105,7 @@ public class ReplayActivityTest {
         onView(withId(R.id.play_stop_button))
                 .perform(click());
         verifyIfSwipeScoreManipulationWorks();
-        onView(isRoot()).perform(waitFor(10000));
+        onView(isRoot()).perform(waitFor(15000));
         onView(allOf(withId(R.id.txtBounce), not(withText("0"))));
         onView(allOf(withId(R.id.txtSide), not(withText("None"))));
         onView(withId(R.id.play_stop_button))
