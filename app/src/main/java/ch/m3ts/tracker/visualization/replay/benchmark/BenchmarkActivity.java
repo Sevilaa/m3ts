@@ -25,9 +25,7 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Locale;
-import java.util.Properties;
 
 import ch.m3ts.tabletennis.Table;
 import ch.m3ts.tabletennis.helper.Side;
@@ -35,6 +33,7 @@ import ch.m3ts.tracker.visualization.MatchVisualizeActivity;
 import ch.m3ts.tracker.visualization.replay.lib.SpeedControlCallback;
 import ch.m3ts.tracker.visualization.replay.lib.VideoPlayer;
 import ch.m3ts.util.Log;
+import ch.m3ts.util.XMLLoader;
 import cz.fmo.R;
 import cz.fmo.graphics.EGL;
 import cz.fmo.util.Config;
@@ -290,42 +289,6 @@ public class BenchmarkActivity extends MatchVisualizeActivity implements VideoPl
         egl.release();
     }
 
-    /**
-     * Tries to load the table location from an xml file from assets.
-     *
-     * @param videoFileName - Full name of video file in phones Camera dir. Example: "bounce_back_1.mp4"
-     */
-    private Table trySettingTableLocationFromXML(String videoFileName) {
-        String fileNameWithoutExtension = videoFileName.split("\\.")[0];
-        try (InputStream is = getAssets().open(fileNameWithoutExtension + ".xml")) {
-            Properties properties = new Properties();
-            properties.loadFromXML(is);
-            return Table.makeTableFromProperties(properties);
-        } catch (IOException ex) {
-            Log.e(ex.getMessage(), ex);
-        }
-        return null;
-    }
-
-    /**
-     * Tries to load the serving side from an xml file from assets.
-     *
-     * @param videoFileName - Full name of video file in phones Camera dir. Example: "bounce_back_1.mp4"
-     */
-    private Side tryGettingServingSideFromXML(String videoFileName) {
-        Side servingSide = Side.LEFT;
-        String fileNameWithoutExtension = videoFileName.split("\\.")[0];
-        try (InputStream is = getAssets().open(fileNameWithoutExtension + ".xml")) {
-            Properties properties = new Properties();
-            properties.loadFromXML(is);
-            if (properties.containsKey("servingSide") && properties.getProperty("servingSide").equals("RIGHT"))
-                servingSide = Side.RIGHT;
-        } catch (IOException ex) {
-            Log.e(ex.getMessage(), ex);
-        }
-        return servingSide;
-    }
-
     private void finishCurrentTestSet() {
         this.nCorrectJudgements[currentTestSet] = mHandler.getCorrectJudgementCalls();
         mHandler.stopDetections();
@@ -348,12 +311,12 @@ public class BenchmarkActivity extends MatchVisualizeActivity implements VideoPl
 
         VideoPlayer player;
         try {
-            Side servingSide = tryGettingServingSideFromXML(BENCHMARK_PREFIX + mTestSets[currentTestSet]);
+            Side servingSide = XMLLoader.loadServingSide(BENCHMARK_PREFIX + mTestSets[currentTestSet], getAssets());
             mHandler.initBenchmarkMatch(servingSide);
             player = new VideoPlayer(getCurrentFileManager().open(mTestSetClips[currentClip]), surface,
                     new SpeedControlCallback(), mHandler);
             Config mConfig = new Config(this);
-            Table table = trySettingTableLocationFromXML(BENCHMARK_PREFIX + mTestSets[currentTestSet]);
+            Table table = XMLLoader.loadTable(BENCHMARK_PREFIX + mTestSets[currentTestSet], getAssets());
             if (table != null) {
                 mHandler.init(mConfig, player.getVideoWidth(), player.getVideoHeight(), table, VIEWING_ANGLE_HORIZONTAL);
                 mHandler.startDetections();
