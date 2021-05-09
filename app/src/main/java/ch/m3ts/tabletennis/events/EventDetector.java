@@ -121,19 +121,19 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
                         hasTableSideChanged(latestDetection.centerX);
                         hasBallFallenOffSideWays(latestDetection);
                         if (latestDetection.directionX != DirectionX.NONE) {
-                            boolean tableSideChanged = hasSideChanged(latestDetection);
+                            boolean strikerSideChanged = hasSideChanged(latestDetection);
                             if (latestDetection.directionY != DirectionY.NONE) {
                                 isMovingIntoNet(latestDetection);
-                                hasBouncedOnTable(latestDetection, tableSideChanged);
+                                hasBouncedOnTable(latestDetection, strikerSideChanged);
                                 Side nearlyOutOfFrameSide = getNearlyOutOfFrameSide(latestDetection);
                                 if (nearlyOutOfFrameSide != null) {
                                     callAllOnNearlyOutOfFrame(latestDetection, nearlyOutOfFrameSide);
                                 }
                             }
                         }
-                        savePreviousDetection(latestDetection);
-                        setTimeoutTimer(numberOfDetections);
                     }
+                    savePreviousDetection(latestDetection);
+                    setTimeoutTimer(numberOfDetections);
                 }
             }
         }

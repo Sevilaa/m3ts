@@ -41,43 +41,16 @@ import cz.fmo.util.Config;
 import cz.fmo.util.FileManager;
 
 /**
- * Play a video from a file on disk.  Output goes to a SurfaceView.
- * <p>
- * This is very similar to PlayMovieActivity, but the output goes to a SurfaceView instead of
- * a TextureView.  There are some important differences:
- * <ul>
- * <li> TextureViews behave like normal views.  SurfaceViews don't.  A SurfaceView has
- * a transparent "hole" in the UI through which an independent Surface layer can
- * be seen.  This Surface is sent directly to the system graphics compositor.
- * <li> Because the video is being composited with the UI by the system compositor,
- * rather than the application, it can often be done more efficiently (e.g. using
- * a hardware composer "overlay").  This can lead to significant battery savings
- * when playing a long movie.
- * <li> On the other hand, the TextureView contents can be freely scaled and rotated
- * with a simple matrix.  The SurfaceView output is limited to scaling, and it's
- * more awkward to do.
- * <li> DRM-protected content can't be touched by the app (or even the system compositor).
- * We have to point the MediaCodec decoder at a Surface that is composited by a
- * hardware composer overlay.  The only way to do the app side of this is with
- * SurfaceView.
- * </ul>
- * <p>
- * The MediaCodec decoder requests buffers from the Surface, passing the video dimensions
- * in as arguments.  The Surface provides buffers with a matching size, which means
- * the video data will completely cover the Surface.  As a result, there's no need to
- * use SurfaceHolder#setFixedSize() to set the dimensions.  The hardware scaler will scale
- * the video to match the view size, so if we want to preserve the correct aspect ratio
- * we need to adjust the View layout.  We can use our custom AspectFrameLayout for this.
- * <p>)
- * The actual playback of the video -- sending frames to a Surface -- is the same for
- * TextureView and SurfaceView.
- */
+ * Activity which loads video snippets of played matches and benchmarks them in terms of how good
+ * the virtual Referee is working.
+ **/
 @SuppressWarnings("squid:S110")
 public class BenchmarkActivity extends MatchVisualizeActivity implements VideoPlayer.PlayerFeedback, View.OnClickListener {
     private static final double VIEWING_ANGLE_HORIZONTAL = 66.56780242919922; // viewing angle of phone which we used for recordings
-    private final String[] mTestSets = {
-            "indoor_white_ball", "indoor_white_ball"
-    };
+    private static final String BENCHMARK_PREFIX = "!test_";
+    private static final String SCORE_DIVIDING_SYMBOL = "_";
+    private static final String VIDEO_MEDIA_TYPE = ".mp4";
+    private String[] mTestSets;
     private FileManager[] mFileManagers;
     private String[] mTestSetClips;
     private int[] nTotalJudgements;
@@ -85,6 +58,7 @@ public class BenchmarkActivity extends MatchVisualizeActivity implements VideoPl
     private int currentClip;
     private int currentTestSet;
     private boolean mShowStopLabel;
+    private boolean doCancelBenchmark;
     private VideoPlayer.PlayTask mPlayTask;
     private BenchmarkHandler mHandler;
 
@@ -94,9 +68,11 @@ public class BenchmarkActivity extends MatchVisualizeActivity implements VideoPl
         this.mHandler = new BenchmarkHandler(this);
         this.currentTestSet = 0;
         this.currentClip = 0;
+        this.mTestSets = getResources().getStringArray(R.array.testSets);
         this.mFileManagers = new FileManager[mTestSets.length];
         this.nCorrectJudgements = new int[mTestSets.length];
         this.nTotalJudgements = new int[mTestSets.length];
+        this.doCancelBenchmark = false;
 
         for (int i = 0; i < mTestSets.length; i++) {
             this.mFileManagers[i] = new FileManager(this, mTestSets[i]);
@@ -117,6 +93,12 @@ public class BenchmarkActivity extends MatchVisualizeActivity implements VideoPl
         initCurrentTestSet();
         setWhoShouldScore();
         playCurrentClip();
+    }
+
+    @Override
+    public void onBackPressed() {
+        doCancelBenchmark = true;
+        super.onBackPressed();
     }
 
     private void setCurrentClips() {
@@ -147,31 +129,45 @@ public class BenchmarkActivity extends MatchVisualizeActivity implements VideoPl
      */
     @Override
     public void playbackStopped() {
-        Log.d("playback stopped");
+        mHandler.onClipEnded();
         mShowStopLabel = false;
         mPlayTask = null;
-        if (!advanceToNextClip()) {
-            if (!advanceToNextTestSet()) {
+        if (!doCancelBenchmark) {
+            if (!advanceToNextClip() && !advanceToNextTestSet()) {
                 finishBenchmark();
                 return;
             }
+            setWhoShouldScore();
+            playCurrentClip();
         }
-        setWhoShouldScore();
-        playCurrentClip();
     }
 
     private void setWhoShouldScore() {
-        String clipName = mTestSetClips[currentClip];
-        clipName = clipName.split(".mp4")[0];
-        String[] scoresAsString = clipName.split("_");
-        int[] scores = {
-                Integer.parseInt(scoresAsString[0]), Integer.parseInt(scoresAsString[1])
-        };
         Side sideToScore;
-        if (scores[0] > scores[1]) {
-            sideToScore = Side.LEFT;
+        String currentClipName = mTestSetClips[currentClip];
+        currentClipName = currentClipName.split(VIDEO_MEDIA_TYPE)[0];
+        String[] currentScoresAsString = currentClipName.split(SCORE_DIVIDING_SYMBOL);
+        int[] currentScores = {
+                Integer.parseInt(currentScoresAsString[0]), Integer.parseInt(currentScoresAsString[1])
+        };
+
+        if (currentClip == 0) {
+            if (currentScores[0] > currentScores[1]) {
+                sideToScore = Side.LEFT;
+            } else {
+                sideToScore = Side.RIGHT;
+            }
         } else {
-            sideToScore = Side.RIGHT;
+            String lastClipName = mTestSetClips[currentClip - 1].split(VIDEO_MEDIA_TYPE)[0];
+            String[] lastScoresAsString = lastClipName.split(SCORE_DIVIDING_SYMBOL);
+            int[] lastScores = {
+                    Integer.parseInt(lastScoresAsString[0]), Integer.parseInt(lastScoresAsString[1])
+            };
+            if (currentScores[0] > lastScores[0]) {
+                sideToScore = Side.LEFT;
+            } else {
+                sideToScore = Side.RIGHT;
+            }
         }
         mHandler.setWhoShouldScore(sideToScore);
     }
@@ -181,7 +177,7 @@ public class BenchmarkActivity extends MatchVisualizeActivity implements VideoPl
         if (currentTestSet >= mTestSets.length - 1) {
             return false;
         } else {
-            currentClip = 0;
+            this.currentClip = 0;
             currentTestSet++;
             setCurrentClips();
             this.initCurrentTestSet();
@@ -193,6 +189,7 @@ public class BenchmarkActivity extends MatchVisualizeActivity implements VideoPl
         this.onPause();
         updateControls();
         printStatistics();
+        Toast.makeText(this, R.string.benchmark_finished_toast_text, Toast.LENGTH_LONG).show();
     }
 
     private void printStatistics() {
@@ -216,8 +213,8 @@ public class BenchmarkActivity extends MatchVisualizeActivity implements VideoPl
         for (int i = 0; i < mTestSets.length; i++) {
             String testSet = mTestSets[i];
             String formattedTestSetString = String.format(Locale.US, "set '%s':", testSet);
-            Log.d(String.format(Locale.US, "%-38s%d/%d => %.1f%%", formattedTestSetString, nTotalJudgements[i], nCorrectJudgements[i],
-                    ((double) nTotalJudgements[i] / nCorrectJudgements[i]) * 100));
+            Log.d(String.format(Locale.US, "%-38s%d/%d => %.1f%%", formattedTestSetString, nCorrectJudgements[i], nTotalJudgements[i],
+                    ((double) nCorrectJudgements[i] / nTotalJudgements[i]) * 100));
         }
         Log.d("--------------------------------------------------------");
     }
@@ -248,20 +245,11 @@ public class BenchmarkActivity extends MatchVisualizeActivity implements VideoPl
         // We want to be sure that the player won't continue to send frames after we pause,
         // because we're tearing the view down.  So we wait for it to stop here.
         if (mPlayTask != null) {
-            stopPlayback();
+            mPlayTask.requestStop();
             mPlayTask.waitForStop();
         }
         //here
         mHandler.stopDetections();
-    }
-
-    /**
-     * Requests stoppage if a movie is currently playing.
-     */
-    private void stopPlayback() {
-        if (mPlayTask != null) {
-            mPlayTask.requestStop();
-        }
     }
 
     /**
@@ -270,9 +258,13 @@ public class BenchmarkActivity extends MatchVisualizeActivity implements VideoPl
     private void updateControls() {
         Button play = findViewById(R.id.benchmark_start_button);
         if (mShowStopLabel) {
-            play.setText(R.string.stop_button_text);
+            play.setText(R.string.benchmark_stop_button_text);
+            play.setEnabled(false);
+            play.setClickable(false);
         } else {
-            play.setText(R.string.play_button_text);
+            play.setText(R.string.benchmark_play_button_text);
+            play.setEnabled(true);
+            play.setClickable(true);
         }
         play.setEnabled(ismSurfaceHolderReady());
     }
@@ -356,12 +348,12 @@ public class BenchmarkActivity extends MatchVisualizeActivity implements VideoPl
 
         VideoPlayer player;
         try {
-            Side servingSide = tryGettingServingSideFromXML("!test_" + mTestSets[currentTestSet]);
+            Side servingSide = tryGettingServingSideFromXML(BENCHMARK_PREFIX + mTestSets[currentTestSet]);
             mHandler.initBenchmarkMatch(servingSide);
             player = new VideoPlayer(getCurrentFileManager().open(mTestSetClips[currentClip]), surface,
                     new SpeedControlCallback(), mHandler);
             Config mConfig = new Config(this);
-            Table table = trySettingTableLocationFromXML("!test_" + mTestSets[currentTestSet]);
+            Table table = trySettingTableLocationFromXML(BENCHMARK_PREFIX + mTestSets[currentTestSet]);
             if (table != null) {
                 mHandler.init(mConfig, player.getVideoWidth(), player.getVideoHeight(), table, VIEWING_ANGLE_HORIZONTAL);
                 mHandler.startDetections();
@@ -383,6 +375,7 @@ public class BenchmarkActivity extends MatchVisualizeActivity implements VideoPl
             mPlayTask = new VideoPlayer.PlayTask(player, this, false);
             mShowStopLabel = true;
             updateControls();
+            mHandler.setClipId(mTestSetClips[currentClip]);
             mPlayTask.execute();
         } catch (IOException ex) {
             Log.e("Unable to play movie", ex);

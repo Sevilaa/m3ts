@@ -2,8 +2,11 @@
     <string name="app_name">M3TS</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
 
+    <string name="benchmark_finished_toast_text">Benchmark finished, check logcat for results!</string>
     <string name="play_button_text">Play</string>
-    <string name="stop_button_text">Stop</string>
+    <string name="stop_button_text">stop</string>
+    <string name="benchmark_play_button_text">Start Benchmarking</string>
+    <string name="benchmark_stop_button_text">Benchmarking in progress…</string>
     <string name="errorMsgPermissions">Sorry, cannot use M3TS unless all permissions are granted</string>
     <string name="idDisplay">m3ts_display</string>
     <string name="idTracker">m3ts_tracker</string>
@@ -244,6 +247,13 @@
 
     <!-- Video Testing -->
     <string name="testSetOutdoor">test_outdoor_1</string>
+    <string-array name="testSets">
+        <item>indoor_bad_lighting</item>
+        <item>indoor_white_ball</item>
+        <item>indoor_orange_ball</item>
+        <item>outdoor</item>
+        <item>sports_hall_white_ball</item>
+    </string-array>
 
     <!-- Movie Player Activity -->
     <string-array name="prefCameraFacingNames">
