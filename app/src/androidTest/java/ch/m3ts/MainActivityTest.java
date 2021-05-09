@@ -135,6 +135,7 @@ public class MainActivityTest {
         onView(withText(R.string.prefRecord)).perform(click());
         onView(withText(R.string.prefPubnub)).check(matches(isDisplayed()));
         onView(withText(R.string.prefPubnub)).perform(click());
+        onView(withText(R.string.prefBenchmark)).check(matches(isDisplayed()));
 
         // now check the edited settings in main activity
         pressBack();

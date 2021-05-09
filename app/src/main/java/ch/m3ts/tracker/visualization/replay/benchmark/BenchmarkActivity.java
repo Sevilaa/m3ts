@@ -47,41 +47,34 @@ import cz.fmo.util.FileManager;
 public class BenchmarkActivity extends MatchVisualizeActivity implements VideoPlayer.PlayerFeedback, View.OnClickListener {
     private static final double VIEWING_ANGLE_HORIZONTAL = 66.56780242919922; // viewing angle of phone which we used for recordings
     private static final String BENCHMARK_PREFIX = "!test_";
-    private static final String SCORE_DIVIDING_SYMBOL = "_";
-    private static final String VIDEO_MEDIA_TYPE = ".mp4";
-    private String[] mTestSets;
-    private FileManager[] mFileManagers;
-    private String[] mTestSetClips;
     private int[] nTotalJudgements;
     private int[] nCorrectJudgements;
-    private int currentClip;
-    private int currentTestSet;
     private boolean mShowStopLabel;
     private boolean doCancelBenchmark;
     private VideoPlayer.PlayTask mPlayTask;
     private BenchmarkHandler mHandler;
+    private BenchmarkClipManager clipManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.mHandler = new BenchmarkHandler(this);
-        this.currentTestSet = 0;
-        this.currentClip = 0;
-        this.mTestSets = getResources().getStringArray(R.array.testSets);
-        this.mFileManagers = new FileManager[mTestSets.length];
-        this.nCorrectJudgements = new int[mTestSets.length];
-        this.nTotalJudgements = new int[mTestSets.length];
+        String[] testSets = getResources().getStringArray(R.array.testSets);
+        String[][] clips = new String[testSets.length][];
+        this.nCorrectJudgements = new int[testSets.length];
+        this.nTotalJudgements = new int[testSets.length];
         this.doCancelBenchmark = false;
 
-        for (int i = 0; i < mTestSets.length; i++) {
-            this.mFileManagers[i] = new FileManager(this, mTestSets[i]);
-            this.nTotalJudgements[i] = mFileManagers[i].listMP4().length;
+        for (int i = 0; i < testSets.length; i++) {
+            FileManager fm = new FileManager(this, testSets[i]);
+            clips[i] = fm.listMP4();
+            this.nTotalJudgements[i] = clips[i].length;
         }
 
+        this.clipManager = new BenchmarkClipManager(clips, testSets);
         Button playStopButton = findViewById(R.id.benchmark_start_button);
         playStopButton.setOnClickListener(this);
         updateControls();
-        setCurrentClips();
     }
 
     /**
@@ -98,14 +91,6 @@ public class BenchmarkActivity extends MatchVisualizeActivity implements VideoPl
     public void onBackPressed() {
         doCancelBenchmark = true;
         super.onBackPressed();
-    }
-
-    private void setCurrentClips() {
-        mTestSetClips = mFileManagers[currentTestSet].listMP4();
-    }
-
-    private FileManager getCurrentFileManager() {
-        return mFileManagers[currentTestSet];
     }
 
     @Override
@@ -132,9 +117,14 @@ public class BenchmarkActivity extends MatchVisualizeActivity implements VideoPl
         mShowStopLabel = false;
         mPlayTask = null;
         if (!doCancelBenchmark) {
-            if (!advanceToNextClip() && !advanceToNextTestSet()) {
-                finishBenchmark();
-                return;
+            if (!clipManager.advanceToNextClip()) {
+                this.finishCurrentTestSet();
+                if (!clipManager.advanceToNextTestSet()) {
+                    finishBenchmark();
+                    return;
+                } else {
+                    this.initCurrentTestSet();
+                }
             }
             setWhoShouldScore();
             playCurrentClip();
@@ -142,47 +132,10 @@ public class BenchmarkActivity extends MatchVisualizeActivity implements VideoPl
     }
 
     private void setWhoShouldScore() {
-        Side sideToScore;
-        String currentClipName = mTestSetClips[currentClip];
-        currentClipName = currentClipName.split(VIDEO_MEDIA_TYPE)[0];
-        String[] currentScoresAsString = currentClipName.split(SCORE_DIVIDING_SYMBOL);
-        int[] currentScores = {
-                Integer.parseInt(currentScoresAsString[0]), Integer.parseInt(currentScoresAsString[1])
-        };
-
-        if (currentClip == 0) {
-            if (currentScores[0] > currentScores[1]) {
-                sideToScore = Side.LEFT;
-            } else {
-                sideToScore = Side.RIGHT;
-            }
-        } else {
-            String lastClipName = mTestSetClips[currentClip - 1].split(VIDEO_MEDIA_TYPE)[0];
-            String[] lastScoresAsString = lastClipName.split(SCORE_DIVIDING_SYMBOL);
-            int[] lastScores = {
-                    Integer.parseInt(lastScoresAsString[0]), Integer.parseInt(lastScoresAsString[1])
-            };
-            if (currentScores[0] > lastScores[0]) {
-                sideToScore = Side.LEFT;
-            } else {
-                sideToScore = Side.RIGHT;
-            }
-        }
+        Side sideToScore = clipManager.readWhichSideShouldScore();
         mHandler.setWhoShouldScore(sideToScore);
     }
 
-    private boolean advanceToNextTestSet() {
-        this.finishCurrentTestSet();
-        if (currentTestSet >= mTestSets.length - 1) {
-            return false;
-        } else {
-            this.currentClip = 0;
-            currentTestSet++;
-            setCurrentClips();
-            this.initCurrentTestSet();
-            return true;
-        }
-    }
 
     private void finishBenchmark() {
         this.onPause();
@@ -209,22 +162,14 @@ public class BenchmarkActivity extends MatchVisualizeActivity implements VideoPl
         Log.d(String.format(Locale.US, "%-45s%d", "Total amount of correct Judgements:", allCorrectJudgements));
         Log.d(String.format(Locale.US, "%-45s%.1f%%", "In percentage:", ((double) allCorrectJudgements / allJudgements) * 100));
         Log.d("Stats per test set =>");
-        for (int i = 0; i < mTestSets.length; i++) {
-            String testSet = mTestSets[i];
+        String[] sets = clipManager.getSets();
+        for (int i = 0; i < sets.length; i++) {
+            String testSet = sets[i];
             String formattedTestSetString = String.format(Locale.US, "set '%s':", testSet);
             Log.d(String.format(Locale.US, "%-38s%d/%d => %.1f%%", formattedTestSetString, nCorrectJudgements[i], nTotalJudgements[i],
                     ((double) nCorrectJudgements[i] / nTotalJudgements[i]) * 100));
         }
         Log.d("--------------------------------------------------------");
-    }
-
-    private boolean advanceToNextClip() {
-        if (currentClip >= mTestSetClips.length - 1) {
-            return false;
-        } else {
-            currentClip++;
-            return true;
-        }
     }
 
     @Override
@@ -290,7 +235,7 @@ public class BenchmarkActivity extends MatchVisualizeActivity implements VideoPl
     }
 
     private void finishCurrentTestSet() {
-        this.nCorrectJudgements[currentTestSet] = mHandler.getCorrectJudgementCalls();
+        this.nCorrectJudgements[clipManager.getCurrentTestSetId()] = mHandler.getCorrectJudgementCalls();
         mHandler.stopDetections();
         mHandler.onPauseActivity();
     }
@@ -311,12 +256,13 @@ public class BenchmarkActivity extends MatchVisualizeActivity implements VideoPl
 
         VideoPlayer player;
         try {
-            Side servingSide = XMLLoader.loadServingSide(BENCHMARK_PREFIX + mTestSets[currentTestSet], getAssets());
+            Side servingSide = XMLLoader.loadServingSide(BENCHMARK_PREFIX + clipManager.getCurrentTestSet(), getAssets());
             mHandler.initBenchmarkMatch(servingSide);
-            player = new VideoPlayer(getCurrentFileManager().open(mTestSetClips[currentClip]), surface,
+            FileManager fileManager = new FileManager(getApplicationContext(), clipManager.getCurrentTestSet());
+            player = new VideoPlayer(fileManager.open(clipManager.getCurrentClip()), surface,
                     new SpeedControlCallback(), mHandler);
             Config mConfig = new Config(this);
-            Table table = XMLLoader.loadTable(BENCHMARK_PREFIX + mTestSets[currentTestSet], getAssets());
+            Table table = XMLLoader.loadTable(BENCHMARK_PREFIX + clipManager.getCurrentTestSet(), getAssets());
             if (table != null) {
                 mHandler.init(mConfig, player.getVideoWidth(), player.getVideoHeight(), table, VIEWING_ANGLE_HORIZONTAL);
                 mHandler.startDetections();
@@ -333,12 +279,13 @@ public class BenchmarkActivity extends MatchVisualizeActivity implements VideoPl
         SurfaceHolder holder = getmSurfaceView().getHolder();
         Surface surface = holder.getSurface();
         try {
-            VideoPlayer player = new VideoPlayer(getCurrentFileManager().open(mTestSetClips[currentClip]), surface,
+            FileManager fileManager = new FileManager(getApplicationContext(), clipManager.getCurrentTestSet());
+            VideoPlayer player = new VideoPlayer(fileManager.open(clipManager.getCurrentClip()), surface,
                     new SpeedControlCallback(), mHandler);
             mPlayTask = new VideoPlayer.PlayTask(player, this, false);
             mShowStopLabel = true;
             updateControls();
-            mHandler.setClipId(mTestSetClips[currentClip]);
+            mHandler.setClipId(clipManager.getCurrentClip());
             mPlayTask.execute();
         } catch (IOException ex) {
             Log.e("Unable to play movie", ex);
