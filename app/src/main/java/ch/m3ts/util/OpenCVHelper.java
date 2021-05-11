@@ -2,6 +2,7 @@ package ch.m3ts.util;
 
 import android.os.Environment;
 
+import org.opencv.android.OpenCVLoader;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -29,10 +30,12 @@ public class OpenCVHelper {
     }
 
     public static Mat convertYUVBytesToBGRMat(byte[] yuvBytes, int cameraWidth, int cameraHeight) {
-        Mat yuv = new Mat(calculateYUVMatHeight(cameraHeight), cameraWidth, CvType.CV_8UC1);
-        yuv.put(0, 0, yuvBytes);
         Mat bgr = new Mat();
-        Imgproc.cvtColor(yuv, bgr, Imgproc.COLOR_YUV2BGR_NV21, 3);
+        if (OpenCVLoader.initDebug()) {
+            Mat yuv = new Mat(calculateYUVMatHeight(cameraHeight), cameraWidth, CvType.CV_8UC1);
+            yuv.put(0, 0, yuvBytes);
+            Imgproc.cvtColor(yuv, bgr, Imgproc.COLOR_YUV2BGR_NV21, 3);
+        }
         return bgr;
     }
 
