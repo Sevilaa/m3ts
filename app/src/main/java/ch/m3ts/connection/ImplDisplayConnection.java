@@ -149,22 +149,24 @@ public abstract class ImplDisplayConnection extends Callback implements ScoreMan
 
     private void handlePart(JSONObject json) throws JSONException {
         int encodedPartIndex = json.getInt(JSONInfo.PART_INDEX);
-        int numberOfPartsSent = json.getInt(JSONInfo.MULTIPART_NUMBER_OF_PARTS);
+        int numberOfParts = json.getInt(JSONInfo.MULTIPART_NUMBER_OF_PARTS);
         String encodedPart = json.getString(JSONInfo.PART_DATA);
         if (encodedPartIndex == 0) {
             this.numberOfEncodedParts = 1;
             this.encodedMultipartComplete = encodedPart;
             if (json.getString(JSONInfo.EVENT_PROPERTY).equals(ConnectionEvent.TABLE_FRAME))
-                this.displayConnectCallback.onImageTransmissionStarted(numberOfPartsSent);
+                this.displayConnectCallback.onImageTransmissionStarted(numberOfParts);
+            if (this.numberOfEncodedParts == numberOfParts)
+                handleMultipartTransmissionCompletion(json);
         } else {
             this.numberOfEncodedParts++;
             this.encodedMultipartComplete += encodedPart;
             if (json.getString(JSONInfo.EVENT_PROPERTY).equals(ConnectionEvent.TABLE_FRAME))
                 this.displayConnectCallback.onImagePartReceived(encodedPartIndex + 1);
-            if (encodedPartIndex == numberOfPartsSent - 1) {
-                Log.d("number of parts sent: " + numberOfPartsSent);
+            if (encodedPartIndex == numberOfParts - 1) {
+                Log.d("number of parts sent: " + numberOfParts);
                 Log.d("number of parts received: " + numberOfEncodedParts);
-                if (this.numberOfEncodedParts == numberOfPartsSent) {
+                if (this.numberOfEncodedParts == numberOfParts) {
                     handleMultipartTransmissionCompletion(json);
                 } else {
                     handleMultipartTransmissionRetry(json.getString(JSONInfo.EVENT_PROPERTY));
@@ -193,6 +195,8 @@ public abstract class ImplDisplayConnection extends Callback implements ScoreMan
                 }
                 break;
         }
+        this.numberOfEncodedParts = 0;
+        this.encodedMultipartComplete = "";
     }
 
     private void handleMultipartTransmissionRetry(String event) {
