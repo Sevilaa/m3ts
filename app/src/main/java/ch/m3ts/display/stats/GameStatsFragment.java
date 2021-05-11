@@ -2,7 +2,11 @@ package ch.m3ts.display.stats;
 
 import android.annotation.SuppressLint;
 import android.app.Fragment;
+import android.content.res.Configuration;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -27,6 +31,18 @@ public class GameStatsFragment extends Fragment implements SurfaceHolder.Callbac
         View v = inflater.inflate(R.layout.fragment_game_stats, container, false);
         setViews(v);
         return v;
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        // Checks the orientation of the screen
+        SurfaceView surfaceView = getView().findViewById(R.id.heatmap);
+        Canvas heatMapCanvas = surfaceView.getHolder().lockCanvas();
+        heatMapCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+        surfaceView.getHolder().unlockCanvasAndPost(heatMapCanvas);
+        drawHeatMap(surfaceView.getHolder());
     }
 
     private void setViews(View v) {
@@ -77,6 +93,10 @@ public class GameStatsFragment extends Fragment implements SurfaceHolder.Callbac
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
+        drawHeatMap(holder);
+    }
+
+    private void drawHeatMap(SurfaceHolder holder) {
         HeatMapHolder heatMapHolder = new HeatMapHolder(getActivity().findViewById(R.id.game_stats), holder, getActivity().getColor(R.color.primary_light), ((StatsActivity) getActivity()).getStats().getTableCorners());
         for (PointData point : this.game.getPoints()) {
             for (TrackData track : point.getTracks()) {

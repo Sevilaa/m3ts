@@ -4,7 +4,11 @@ import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
+import android.content.res.Configuration;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.SurfaceHolder;
@@ -50,11 +54,6 @@ public class MatchStatsFragment extends EventBusSubscribedFragment implements Su
         this.stats = ((StatsActivity) getActivity()).getStats();
         initHeatMap((SurfaceView) v.findViewById(R.id.heatmap));
         createLoadingSpinner();
-        if (stats == null) {
-            retrieveStats(this.getArguments());
-        } else {
-            setStatViews(v);
-        }
         return v;
     }
 
@@ -66,7 +65,7 @@ public class MatchStatsFragment extends EventBusSubscribedFragment implements Su
             this.nearbyDisplayConnection = NearbyDisplayConnection.getInstance();
             this.nearbyDisplayConnection.init(getActivity());
         }
-        registerEventbus();
+        registerEventBus();
         TTEventBus.getInstance().dispatch(new TTEvent<>(new RequestStatsData()));
     }
 
@@ -79,7 +78,7 @@ public class MatchStatsFragment extends EventBusSubscribedFragment implements Su
         loadingSpinner.show();
     }
 
-    private void registerEventbus() {
+    private void registerEventBus() {
         Config mConfig = new Config(getActivity());
         EventBus eventBus = TTEventBus.getInstance();
         if (mConfig.isUsingPubnub()) {
@@ -93,7 +92,11 @@ public class MatchStatsFragment extends EventBusSubscribedFragment implements Su
     @Override
     public void onResume() {
         super.onResume();
-        registerEventbus();
+        if (stats == null) {
+            retrieveStats(this.getArguments());
+        } else {
+            setStatViews(getView());
+        }
     }
 
     @Override
@@ -107,6 +110,19 @@ public class MatchStatsFragment extends EventBusSubscribedFragment implements Su
             eventBus.unregister(this.nearbyDisplayConnection);
         }
         eventBus.unregister(this);
+        if (this.pubNub != null) this.pubNub.unsubscribe();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        // Checks the orientation of the screen
+        SurfaceView surfaceView = getView().findViewById(R.id.heatmap);
+        Canvas heatMapCanvas = surfaceView.getHolder().lockCanvas();
+        heatMapCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+        surfaceView.getHolder().unlockCanvasAndPost(heatMapCanvas);
+        tryToDisplayHeatMap();
     }
 
     private void initPubNub(String pubnubRoom) {
