@@ -14,8 +14,8 @@ The system must run on two mobile phones:
 - The other smartphone is the "display" -> it displays the trackers state (match status) to the players
 
 ## Demo
-Checkout this demo on youtube for a first impression of the system (currently outdated and in german, we're working on an update):
-https://www.youtube.com/watch?v=8kcC1KHvh3Y
+Checkout this demo on youtube for a first impression of the system (turn on subtitles for ENG captions):
+https://www.youtube.com/watch?v=QaV0DVbXExA
 
 ## Get it running
 To get the app running, simply clone this repo and open it in Android Studio.
