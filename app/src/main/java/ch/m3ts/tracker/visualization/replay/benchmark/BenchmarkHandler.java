@@ -36,6 +36,7 @@ public class BenchmarkHandler extends ReplayHandler implements ReplayDetectionCa
     private int correctJudgementCalls;
     private int countOnScoreEventsPerClip;
     private String clipId;
+    private boolean isJudgementOnScoreEvent = true;
 
     public BenchmarkHandler(@NonNull MatchVisualizeActivity activity) {
         super(activity);
@@ -109,11 +110,21 @@ public class BenchmarkHandler extends ReplayHandler implements ReplayDetectionCa
     @Override
     public void onScore(Side scorer, int score, Side nextServer, Side lastServer) {
         Log.d(String.format(Locale.US, ON_SCORE_LOG_TEXT, score, scorer.toString()));
-        ++countOnScoreEventsPerClip;
-        if (scorer == whoShouldScore && countOnScoreEventsPerClip == 1) {
-            correctJudgementCalls++;
-        } else {
-            Log.d(String.format(WRONG_JUDGEMENT_LOG_TEXT, clipId));
+        this.countOnScoreEventsPerClip++;
+        if (this.countOnScoreEventsPerClip == 1) {
+            if (scorer == whoShouldScore && this.countOnScoreEventsPerClip == 1) {
+                this.correctJudgementCalls++;
+            } else {
+                Log.d(String.format(WRONG_JUDGEMENT_LOG_TEXT, clipId));
+                // correct the score
+                match.getReferee().onPointDeduction(scorer);
+                match.getReferee().onPointAddition(Side.getOpposite(scorer));
+            }
         }
+    }
+
+    @Override
+    public void onWin(Side side, int wins) {
+        // do nothing
     }
 }
