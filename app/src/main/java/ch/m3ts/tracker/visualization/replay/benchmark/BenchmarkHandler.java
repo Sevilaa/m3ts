@@ -7,6 +7,7 @@ import java.util.Locale;
 import ch.m3ts.eventbus.Event;
 import ch.m3ts.eventbus.EventBus;
 import ch.m3ts.eventbus.TTEventBus;
+import ch.m3ts.eventbus.data.eventdetector.BallTrackData;
 import ch.m3ts.eventbus.data.todisplay.ToDisplayData;
 import ch.m3ts.tabletennis.Table;
 import ch.m3ts.tabletennis.helper.Side;
@@ -20,6 +21,7 @@ import ch.m3ts.tracker.visualization.MatchVisualizeActivity;
 import ch.m3ts.tracker.visualization.replay.ReplayDetectionCallback;
 import ch.m3ts.tracker.visualization.replay.ReplayHandler;
 import ch.m3ts.util.Log;
+import cz.fmo.data.Track;
 import cz.fmo.util.Config;
 
 /**
@@ -95,8 +97,16 @@ public class BenchmarkHandler extends ReplayHandler implements ReplayDetectionCa
         if (data instanceof ToDisplayData) {
             ToDisplayData toDisplayData = (ToDisplayData) data;
             toDisplayData.call(this);
+        } else if (data instanceof BallTrackData) {
+            // ((BallTrackData) data).call(this);
         }
     }
+
+    @Override
+    protected void updateTextViews(Track track) {
+        // do nothing
+    }
+
 
     public void onClipEnded() {
         if (this.countOnScoreEventsPerClip == 0) {
@@ -112,11 +122,12 @@ public class BenchmarkHandler extends ReplayHandler implements ReplayDetectionCa
         Log.d(String.format(Locale.US, ON_SCORE_LOG_TEXT, score, scorer.toString()));
         this.countOnScoreEventsPerClip++;
         if (this.countOnScoreEventsPerClip == 1) {
-            if (scorer == whoShouldScore && this.countOnScoreEventsPerClip == 1) {
+            if (scorer == whoShouldScore) {
                 this.correctJudgementCalls++;
             } else {
                 Log.d(String.format(WRONG_JUDGEMENT_LOG_TEXT, clipId));
-                // correct the score
+                // correct the score - for some reason this will screw up the log from referee
+                // so if you want to see judgement message, comment/remove the 2 lines below
                 match.getReferee().onPointDeduction(scorer);
                 match.getReferee().onPointAddition(Side.getOpposite(scorer));
             }

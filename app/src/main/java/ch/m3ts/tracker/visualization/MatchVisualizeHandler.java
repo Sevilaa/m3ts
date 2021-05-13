@@ -177,15 +177,19 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
                     drawDebugInfo(canvas, track);
                     surfaceHolder.unlockCanvasAndPost(canvas);
                 }
-                String velocity = String.format(Locale.US, "%.2f km/h", track.getAvgVelocity());
-                setTextInTextView(R.id.txtPlayMovieVelocity, velocity);
-                setTextInTextView(R.id.txtPlayMovieState, match.getReferee().getState().toString());
-                setTextInTextView(R.id.txtPlayMovieServing, match.getReferee().getServer().toString());
-                if (match.getReferee().getCurrentBallSide() != null) {
-                    setTextInTextView(R.id.txtBounce, String.valueOf(newBounceCount));
-                }
+                updateTextViews(track);
             }
         });
+    }
+
+    protected void updateTextViews(Track track) {
+        String velocity = String.format(Locale.US, "%.2f km/h", track.getAvgVelocity());
+        setTextInTextView(R.id.txtPlayMovieVelocity, velocity);
+        setTextInTextView(R.id.txtPlayMovieState, match.getReferee().getState().toString());
+        setTextInTextView(R.id.txtPlayMovieServing, match.getReferee().getServer().toString());
+        if (match.getReferee().getCurrentBallSide() != null) {
+            setTextInTextView(R.id.txtBounce, String.valueOf(newBounceCount));
+        }
     }
 
     void drawDebugInfo(Canvas canvas, Track track) {

@@ -109,7 +109,7 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
 
     public void onObjectsDetected(Lib.Detection[] detections, long detectionTime) {
         synchronized (mLock) {
-            trackSet.addDetections(detections, this.srcWidth, this.srcHeight, detectionTime); // after this, object direction is up to date
+            trackSet.addDetections(detections, this.srcWidth, this.srcHeight, detectionTime);
             if (!trackSet.getTracks().isEmpty()) {
                 Track track = selectTrack(trackSet.getTracks());
                 if (track != null && track.getLatest() != previousDetection) {

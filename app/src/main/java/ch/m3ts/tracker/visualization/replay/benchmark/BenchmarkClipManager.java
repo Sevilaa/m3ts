@@ -100,15 +100,15 @@ public class BenchmarkClipManager {
         }
 
         stringBuilder.append("-------------------- BENCHMARK DONE --------------------\n");
-        stringBuilder.append(String.format(Locale.US, "%-45s%d\n", "Total amount of Judgements:", allJudgements));
-        stringBuilder.append(String.format(Locale.US, "%-45s%d\n", "Total amount of correct Judgements:", allCorrectJudgements));
-        stringBuilder.append(String.format(Locale.US, "%-45s%.1f%%\n", "In percentage:", ((double) allCorrectJudgements / allJudgements) * 100));
+        stringBuilder.append(String.format(Locale.US, "%-45s%d%n", "Total amount of Judgements:", allJudgements));
+        stringBuilder.append(String.format(Locale.US, "%-45s%d%n", "Total amount of correct Judgements:", allCorrectJudgements));
+        stringBuilder.append(String.format(Locale.US, "%-45s%.1f%%%n", "In percentage:", ((double) allCorrectJudgements / allJudgements) * 100));
         stringBuilder.append("Stats per test set =>\n");
         String[] sets = clipManager.getSets();
         for (int i = 0; i < sets.length; i++) {
             String testSet = sets[i];
             String formattedTestSetString = String.format(Locale.US, "set '%s':", testSet);
-            stringBuilder.append(String.format(Locale.US, "%-38s%d/%d => %.1f%%\n", formattedTestSetString, nCorrectJudgements[i], nTotalJudgements[i],
+            stringBuilder.append(String.format(Locale.US, "%-38s%d/%d => %.1f%%%n", formattedTestSetString, nCorrectJudgements[i], nTotalJudgements[i],
                     ((double) nCorrectJudgements[i] / nTotalJudgements[i]) * 100));
         }
         stringBuilder.append("--------------------------------------------------------\n");
