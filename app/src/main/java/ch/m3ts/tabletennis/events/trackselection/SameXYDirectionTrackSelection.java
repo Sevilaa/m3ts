@@ -1,8 +1,7 @@
-package ch.m3ts.tabletennis.events.trackselection.multiple;
+package ch.m3ts.tabletennis.events.trackselection;
 
 import java.util.List;
 
-import ch.m3ts.tabletennis.events.trackselection.TrackSelectionStrategy;
 import cz.fmo.Lib;
 import cz.fmo.data.Track;
 

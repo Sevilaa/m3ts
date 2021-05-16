@@ -7,6 +7,7 @@ import org.mockito.Mockito;
 import java.util.ArrayList;
 import java.util.List;
 
+import ch.m3ts.tabletennis.events.trackselection.SameXYDirectionTrackSelection;
 import cz.fmo.Lib;
 import cz.fmo.data.Track;
 
