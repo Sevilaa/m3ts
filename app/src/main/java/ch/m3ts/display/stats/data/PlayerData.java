@@ -1,16 +1,16 @@
-package ch.m3ts.display.stats;
+package ch.m3ts.display.stats.data;
 
 import java.io.Serializable;
 
 import ch.m3ts.tabletennis.helper.Side;
 
-public class PlayerStats implements Serializable {
+public class PlayerData implements Serializable {
     private final Side side;
     private final int strikes;
     private final float fastestStrike;
     private int points;
 
-    public PlayerStats(Side side, int strikes, float fastestStrike, int points) {
+    public PlayerData(Side side, int strikes, float fastestStrike, int points) {
         this.side = side;
         this.strikes = strikes;
         this.fastestStrike = fastestStrike;

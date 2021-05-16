@@ -20,11 +20,17 @@ import android.widget.TextView;
 
 import java.util.Map;
 
+import ch.m3ts.display.stats.data.DetectionData;
+import ch.m3ts.display.stats.data.GameData;
+import ch.m3ts.display.stats.data.MatchData;
+import ch.m3ts.display.stats.data.PlayerData;
+import ch.m3ts.display.stats.data.PointData;
+import ch.m3ts.display.stats.data.TrackData;
 import ch.m3ts.tabletennis.helper.Side;
 import cz.fmo.R;
 
 public class GameStatsFragment extends Fragment implements SurfaceHolder.Callback {
-    private GameStats game;
+    private GameData game;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -47,9 +53,9 @@ public class GameStatsFragment extends Fragment implements SurfaceHolder.Callbac
 
     private void setViews(View v) {
         int gameIndex = getArguments().getInt("game");
-        MatchStats stats = ((StatsActivity) getActivity()).getStats();
+        MatchData stats = ((StatsActivity) getActivity()).getStats();
         this.game = stats.getGameStats().get(gameIndex);
-        Map<Side, PlayerStats> playerStats = this.game.getPlayerStats();
+        Map<Side, PlayerData> playerStats = this.game.getPlayerStats();
         ((TextView) v.findViewById(R.id.gstTitle)).setText(String.format(getString(R.string.gstTitle), gameIndex + 1));
         ((TextView) v.findViewById(R.id.score)).setText(String.format(getString(R.string.mstScore), playerStats.get(Side.LEFT).getPoints(), playerStats.get(Side.RIGHT).getPoints()));
         ((TextView) v.findViewById(R.id.player_right)).setText(stats.getPlayerName(Side.RIGHT));

@@ -7,8 +7,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import ch.m3ts.display.stats.DetectionData;
-import ch.m3ts.display.stats.TrackData;
+import ch.m3ts.display.stats.data.DetectionData;
+import ch.m3ts.display.stats.data.TrackData;
 import ch.m3ts.tabletennis.helper.DirectionX;
 import ch.m3ts.tabletennis.helper.Side;
 

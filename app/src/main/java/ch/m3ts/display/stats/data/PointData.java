@@ -1,4 +1,4 @@
-package ch.m3ts.display.stats;
+package ch.m3ts.display.stats.data;
 
 import java.io.Serializable;
 import java.util.HashMap;

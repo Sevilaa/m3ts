@@ -10,7 +10,7 @@ import org.mockito.Mockito;
 
 import java.util.List;
 
-import ch.m3ts.display.stats.DetectionData;
+import ch.m3ts.display.stats.data.DetectionData;
 import cz.fmo.Lib;
 
 import static org.junit.Assert.assertEquals;

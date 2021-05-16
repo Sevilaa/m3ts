@@ -10,10 +10,11 @@ import android.support.v4.app.FragmentActivity;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
+import ch.m3ts.display.stats.data.MatchData;
 import cz.fmo.R;
 
 public class StatsActivity extends FragmentActivity {
-    private MatchStats stats;
+    private MatchData stats;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -33,11 +34,11 @@ public class StatsActivity extends FragmentActivity {
         transaction.commit();
     }
 
-    public MatchStats getStats() {
+    public MatchData getStats() {
         return stats;
     }
 
-    public void setStats(MatchStats stats) {
+    public void setStats(MatchData stats) {
         this.stats = stats;
     }
 

@@ -7,6 +7,7 @@ import android.view.View;
 
 import java.util.Map;
 
+import ch.m3ts.display.stats.data.DetectionData;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tracker.visualization.ZPosVisualizer;
 

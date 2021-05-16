@@ -1,15 +1,15 @@
 package ch.m3ts.eventbus.data;
 
-import ch.m3ts.display.stats.MatchStats;
+import ch.m3ts.display.stats.data.MatchData;
 
 public class StatsData {
-    private MatchStats stats;
+    private MatchData stats;
 
-    public StatsData(MatchStats stats) {
+    public StatsData(MatchData stats) {
         this.stats = stats;
     }
 
-    public MatchStats getStats() {
+    public MatchData getStats() {
         return stats;
     }
 }

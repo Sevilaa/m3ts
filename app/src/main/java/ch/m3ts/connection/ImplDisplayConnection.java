@@ -14,7 +14,7 @@ import java.io.ObjectInputStream;
 import ch.m3ts.connection.pubnub.ByteToBase64;
 import ch.m3ts.connection.pubnub.JSONInfo;
 import ch.m3ts.display.DisplayConnectCallback;
-import ch.m3ts.display.stats.MatchStats;
+import ch.m3ts.display.stats.data.MatchData;
 import ch.m3ts.eventbus.Event;
 import ch.m3ts.eventbus.EventBus;
 import ch.m3ts.eventbus.Subscribable;
@@ -188,7 +188,7 @@ public abstract class ImplDisplayConnection extends Callback implements ScoreMan
                     byte[] b = android.util.Base64.decode(this.encodedMultipartComplete, android.util.Base64.DEFAULT);
                     ByteArrayInputStream bi = new ByteArrayInputStream(b);
                     ObjectInputStream si = new ObjectInputStream(bi);
-                    MatchStats stats = (MatchStats) si.readObject();
+                    MatchData stats = (MatchData) si.readObject();
                     TTEventBus.getInstance().dispatch(new TTEvent<>(new StatsData(stats)));
                 } catch (Exception e) {
                     Log.d("Failed to serialize Stats:" + e.getMessage());

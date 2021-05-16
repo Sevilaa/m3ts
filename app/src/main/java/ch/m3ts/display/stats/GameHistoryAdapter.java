@@ -10,16 +10,18 @@ import android.widget.TextView;
 import java.util.List;
 import java.util.Map;
 
+import ch.m3ts.display.stats.data.GameData;
+import ch.m3ts.display.stats.data.PointData;
 import ch.m3ts.tabletennis.helper.Side;
 import cz.fmo.R;
 
 public class GameHistoryAdapter extends BaseExpandableListAdapter {
     private Context context;
     private List<PointData> history;
-    private GameStats stats;
+    private GameData stats;
     private Map<Side, String> playerNames;
 
-    public GameHistoryAdapter(Context context, GameStats stats, Map<Side, String> playerNames) {
+    public GameHistoryAdapter(Context context, GameData stats, Map<Side, String> playerNames) {
         this.context = context;
         this.stats = stats;
         this.playerNames = playerNames;

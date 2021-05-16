@@ -29,6 +29,11 @@ import ch.m3ts.EventBusSubscribedFragment;
 import ch.m3ts.connection.NearbyDisplayConnection;
 import ch.m3ts.connection.pubnub.PubNubDisplayConnection;
 import ch.m3ts.connection.pubnub.PubNubFactory;
+import ch.m3ts.display.stats.data.DetectionData;
+import ch.m3ts.display.stats.data.GameData;
+import ch.m3ts.display.stats.data.MatchData;
+import ch.m3ts.display.stats.data.PointData;
+import ch.m3ts.display.stats.data.TrackData;
 import ch.m3ts.eventbus.Event;
 import ch.m3ts.eventbus.EventBus;
 import ch.m3ts.eventbus.TTEvent;
@@ -44,7 +49,7 @@ public class MatchStatsFragment extends EventBusSubscribedFragment implements Su
     private PubNubDisplayConnection pubNub;
     private NearbyDisplayConnection nearbyDisplayConnection;
     private String pubnubRoom;
-    private MatchStats stats;
+    private MatchData stats;
     private ProgressDialog loadingSpinner;
     private SurfaceHolder heatMapSurfaceHolder;
 
@@ -137,7 +142,7 @@ public class MatchStatsFragment extends EventBusSubscribedFragment implements Su
 
     private void createGameOverviews(View v) {
         if (v.findViewById(R.id.game_stats_overview) == null) {
-            for (final GameStats game : this.stats.getGameStats()) {
+            for (final GameData game : this.stats.getGameStats()) {
                 LinearLayout container = v.findViewById(R.id.game_overviews);
                 View overview = LayoutInflater.from(getActivity()).inflate(R.layout.game_stats_overview, null);
                 Button button = overview.findViewById(R.id.show_game_stats);
@@ -208,7 +213,7 @@ public class MatchStatsFragment extends EventBusSubscribedFragment implements Su
     private void displayHeatMap(View v) {
         if (this.stats != null) {
             HeatMapHolder heatMapHolder = new HeatMapHolder(v.findViewById(R.id.match_stats), heatMapSurfaceHolder, getActivity().getColor(R.color.primary_light), ((StatsActivity) getActivity()).getStats().getTableCorners());
-            for (GameStats game : this.stats.getGameStats()) {
+            for (GameData game : this.stats.getGameStats()) {
                 for (PointData point : game.getPoints()) {
                     for (TrackData track : point.getTracks()) {
                         for (DetectionData detection : track.getDetections()) {

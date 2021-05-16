@@ -1,4 +1,4 @@
-package ch.m3ts.display.stats;
+package ch.m3ts.display.stats.data;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -7,16 +7,16 @@ import java.util.Map;
 
 import ch.m3ts.tabletennis.helper.Side;
 
-public class GameStats implements Serializable {
+public class GameData implements Serializable {
     private int duration;
     private int amountOfCorrections;
     private int amountOfPoints;
     private final List<PointData> points;
-    private Map<Side, PlayerStats> playerStats;
+    private Map<Side, PlayerData> playerStats;
     private Side winner;
     private int averagePointDuration;
 
-    public GameStats(List<PointData> points) {
+    public GameData(List<PointData> points) {
         this.points = points;
         this.playerStats = new HashMap<>();
         calculateStatistics();
@@ -46,8 +46,8 @@ public class GameStats implements Serializable {
 
         PointData lastPoint = points.get(points.size() - 1);
         amountOfPoints = lastPoint.getScore(Side.LEFT) + lastPoint.getScore(Side.RIGHT);
-        playerStats.put(Side.LEFT, new PlayerStats(Side.LEFT, strikesLeft, fastestStrikeLeft, lastPoint.getScore(Side.LEFT)));
-        playerStats.put(Side.RIGHT, new PlayerStats(Side.RIGHT, strikesRight, fastestStrikeRight, lastPoint.getScore(Side.RIGHT)));
+        playerStats.put(Side.LEFT, new PlayerData(Side.LEFT, strikesLeft, fastestStrikeLeft, lastPoint.getScore(Side.LEFT)));
+        playerStats.put(Side.RIGHT, new PlayerData(Side.RIGHT, strikesRight, fastestStrikeRight, lastPoint.getScore(Side.RIGHT)));
         winner = lastPoint.getScore(Side.LEFT) > lastPoint.getScore(Side.RIGHT) ? Side.LEFT : Side.RIGHT;
         amountOfCorrections = corrections;
         this.duration = duration;
@@ -73,7 +73,7 @@ public class GameStats implements Serializable {
         return points;
     }
 
-    public PlayerStats getPlayerStats(Side side) {
+    public PlayerData getPlayerStats(Side side) {
         return playerStats.get(side);
     }
 
@@ -89,7 +89,7 @@ public class GameStats implements Serializable {
         return winner;
     }
 
-    public Map<Side, PlayerStats> getPlayerStats() {
+    public Map<Side, PlayerData> getPlayerStats() {
         return playerStats;
     }
 }

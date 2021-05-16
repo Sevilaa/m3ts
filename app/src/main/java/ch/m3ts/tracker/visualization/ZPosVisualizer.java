@@ -3,7 +3,7 @@ package ch.m3ts.tracker.visualization;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 
-import ch.m3ts.display.stats.DetectionData;
+import ch.m3ts.display.stats.data.DetectionData;
 import ch.m3ts.tracker.ZPositionCalc;
 import cz.fmo.Lib;
 

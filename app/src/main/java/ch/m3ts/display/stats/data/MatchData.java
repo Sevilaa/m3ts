@@ -1,4 +1,4 @@
-package ch.m3ts.display.stats;
+package ch.m3ts.display.stats.data;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -7,8 +7,8 @@ import java.util.Map;
 
 import ch.m3ts.tabletennis.helper.Side;
 
-public class MatchStats implements Serializable {
-    private final List<GameStats> gameStats;
+public class MatchData implements Serializable {
+    private final List<GameData> gameStats;
     private int duration;
     private int averagePointDuration;
     private int amountOfCorrections;
@@ -20,7 +20,7 @@ public class MatchStats implements Serializable {
     private Map<Side, Integer> strikes;
     private final Map<Side, Integer> wins;
 
-    public MatchStats(List<GameStats> gameStats, String playerLeft, String playerRight, String matchStart, Map<Side, Integer> tableCorners) {
+    public MatchData(List<GameData> gameStats, String playerLeft, String playerRight, String matchStart, Map<Side, Integer> tableCorners) {
         this.gameStats = gameStats;
         this.formattedTimestamp = matchStart;
         this.playerNames = new HashMap<>();
@@ -41,7 +41,7 @@ public class MatchStats implements Serializable {
 
     private void calculateStatistics() {
         averagePointDuration = amountOfPoints = amountOfCorrections = duration = 0;
-        for (GameStats game : gameStats) {
+        for (GameData game : gameStats) {
             duration += game.getDuration();
             amountOfCorrections += game.getAmountOfCorrections();
             amountOfPoints += game.getAmountOfPoints();
@@ -57,7 +57,7 @@ public class MatchStats implements Serializable {
         }
     }
 
-    private void updateFastestStrike(GameStats game, Side side) {
+    private void updateFastestStrike(GameData game, Side side) {
         float fastest = game.getPlayerStats(side).getFastestStrike();
         if (fastest > fastestStrikes.get(side)) fastestStrikes.put(side, fastest);
     }
@@ -87,7 +87,7 @@ public class MatchStats implements Serializable {
         return (float) amountOfCorrections / amountOfPoints * 100;
     }
 
-    public List<GameStats> getGameStats() {
+    public List<GameData> getGameStats() {
         return gameStats;
     }
 

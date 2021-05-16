@@ -14,8 +14,8 @@ import java.io.ObjectOutputStream;
 import ch.m3ts.connection.pubnub.ByteToBase64;
 import ch.m3ts.connection.pubnub.CameraBytesConversions;
 import ch.m3ts.connection.pubnub.JSONInfo;
-import ch.m3ts.display.stats.MatchStats;
 import ch.m3ts.display.stats.StatsCreator;
+import ch.m3ts.display.stats.data.MatchData;
 import ch.m3ts.eventbus.Event;
 import ch.m3ts.eventbus.Subscribable;
 import ch.m3ts.eventbus.TTEvent;
@@ -121,7 +121,7 @@ public abstract class ImplTrackerConnection extends Callback implements TrackerC
         try {
             ByteArrayOutputStream bo = new ByteArrayOutputStream();
             ObjectOutputStream so = new ObjectOutputStream(bo);
-            MatchStats stats = StatsCreator.getInstance().createStats();
+            MatchData stats = StatsCreator.getInstance().createStats();
             so.writeObject(stats);
             so.flush();
             String encodedStats = android.util.Base64.encodeToString(bo.toByteArray(), Base64.DEFAULT);
