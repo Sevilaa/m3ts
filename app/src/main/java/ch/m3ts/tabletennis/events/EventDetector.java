@@ -23,6 +23,8 @@ import ch.m3ts.eventbus.data.eventdetector.StrikerSideChangeData;
 import ch.m3ts.eventbus.data.eventdetector.TableSideChangeData;
 import ch.m3ts.tabletennis.Table;
 import ch.m3ts.tabletennis.events.timeouts.TimeoutTimerTask;
+import ch.m3ts.tabletennis.events.trackselection.TrackSelectionStrategy;
+import ch.m3ts.tabletennis.events.trackselection.multiple.ChooseNewestTrackSelection;
 import ch.m3ts.tabletennis.helper.DirectionX;
 import ch.m3ts.tabletennis.helper.DirectionY;
 import ch.m3ts.tabletennis.helper.Side;
@@ -64,9 +66,11 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
     private final ZPositionCalc zPositionCalc;
     private Track currentTrack;
     private final EventBus eventBus;
-    private Timer timeoutTimer;
-    private BallCurvePredictor ballCurvePredictor;
+    private final Timer timeoutTimer;
+    private final BallCurvePredictor ballCurvePredictor;
+    private final TrackSelectionStrategy trackSelectionStrategy;
     private boolean checkForBallMovingIntoNet;
+    private boolean checkForSideChange;
 
     public EventDetector(Config config, int srcWidth, int srcHeight, TrackSet trackSet, @NonNull Table table, ZPositionCalc calc) {
         this.eventBus = TTEventBus.getInstance();
@@ -85,6 +89,8 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
         this.timeoutTimer = new Timer("timeoutTimer");
         this.ballCurvePredictor = new LinearBallCurvePredictor();
         this.checkForBallMovingIntoNet = true;
+        this.checkForSideChange = true;
+        this.trackSelectionStrategy = new ChooseNewestTrackSelection();
         trackSet.setConfig(config);
     }
 
@@ -115,25 +121,28 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
                 if (track != null && track.getLatest() != previousDetection) {
                     numberOfDetections++;
                     Lib.Detection latestDetection = track.getLatest();
-                    calcDirectionOfDetection(latestDetection);
-                    if (latestDetection.directionX != DirectionX.NONE || latestDetection.directionY != DirectionY.NONE) {
-                        callAllOnStrikeFound(track);
-                        hasTableSideChanged(latestDetection.centerX);
-                        hasBallFallenOffSideWays(latestDetection);
-                        if (latestDetection.directionX != DirectionX.NONE) {
-                            boolean strikerSideChanged = hasSideChanged(latestDetection);
-                            if (latestDetection.directionY != DirectionY.NONE) {
-                                isMovingIntoNet(latestDetection);
-                                hasBouncedOnTable(latestDetection, strikerSideChanged);
-                                Side nearlyOutOfFrameSide = getNearlyOutOfFrameSide(latestDetection);
-                                if (nearlyOutOfFrameSide != null) {
-                                    callAllOnNearlyOutOfFrame(latestDetection, nearlyOutOfFrameSide);
-                                }
-                            }
-                        }
-                    }
+                    checkForEvents(track, latestDetection);
                     savePreviousDetection(latestDetection);
                     setTimeoutTimer(numberOfDetections);
+                }
+            }
+        }
+    }
+
+    private void checkForEvents(Track track, Lib.Detection latestDetection) {
+        if (latestDetection.directionX != DirectionX.NONE || latestDetection.directionY != DirectionY.NONE) {
+            callAllOnStrikeFound(track);
+            hasTableSideChanged(latestDetection.centerX);
+            hasBallFallenOffSideWays(latestDetection);
+            if (latestDetection.directionX != DirectionX.NONE) {
+                boolean strikerSideChanged = hasSideChanged(latestDetection);
+                if (latestDetection.directionY != DirectionY.NONE) {
+                    isMovingIntoNet(latestDetection);
+                    hasBouncedOnTable(latestDetection, strikerSideChanged);
+                    Side nearlyOutOfFrameSide = getNearlyOutOfFrameSide(latestDetection);
+                    if (nearlyOutOfFrameSide != null) {
+                        callAllOnNearlyOutOfFrame(latestDetection, nearlyOutOfFrameSide);
+                    }
                 }
             }
         }
@@ -146,7 +155,11 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
      * @return a track or null (if no track is the ball)
      */
     public Track selectTrack(List<Track> tracks) {
-        // first tag all tracks which have crossed the table once
+        validateAndMarkTracks(tracks);
+        return selectAndSetCurrentTrack(tracks);
+    }
+
+    private void validateAndMarkTracks(List<Track> tracks) {
         for (Track t : tracks) {
             Lib.Detection latestDetection = t.getLatest();
             calcDirectionOfDetection(latestDetection);
@@ -155,40 +168,30 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
                 t.setTableCrossed();
             }
         }
+    }
 
-        // if there are multiple tracks, select the one with the minimum distance to previous detection
+    private Track selectAndSetCurrentTrack(List<Track> tracks) {
         Track selectedTrack = null;
         if (tracks.size() > 1) {
-            double distance = Double.MAX_VALUE;
-            for (Track t : tracks) {
-                Lib.Detection d = t.getLatest();
-                if (d.directionX == previousDirectionX && d.directionY == previousDirectionY && isOnTable(t)) {
-                    selectedTrack = t;
-                }
-            }
+            selectedTrack = trackSelectionStrategy.selectTrack(tracks, previousDirectionX, previousDirectionY, previousCenterX, previousCenterY);
             if (selectedTrack == null) {
                 for (Track t : tracks) {
-                    Lib.Detection d = t.getLatest();
-                    double a = Math.abs(d.centerX - previousCenterX);
-                    double b = Math.abs(d.centerY - previousCenterY);
-                    double distanceToLast = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
-                    if (distanceToLast < distance && isOnTable(t)) {
+                    if (t.hasCrossedTable()) {
                         selectedTrack = t;
-                        distance = distanceToLast;
+                        break;
                     }
                 }
             }
         } else {
-            // if there's only one track, select it
-            if (isOnTable(tracks.get(0))) {
+            if (tracks.get(0).hasCrossedTable()) {
                 selectedTrack = tracks.get(0);
             }
         }
 
+        // save current selected Track
         if (selectedTrack != null) {
             currentTrack = selectedTrack;
         }
-
         return selectedTrack;
     }
 
@@ -246,10 +249,14 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
 
     private boolean hasSideChanged(Lib.Detection detection) {
         boolean hasSideChanged = false;
-        if (detection.directionX != previousDirectionX) {
+        if ((checkForSideChange &&
+                detection.predecessor != null && detection.predecessor.directionX == detection.directionX) &&
+                ((detection.centerX < table.getNetBottom().x && detection.directionX == DirectionX.RIGHT) || (
+                        detection.centerX > table.getNetBottom().x && detection.directionX == DirectionX.LEFT))) {
             Side striker = Side.getOppositeX(detection.directionX);
             callAllOnSideChange(striker);
             hasSideChanged = true;
+            checkForSideChange = false;
             checkForBallMovingIntoNet = true;
         }
         return hasSideChanged;
@@ -282,10 +289,6 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
         return side;
     }
 
-    private boolean isOnTable(Track track) {
-        return track.hasCrossedTable();
-    }
-
     /**
      * Calculates the x and y direction of a detection using the detections predecessor or the latest saved
      * position.
@@ -305,13 +308,15 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
     private void hasTableSideChanged(int currentXPosition) {
         if (currentXPosition >= table.getNetBottom().x && previousCenterX < table.getNetBottom().x) {
             callAllOnTableSideChange(Side.RIGHT);
+            this.checkForSideChange = true;
         } else if (currentXPosition <= table.getNetBottom().x && previousCenterX > table.getNetBottom().x) {
             callAllOnTableSideChange(Side.LEFT);
+            this.checkForSideChange = true;
         }
     }
 
     private void hasBallFallenOffSideWays(Lib.Detection detection) {
-        if (detection.predecessor != null &&
+        if (detection.predecessor != null && detection.predecessor.directionY == DirectionY.DOWN &&
                 table.isBelow(detection.centerX, detection.centerY) &&
                 detection.directionY == DirectionY.DOWN) {
             callAllOnBallDroppedSideWays();

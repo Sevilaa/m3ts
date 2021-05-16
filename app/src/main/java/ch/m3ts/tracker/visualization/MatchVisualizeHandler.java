@@ -141,9 +141,9 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     @Override
     public void onBounce(Lib.Detection detection, Side ballBouncedOnSide) {
         latestBounce = detection;
-        final MatchVisualizeActivity activity = mActivity.get();
+        /*final MatchVisualizeActivity activity = mActivity.get();
         final TextView mBounceCountText = activity.getmBounceCountText();
-        newBounceCount = Integer.parseInt(mBounceCountText.getText().toString()) + 1;
+        newBounceCount = Integer.parseInt(mBounceCountText.getText().toString()) + 1;*/
     }
 
     @Override

@@ -304,6 +304,9 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
                     Log.d("Table Side Change:Changing to PLAY");
                     this.state = State.PLAY;
                 }
+                this.bounces = 0;
+                this.audioBounces = 0;
+                break;
             case PLAY:
                 this.bounces = 0;
                 this.audioBounces = 0;
@@ -398,6 +401,8 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
 
     public void resume() {
         this.state = State.WAIT_FOR_SERVE;
+        this.currentBallSide = getServer();
+        this.currentStriker = Side.getOpposite(getServer());
         if (this.isUsingReadyToServeGesture) {
             TTEventBus.getInstance().dispatch(new TTEvent<>(new ReadyToServeData(getServer())));
         }

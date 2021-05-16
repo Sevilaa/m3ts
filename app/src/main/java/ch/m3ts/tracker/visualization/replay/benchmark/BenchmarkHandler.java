@@ -7,6 +7,7 @@ import java.util.Locale;
 import ch.m3ts.eventbus.Event;
 import ch.m3ts.eventbus.EventBus;
 import ch.m3ts.eventbus.TTEventBus;
+import ch.m3ts.eventbus.data.eventdetector.BallBounceData;
 import ch.m3ts.eventbus.data.eventdetector.BallTrackData;
 import ch.m3ts.eventbus.data.todisplay.ToDisplayData;
 import ch.m3ts.tabletennis.Table;
@@ -38,7 +39,6 @@ public class BenchmarkHandler extends ReplayHandler implements ReplayDetectionCa
     private int correctJudgementCalls;
     private int countOnScoreEventsPerClip;
     private String clipId;
-    private boolean isJudgementOnScoreEvent = true;
 
     public BenchmarkHandler(@NonNull MatchVisualizeActivity activity) {
         super(activity);
@@ -98,7 +98,9 @@ public class BenchmarkHandler extends ReplayHandler implements ReplayDetectionCa
             ToDisplayData toDisplayData = (ToDisplayData) data;
             toDisplayData.call(this);
         } else if (data instanceof BallTrackData) {
-            // ((BallTrackData) data).call(this);
+            //((BallTrackData) data).call(this);
+        } else if (data instanceof BallBounceData) {
+            //((BallBounceData) data).call(this);
         }
     }
 

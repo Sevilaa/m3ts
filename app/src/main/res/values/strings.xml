@@ -247,7 +247,6 @@
     <string name="adjustDeviceTiltDegreeText">Tilt: %1$d°</string>
 
     <!-- Video Testing -->
-    <string name="testSetOutdoor">test_outdoor_1</string>
     <string-array name="testSets">
         <item>indoor_bad_lighting</item>
         <item>indoor_white_ball</item>
