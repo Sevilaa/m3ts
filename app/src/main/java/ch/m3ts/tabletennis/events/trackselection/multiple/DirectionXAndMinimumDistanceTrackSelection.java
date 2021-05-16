@@ -5,11 +5,11 @@ import java.util.List;
 import ch.m3ts.tabletennis.events.trackselection.TrackSelectionStrategy;
 import cz.fmo.data.Track;
 
-public class DirectionAndDistanceTrackSelection implements TrackSelectionStrategy {
+public class DirectionXAndMinimumDistanceTrackSelection implements TrackSelectionStrategy {
     private final SameXDirectionTrackSelection xDirectionTrackSelection;
     private final MinimumDistanceTrackSelection distanceTrackSelection;
 
-    public DirectionAndDistanceTrackSelection() {
+    public DirectionXAndMinimumDistanceTrackSelection() {
         xDirectionTrackSelection = new SameXDirectionTrackSelection();
         distanceTrackSelection = new MinimumDistanceTrackSelection();
     }
