@@ -4,11 +4,7 @@ import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
-import android.content.res.Configuration;
-import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.PixelFormat;
-import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.SurfaceHolder;
@@ -111,18 +107,6 @@ public class MatchStatsFragment extends EventBusSubscribedFragment implements Su
         }
         eventBus.unregister(this);
         if (this.pubNub != null) this.pubNub.unsubscribe();
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-
-        // Checks the orientation of the screen
-        SurfaceView surfaceView = getView().findViewById(R.id.heatmap);
-        Canvas heatMapCanvas = surfaceView.getHolder().lockCanvas();
-        heatMapCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-        surfaceView.getHolder().unlockCanvasAndPost(heatMapCanvas);
-        tryToDisplayHeatMap();
     }
 
     private void initPubNub(String pubnubRoom) {

@@ -35,7 +35,7 @@
         <activity
             android:name="ch.m3ts.display.stats.StatsActivity"
             android:label="@string/app_name"
-            android:screenOrientation="unspecified"
+            android:screenOrientation="landscape"
             android:configChanges="orientation|screenSize" />
         <activity
             android:name="ch.m3ts.tutorial.TutorialActivity"
@@ -64,7 +64,7 @@
             android:label="@string/app_name"
             android:theme="@style/Settings"
             android:screenOrientation="unspecified"
-            android:configChanges="orientation|screenSize"></activity>
+            android:configChanges="orientation|screenSize" />
         <activity
             android:name="ch.m3ts.tracker.visualization.replay.ReplayActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
