@@ -329,7 +329,6 @@ public class RefereeTest {
         assertSame(State.PAUSE, referee.getState());
         referee.onPause();
         referee.onResume();
-        verify(displayUpdateListener, times(1)).onReadyToServe(STARTING_SIDE);
         assertSame(State.WAIT_FOR_SERVE, referee.getState());
     }
 
