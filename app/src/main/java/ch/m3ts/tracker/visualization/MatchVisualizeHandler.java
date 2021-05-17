@@ -485,7 +485,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         if (match != null) {
             mActivity.get().runOnUiThread(new Runnable() {
                 public void run() {
-                    mActivity.get().getmSurfaceView().setOnTouchListener(new OnSwipeListener(mActivity.get()) {
+                    mActivity.get().getmSurfaceView().setOnTouchListener(new OnSwipeListener(mActivity.get(), false) {
                         @Override
                         public void onSwipeDown(Side swipeSide) {
                             TTEventBus.getInstance().dispatch(new TTEvent<>(new PointDeduction(swipeSide)));

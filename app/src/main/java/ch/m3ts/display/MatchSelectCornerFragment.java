@@ -42,6 +42,7 @@ import cz.fmo.R;
  */
 public class MatchSelectCornerFragment extends android.app.Fragment implements View.OnClickListener, SurfaceHolder.Callback {
     private static final String TAG_MATCH_SCORE = "MATCH_SCORE";
+    private static final String IS_MIRRORED_ARG_KEY = "mirrored";
     private final Point[] tableCorners = new Point[2];
     protected int layout;
     private TextView txtMaxCorners;
@@ -263,6 +264,9 @@ public class MatchSelectCornerFragment extends android.app.Fragment implements V
         }
         connection.onStartMatch(getArguments().getString("type"), getArguments().getString("server"));
         Fragment fragment = new MatchScoreFragment();
+        Bundle bundle = new Bundle();
+        bundle.putBoolean(IS_MIRRORED_ARG_KEY, false);
+        fragment.setArguments(bundle);
         callback.replaceFragment(fragment, TAG_MATCH_SCORE);
     }
 
