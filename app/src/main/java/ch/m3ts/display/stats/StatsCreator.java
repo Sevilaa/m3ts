@@ -5,17 +5,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ch.m3ts.display.stats.processing.StatsProcessing;
 import ch.m3ts.tabletennis.helper.Side;
 import cz.fmo.Lib;
 import cz.fmo.data.Track;
 
 public class StatsCreator {
+    private final Map<Side, Integer> tableCorners = new HashMap<>();
     private static StatsCreator instance;
     private List<PointData> points = new ArrayList<>();
     private List<GameStats> games = new ArrayList<>();
     private String formattedMatchStart;
     private Map<Side, String> playerNames = new HashMap<>();
-    private Map<Side, Integer> tableCorners = new HashMap<>();
 
     private StatsCreator() {
     }
@@ -34,17 +35,19 @@ public class StatsCreator {
 
     public void addPoint(String decision, Side winner, int scoreLeft, int scoreRight, int strikes, Side ballSide, Side striker, Side server, int duration, List<Track> tracks) {
         List<DetectionData> detections = new ArrayList<>();
-        List<TrackData> trackData = new ArrayList<>();
+        List<TrackData> trackDataList = new ArrayList<>();
         for (Track track : tracks) {
             Lib.Detection latest = track.getLatest();
             while (latest != null) {
                 detections.add(new DetectionData(latest.centerX, latest.centerY, latest.centerZ, latest.velocity, latest.isBounce, (int) latest.directionX));
                 latest = latest.predecessor;
             }
-            trackData.add(new TrackData(detections, track.getAvgVelocity(), track.getStriker()));
+            trackDataList.add(new TrackData(detections, track.getAvgVelocity(), track.getStriker()));
             detections = new ArrayList<>();
         }
-        PointData point = new PointData(decision, trackData, winner, scoreLeft, scoreRight, ballSide, striker, server, duration);
+        PointData point = new PointData(decision, trackDataList, winner, scoreLeft, scoreRight, ballSide, striker, server, duration);
+        StatsProcessing.recalculateVelocity(trackDataList, tableCorners);
+        point.setFastestStrikes();  // important to call this AFTER velocity has been recalculated
         if (points.isEmpty() && !games.isEmpty() && scoreLeft + scoreRight > 1) {
             GameStats lastGame = games.get(games.size() - 1);
             lastGame.getPoints().add(point);

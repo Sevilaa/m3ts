@@ -9,11 +9,38 @@ import java.util.Map;
 import ch.m3ts.display.stats.DetectionData;
 import ch.m3ts.display.stats.TrackData;
 import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.tracker.ZPositionCalc;
 import edu.princeton.cs.algs4.LinearRegression;
 
 public class StatsProcessing {
+    private static final double FRAME_RATE = 30.0;
 
     private StatsProcessing() {
+    }
+
+    public static void recalculateVelocity(List<TrackData> trackDataList, Map<Side, Integer> tableCorners) {
+        int leftCorner = tableCorners.get(Side.LEFT);
+        int rightCorner = tableCorners.get(Side.RIGHT);
+        int widthPx = rightCorner - leftCorner;
+        double mmPerPx = ZPositionCalc.TABLE_TENNIS_TABLE_LENGTH_MM / widthPx;
+        for (TrackData trackData : trackDataList) {
+            DetectionData lastDetection = trackData.getDetections().get(0);
+            DetectionData firstDetection = trackData.getDetections().get(trackData.getDetections().size() - 1);
+            if (lastDetection == firstDetection) {
+                trackData.setAverageVelocity(0);
+            } else {
+                double dx = Math.abs(lastDetection.getX() - firstDetection.getX()) * mmPerPx;
+                double dy = Math.abs(lastDetection.getY() - firstDetection.getY()) * mmPerPx;
+                double dz = Math.abs(lastDetection.getZ() - firstDetection.getZ()) * (ZPositionCalc.TABLE_TENNIS_TABLE_WIDTH_MM
+                        + 2 * ZPositionCalc.MAX_OFFSET_MM);
+                double distanceInMm = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2) + Math.pow(dz, 2));
+                double distanceInM = distanceInMm / 1000.0;
+                double dTimeInS = (1 / FRAME_RATE) * trackData.getDetections().size();
+                float velocityMPerS = (float) (distanceInM / dTimeInS);
+                float velocityKmPerH = velocityMPerS * 3.6f;
+                trackData.setAverageVelocity(velocityKmPerH);
+            }
+        }
     }
 
     /**
