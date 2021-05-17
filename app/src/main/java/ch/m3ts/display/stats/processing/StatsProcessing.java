@@ -26,7 +26,7 @@ public class StatsProcessing {
         for (TrackData trackData : trackDataList) {
             DetectionData lastDetection = trackData.getDetections().get(0);
             DetectionData firstDetection = trackData.getDetections().get(trackData.getDetections().size() - 1);
-            if (lastDetection == firstDetection) {
+            if (lastDetection == firstDetection || trackData.getDetections().size() == 1) {
                 trackData.setAverageVelocity(0);
             } else {
                 double dx = Math.abs(lastDetection.getX() - firstDetection.getX()) * mmPerPx;
@@ -35,7 +35,7 @@ public class StatsProcessing {
                         + 2 * ZPositionCalc.MAX_OFFSET_MM);
                 double distanceInMm = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2) + Math.pow(dz, 2));
                 double distanceInM = distanceInMm / 1000.0;
-                double dTimeInS = (1 / FRAME_RATE) * trackData.getDetections().size();
+                double dTimeInS = (1 / FRAME_RATE) * (trackData.getDetections().size() - 1);
                 float velocityMPerS = (float) (distanceInM / dTimeInS);
                 float velocityKmPerH = velocityMPerS * 3.6f;
                 trackData.setAverageVelocity(velocityKmPerH);
