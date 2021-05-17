@@ -10,9 +10,9 @@ import cz.fmo.util.Config;
  * captured at different times.
  */
 public class Track {
+    public static final float MAX_VELOCITY_POSSIBLE_M_S = 31.3f;
     private static final float MAX_VELOCITY_POSSIBLE_KM_H = 112.654f;
     private static final float MAX_VELOCITY_POSSIBLE_MPH = 70f;
-    private static final float MAX_VELOCITY_POSSIBLE_M_S = 31.3f;
     private final Config mConfig;
     private Lib.Detection mLatest;
     private float mLatestDx = 0;

@@ -39,7 +39,7 @@ public class LinearRegression {
      * @throws IllegalArgumentException if the lengths of the two arrays are not equal
      */
     public LinearRegression(double[] x, double[] y) {
-        if (x.length != y.length) {
+        if (x.length != y.length || x.length == 0) {
             throw new IllegalArgumentException("array lengths are not equal");
         }
         int n = x.length;
@@ -61,6 +61,7 @@ public class LinearRegression {
             yybar += (y[i] - ybar) * (y[i] - ybar);
             xybar += (x[i] - xbar) * (y[i] - ybar);
         }
+        if (xxbar == 0.0) xxbar = 1.0;
         slope = xybar / xxbar;
         intercept = ybar - slope * xbar;
 
@@ -74,6 +75,7 @@ public class LinearRegression {
         }
 
         int degreesOfFreedom = n - 2;
+        if (yybar == 0.0) yybar = 1.0;
         r2 = ssr / yybar;
         double svar = rss / degreesOfFreedom;
         svar1 = svar / xxbar;

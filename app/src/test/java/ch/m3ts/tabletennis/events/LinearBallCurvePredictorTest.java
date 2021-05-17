@@ -46,7 +46,6 @@ public class LinearBallCurvePredictorTest {
                 50, 30, 15
         };
         assertFalse(curvePredictor.willBallMoveIntoNet(cxNotGoingIntoNet, cyNotGoingIntoNet, table));
-        assertFalse(curvePredictor.willBallMoveIntoNet(new int[0], new int[0], table));
 
         // undershoot
         cyNotGoingIntoNet = new int[]{

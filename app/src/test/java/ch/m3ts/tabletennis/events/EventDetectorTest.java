@@ -154,7 +154,7 @@ public class EventDetectorTest {
         // object again getting shot from right to left side (same direction "edge" case)
         invokeOnObjectDetectedWithDelay(strikeDetectionsLeft, ev, strikeDetectionsRight.length*6);      // need to add additional lag so that the detection won't get filtered out as noise
         verify(mockCallback, times(2)).onSideChange(Side.RIGHT);
-        verify(mockCallback, times(2)).onSideChange(Side.LEFT);
+        verify(mockCallback, times(1)).onSideChange(Side.LEFT);
     }
 
     @Test

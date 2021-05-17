@@ -304,6 +304,9 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
                     Log.d("Table Side Change:Changing to PLAY");
                     this.state = State.PLAY;
                 }
+                this.bounces = 0;
+                this.audioBounces = 0;
+                break;
             case PLAY:
                 this.bounces = 0;
                 this.audioBounces = 0;
@@ -369,13 +372,13 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
     }
 
     public void onOutOfFrameForTooLong() {
-        String msg;
         if (this.state == State.OUT_OF_FRAME) {
             if (currentBallSide == currentStriker) {
                 lastDecision = "Out of Frame for too long - Striker most likely shot the ball into the net";
                 lastPointWinner = Side.getOpposite(currentStriker);
                 faultBySide(currentStriker);
             } else if (this.bounces >= 1 || this.audioBounces >= 1) {
+                String msg;
                 if (this.audioBounces >= 1 && this.bounces == 0) {
                     msg = "Out of Frame for too long (AUDIO_BOUNCE ONLY) - Strike received no return";
                 } else if (this.bounces >= 1 && this.audioBounces == 0) {
@@ -398,6 +401,8 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
 
     public void resume() {
         this.state = State.WAIT_FOR_SERVE;
+        this.currentBallSide = getServer();
+        this.currentStriker = Side.getOpposite(getServer());
         if (this.isUsingReadyToServeGesture) {
             TTEventBus.getInstance().dispatch(new TTEvent<>(new ReadyToServeData(getServer())));
         }

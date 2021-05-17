@@ -293,7 +293,7 @@
                     <SurfaceView
                         android:id="@+id/heatmap"
                         android:layout_width="match_parent"
-                        android:layout_height="250dp"
+                        android:layout_height="220dp"
                         android:layout_marginTop="25dp"
                         android:layout_marginBottom="25dp" />
 
@@ -319,7 +319,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:layout_gravity="center"></LinearLayout>
+                        android:layout_gravity="center" />
                 </GridLayout>
             </RelativeLayout>
         </LinearLayout>

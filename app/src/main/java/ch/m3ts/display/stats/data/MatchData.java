@@ -52,7 +52,7 @@ public class MatchData implements Serializable {
             this.strikes.put(Side.LEFT, this.strikes.get(Side.LEFT) + game.getPlayerStats().get(Side.LEFT).getStrikes());
             this.strikes.put(Side.RIGHT, this.strikes.get(Side.RIGHT) + game.getPlayerStats().get(Side.RIGHT).getStrikes());
         }
-        if (gameStats.size() > 0) {
+        if (!gameStats.isEmpty() && amountOfPoints > 0) {
             averagePointDuration = duration / amountOfPoints;
         }
     }
