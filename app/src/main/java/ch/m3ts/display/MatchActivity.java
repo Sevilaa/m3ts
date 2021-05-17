@@ -15,12 +15,16 @@ import java.security.SecureRandom;
 import java.util.Properties;
 import java.util.Random;
 
-import ch.m3ts.Log;
 import ch.m3ts.connection.DisplayConnection;
 import ch.m3ts.connection.NearbyDisplayConnection;
 import ch.m3ts.connection.pubnub.PubNubDisplayConnection;
 import ch.m3ts.connection.pubnub.PubNubFactory;
-import ch.m3ts.helper.QuitAlertDialogHelper;
+import ch.m3ts.eventbus.EventBus;
+import ch.m3ts.eventbus.TTEvent;
+import ch.m3ts.eventbus.TTEventBus;
+import ch.m3ts.eventbus.data.RestartMatchData;
+import ch.m3ts.util.Log;
+import ch.m3ts.util.QuitAlertDialogHelper;
 import cz.fmo.R;
 import cz.fmo.util.Config;
 
@@ -62,16 +66,31 @@ public class MatchActivity extends FragmentActivity implements FragmentReplaceCa
         transaction.commit();
     }
 
+    @Override
+    protected void onResume() {
+        Config mConfig = new Config(this);
+        EventBus eventBus = TTEventBus.getInstance();
+        if (mConfig.isUsingPubnub()) {
+            eventBus.register(this.pubNub);
+        } else {
+            eventBus.register(this.nearbyDisplayConnection);
+        }
+        super.onResume();
+    }
+
     private void initRestartedMatch(Bundle bundle) {
         Config mConfig = new Config(this);
+        EventBus eventBus = TTEventBus.getInstance();
         if (mConfig.isUsingPubnub()) {
             initPubNub(bundle.getString("room"));
-            this.pubNub.onRestartMatch();
+            eventBus.register(this.pubNub);
+
         } else {
             this.nearbyDisplayConnection = NearbyDisplayConnection.getInstance();
             this.nearbyDisplayConnection.init(this);
-            this.nearbyDisplayConnection.onRestartMatch();
+            eventBus.register(this.nearbyDisplayConnection);
         }
+        TTEventBus.getInstance().dispatch(new TTEvent<>(new RestartMatchData()));
     }
 
     private void initConnection() {
@@ -129,6 +148,13 @@ public class MatchActivity extends FragmentActivity implements FragmentReplaceCa
     @Override
     protected void onPause() {
         alertDialog.dismiss();
+        Config mConfig = new Config(this);
+        EventBus eventBus = TTEventBus.getInstance();
+        if (mConfig.isUsingPubnub()) {
+            eventBus.unregister(this.pubNub);
+        } else {
+            eventBus.unregister(this.nearbyDisplayConnection);
+        }
         super.onPause();
     }
 

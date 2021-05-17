@@ -10,10 +10,24 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import androidx.test.espresso.action.ViewActions;
 import androidx.test.filters.LargeTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.runner.AndroidJUnit4;
+import ch.m3ts.display.stats.GameStats;
+import ch.m3ts.display.stats.MatchStats;
+import ch.m3ts.display.stats.PointData;
+import ch.m3ts.display.stats.TrackData;
+import ch.m3ts.eventbus.TTEvent;
+import ch.m3ts.eventbus.TTEventBus;
+import ch.m3ts.eventbus.data.StatsData;
+import ch.m3ts.tabletennis.helper.Side;
 import cz.fmo.R;
 
 import static androidx.test.espresso.Espresso.onView;
@@ -77,6 +91,42 @@ public class MatchWonActivityTest extends InstrumentationTestCase {
                 .check(matches(withText("00")));
         onView(withId(R.id.btnPauseResumeReferee))
                 .check(matches(isDisplayed()));
+    }
+
+    @Test
+    public void onClickMatchStats() {
+        String playerLeftName = "hannes";
+        String playerRightName = "kannes";
+        String gameStatsButtonLabel = "Stats";
+        onView(withId(R.id.show_stats)).perform(click());
+        onView(withText(R.string.mstLoadingMsg)).check(matches(isDisplayed()));
+        List<PointData> points = new ArrayList<>();
+        points.add(new PointData("msg1", new ArrayList<TrackData>(), Side.LEFT, 9, 2, Side.RIGHT, Side.RIGHT, Side.LEFT, 12));
+        points.add(new PointData("msg2", new ArrayList<TrackData>(), Side.LEFT, 10, 2, Side.RIGHT, Side.RIGHT, Side.LEFT, 10));
+        points.add(new PointData("msg3", new ArrayList<TrackData>(), Side.LEFT, 11, 2, Side.RIGHT, Side.RIGHT, Side.LEFT, 3));
+        List<GameStats> games = new ArrayList<>();
+        GameStats gameStats = new GameStats(points);
+        games.add(gameStats);
+        Map<Side, Integer> tableCorners = new HashMap<>();
+        tableCorners.put(Side.LEFT, 60);
+        tableCorners.put(Side.RIGHT, 1130);
+        MatchStats stats = new MatchStats(games, playerLeftName, playerRightName, "12.12.2021", tableCorners);
+        TTEventBus.getInstance().dispatch(new TTEvent<>(new StatsData(stats)));
+        onView(isRoot()).perform(waitFor(1000));
+        onView(withId(R.id.player_left)).check(matches(withText(playerLeftName)));
+        onView(withId(R.id.player_right)).check(matches(withText(playerRightName)));
+        onView(withId(R.id.score)).check(matches(withText("1:0")));
+        onView(withText(gameStatsButtonLabel))
+                .perform(ViewActions.scrollTo())
+                .check(matches(isDisplayed()));
+        onView(withText(gameStatsButtonLabel)).perform(click());
+        onView(withId(R.id.score)).check(matches(withText("11:2")));
+        onView(withId(R.id.game_history))
+                .perform(ViewActions.scrollTo())
+                .check(matches(isDisplayed()));
+        onView(withText("9:2")).perform(click());
+        onView(withText("msg1")).check(matches(isDisplayed()));
+        onView(withText("12s")).check(matches(isDisplayed()));
     }
 
     @Test

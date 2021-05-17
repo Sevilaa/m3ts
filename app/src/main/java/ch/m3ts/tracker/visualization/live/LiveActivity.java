@@ -6,14 +6,14 @@ import android.os.Bundle;
 import android.view.Display;
 import android.view.SurfaceView;
 
-import ch.m3ts.Log;
-import ch.m3ts.helper.QuitAlertDialogHelper;
 import ch.m3ts.tabletennis.Table;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.MatchType;
 import ch.m3ts.tabletennis.match.Player;
 import ch.m3ts.tracker.visualization.CameraStatus;
 import ch.m3ts.tracker.visualization.MatchVisualizeActivity;
+import ch.m3ts.util.Log;
+import ch.m3ts.util.QuitAlertDialogHelper;
 import cz.fmo.R;
 import cz.fmo.camera.CameraThread;
 import cz.fmo.camera.PreviewCameraTarget;
@@ -51,14 +51,14 @@ public final class LiveActivity extends MatchVisualizeActivity {
         cameraCallback = this.mHandler;
         this.alertDialog = QuitAlertDialogHelper.makeDialog(this);
         Log.d("Found match: " + matchId);
-        this.onPause();
-
+        mHandler.stopDetections();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
         this.mHandler.setConnectCallback(null);
+        this.mHandler.onPauseActivity();
     }
 
     @Override
@@ -119,6 +119,7 @@ public final class LiveActivity extends MatchVisualizeActivity {
     protected void onResume() {
         super.onResume();
         init();
+        this.mHandler.onResumeActivity();
     }
 
     /**
@@ -126,6 +127,7 @@ public final class LiveActivity extends MatchVisualizeActivity {
      */
     @Override
     protected void onPause() {
+        this.mHandler.onPauseActivity();
         mHandler.stopDetections();
         alertDialog.dismiss();
         super.onPause();

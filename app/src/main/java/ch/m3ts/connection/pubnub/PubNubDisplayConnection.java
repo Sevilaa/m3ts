@@ -9,8 +9,9 @@ import org.json.JSONObject;
 
 import java.util.UUID;
 
-import ch.m3ts.Log;
+import ch.m3ts.connection.ConnectionEvent;
 import ch.m3ts.connection.ImplDisplayConnection;
+import ch.m3ts.util.Log;
 
 public class PubNubDisplayConnection extends ImplDisplayConnection {
     private final Pubnub pubnub;
@@ -49,7 +50,7 @@ public class PubNubDisplayConnection extends ImplDisplayConnection {
             JSONObject json = new JSONObject();
             json.put(JSONInfo.TYPE_PROPERTY, matchType);
             json.put(JSONInfo.SERVER_PROPERTY, server);
-            json.put(JSONInfo.EVENT_PROPERTY, "onStartMatch");
+            json.put(JSONInfo.EVENT_PROPERTY, ConnectionEvent.MATCH_START);
             sendData(json);
         } catch (JSONException ex) {
             Log.d("Unable to send JSON to channel " + this.roomID + "\n" + ex.getMessage());

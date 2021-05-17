@@ -4,14 +4,27 @@ import android.support.annotation.NonNull;
 
 import com.google.audio.ImplAudioRecorderCallback;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
+import ch.m3ts.eventbus.EventBus;
+import ch.m3ts.eventbus.TTEvent;
+import ch.m3ts.eventbus.TTEventBus;
+import ch.m3ts.eventbus.data.eventdetector.BallBounceAudioData;
+import ch.m3ts.eventbus.data.eventdetector.BallBounceData;
+import ch.m3ts.eventbus.data.eventdetector.BallDroppedSideWaysData;
+import ch.m3ts.eventbus.data.eventdetector.BallMovingIntoNetData;
+import ch.m3ts.eventbus.data.eventdetector.BallNearlyOutOfFrameData;
+import ch.m3ts.eventbus.data.eventdetector.BallTrackData;
+import ch.m3ts.eventbus.data.eventdetector.DetectionTimeOutData;
+import ch.m3ts.eventbus.data.eventdetector.StrikerSideChangeData;
+import ch.m3ts.eventbus.data.eventdetector.TableSideChangeData;
 import ch.m3ts.tabletennis.Table;
 import ch.m3ts.tabletennis.events.timeouts.TimeoutTimerTask;
+import ch.m3ts.tabletennis.events.trackselection.ChooseNewestTrackSelection;
+import ch.m3ts.tabletennis.events.trackselection.TrackSelectionStrategy;
 import ch.m3ts.tabletennis.helper.DirectionX;
 import ch.m3ts.tabletennis.helper.DirectionY;
 import ch.m3ts.tabletennis.helper.Side;
@@ -39,12 +52,10 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
     private static final double PERCENTAGE_OF_NEARLY_OUT_OF_FRAME = 0.07;
     private static final int MILLISECONDS_TILL_TIMEOUT = 1500;
     private final Object mLock = new Object();
-    private final TrackSet tracks;
-    private final List<EventDetectionCallback> callbacks;
+    private final TrackSet trackSet;
     private final int[] nearlyOutOfFrameThresholds;
     private final int srcWidth;
     private final int srcHeight;
-    private Side currentBallSide;
     private Lib.Detection previousDetection;
     private int previousDirectionY;
     private int previousDirectionX;
@@ -54,26 +65,33 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
     private int numberOfDetections;
     private final ZPositionCalc zPositionCalc;
     private Track currentTrack;
+    private final EventBus eventBus;
+    private final Timer timeoutTimer;
+    private final BallCurvePredictor ballCurvePredictor;
+    private final TrackSelectionStrategy trackSelectionStrategy;
+    private boolean checkForBallMovingIntoNet;
+    private boolean checkForSideChange;
 
-    public EventDetector(Config config, int srcWidth, int srcHeight, EventDetectionCallback callback, TrackSet tracks, @NonNull Table table, ZPositionCalc calc) {
-        this(config, srcWidth, srcHeight, Collections.singletonList(callback), tracks, table, calc);
-    }
-
-    public EventDetector(Config config, int srcWidth, int srcHeight, List<EventDetectionCallback> callbacks, TrackSet tracks, @NonNull Table table, ZPositionCalc calc) {
+    public EventDetector(Config config, int srcWidth, int srcHeight, TrackSet trackSet, @NonNull Table table, ZPositionCalc calc) {
+        this.eventBus = TTEventBus.getInstance();
         this.srcHeight = srcHeight;
         this.srcWidth = srcWidth;
-        this.tracks = tracks;
+        this.trackSet = trackSet;
         this.nearlyOutOfFrameThresholds = new int[]{
                 (int) (srcWidth * PERCENTAGE_OF_NEARLY_OUT_OF_FRAME),
                 (int) (srcWidth * (1 - PERCENTAGE_OF_NEARLY_OUT_OF_FRAME)),
                 (int) (srcHeight * PERCENTAGE_OF_NEARLY_OUT_OF_FRAME),
                 (int) (srcHeight * (1 - PERCENTAGE_OF_NEARLY_OUT_OF_FRAME)),
         };
-        this.callbacks = callbacks;
         this.table = table;
         this.numberOfDetections = 0;
         this.zPositionCalc = calc;
-        tracks.setConfig(config);
+        this.timeoutTimer = new Timer("timeoutTimer");
+        this.ballCurvePredictor = new LinearBallCurvePredictor();
+        this.checkForBallMovingIntoNet = true;
+        this.checkForSideChange = true;
+        this.trackSelectionStrategy = new ChooseNewestTrackSelection();
+        trackSet.setConfig(config);
     }
 
     @Override
@@ -90,35 +108,20 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
     public void onAudioBounceDetected() {
         if (currentTrack != null &&
                 TimeUnit.MILLISECONDS.convert(System.nanoTime() - currentTrack.getLastDetectionTime(), TimeUnit.NANOSECONDS) < 30) {
-            Side ballBouncedOnSide = table.getHorizontalSideOfDetection(previousDetection.centerX);
-            for (EventDetectionCallback callback : callbacks) {
-                callback.onAudioBounce(ballBouncedOnSide);
-            }
+            Side ballBouncedOnSide = table.getHorizontalSideOfDetection(previousCenterX);
+            eventBus.dispatch(new TTEvent<>(new BallBounceAudioData(ballBouncedOnSide)));
         }
     }
 
     public void onObjectsDetected(Lib.Detection[] detections, long detectionTime) {
         synchronized (mLock) {
-            tracks.addDetections(detections, this.srcWidth, this.srcHeight, detectionTime); // after this, object direction is up to date
-            if (!tracks.getTracks().isEmpty()) {
-                Track track = selectTrack(tracks.getTracks());
+            trackSet.addDetections(detections, this.srcWidth, this.srcHeight, detectionTime);
+            if (!trackSet.getTracks().isEmpty()) {
+                Track track = selectTrack(trackSet.getTracks());
                 if (track != null && track.getLatest() != previousDetection) {
                     numberOfDetections++;
                     Lib.Detection latestDetection = track.getLatest();
-                    calcDirectionY(latestDetection);
-                    calcDirectionX(latestDetection);
-                    callAllOnStrikeFound(track);
-                    if (hasBallFallenOffSideWays(latestDetection)) {
-                        callAllOnBallDroppedSideWays();
-                    }
-                    // todo ev. if has table side changed, then no bounce check
-                    hasTableSideChanged(latestDetection.centerX);
-                    boolean tableSideChanged = hasSideChanged(latestDetection);
-                    hasBouncedOnTable(latestDetection, tableSideChanged);
-                    Side nearlyOutOfFrameSide = getNearlyOutOfFrameSide(latestDetection);
-                    if (nearlyOutOfFrameSide != null) {
-                        callAllOnNearlyOutOfFrame(latestDetection, nearlyOutOfFrameSide);
-                    }
+                    checkForEvents(track, latestDetection);
                     savePreviousDetection(latestDetection);
                     setTimeoutTimer(numberOfDetections);
                 }
@@ -126,39 +129,68 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
         }
     }
 
+    private void checkForEvents(Track track, Lib.Detection latestDetection) {
+        if (latestDetection.directionX != DirectionX.NONE || latestDetection.directionY != DirectionY.NONE) {
+            callAllOnStrikeFound(track);
+            hasTableSideChanged(latestDetection.centerX);
+            hasBallFallenOffSideWays(latestDetection);
+            if (latestDetection.directionX != DirectionX.NONE) {
+                boolean strikerSideChanged = hasSideChanged(latestDetection);
+                if (latestDetection.directionY != DirectionY.NONE) {
+                    isMovingIntoNet(latestDetection);
+                    hasBouncedOnTable(latestDetection, strikerSideChanged);
+                    Side nearlyOutOfFrameSide = getNearlyOutOfFrameSide(latestDetection);
+                    if (nearlyOutOfFrameSide != null) {
+                        callAllOnNearlyOutOfFrame(latestDetection, nearlyOutOfFrameSide);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Selects the ball track out of several tracks
+     *
+     * @param tracks all current tracks (detected by FMO)
+     * @return a track or null (if no track is the ball)
+     */
     public Track selectTrack(List<Track> tracks) {
-        // first tag all tracks which have crossed the table once
+        validateAndMarkTracks(tracks);
+        return selectAndSetCurrentTrack(tracks);
+    }
+
+    private void validateAndMarkTracks(List<Track> tracks) {
         for (Track t : tracks) {
             Lib.Detection latestDetection = t.getLatest();
+            calcDirectionOfDetection(latestDetection);
+            latestDetection.centerZ = zPositionCalc.findZPosOfBallRel(latestDetection.radius);
             if (table.isOnOrAbove(latestDetection.centerX, latestDetection.centerY) && zPositionCalc.isBallZPositionOnTable(latestDetection.radius)) {
                 t.setTableCrossed();
             }
         }
+    }
 
+    private Track selectAndSetCurrentTrack(List<Track> tracks) {
+        Track selectedTrack = null;
         if (tracks.size() > 1) {
-            // check if the distance between the two latest detections is humanly possible
-            Lib.Detection d0 = tracks.get(tracks.size() - 1).getLatest();
-            Lib.Detection d1 = tracks.get(tracks.size() - 2).getLatest();
-            double mmPerPixelOnFrontPlane = zPositionCalc.getMmPerPixelFrontEdge();
-            int dx = Math.abs(d0.centerX - d1.centerX);
-            int dy = Math.abs(d0.centerY - d1.centerY);
-            double distanceInMm = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2)) * mmPerPixelOnFrontPlane;
-            double dTime = (double) Math.abs(tracks.get(tracks.size() - 1).getLastDetectionTime() - tracks.get(tracks.size() - 2).getLastDetectionTime()) / 1_000_000_000;
-            if (dTime == 0) dTime = 1.0 / 30.0;
-            if ((distanceInMm / 1000) / (dTime) >= 32) {
-                tracks.remove(1);
+            selectedTrack = trackSelectionStrategy.selectTrack(tracks, previousDirectionX, previousDirectionY, previousCenterX, previousCenterY);
+            if (selectedTrack == null) {
+                for (Track t : tracks) {
+                    if (t.hasCrossedTable()) {
+                        selectedTrack = t;
+                        break;
+                    }
+                }
             }
-
+        } else {
+            if (tracks.get(0).hasCrossedTable()) {
+                selectedTrack = tracks.get(0);
+            }
         }
 
-        // now select a track which has crossed the table, preferably the newer one (index high), if there are none return null
-        Track selectedTrack = null;
-        for (int i = tracks.size() - 1; i >= 0; i--) {
-            if (isOnTable(tracks.get(i))) {
-                selectedTrack = tracks.get(i);
-                currentTrack = selectedTrack;
-                break;
-            }
+        // save current selected Track
+        if (selectedTrack != null) {
+            currentTrack = selectedTrack;
         }
         return selectedTrack;
     }
@@ -168,9 +200,7 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
     }
 
     public void callAllOnTimeout() {
-        for (EventDetectionCallback callback : callbacks) {
-            callback.onTimeout();
-        }
+        eventBus.dispatch(new TTEvent<>(new DetectionTimeOutData()));
     }
 
     public int getNumberOfDetections() {
@@ -179,14 +209,7 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
 
     private void setTimeoutTimer(int currentNumberOfDetections) {
         TimerTask timeoutTimerTask = new TimeoutTimerTask(this, currentNumberOfDetections);
-        Timer timeoutTimer = new Timer("timeoutTimer");
         timeoutTimer.schedule(timeoutTimerTask, MILLISECONDS_TILL_TIMEOUT);
-    }
-
-    private void callAllOnStrikeFound(Track track) {
-        for (EventDetectionCallback callback : callbacks) {
-            callback.onStrikeFound(track);
-        }
     }
 
     private void savePreviousDetection(Lib.Detection detection) {
@@ -200,42 +223,41 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
         }
     }
 
+    private void callAllOnStrikeFound(Track track) {
+        eventBus.dispatch(new TTEvent<>(new BallTrackData(track)));
+    }
+
     private void callAllOnBounce(Lib.Detection detection, Side side) {
-        for (EventDetectionCallback callback : callbacks) {
-            callback.onBounce(detection, side);
-        }
+        eventBus.dispatch(new TTEvent<>(new BallBounceData(detection, side)));
     }
 
     private void callAllOnSideChange(Side side) {
-        for (EventDetectionCallback callback : callbacks) {
-            callback.onSideChange(side);
-        }
+        eventBus.dispatch(new TTEvent<>(new StrikerSideChangeData(side)));
     }
 
     private void callAllOnNearlyOutOfFrame(Lib.Detection latestDetection, Side side) {
-        for (EventDetectionCallback callback : callbacks) {
-            callback.onNearlyOutOfFrame(latestDetection, side);
-        }
+        eventBus.dispatch(new TTEvent<>(new BallNearlyOutOfFrameData(latestDetection, side)));
     }
 
     private void callAllOnTableSideChange(Side side) {
-        for (EventDetectionCallback callback : callbacks) {
-            callback.onTableSideChange(side);
-        }
+        eventBus.dispatch(new TTEvent<>(new TableSideChangeData(side)));
     }
 
     private void callAllOnBallDroppedSideWays() {
-        for (EventDetectionCallback callback : callbacks) {
-            callback.onBallDroppedSideWays();
-        }
+        eventBus.dispatch(new TTEvent<>(new BallDroppedSideWaysData()));
     }
 
     private boolean hasSideChanged(Lib.Detection detection) {
         boolean hasSideChanged = false;
-        if (detection.directionX != previousDirectionX) {
+        if ((checkForSideChange &&
+                detection.predecessor != null && detection.predecessor.directionX == detection.directionX) &&
+                ((detection.centerX < table.getNetBottom().x && detection.directionX == DirectionX.RIGHT) || (
+                        detection.centerX > table.getNetBottom().x && detection.directionX == DirectionX.LEFT))) {
             Side striker = Side.getOppositeX(detection.directionX);
             callAllOnSideChange(striker);
             hasSideChanged = true;
+            checkForSideChange = false;
+            checkForBallMovingIntoNet = true;
         }
         return hasSideChanged;
     }
@@ -243,9 +265,10 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
     private void hasBouncedOnTable(Lib.Detection detection, boolean hasSideChanged) {
         if (!hasSideChanged && previousDirectionY != detection.directionY &&
                 (previousDirectionX == detection.directionX) &&
-                (table.isBounceOn(previousCenterX, previousCenterY) || table.isBounceOn(detection.centerX, detection.centerY)) &&
+                table.isBounceOn(previousCenterX, previousCenterY) &&
                 ((previousDirectionY == DirectionY.DOWN) && (detection.directionY == DirectionY.UP))) {
-            Side ballBouncedOnSide = table.getHorizontalSideOfDetection(previousDetection.centerX);
+            Side ballBouncedOnSide = table.getHorizontalSideOfDetection(previousCenterX);
+            detection.isBounce = true;
             callAllOnBounce(previousDetection, ballBouncedOnSide);
         }
     }
@@ -266,33 +289,60 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
         return side;
     }
 
-    private boolean isOnTable(Track track) {
-        return track.hasCrossedTable();
-    }
-
-    private void calcDirectionY(Lib.Detection detection) {
-        detection.directionY = Integer.compare(detection.centerY, previousCenterY);
-    }
-
-    private void calcDirectionX(Lib.Detection detection) {
-        if (detection.predecessor != null)
+    /**
+     * Calculates the x and y direction of a detection using the detections predecessor or the latest saved
+     * position.
+     *
+     * @param detection Detection of which to calculate the direction to.
+     */
+    private void calcDirectionOfDetection(Lib.Detection detection) {
+        if (detection.predecessor != null) {
+            detection.directionY = Integer.compare(detection.centerY, detection.predecessor.centerY);
             detection.directionX = Integer.compare(detection.centerX, detection.predecessor.centerX);
-        else detection.directionX = Integer.compare(detection.centerX, previousCenterX);
-    }
-
-    private void hasTableSideChanged(int currentXPosition) {
-        if (previousDetection != null) {
-            if (currentXPosition > table.getCloseNetEnd().x && previousCenterX < table.getCloseNetEnd().x) {
-                callAllOnTableSideChange(Side.RIGHT);
-            } else if (currentXPosition < table.getCloseNetEnd().x && previousCenterX > table.getCloseNetEnd().x) {
-                callAllOnTableSideChange(Side.LEFT);
-            }
+        } else {
+            detection.directionY = Integer.compare(detection.centerY, previousCenterY);
+            detection.directionX = Integer.compare(detection.centerX, previousCenterX);
         }
     }
 
-    private boolean hasBallFallenOffSideWays(Lib.Detection detection) {
-        return (detection.predecessor != null &&
+    private void hasTableSideChanged(int currentXPosition) {
+        if (currentXPosition >= table.getNetBottom().x && previousCenterX < table.getNetBottom().x) {
+            callAllOnTableSideChange(Side.RIGHT);
+            this.checkForSideChange = true;
+        } else if (currentXPosition <= table.getNetBottom().x && previousCenterX > table.getNetBottom().x) {
+            callAllOnTableSideChange(Side.LEFT);
+            this.checkForSideChange = true;
+        }
+    }
+
+    private void hasBallFallenOffSideWays(Lib.Detection detection) {
+        if (detection.predecessor != null && detection.predecessor.directionY == DirectionY.DOWN &&
                 table.isBelow(detection.centerX, detection.centerY) &&
-                detection.directionY == DirectionY.DOWN);
+                detection.directionY == DirectionY.DOWN) {
+            callAllOnBallDroppedSideWays();
+        }
+    }
+
+    private void isMovingIntoNet(Lib.Detection detection) {
+        if (checkForBallMovingIntoNet &&
+                detection.predecessor != null &&
+                detection.directionY == DirectionY.DOWN &&
+                table.isOnOrAbove(detection.centerX, detection.centerY) &&
+                ((detection.directionX == DirectionX.RIGHT && detection.centerX < table.getNetBottom().x) ||
+                        (detection.directionX == DirectionX.LEFT && detection.centerX > table.getNetBottom().x))) {
+            int[] lastCXs = {
+                    detection.centerX,
+                    detection.predecessor.centerX,
+            };
+            int[] lastCYs = {
+                    detection.centerY,
+                    detection.predecessor.centerY,
+            };
+            if (ballCurvePredictor.willBallMoveIntoNet(lastCXs, lastCYs, table)) {
+                eventBus.dispatch(new TTEvent<>(new BallMovingIntoNetData()));
+                // no need to check twice in same strike
+                checkForBallMovingIntoNet = false;
+            }
+        }
     }
 }

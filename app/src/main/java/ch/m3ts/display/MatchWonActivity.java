@@ -12,6 +12,7 @@ import android.widget.TextView;
 import java.util.Locale;
 
 import ch.m3ts.MainActivity;
+import ch.m3ts.display.stats.StatsActivity;
 import cz.fmo.R;
 import cz.fmo.util.Config;
 
@@ -59,6 +60,16 @@ public class MatchWonActivity extends Activity {
         intent.putExtras(bundle);
         startActivity(intent);
         this.finish();
+    }
+
+    public void showStats(View view) {
+        Intent intent = new Intent(this, StatsActivity.class);
+        Bundle bundle = new Bundle();
+        if (new Config(this).isUsingPubnub()) {
+            bundle.putString("room", this.pubnubRoom);
+        }
+        intent.putExtras(bundle);
+        startActivity(intent);
     }
 
     /*

@@ -16,7 +16,15 @@ import androidx.test.rule.ActivityTestRule;
 import androidx.test.rule.GrantPermissionRule;
 import androidx.test.runner.AndroidJUnit4;
 import ch.m3ts.MainActivity;
+import ch.m3ts.eventbus.Event;
+import ch.m3ts.eventbus.Subscribable;
+import ch.m3ts.eventbus.TTEventBus;
+import ch.m3ts.eventbus.data.eventdetector.EventDetectorEventData;
+import ch.m3ts.tabletennis.events.EventDetectionListener;
+import ch.m3ts.tabletennis.helper.Side;
+import cz.fmo.Lib;
 import cz.fmo.R;
+import cz.fmo.data.Track;
 import helper.GrantPermission;
 
 import static androidx.test.espresso.Espresso.onData;
@@ -34,10 +42,31 @@ import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.CoreMatchers.anything;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.allOf;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
 public class ReplayActivityTest {
+
+    static class StubListener implements Subscribable {
+        private final EventDetectionListener eventDetectionListener;
+
+        StubListener(EventDetectionListener eventDetectionListener) {
+            this.eventDetectionListener = eventDetectionListener;
+        }
+
+        @Override
+        public void handle(Event<?> event) {
+            Object data = event.getData();
+            if (data instanceof EventDetectorEventData) {
+                EventDetectorEventData eventDetectorData = (EventDetectorEventData) data;
+                eventDetectorData.call(eventDetectionListener);
+            }
+        }
+    }
 
     @Rule
     public GrantPermissionRule grantPermissionRuleCamera = GrantPermissionRule.grant(android.Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE);
@@ -50,15 +79,24 @@ public class ReplayActivityTest {
         GrantPermission.grantAllPermissions();
     }
 
+    private EventDetectionListener eventDetectionListener;
+
+    @Before
+    public void init() {
+        eventDetectionListener = mock(EventDetectionListener.class);
+        StubListener stubListener = new StubListener(eventDetectionListener);
+        TTEventBus.getInstance().register(stubListener);
+    }
+
     @Test
     // plays a video for a couple of seconds (with bounces in it), and then checks if there was a bounce
     public void testPlayMovieAndFindBounces() {
         MainActivity activity = pmsMainActivityRule.getActivity();
         onView(withId(R.id.live_settings_button))
                 .perform(click());
-        onView(withText("Advanced"))
+        onView(withText(R.string.prefHeaderDebug))
                 .perform(click());
-        onView(withText("Run video player"))
+        onView(withText(R.string.runVideoPlayer))
                 .perform(click());
         findAllViewsInActivity();
         onView(withId(R.id.playMovieFile_spinner))
@@ -67,13 +105,19 @@ public class ReplayActivityTest {
         onView(withId(R.id.play_stop_button))
                 .perform(click());
         verifyIfSwipeScoreManipulationWorks();
-        onView(isRoot()).perform(waitFor(10000));
+        onView(isRoot()).perform(waitFor(15000));
         onView(allOf(withId(R.id.txtBounce), not(withText("0"))));
         onView(allOf(withId(R.id.txtSide), not(withText("None"))));
         onView(withId(R.id.play_stop_button))
                 .check(matches(withText(R.string.stop_button_text)));
         onView(withId(R.id.play_stop_button))
                 .perform(click());
+        verify(eventDetectionListener, atLeastOnce()).onStrikeFound((Track) any());
+        verify(eventDetectionListener, atLeastOnce()).onTableSideChange(Side.LEFT);
+        verify(eventDetectionListener, atLeastOnce()).onTableSideChange(Side.RIGHT);
+        verify(eventDetectionListener, atLeastOnce()).onSideChange(Side.LEFT);
+        verify(eventDetectionListener, atLeastOnce()).onSideChange(Side.RIGHT);
+        verify(eventDetectionListener, atLeastOnce()).onBounce((Lib.Detection) any(), (Side) any());
     }
 
     private void verifyIfSwipeScoreManipulationWorks() {

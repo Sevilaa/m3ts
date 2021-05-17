@@ -2,8 +2,11 @@
     <string name="app_name">M3TS</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
 
+    <string name="benchmark_finished_toast_text">Benchmark finished, check logcat for results!</string>
     <string name="play_button_text">Play</string>
-    <string name="stop_button_text">Stop</string>
+    <string name="stop_button_text">stop</string>
+    <string name="benchmark_play_button_text">Start Benchmarking</string>
+    <string name="benchmark_stop_button_text">Benchmarking in progress…</string>
     <string name="errorMsgPermissions">Sorry, cannot use M3TS unless all permissions are granted</string>
     <string name="idDisplay">m3ts_display</string>
     <string name="idTracker">m3ts_tracker</string>
@@ -51,13 +54,14 @@
     <string name="prefProcRes">Processing resolution</string>
     <string name="prefProcResDefault">600</string>
     <string name="prefHeaderVelocity">Velocity estimation</string>
+    <string name="prefHeaderDebug">Developer Options</string>
 
     <!-- Game settings -->
-    <string name="prefGame">Game</string>
-    <string name="prefPlayer1Name">Name Player 1 (left)</string>
+    <string name="prefHeaderGame">Game</string>
+    <string name="prefPlayer1Name">Name of left Player</string>
     <string name="prefPlayer1NameDefault">Hans</string>
     <string name="prefPlayer1Key">player_1</string>
-    <string name="prefPlayer2Name">Name Player 2 (right)</string>
+    <string name="prefPlayer2Name">Name of right Player</string>
     <string name="prefPlayer2NameDefault">Peter</string>
     <string name="prefPlayer2Key">player_2</string>
     <string name="prefDisplayDebug">Display debug info</string>
@@ -68,13 +72,13 @@
     <string name="prefRecordKey">record_matches</string>
     <string name="prefRecordDefault">false</string>
     <string name="prefUseBlackSideDefault">false</string>
-    <string name="prefUseBlackSideKey">use_black_side</string>
-    <string name="prefUseBlackSideTitle">Use black side of racket for serving</string>
-    <string name="prefUseBlackSideSummary">Allows the use of the black side of the racket (in addition to the red one) to signal that a player is ready for serve</string>
-    <string name="prefUseAudioDefault">false</string>
+    <string name="prefUseBlackSideKey">use_red_side</string>
+    <string name="prefUseBlackSideTitle">Use only red side of racket for serving</string>
+    <string name="prefUseBlackSideSummary">Allows the use of only the red side of the racket to signal that a player is ready for serve</string>
+    <string name="prefUseAudioDefault">true</string>
     <string name="prefUseAudioKey">use_audio</string>
     <string name="prefUseAudioSummary">Allows the use of audio of the tracker device to assist ball detection</string>
-    <string name="prefUseAudioTitle">Use Audio (experimental)</string>
+    <string name="prefUseAudioTitle">Use Audio</string>
 
     <!-- Detection settings -->
     <string name="prefVelocityEstimationMode">Velocity estimation mode</string>
@@ -84,16 +88,18 @@
     <string name="prefObjectDiameterCustomDefault">1.00</string>
     <string name="prefFrameRate">Precise frame rate [Hz]</string>
     <string name="prefFrameRateDefault">30.00</string>
-    <string name="prefHeaderAdvanced">Advanced</string>
+    <string name="prefHeaderTracker">Tracking Settings</string>
     <string name="runBenchmark">Run benchmark</string>
 
     <!-- Velocity estimation settings -->
-    <string name="runVideoPlayer">Run video player</string>
+    <string name="runVideoPlayer">Run a replay</string>
     <string name="prefDisableDetection">Disable FMO detection</string>
 
     <!-- Advanced settings -->
     <string name="prefPubnub">Connect with pubnub</string>
+    <string name="prefPubnubDefault">false</string>
     <string name="prefPubnubKey">connect_pubnub</string>
+    <string name="prefBenchmark">Benchmark</string>
 
     <string name="playerLeftDefaultName">Player 1</string>
     <string name="playerRightDefaultName">Player 2</string>
@@ -160,12 +166,51 @@
 
     <!-- MatchWin Fragment -->
     <string name="mwStartNew">Play another Match</string>
+    <string name="mwStats">Show Stats</string>
     <string name="mwMenu">Main Menu</string>
     <string name="mwWon">\u0020won!</string>
 
     <!-- MatchScore Fragment -->
     <string name="msInitialValue">00</string>
     <string name="msDivider">:</string>
+    <string name="msDialogTitle">%1$s won the match!</string>
+    <string name="msDialogMsg">Do you want to continue or replay the last point?</string>
+    <string name="msDialogContinue">Continue</string>
+    <string name="msDialogReplay">Replay</string>
+
+    <!-- MatchStats Fragment -->
+    <string name="mstTitle">Match Stats</string>
+    <string name="mstScore">%1$d:%2$d</string>
+    <string name="mstTotalDuration">Total Play Time</string>
+    <string name="mstAvgDuration">Ø Point Play Time</string>
+    <string name="mstErrorRate">Error Rate</string>
+    <string name="mstFastestStrike">fastest strike</string>
+    <string name="mstStrikes">strikes</string>
+    <string name="mstTitlePlayer">Player Stats</string>
+    <string name="mstTitleOverall">Overall Stats</string>
+    <string name="mstTitleHeatMap">Heat Map</string>
+    <string name="mstTitleHistory">Match History</string>
+    <string name="mstClose">Close Stats</string>
+    <string name="mstSeconds">%1$ds</string>
+    <string name="mstPercentage">%1$.2f%%</string>
+    <string name="mstLoadingMsg">Wait for the match stats to load.</string>
+    <string name="mstLoadingTitle">Match Stats Loading</string>
+
+    <!-- GameStats Fragment -->
+    <string name="gstTitle">Game %1$d</string>
+    <string name="gstHistory">Game History</string>
+    <string name="gstBtn">Stats</string>
+    <string name="gstWinner">Winner: %1$s</string>
+
+    <!-- MatchHistory -->
+    <string name="mhServer">Server:</string>
+    <string name="mhWinner">Winner:</string>
+    <string name="mhDuration">Play Time:</string>
+    <string name="mhStrikes">Strikes:</string>
+    <string name="mhDecision">Decision:</string>
+    <string name="mhScore">%1$d:%2$d</string>
+    <string name="mhFastestStrike">Fastest Strike:</string>
+    <string name="mhKmh">%1$d km/h</string>
 
     <!-- Scan Overlay -->
     <string name="scanText">Scan the QR code from the display</string>
@@ -200,6 +245,19 @@
     <string name="adjustDeviceRollBottomText">Roll the device up from the bottom</string>
     <string name="adjustDeviceRollDegreeText">Roll: %1$d°</string>
     <string name="adjustDeviceTiltDegreeText">Tilt: %1$d°</string>
+
+    <!-- Video Testing -->
+    <string-array name="testSets">
+        <item>indoor_bad_lighting</item>
+        <item>indoor_white_ball</item>
+        <item>indoor_orange_ball</item>
+        <item>outdoor</item>
+        <item>outdoor_2</item>
+        <item>sports_hall_white_ball</item>
+        <item>sports_hall_orange_ball</item>
+        <item>sports_hall_black_background_1</item>
+        <item>sports_hall_black_background_2</item>
+    </string-array>
 
     <!-- Movie Player Activity -->
     <string-array name="prefCameraFacingNames">

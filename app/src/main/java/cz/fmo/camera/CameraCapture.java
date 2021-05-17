@@ -8,7 +8,7 @@ import android.media.MediaFormat;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import ch.m3ts.Log;
+import ch.m3ts.util.Log;
 import cz.fmo.util.Config;
 
 /**
@@ -44,8 +44,8 @@ class CameraCapture implements Camera.PreviewCallback {
      */
     CameraCapture(@Nullable Callback cb, Config config) {
         mCb = cb;
-        mPreferWidth = config.isHighResolution() ? 1920 : 1280;
-        mPreferHeight = config.isHighResolution() ? 1080 : 720;
+        mPreferWidth = config.isHighRes() ? 1920 : 1280;
+        mPreferHeight = config.isHighRes() ? 1080 : 720;
         mPreferFrontFacing = config.isFrontFacing();
         int bestCam = selectCamera();
 

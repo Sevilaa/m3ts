@@ -50,8 +50,8 @@ public class TableTest {
 
     @Test
     public void getCloseNetEnd() {
-        assertNotNull(table.getCloseNetEnd());
-        assertEquals(table.getCloseNetEnd(), net);
+        assertNotNull(table.getNetBottom());
+        assertEquals(table.getNetBottom(), net);
     }
 
     @Test
@@ -86,17 +86,17 @@ public class TableTest {
         properties.setProperty("c3_y","367");
         properties.setProperty("c4_x","363");
         properties.setProperty("c4_y","365");
-        properties.setProperty("n1_x","986");
-        properties.setProperty("n1_y","491");
-        properties.setProperty("n2_x","686");
-        properties.setProperty("n2_y","490");
+        properties.setProperty("n1_x", "986");
+        properties.setProperty("n1_y", "491");
+        properties.setProperty("n2_x", "686");
+        properties.setProperty("n2_y", "490");
         table = Table.makeTableFromProperties(properties);
         assertEquals(2, table.getCorners().length);
         assertEquals(147, table.getCornerDownLeft().x);
         assertEquals(488, table.getCornerDownLeft().y);
         assertEquals(1192, table.getCornerDownRight().x);
         assertEquals(487, table.getCornerDownRight().y);
-        assertEquals(986, table.getCloseNetEnd().x);
-        assertEquals(491, table.getCloseNetEnd().y);
+        assertEquals(986, table.getNetBottom().x);
+        assertEquals(491, table.getNetBottom().y);
     }
 }

@@ -16,7 +16,7 @@
 
 package ch.m3ts.tracker.visualization.replay.lib;
 
-import ch.m3ts.Log;
+import ch.m3ts.util.Log;
 
 /**
  * Movie player callback.

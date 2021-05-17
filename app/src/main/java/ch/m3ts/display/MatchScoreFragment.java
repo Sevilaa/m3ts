@@ -2,7 +2,8 @@ package ch.m3ts.display;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.Fragment;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Bundle;
@@ -19,10 +20,21 @@ import android.widget.TextView;
 
 import java.util.Locale;
 
+import ch.m3ts.EventBusSubscribedFragment;
 import ch.m3ts.connection.DisplayConnection;
 import ch.m3ts.connection.pubnub.PubNubDisplayConnection;
+import ch.m3ts.eventbus.Event;
+import ch.m3ts.eventbus.Subscribable;
+import ch.m3ts.eventbus.TTEvent;
+import ch.m3ts.eventbus.TTEventBus;
+import ch.m3ts.eventbus.data.StatusUpdateData;
+import ch.m3ts.eventbus.data.scoremanipulation.PauseMatch;
+import ch.m3ts.eventbus.data.scoremanipulation.PointAddition;
+import ch.m3ts.eventbus.data.scoremanipulation.PointDeduction;
+import ch.m3ts.eventbus.data.scoremanipulation.ResumeMatch;
+import ch.m3ts.eventbus.data.todisplay.ToDisplayData;
 import ch.m3ts.tabletennis.helper.Side;
-import ch.m3ts.tabletennis.match.UICallback;
+import ch.m3ts.tabletennis.match.DisplayUpdateListener;
 import cz.fmo.R;
 import cz.fmo.util.Config;
 
@@ -30,7 +42,7 @@ import cz.fmo.util.Config;
  * Fragment which implements the features of a digital table tennis scoreboard.
  * Displays f.e. the current score, current amount of games won by each sides, the current servers.
  */
-public class MatchScoreFragment extends Fragment implements UICallback, DisplayScoreEventCallback {
+public class MatchScoreFragment extends EventBusSubscribedFragment implements DisplayUpdateListener, Subscribable {
     private final int MAX_SCORE = 11;
     private String ttsWin;
     private String ttsSide;
@@ -43,14 +55,13 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
     private int gamesNeededToWin;
     private int scoreLeft;
     private int scoreRight;
+    private AlertDialog matchEndDialog;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_match_score, container, false);
         this.connection = ((MatchActivity) getActivity()).getConnection();
-        connection.setDisplayScoreEventCallback(this);
-        connection.setUiCallback(this);
         initTTS();
         this.mediaPlayer = MediaPlayer.create(getContext(), R.raw.success);
         ImageButton refreshButton = v.findViewById(R.id.btnDisplayRefresh);
@@ -67,11 +78,11 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
             @Override
             public void onClick(View view) {
                 if (isPaused) {
-                    connection.onResume();
+                    TTEventBus.getInstance().dispatch(new TTEvent<>(new ResumeMatch()));
                     pauseResumeButton.setTag("Play");
                     pauseResumeButton.setImageResource(android.R.drawable.ic_media_pause);
                 } else {
-                    connection.onPause();
+                    TTEventBus.getInstance().dispatch(new TTEvent<>(new PauseMatch()));
                     pauseResumeButton.setTag("Pause");
                     pauseResumeButton.setImageResource(android.R.drawable.ic_media_play);
                 }
@@ -93,17 +104,7 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
 
     @Override
     public void onMatchEnded(String winnerName) {
-        Intent intent = new Intent(getActivity(), MatchWonActivity.class);
-        Bundle bundle = new Bundle();
-        bundle.putString("winner", winnerName);
-        if (new Config(getContext()).isUsingPubnub()) {
-            bundle.putString("room", ((PubNubDisplayConnection) this.connection).getRoomID());
-        }
-        intent.putExtras(bundle);
-        while (tts.isSpeaking()) {
-        }
-        startActivity(intent);
-        getActivity().finish();
+        showMatchEndDialog(winnerName);
     }
 
     @Override
@@ -255,16 +256,12 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
             v.setOnTouchListener(new OnSwipeListener(this.getContext()) {
                 @Override
                 public void onSwipeDown(Side swipeSide) {
-                    if (connection != null) {
-                        connection.onPointDeduction(swipeSide);
-                    }
+                    TTEventBus.getInstance().dispatch(new TTEvent<>(new PointDeduction(swipeSide)));
                 }
 
                 @Override
                 public void onSwipeUp(Side swipeSide) {
-                    if (connection != null) {
-                        connection.onPointAddition(swipeSide);
-                    }
+                    TTEventBus.getInstance().dispatch(new TTEvent<>(new PointAddition(swipeSide)));
                 }
             });
         }
@@ -289,8 +286,46 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
         }
     }
 
+    private void switchToMatchWonActivity(String winnerName) {
+        Intent intent = new Intent(getActivity(), MatchWonActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putString("winner", winnerName);
+        if (new Config(getContext()).isUsingPubnub()) {
+            bundle.putString("room", ((PubNubDisplayConnection) this.connection).getRoomID());
+        }
+        intent.putExtras(bundle);
+        while (tts.isSpeaking()) {
+        }
+        startActivity(intent);
+        getActivity().finish();
+    }
 
-    @Override
+    private void showMatchEndDialog(final String winnerName) {
+        final Activity activity = getActivity();
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (matchEndDialog == null) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+                    builder.setTitle(String.format(getString(R.string.msDialogTitle), winnerName));
+                    builder.setMessage(getString(R.string.msDialogMsg));
+                    builder.setPositiveButton(R.string.msDialogContinue, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            switchToMatchWonActivity(winnerName);
+                        }
+                    });
+                    builder.setNegativeButton(R.string.msDialogReplay, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            TTEventBus.getInstance().dispatch(new TTEvent<>(new PointDeduction(getPlayerNameBySide(Side.LEFT).equals(winnerName) ? Side.LEFT : Side.RIGHT)));
+                        }
+                    });
+                    matchEndDialog = builder.create();
+                }
+                if (!matchEndDialog.isShowing()) matchEndDialog.show();
+            }
+        });
+    }
+
     public void onStatusUpdate(final String playerNameLeft, final String playerNameRight, final int pointsLeft, final int pointsRight, final int gamesLeft, final int gamesRight, final Side nextServer, final int gamesNeeded) {
         Activity activity = getActivity();
         activity.runOnUiThread(new Runnable() {
@@ -306,5 +341,19 @@ public class MatchScoreFragment extends Fragment implements UICallback, DisplayS
                 gamesNeededToWin = gamesNeeded;
             }
         });
+    }
+
+    @Override
+    public void handle(Event<?> event) {
+        Object data = event.getData();
+        if (data instanceof ToDisplayData) {
+            ToDisplayData displayData = (ToDisplayData) data;
+            displayData.call(this);
+        } else if (data instanceof StatusUpdateData) {
+            StatusUpdateData updateData = (StatusUpdateData) data;
+            this.onStatusUpdate(updateData.getPlayerNameLeft(), updateData.getPlayerNameRight(),
+                    updateData.getPointsLeft(), updateData.getPointsRight(), updateData.getGamesLeft(),
+                    updateData.getGamesRight(), updateData.getNextServer(), updateData.getGamesNeededToWin());
+        }
     }
 }

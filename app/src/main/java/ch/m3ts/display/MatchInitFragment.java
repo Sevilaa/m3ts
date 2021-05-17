@@ -20,10 +20,10 @@ import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 
-import ch.m3ts.Log;
 import ch.m3ts.connection.ConnectionCallback;
 import ch.m3ts.connection.ConnectionHelper;
 import ch.m3ts.connection.NearbyDisplayConnection;
+import ch.m3ts.util.Log;
 import cz.fmo.R;
 import cz.fmo.util.Config;
 

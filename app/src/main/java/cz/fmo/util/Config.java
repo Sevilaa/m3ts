@@ -7,16 +7,15 @@ import android.preference.PreferenceManager;
 import cz.fmo.R;
 
 public class Config {
-    private final boolean frontFacing;
-    private final boolean highResolution;
-    private final RecordMode recordMode;
-    private final boolean slowPreview;
-    private final boolean gray;
-    private final int procRes;
-    private final VelocityEstimationMode velocityEstimationMode;
-    private final float objectRadius;
-    private final float frameRate;
-    private final boolean disableDetection;
+    private static final boolean IS_FRONT_FACING = false;
+    private static final boolean IS_HIGH_RES = false;
+    private static final boolean IS_SLOW_PREVIEW = false;
+    private static final boolean IS_GRAY = true;
+    private static final boolean IS_DISABLE_DETECTION = false;
+    private static final VelocityEstimationMode VELOCITY_ESTIMATION_MODE = VelocityEstimationMode.KM_H;
+    private static final int PROC_RES = 600;    // high processing res (detects small objects)
+    private static final float OBJECT_RADIUS = 0.040f; //radius ping pong ball
+    private static final float FRAME_RATE = 30f;
     private final String player1Name;
     private final String player2Name;
     private final boolean useDebug;
@@ -25,19 +24,8 @@ public class Config {
     private final boolean useBlackSide;
     private final boolean useAudio;
 
-
     public Config(Context ctx) {
         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(ctx);
-        frontFacing = getFrontFacing(p);
-        highResolution = p.getString("resolution", "1").equals("2");
-        recordMode = getRecordMode(p);
-        slowPreview = p.getBoolean("slowPreview", false);
-        gray = getGray(p);
-        procRes = (int) getFloatFromString(p, "procRes", "300");
-        velocityEstimationMode = getVelocityEstimationMode(p);
-        objectRadius = getObjectRadius(p);
-        frameRate = getFloatFromString(p, "frameRate", "30.00");
-        disableDetection = p.getBoolean("disableDetection", false);
         player1Name = getPlayer1Name(p, ctx);
         player2Name = getPlayer2Name(p, ctx);
         useDebug = getDebug(p, ctx);
@@ -59,60 +47,6 @@ public class Config {
         return p.getBoolean(ctx.getString(R.string.prefPubnubKey), false);
     }
 
-    private boolean getFrontFacing(SharedPreferences p) {
-        return p.getString("cameraFacing", "rear").equals("front");
-    }
-
-    private RecordMode getRecordMode(SharedPreferences p) {
-        String s = p.getString("recordMode", "1");
-        switch (s) {
-            case "1":
-                return RecordMode.MANUAL;
-            case "2":
-                return RecordMode.AUTOMATIC;
-            default:
-                return RecordMode.OFF;
-        }
-    }
-
-    private boolean getGray(SharedPreferences p) {
-        return p.getString("colorSpace", "yuv").equals("gray");
-    }
-
-    private VelocityEstimationMode getVelocityEstimationMode(SharedPreferences p) {
-        String s = p.getString("velocityEstimationMode", "pxfr");
-        switch (s) {
-            case "ms":
-                return VelocityEstimationMode.M_S;
-            case "kmh":
-                return VelocityEstimationMode.KM_H;
-            case "mph":
-                return VelocityEstimationMode.MPH;
-            default:
-                return VelocityEstimationMode.PX_FR;
-        }
-    }
-
-    private float getFloatFromString(SharedPreferences p, String param, String defaultValue) {
-        String frameRate = p.getString(param, defaultValue);
-
-        try {
-            return Float.parseFloat(frameRate);
-        } catch (NumberFormatException e) {
-            return Float.parseFloat(defaultValue);
-        }
-    }
-
-    private float getObjectRadius(SharedPreferences p) {
-        float diameter = getFloatFromString(p, "objectDiameterPicker", "0");
-
-        if (diameter == 0) {
-            diameter = getFloatFromString(p, "objectDiameterCustom", "1.00");
-        }
-
-        return diameter;
-    }
-
     private String getPlayer1Name(SharedPreferences p, Context ctx) {
         return p.getString(ctx.getString(R.string.prefPlayer1Key), "Hans");
     }
@@ -130,43 +64,39 @@ public class Config {
     }
 
     public float getFrameRate() {
-        return frameRate;
+        return FRAME_RATE;
     }
 
     public VelocityEstimationMode getVelocityEstimationMode() {
-        return velocityEstimationMode;
+        return VELOCITY_ESTIMATION_MODE;
     }
 
     public int getProcRes() {
-        return procRes;
+        return PROC_RES;
     }
 
     public boolean isFrontFacing() {
-        return frontFacing;
+        return IS_FRONT_FACING;
     }
 
-    public boolean isHighResolution() {
-        return highResolution;
-    }
-
-    public RecordMode getRecordMode() {
-        return recordMode;
+    public boolean isHighRes() {
+        return IS_HIGH_RES;
     }
 
     public boolean isSlowPreview() {
-        return slowPreview;
+        return IS_SLOW_PREVIEW;
     }
 
     public boolean isGray() {
-        return gray;
+        return IS_GRAY;
     }
 
     public float getObjectRadius() {
-        return objectRadius;
+        return OBJECT_RADIUS;
     }
 
-    public boolean isDisableDetection() {
-        return disableDetection;
+    public boolean isDetectionDisabled() {
+        return IS_DISABLE_DETECTION;
     }
 
     public String getPlayer1Name() {
@@ -195,12 +125,6 @@ public class Config {
 
     public boolean isUseAudio() {
         return useAudio;
-    }
-
-    public enum RecordMode {
-        OFF,
-        MANUAL,
-        AUTOMATIC
     }
 
     public enum VelocityEstimationMode {

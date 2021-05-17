@@ -97,6 +97,7 @@ public class InitTrackerActivityTest extends InstrumentationTestCase {
         Field cameraCallbackField = CameraPreviewActivity.class.getDeclaredField("cameraCallback");
         cameraCallbackField.setAccessible(true);
         InitTrackerHandler cameraCallback = (InitTrackerHandler) cameraCallbackField.get(activity);
+        onView(isRoot()).perform(waitFor(1000));
         cameraCallback.onCameraFrame(loadQRCodeBytes());
         onView(withId(R.id.scan_overlay)).check(matches(not(isDisplayed())));
         cameraCallback.onCaptureFrame();

@@ -2,21 +2,13 @@
     <header
         android:fragment="ch.m3ts.SettingsActivity$GamePreferenceFragment"
         android:icon="@drawable/game_settings_icon"
-        android:title="@string/prefGame"/>
+        android:title="@string/prefHeaderGame" />
     <header
-        android:fragment="ch.m3ts.SettingsActivity$CapturePreferenceFragment"
-        android:icon="@drawable/settings_capture"
-        android:title="@string/prefHeaderCapture"/>
+        android:fragment="ch.m3ts.SettingsActivity$TrackerPreferenceFragment"
+        android:icon="@drawable/tracker_icon"
+        android:title="@string/prefHeaderTracker" />
     <header
-        android:fragment="ch.m3ts.SettingsActivity$DetectionPreferenceFragment"
-        android:icon="@drawable/settings_detection"
-        android:title="@string/prefHeaderDetection"/>
-    <header
-        android:fragment="ch.m3ts.SettingsActivity$VelocityPreferenceFragment"
-        android:icon="@drawable/settings_velocity"
-        android:title="@string/prefHeaderVelocity"/>
-    <header
-        android:fragment="ch.m3ts.SettingsActivity$AdvancedPreferenceFragment"
+        android:fragment="ch.m3ts.SettingsActivity$DebugPreferenceFragment"
         android:icon="@drawable/settings_advanced"
-        android:title="@string/prefHeaderAdvanced"/>
+        android:title="@string/prefHeaderDebug" />
 </preference-headers>

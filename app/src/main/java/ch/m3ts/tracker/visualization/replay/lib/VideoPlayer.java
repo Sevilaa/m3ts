@@ -28,8 +28,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import ch.m3ts.Log;
 import ch.m3ts.tracker.visualization.replay.ReplayDetectionCallback;
+import ch.m3ts.util.Log;
 
 
 /**
@@ -394,8 +394,10 @@ class VideoPlayer {
         // get a copy of the Data from encoder to pass it to Lib
         try {
             ByteBuffer readOnlyCopyOfBuffer = decoder.getOutputBuffer(decoderStatus);
-            readOnlyCopyOfBuffer.get(frame);
-            mDataCallback.onEncodedFrame(frame);
+            if (readOnlyCopyOfBuffer.hasRemaining()) {
+                readOnlyCopyOfBuffer.get(frame);
+                mDataCallback.onEncodedFrame(frame);
+            }
         } catch (Exception ex) {
             Log.e(ex.getMessage(), ex);
         }

@@ -14,23 +14,4 @@
         android:maxLines="1"
         android:singleLine="true"
         android:title="@string/prefPlayer2Name" />
-    <SwitchPreference
-        android:defaultValue="@string/prefUseBlackSideDefault"
-        android:key="@string/prefUseBlackSideKey"
-        android:summary="@string/prefUseBlackSideSummary"
-        android:title="@string/prefUseBlackSideTitle" />
-    <SwitchPreference
-        android:defaultValue="@string/prefUseAudioDefault"
-        android:key="@string/prefUseAudioKey"
-        android:summary="@string/prefUseAudioSummary"
-        android:title="@string/prefUseAudioTitle" />
-    <SwitchPreference
-        android:defaultValue="@string/prefDisplayDebugDefault"
-        android:key="@string/prefDisplayDebugKey"
-        android:summary="@string/prefDisplayDebugSummary"
-        android:title="@string/prefDisplayDebug" />
-    <SwitchPreference
-        android:defaultValue="@string/prefRecordDefault"
-        android:key="@string/prefRecordKey"
-        android:title="@string/prefRecord" />
 </PreferenceScreen>

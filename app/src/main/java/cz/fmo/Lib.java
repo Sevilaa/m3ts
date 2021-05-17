@@ -51,6 +51,8 @@ public final class Lib {
         public int predecessorId; // unique identifier of the immediate predecessor
         public int centerX;       // midpoint of the object in the input image, X coordinate
         public int centerY;       // midpoint of the object in the input image, Y coordinate
+        public double centerZ;       // midpoint of the object in the input image, Z coordinate
+        public boolean isBounce = false;
         public float directionX;  // unit orientation of the object, X coordinate
         public float directionY;  // unit orientation of the object, Y coordinate
         public float length;      // length of the object in input image pixels

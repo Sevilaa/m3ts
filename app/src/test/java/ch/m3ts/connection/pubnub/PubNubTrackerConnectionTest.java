@@ -10,6 +10,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
@@ -18,45 +19,73 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.Random;
 
+import ch.m3ts.eventbus.Event;
+import ch.m3ts.eventbus.Subscribable;
+import ch.m3ts.eventbus.TTEvent;
+import ch.m3ts.eventbus.TTEventBus;
+import ch.m3ts.eventbus.data.RestartMatchData;
+import ch.m3ts.eventbus.data.scoremanipulation.ScoreManipulationData;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.MatchStatus;
 import ch.m3ts.tabletennis.match.MatchStatusCallback;
-import ch.m3ts.tabletennis.match.game.ScoreManipulationCallback;
+import ch.m3ts.tabletennis.match.game.ScoreManipulationListener;
 import ch.m3ts.tracker.init.InitTrackerCallback;
-import ch.m3ts.tracker.visualization.MatchVisualizeHandlerCallback;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.validateMockitoUsage;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+class StubListenerTracker implements Subscribable {
+    private final ScoreManipulationListener scoreManipulationListener;
+
+    StubListenerTracker(ScoreManipulationListener scoreManipulationListener) {
+        this.scoreManipulationListener = scoreManipulationListener;
+    }
+
+    @Override
+    public void handle(Event<?> event) {
+        Object data = event.getData();
+        if (data instanceof ScoreManipulationData) {
+            ScoreManipulationData scoreManipulationData = (ScoreManipulationData) data;
+            scoreManipulationData.call(scoreManipulationListener);
+        }
+    }
+}
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(Pubnub.class)
 public class PubNubTrackerConnectionTest {
     private PubNubTrackerConnection pubNubTrackerConnection;
     private Pubnub pubNub;
+    private ScoreManipulationListener spyCallback;
+    private StubListenerTracker stubListenerTracker;
 
     @Before
     public void init() {
+        spyCallback = PowerMockito.spy(PowerMockito.mock(ScoreManipulationListener.class));
         pubNub = PowerMockito.spy(PowerMockito.mock(Pubnub.class));
         pubNubTrackerConnection = new PubNubTrackerConnection(pubNub, "invalid");
+        stubListenerTracker = new StubListenerTracker(spyCallback);
+        TTEventBus.getInstance().register(stubListenerTracker);
     }
 
     @After
     public void tearDown() {
         validateMockitoUsage();
+        TTEventBus.getInstance().unregister(stubListenerTracker);
     }
 
     @Test
     public void testReceivingPointAdditionAndDeduction() {
         try {
-            ScoreManipulationCallback spyCallback = PowerMockito.spy(PowerMockito.mock(ScoreManipulationCallback.class));
-            pubNubTrackerConnection.setScoreManipulationCallback(spyCallback);
             // test onPointAddition
             JSONObject jsonObject = makeJSONObject("onPointAddition", Side.LEFT);
             pubNubTrackerConnection.successCallback("test", jsonObject);
@@ -90,8 +119,6 @@ public class PubNubTrackerConnectionTest {
 
     @Test
     public void testPausingAndResumingMatch() throws Exception {
-        ScoreManipulationCallback spyCallback = PowerMockito.spy(PowerMockito.mock(ScoreManipulationCallback.class));
-        pubNubTrackerConnection.setScoreManipulationCallback(spyCallback);
         verify(spyCallback, times(0)).onPause();
         verify(spyCallback, times(0)).onResume();
         JSONObject jsonObject = makeJSONObject("onPause");
@@ -104,14 +131,17 @@ public class PubNubTrackerConnectionTest {
 
     @Test
     public void testRestartingMatch() throws Exception {
-        MatchVisualizeHandlerCallback spyCallback = PowerMockito.spy(PowerMockito.mock(MatchVisualizeHandlerCallback.class));
+        Subscribable subscribable = mock(Subscribable.class);
+        ArgumentCaptor<TTEvent> argumentCaptor = ArgumentCaptor.forClass(TTEvent.class);
+        TTEventBus.getInstance().register(subscribable);
+
+        verify(subscribable, times(0)).handle(any(TTEvent.class));
         JSONObject jsonObject = makeJSONObject("onRestartMatch");
-        // check for exception
         pubNubTrackerConnection.successCallback("test", jsonObject);
-        verify(spyCallback, times(0)).restartMatch();
-        pubNubTrackerConnection.setMatchVisualizeHandlerCallback(spyCallback);
-        pubNubTrackerConnection.successCallback("test", jsonObject);
-        verify(spyCallback, times(1)).restartMatch();
+        verify(subscribable, times(1)).handle(argumentCaptor.capture());
+        TTEvent dispatchedEvent = argumentCaptor.getValue();
+        assertTrue(dispatchedEvent.getData() instanceof RestartMatchData);
+        TTEventBus.getInstance().unregister(subscribable);
     }
 
     @Test

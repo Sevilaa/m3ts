@@ -1,7 +1,7 @@
 package ch.m3ts.display;
 
 /**
- * Provides methods which allow image transmissions from PubNub as images need to be split up
+ * Provides methods which allow image transmissions as images need to be split up
  * beforehand.
  */
 public interface DisplayConnectCallback {

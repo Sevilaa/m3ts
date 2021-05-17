@@ -2,7 +2,7 @@ package cz.fmo.util;
 
 import android.os.Looper;
 
-import ch.m3ts.Log;
+import ch.m3ts.util.Log;
 
 /**
  * Universal base class for a thread with an Android event loop. Every thread is required to provide

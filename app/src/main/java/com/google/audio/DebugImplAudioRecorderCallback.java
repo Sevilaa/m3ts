@@ -19,7 +19,6 @@ public class DebugImplAudioRecorderCallback implements com.google.audio.core.Cal
     private static final int MIN_FREQUENCY = 8000;
     private static final int MIN_DECIBEL = -20;
     private static final int TIME_BETWEEN_TWO_BOUNCES_MS = 500;
-    private final TextView txtAmp;
     private final TextView txtFrequency;
     private final TextView txtAudioBounce;
     private final AudioCalculator audioCalculator;
@@ -27,8 +26,7 @@ public class DebugImplAudioRecorderCallback implements com.google.audio.core.Cal
     private int bounces;
     private long timestampLastDetectedBounce;
 
-    public DebugImplAudioRecorderCallback(TextView txtAmp, TextView txtFrequency, TextView txtAudioBounce) {
-        this.txtAmp = txtAmp;
+    public DebugImplAudioRecorderCallback(TextView txtFrequency, TextView txtAudioBounce) {
         this.txtFrequency = txtFrequency;
         this.txtAudioBounce = txtAudioBounce;
         this.audioCalculator = new AudioCalculator();
@@ -49,7 +47,6 @@ public class DebugImplAudioRecorderCallback implements com.google.audio.core.Cal
         handler.post(new Runnable() {
             @Override
             public void run() {
-                txtAmp.setText(db);
                 if ((frequency > MIN_FREQUENCY) && (frequency < MAX_FREQUENCY) && decibel > MIN_DECIBEL &&
                         System.currentTimeMillis() - timestampLastDetectedBounce > TIME_BETWEEN_TWO_BOUNCES_MS) {
                     ++bounces;

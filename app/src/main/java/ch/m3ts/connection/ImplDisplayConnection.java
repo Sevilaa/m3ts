@@ -8,51 +8,75 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import ch.m3ts.Log;
+import java.io.ByteArrayInputStream;
+import java.io.ObjectInputStream;
+
 import ch.m3ts.connection.pubnub.ByteToBase64;
 import ch.m3ts.connection.pubnub.JSONInfo;
 import ch.m3ts.display.DisplayConnectCallback;
-import ch.m3ts.display.DisplayScoreEventCallback;
+import ch.m3ts.display.stats.MatchStats;
+import ch.m3ts.eventbus.Event;
+import ch.m3ts.eventbus.EventBus;
+import ch.m3ts.eventbus.Subscribable;
+import ch.m3ts.eventbus.TTEvent;
+import ch.m3ts.eventbus.TTEventBus;
+import ch.m3ts.eventbus.data.RequestStatsData;
+import ch.m3ts.eventbus.data.RestartMatchData;
+import ch.m3ts.eventbus.data.StatsData;
+import ch.m3ts.eventbus.data.StatusUpdateData;
+import ch.m3ts.eventbus.data.scoremanipulation.ScoreManipulationData;
+import ch.m3ts.eventbus.data.todisplay.InvalidServeData;
+import ch.m3ts.eventbus.data.todisplay.MatchEndedData;
+import ch.m3ts.eventbus.data.todisplay.ReadyToServeData;
+import ch.m3ts.eventbus.data.todisplay.ScoreData;
+import ch.m3ts.eventbus.data.todisplay.ToDisplayGameWinData;
 import ch.m3ts.tabletennis.helper.Side;
-import ch.m3ts.tabletennis.match.UICallback;
+import ch.m3ts.tabletennis.match.game.ScoreManipulationListener;
+import ch.m3ts.util.Log;
 
-public abstract class ImplDisplayConnection extends Callback implements DisplayConnection {
-    protected UICallback uiCallback;
-    protected DisplayScoreEventCallback displayScoreCallback;
+public abstract class ImplDisplayConnection extends Callback implements ScoreManipulationListener, DisplayConnection, Subscribable {
     protected DisplayConnectCallback displayConnectCallback;
-    private int numberOfEncodedFrameParts;
-    private String encodedFrameComplete;
+    private String encodedMultipartComplete;
+    private int numberOfEncodedParts;
 
     protected abstract void send(String event, String side);
 
     protected abstract void sendData(JSONObject json);
 
-    public void onRestartMatch() {
-        send("onRestartMatch", null);
-    }
-
     public void requestStatusUpdate() {
-        send("requestStatus", null);
+        send(ConnectionEvent.STATUS_REQUEST, null);
     }
 
-    public void onPointDeduction(Side side) {
-        send("onPointDeduction", side.toString());
-    }
-
-    public void onPointAddition(Side side) {
-        send("onPointAddition", side.toString());
+    private void requestStats() {
+        send(ConnectionEvent.STATS_REQUEST, null);
     }
 
     public void onRequestTableFrame() {
-        send("onRequestTableFrame", null);
+        send(ConnectionEvent.TABLE_FRAME_REQUEST, null);
     }
 
+    @Override
+    public void onPointDeduction(Side side) {
+        send(ConnectionEvent.POINT_DEDUCTION, side.toString());
+    }
+
+    @Override
+    public void onPointAddition(Side side) {
+        send(ConnectionEvent.POINT_ADDITION, side.toString());
+    }
+
+    @Override
     public void onPause() {
-        send("onPause", null);
+        send(ConnectionEvent.PAUSE, null);
     }
 
+    @Override
     public void onResume() {
-        send("onResume", null);
+        send(ConnectionEvent.RESUME, null);
+    }
+
+    private void onRestartMatch() {
+        send(ConnectionEvent.MATCH_RESTART, null);
     }
 
     public void onSelectTableCorners(Point[] tableCorners) {
@@ -65,19 +89,11 @@ public abstract class ImplDisplayConnection extends Callback implements DisplayC
             }
             JSONObject json = new JSONObject();
             json.put(JSONInfo.CORNERS, new JSONArray(corners));
-            json.put(JSONInfo.EVENT_PROPERTY, "onSelectTableCorner");
+            json.put(JSONInfo.EVENT_PROPERTY, ConnectionEvent.TABLE_CORNER_SELECTION);
             sendData(json);
         } catch (JSONException ex) {
             Log.d("Unable to send JSON to endpoint \n" + ex.getMessage());
         }
-    }
-
-    public void setUiCallback(UICallback uiCallback) {
-        this.uiCallback = uiCallback;
-    }
-
-    public void setDisplayScoreEventCallback(DisplayScoreEventCallback displayScoreCallback) {
-        this.displayScoreCallback = displayScoreCallback;
     }
 
     public void setDisplayConnectCallback(DisplayConnectCallback displayConnectCallback) {
@@ -87,40 +103,42 @@ public abstract class ImplDisplayConnection extends Callback implements DisplayC
     protected void handleMessage(JSONObject json) {
         try {
             String event = json.getString(JSONInfo.EVENT_PROPERTY);
+            EventBus eventBus = TTEventBus.getInstance();
             if (event != null) {
                 switch (event) {
-                    case "onMatchEnded":
-                        uiCallback.onMatchEnded(json.getString(JSONInfo.SIDE_PROPERTY));
+                    case ConnectionEvent.MATCH_ENDED:
+                        eventBus.dispatch(new TTEvent<>(new MatchEndedData(json.getString(JSONInfo.SIDE_PROPERTY))));
                         break;
-                    case "onScore":
-                        uiCallback.onScore(Side.valueOf(json.getString(JSONInfo.SIDE_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.SCORE_PROPERTY)),
-                                Side.valueOf(json.getString(JSONInfo.NEXT_SERVER_PROPERTY)), Side.valueOf(json.getString(JSONInfo.LAST_SERVER_PROPERTY)));
+                    case ConnectionEvent.SCORE:
+                        eventBus.dispatch(new TTEvent<>(new ScoreData(Side.valueOf(json.getString(JSONInfo.SIDE_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.SCORE_PROPERTY)),
+                                Side.valueOf(json.getString(JSONInfo.NEXT_SERVER_PROPERTY)), Side.valueOf(json.getString(JSONInfo.LAST_SERVER_PROPERTY)))));
                         break;
-                    case "onWin":
-                        uiCallback.onWin(Side.valueOf(json.getString(JSONInfo.SIDE_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.WINS_PROPERTY)));
+                    case ConnectionEvent.WIN:
+                        eventBus.dispatch(new TTEvent<>(new ToDisplayGameWinData(Side.valueOf(json.getString(JSONInfo.SIDE_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.WINS_PROPERTY)))));
                         break;
-                    case "onReadyToServe":
-                        uiCallback.onReadyToServe(Side.valueOf(json.getString(JSONInfo.SIDE_PROPERTY)));
+                    case ConnectionEvent.READY_TO_SERVE:
+                        eventBus.dispatch(new TTEvent<>(new ReadyToServeData(Side.valueOf(json.getString(JSONInfo.SIDE_PROPERTY)))));
                         break;
-                    case "onNotReadyButPlaying":
-                        uiCallback.onNotReadyButPlaying();
+                    case ConnectionEvent.NOT_READY_BUT_PLAYING:
+                        eventBus.dispatch(new TTEvent<>(new InvalidServeData()));
                         break;
-                    case "onStatusUpdate":
-                        displayScoreCallback.onStatusUpdate(json.getString(JSONInfo.PLAYER_NAME_LEFT_PROPERTY), json.getString(JSONInfo.PLAYER_NAME_RIGHT_PROPERTY),
+                    case ConnectionEvent.STATUS_UPDATE:
+                        eventBus.dispatch(new TTEvent<>(new StatusUpdateData(
+                                json.getString(JSONInfo.PLAYER_NAME_LEFT_PROPERTY), json.getString(JSONInfo.PLAYER_NAME_RIGHT_PROPERTY),
                                 Integer.parseInt(json.getString(JSONInfo.SCORE_LEFT_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.SCORE_RIGHT_PROPERTY)),
                                 Integer.parseInt(json.getString(JSONInfo.WINS_LEFT_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.WINS_RIGHT_PROPERTY)),
-                                Side.valueOf(json.getString(JSONInfo.NEXT_SERVER_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.GAMES_NEEDED_PROPERTY)));
+                                Side.valueOf(json.getString(JSONInfo.NEXT_SERVER_PROPERTY)), Integer.parseInt(json.getString(JSONInfo.GAMES_NEEDED_PROPERTY)))));
                         break;
-                    case "onConnected":
+                    case ConnectionEvent.CONNECTION:
                         if (displayConnectCallback != null) {
                             displayConnectCallback.onConnected();
                         }
                         break;
-                    case "onTableFrame":
-                        this.handleOnTableFrame(json);
+                    case ConnectionEvent.TABLE_FRAME:
+                    case ConnectionEvent.STATS_PART:
+                        this.handlePart(json);
                         break;
                     default:
-                        Log.d("Unhandled event received:\n" + json.toString());
                         break;
                 }
             }
@@ -129,42 +147,92 @@ public abstract class ImplDisplayConnection extends Callback implements DisplayC
         }
     }
 
-    private void handleOnTableFrame(JSONObject json) throws JSONException {
-        int encodedFramePartIndex = json.getInt(JSONInfo.TABLE_FRAME_INDEX);
-        int numberOfFramePartsSent = json.getInt(JSONInfo.TABLE_FRAME_NUMBER_OF_PARTS);
-        String encodedFramePart = json.getString(JSONInfo.TABLE_FRAME);
-        if (encodedFramePartIndex == 0) {
-            this.numberOfEncodedFrameParts = 1;
-            this.encodedFrameComplete = encodedFramePart;
-            this.displayConnectCallback.onImageTransmissionStarted(numberOfFramePartsSent);
+    private void handlePart(JSONObject json) throws JSONException {
+        int encodedPartIndex = json.getInt(JSONInfo.PART_INDEX);
+        int numberOfParts = json.getInt(JSONInfo.MULTIPART_NUMBER_OF_PARTS);
+        String encodedPart = json.getString(JSONInfo.PART_DATA);
+        if (encodedPartIndex == 0) {
+            this.numberOfEncodedParts = 1;
+            this.encodedMultipartComplete = encodedPart;
+            if (json.getString(JSONInfo.EVENT_PROPERTY).equals(ConnectionEvent.TABLE_FRAME))
+                this.displayConnectCallback.onImageTransmissionStarted(numberOfParts);
+            if (this.numberOfEncodedParts == numberOfParts)
+                handleMultipartTransmissionCompletion(json);
         } else {
-            this.numberOfEncodedFrameParts++;
-            this.encodedFrameComplete += encodedFramePart;
-            this.displayConnectCallback.onImagePartReceived(encodedFramePartIndex + 1);
-            if (encodedFramePartIndex == numberOfFramePartsSent - 1) {
-                Log.d("number of frame parts sent: " + numberOfFramePartsSent);
-                Log.d("number of frame parts received: " + numberOfEncodedFrameParts);
-                if (this.numberOfEncodedFrameParts == numberOfFramePartsSent) {
-                    Log.d("encodedFrame length: " + this.encodedFrameComplete.length());
-                    byte[] frame = ByteToBase64.decodeToByte(this.encodedFrameComplete);
-                    Log.d("frame length: " + frame.length);
-                    this.displayConnectCallback.onImageReceived(frame, json.getInt(JSONInfo.TABLE_FRAME_WIDTH), json.getInt(JSONInfo.TABLE_FRAME_HEIGHT));
+            this.numberOfEncodedParts++;
+            this.encodedMultipartComplete += encodedPart;
+            if (json.getString(JSONInfo.EVENT_PROPERTY).equals(ConnectionEvent.TABLE_FRAME))
+                this.displayConnectCallback.onImagePartReceived(encodedPartIndex + 1);
+            if (encodedPartIndex == numberOfParts - 1) {
+                Log.d("number of parts sent: " + numberOfParts);
+                Log.d("number of parts received: " + numberOfEncodedParts);
+                if (this.numberOfEncodedParts == numberOfParts) {
+                    handleMultipartTransmissionCompletion(json);
                 } else {
-                    onRequestTableFrame();
+                    handleMultipartTransmissionRetry(json.getString(JSONInfo.EVENT_PROPERTY));
                 }
             }
         }
     }
+
+    private void handleMultipartTransmissionCompletion(JSONObject json) throws JSONException {
+        Log.d("encodedData length: " + this.encodedMultipartComplete.length());
+        switch (json.getString(JSONInfo.EVENT_PROPERTY)) {
+            case ConnectionEvent.TABLE_FRAME:
+                byte[] frame = ByteToBase64.decodeToByte(this.encodedMultipartComplete);
+                Log.d("frame length: " + frame.length);
+                this.displayConnectCallback.onImageReceived(frame, json.getInt(JSONInfo.TABLE_FRAME_WIDTH), json.getInt(JSONInfo.TABLE_FRAME_HEIGHT));
+                break;
+            case ConnectionEvent.STATS_PART:
+                try {
+                    byte[] b = android.util.Base64.decode(this.encodedMultipartComplete, android.util.Base64.DEFAULT);
+                    ByteArrayInputStream bi = new ByteArrayInputStream(b);
+                    ObjectInputStream si = new ObjectInputStream(bi);
+                    MatchStats stats = (MatchStats) si.readObject();
+                    TTEventBus.getInstance().dispatch(new TTEvent<>(new StatsData(stats)));
+                } catch (Exception e) {
+                    Log.d("Failed to serialize Stats:" + e.getMessage());
+                }
+                break;
+        }
+        this.numberOfEncodedParts = 0;
+        this.encodedMultipartComplete = "";
+    }
+
+    private void handleMultipartTransmissionRetry(String event) {
+        switch (event) {
+            case ConnectionEvent.TABLE_FRAME:
+                onRequestTableFrame();
+                break;
+            case ConnectionEvent.STATS_PART:
+                requestStats();
+                break;
+        }
+    }
+
 
     public void onStartMatch(String matchType, String server) {
         try {
             JSONObject json = new JSONObject();
             json.put(JSONInfo.TYPE_PROPERTY, matchType);
             json.put(JSONInfo.SERVER_PROPERTY, server);
-            json.put(JSONInfo.EVENT_PROPERTY, "onStartMatch");
+            json.put(JSONInfo.EVENT_PROPERTY, ConnectionEvent.MATCH_START);
             sendData(json);
         } catch (JSONException ex) {
             Log.d("Unable to send JSON " + "\n" + ex.getMessage());
+        }
+    }
+
+    @Override
+    public void handle(Event<?> event) {
+        Object data = event.getData();
+        if (data instanceof ScoreManipulationData) {
+            ScoreManipulationData manipulationData = (ScoreManipulationData) data;
+            manipulationData.call(this);
+        } else if (data instanceof RestartMatchData) {
+            this.onRestartMatch();
+        } else if (data instanceof RequestStatsData) {
+            this.requestStats();
         }
     }
 }

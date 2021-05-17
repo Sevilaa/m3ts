@@ -86,4 +86,14 @@ public class DetectionGenerator {
         }
         return side;
     }
+
+    public static  Lib.Detection[] makeFullDetections() {
+        Lib.Detection[] detections = makeDetectionsInXDirectionOnTable(true);
+        Random rd = new Random();
+        for(int i = 0; i < detections.length; i++) {
+            detections[i].isBounce = rd.nextBoolean();
+            detections[i].centerZ = rd.nextInt(100);
+        }
+        return detections;
+    }
 }

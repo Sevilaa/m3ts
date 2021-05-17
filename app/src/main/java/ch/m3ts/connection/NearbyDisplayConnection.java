@@ -20,8 +20,8 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import ch.m3ts.Log;
 import ch.m3ts.connection.pubnub.JSONInfo;
+import ch.m3ts.util.Log;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 

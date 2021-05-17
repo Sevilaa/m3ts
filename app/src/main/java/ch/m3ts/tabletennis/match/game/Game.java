@@ -1,9 +1,14 @@
 package ch.m3ts.tabletennis.match.game;
 
+import ch.m3ts.display.stats.StatsCreator;
+import ch.m3ts.eventbus.EventBus;
+import ch.m3ts.eventbus.TTEvent;
+import ch.m3ts.eventbus.TTEventBus;
+import ch.m3ts.eventbus.data.game.GameWinData;
+import ch.m3ts.eventbus.data.game.GameWinResetData;
+import ch.m3ts.eventbus.data.todisplay.ScoreData;
 import ch.m3ts.tabletennis.helper.Side;
-import ch.m3ts.tabletennis.match.MatchCallback;
 import ch.m3ts.tabletennis.match.ServeRules;
-import ch.m3ts.tabletennis.match.UICallback;
 
 /**
  * Represents a game inside of a table tennis match.
@@ -13,22 +18,18 @@ import ch.m3ts.tabletennis.match.UICallback;
  * However, there is an overtime mechanism when both players reach ten points.
  */
 public class Game implements GameCallback {
-    private int maxScore;
     private final ScoreManager scoreManager;
-    private final MatchCallback matchCallback;
-    private final UICallback uiCallback;
     private Side server;
     private final GameType type;
     private final ServeRules serveRules;
+    private final EventBus eventBus;
 
-    public Game(MatchCallback matchCallback, UICallback uiCallback, GameType type, ServeRules serveRules, Side server) {
-        scoreManager = new ScoreManager(server);
+    public Game(GameType type, ServeRules serveRules, Side server) {
+        scoreManager = new ScoreManager(server, type);
         this.server = server;
-        this.matchCallback = matchCallback;
-        this.uiCallback = uiCallback;
         this.type = type;
-        this.maxScore = type.amountOfPoints;
         this.serveRules = serveRules;
+        this.eventBus = TTEventBus.getInstance();
     }
 
     @Override
@@ -37,9 +38,10 @@ public class Game implements GameCallback {
         int score = scoreManager.getScore(side);
         Side lastServer = server;
         changeServer();
-        uiCallback.onScore(side, score, this.server, lastServer);
-        if (hasReachedMax(score)) {
-            matchCallback.onWin(side);
+        this.eventBus.dispatch(new TTEvent<>(new ScoreData(side, score, this.server, lastServer)));
+        if (this.scoreManager.hasReachedMax(score)) {
+            StatsCreator.getInstance().addGame();
+            this.eventBus.dispatch(new TTEvent<>(new GameWinData(side)));
         }
     }
 
@@ -50,21 +52,13 @@ public class Game implements GameCallback {
             Side lastServer = scoreManager.revertLastScore(side);
             score = scoreManager.getScore(side);
             this.server = lastServer;
-            uiCallback.onScore(side, score, lastServer, scoreManager.getLastServer());
-            if (hasReachedMax(score)) {
-                matchCallback.onWin(side);
+            this.eventBus.dispatch(new TTEvent<>(new ScoreData(side, score, this.server, lastServer)));
+            if (this.scoreManager.hasReachedMax(scoreManager.getScore(Side.getOpposite(side)))) {
+                this.eventBus.dispatch(new TTEvent<>(new GameWinData(Side.getOpposite(side))));
             }
+        } else if (getSumOfScores() == 0) {
+            this.eventBus.dispatch(new TTEvent<>(new GameWinResetData()));
         }
-    }
-
-    @Override
-    public void onReadyToServe(Side side) {
-        uiCallback.onReadyToServe(side);
-    }
-
-    @Override
-    public void onNotReadyButPlaying() {
-        uiCallback.onNotReadyButPlaying();
     }
 
     public Side getServer() {
@@ -73,17 +67,6 @@ public class Game implements GameCallback {
 
     public int getScore(Side player) {
         return scoreManager.getScore(player);
-    }
-
-    private boolean hasReachedMax(int score) {
-        if ((scoreManager.getScore(Side.LEFT) == scoreManager.getScore(Side.RIGHT)) && (score == maxScore - 1)) {
-            increaseMaxScore();
-        }
-        return (score >= maxScore);
-    }
-
-    private void increaseMaxScore() {
-        maxScore++;
     }
 
     private int getSumOfScores() {
@@ -98,11 +81,7 @@ public class Game implements GameCallback {
         int sumOfScores = getSumOfScores();
         if (sumOfScores % this.serveRules.amountOfServes == 0 ||
                 isOneServeRuleActive()) {
-            if (server == Side.LEFT) {
-                server = Side.RIGHT;
-            } else {
-                server = Side.LEFT;
-            }
+            server = Side.getOpposite(server);
         }
     }
 }

@@ -79,10 +79,8 @@ public class SettingsActivity extends PreferenceActivity {
     @Override
     protected boolean isValidFragment(String fragmentName) {
         return PreferenceFragment.class.getName().equals(fragmentName)
-                || CapturePreferenceFragment.class.getName().equals(fragmentName)
-                || DetectionPreferenceFragment.class.getName().equals(fragmentName)
-                || VelocityPreferenceFragment.class.getName().equals(fragmentName)
-                || AdvancedPreferenceFragment.class.getName().equals(fragmentName)
+                || DebugPreferenceFragment.class.getName().equals(fragmentName)
+                || TrackerPreferenceFragment.class.getName().equals(fragmentName)
                 || GamePreferenceFragment.class.getName().equals(fragmentName);
     }
 
@@ -130,39 +128,6 @@ public class SettingsActivity extends PreferenceActivity {
         }
     }
 
-    public static class CapturePreferenceFragment extends PreferenceFragmentBase {
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.setXmlResourceId(R.xml.pref_capture);
-            super.onCreate(savedInstanceState);
-            bindToSummaryUpdater(findPreference("cameraFacing"), sSummaryUpdater);
-            bindToSummaryUpdater(findPreference("resolution"), sSummaryUpdater);
-            bindToSummaryUpdater(findPreference("recordMode"), sSummaryUpdater);
-        }
-    }
-
-    public static class DetectionPreferenceFragment extends PreferenceFragmentBase {
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.setXmlResourceId(R.xml.pref_detection);
-            super.onCreate(savedInstanceState);
-            bindToSummaryUpdater(findPreference("colorSpace"), sSummaryUpdater);
-            bindToSummaryUpdater(findPreference("procRes"), sSummaryUpdater);
-        }
-    }
-
-    public static class VelocityPreferenceFragment extends PreferenceFragmentBase {
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.setXmlResourceId(R.xml.pref_velocity);
-            super.onCreate(savedInstanceState);
-            bindToSummaryUpdater(findPreference("velocityEstimationMode"), sSummaryUpdater);
-            bindToSummaryUpdater(findPreference("objectDiameterPicker"), sSummaryUpdater);
-            bindToSummaryUpdater(findPreference("objectDiameterCustom"), sSummaryUpdater);
-            bindToSummaryUpdater(findPreference("frameRate"), sSummaryUpdater);
-        }
-    }
-
     public static class GamePreferenceFragment extends PreferenceFragmentBase {
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -170,18 +135,27 @@ public class SettingsActivity extends PreferenceActivity {
             super.onCreate(savedInstanceState);
             bindToSummaryUpdater(findPreference(getString(R.string.prefPlayer1Key)), sSummaryUpdater);
             bindToSummaryUpdater(findPreference(getString(R.string.prefPlayer2Key)), sSummaryUpdater);
-            bindToSummaryUpdaterBoolean(findPreference(getString(R.string.prefDisplayDebugKey)), sSummaryUpdater);
-            bindToSummaryUpdaterBoolean(findPreference(getString(R.string.prefRecordKey)), sSummaryUpdater);
+        }
+    }
+
+    public static class TrackerPreferenceFragment extends PreferenceFragmentBase {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.setXmlResourceId(R.xml.pref_tracker);
+            super.onCreate(savedInstanceState);
             bindToSummaryUpdaterBoolean(findPreference(getString(R.string.prefUseAudioKey)), sSummaryUpdater);
             bindToSummaryUpdaterBoolean(findPreference(getString(R.string.prefUseBlackSideKey)), sSummaryUpdater);
         }
     }
 
-    public static class AdvancedPreferenceFragment extends PreferenceFragmentBase {
+    public static class DebugPreferenceFragment extends PreferenceFragmentBase {
+
         @Override
         public void onCreate(Bundle savedInstanceState) {
-            super.setXmlResourceId(R.xml.pref_advanced);
+            super.setXmlResourceId(R.xml.pref_debug);
             super.onCreate(savedInstanceState);
+            bindToSummaryUpdaterBoolean(findPreference(getString(R.string.prefDisplayDebugKey)), sSummaryUpdater);
+            bindToSummaryUpdaterBoolean(findPreference(getString(R.string.prefRecordKey)), sSummaryUpdater);
             bindToSummaryUpdaterBoolean(findPreference(getString(R.string.prefPubnubKey)), sSummaryUpdater);
         }
     }
