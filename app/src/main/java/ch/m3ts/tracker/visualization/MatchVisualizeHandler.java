@@ -141,9 +141,9 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     @Override
     public void onBounce(Lib.Detection detection, Side ballBouncedOnSide) {
         latestBounce = detection;
-        /*final MatchVisualizeActivity activity = mActivity.get();
+        final MatchVisualizeActivity activity = mActivity.get();
         final TextView mBounceCountText = activity.getmBounceCountText();
-        newBounceCount = Integer.parseInt(mBounceCountText.getText().toString()) + 1;*/
+        newBounceCount = Integer.parseInt(mBounceCountText.getText().toString()) + 1;
     }
 
     @Override
@@ -291,6 +291,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         this.videoScaling = new VideoScaling(srcWidth, srcHeight);
         this.config = config;
         ZPositionCalc calc = new ZPositionCalc(viewingAngle, table.getWidth(), srcWidth);
+        StatsCreator.getInstance().setZCalc(calc);
         this.eventDetector = new EventDetector(config, srcWidth, srcHeight, tracks, this.table, calc);
         if (useAudio)
             this.audioRecorder = new Recorder(new ImplAudioRecorderCallback(this.eventDetector));

@@ -1,8 +1,10 @@
 package ch.m3ts.display.stats.processing;
 
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -14,23 +16,28 @@ import edu.princeton.cs.algs4.LinearRegression;
 
 public class StatsProcessing {
     private static final double FRAME_RATE = 30.0;
+    public static final double OUTLIER_IGNORE_THRESHOLD = 0.99;
 
     private StatsProcessing() {
     }
 
-    public static void recalculateVelocity(List<TrackData> trackDataList, Map<Side, Integer> tableCorners) {
-        int leftCorner = tableCorners.get(Side.LEFT);
-        int rightCorner = tableCorners.get(Side.RIGHT);
-        int widthPx = rightCorner - leftCorner;
-        double mmPerPx = ZPositionCalc.TABLE_TENNIS_TABLE_LENGTH_MM / widthPx;
+    /**
+     * Calculate velocity of a track using the 3D-Vector distance of first and last detection per track.
+     *
+     * @param trackDataList all tracks of which will have the velocity recalculated
+     * @param calc          initialized ZPositionCalc
+     */
+    public static void recalculateVelocity(List<TrackData> trackDataList, ZPositionCalc calc) {
         for (TrackData trackData : trackDataList) {
             DetectionData lastDetection = trackData.getDetections().get(0);
             DetectionData firstDetection = trackData.getDetections().get(trackData.getDetections().size() - 1);
             if (lastDetection == firstDetection || trackData.getDetections().size() == 1) {
                 trackData.setAverageVelocity(0);
             } else {
-                double dx = Math.abs(lastDetection.getX() - firstDetection.getX()) * mmPerPx;
-                double dy = Math.abs(lastDetection.getY() - firstDetection.getY()) * mmPerPx;
+                ZPositionCalc.ZPosMmToProportion p1 = calc.findProportionOfZPos(firstDetection.getZ());
+                ZPositionCalc.ZPosMmToProportion p2 = calc.findProportionOfZPos(lastDetection.getZ());
+                double dx = Math.abs(lastDetection.getX() * p2.getpX() - firstDetection.getX() * p1.getpX());
+                double dy = Math.abs(lastDetection.getY() * p2.getpY() - firstDetection.getY() * p1.getpY());
                 double dz = Math.abs(lastDetection.getZ() - firstDetection.getZ()) * (ZPositionCalc.TABLE_TENNIS_TABLE_WIDTH_MM
                         + 2 * ZPositionCalc.MAX_OFFSET_MM);
                 double distanceInMm = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2) + Math.pow(dz, 2));
@@ -38,7 +45,24 @@ public class StatsProcessing {
                 double dTimeInS = (1 / FRAME_RATE) * (trackData.getDetections().size() - 1);
                 float velocityMPerS = (float) (distanceInM / dTimeInS);
                 float velocityKmPerH = velocityMPerS * 3.6f;
+                double[] xArr = new double[trackData.getDetections().size()];
+                double[] yArr = new double[trackData.getDetections().size()];
+                double[] zArr = new double[trackData.getDetections().size()];
+                for (int i = 0; i < trackData.getDetections().size(); i++) {
+                    DetectionData d = trackData.getDetections().get(i);
+                    ZPositionCalc.ZPosMmToProportion p = calc.findProportionOfZPos(d.getZ());
+                    xArr[i] = d.getX() * p.getpX();
+                    yArr[i] = d.getY() * p.getpY();
+                    zArr[i] = calc.zPosRelToMm(d.getZ());
+                }
                 trackData.setAverageVelocity(velocityKmPerH);
+                /*Log.d("Calculating Velocity of track: \nxArr: " + Arrays.toString(xArr) +
+                        "\nyArr: "+Arrays.toString(yArr) + "\nzArr: " + Arrays.toString(zArr) +
+                        "\nx1: "+firstDetection.getX()*p1.getpX()+"mm x2: "+lastDetection.getX()*p2.getpX()+"mm\n"+
+                        "y1: "+firstDetection.getY()*p1.getpY()+"mm y2: "+lastDetection.getY()*p2.getpY()+"mm\n"+
+                        "z1: "+firstDetection.getZ()+" z2: "+lastDetection.getZ()+"\n"+
+                        "velocity: "+velocityKmPerH+"km/h"
+                );*/
             }
         }
     }
@@ -56,17 +80,22 @@ public class StatsProcessing {
         while (trackDataIterator.hasNext()) {
             TrackData nextTrackData = trackDataIterator.next();
             if (lastTrackData != null) {
-                DetectionData lastDetection = nextTrackData.getDetections().get(nextTrackData.getDetections().size() - 1);
-                DetectionData lastDetectionPrev = lastTrackData.getDetections().get(lastTrackData.getDetections().size() - 1);
-                if (lastDetection.getDirectionX() == lastDetectionPrev.getDirectionX()) {
+                List<DetectionData> detections = nextTrackData.getDetections();
+                int dir = Integer.compare(detections.get(detections.size() - 1).getX(), detections.get(0).getX());
+                List<DetectionData> prevDetections = lastTrackData.getDetections();
+                int dirPrev = Integer.compare(prevDetections.get(prevDetections.size() - 1).getX(), prevDetections.get(0).getX());
+                if (dir == dirPrev) {
                     // likely same track, append detections and remove
+                    Collections.reverse(lastTrackData.getDetections());
+                    Collections.reverse(nextTrackData.getDetections());
                     lastTrackData.getDetections().addAll(nextTrackData.getDetections());
+                    Collections.reverse(lastTrackData.getDetections());
 
                     // re-average the velocity
                     int totalNDetections = lastTrackData.getDetections().size() + nextTrackData.getDetections().size();
                     float weightedVelocityLast = lastTrackData.getAverageVelocity() * ((float) lastTrackData.getDetections().size() / totalNDetections);
                     float weightedVelocityNext = nextTrackData.getAverageVelocity() * ((float) nextTrackData.getDetections().size() / totalNDetections);
-                    lastTrackData.setAverageVelocity(weightedVelocityLast + weightedVelocityNext);
+                    nextTrackData.setAverageVelocity(weightedVelocityLast + weightedVelocityNext);
 
                     trackDataIterator.remove();
                     nextTrackData = lastTrackData;
@@ -84,18 +113,30 @@ public class StatsProcessing {
     public static void averageZPositions(List<TrackData> tracks) {
         for (TrackData track : tracks) {
             List<DetectionData> detections = track.getDetections();
-            double[] x = new double[detections.size()];
-            double[] z = new double[detections.size()];
+            List<Double> x = new LinkedList<>();
+            List<Double> z = new LinkedList<>();
 
             for (int i = 0; i < detections.size(); i++) {
-                x[i] = detections.get(i).getX();
-                z[i] = detections.get(i).getZ();
+                if (detections.get(i).getZ() < OUTLIER_IGNORE_THRESHOLD) {
+                    x.add((double) detections.get(i).getX());
+                    z.add(detections.get(i).getZ());
+                }
             }
 
-            LinearRegression linearRegression = new LinearRegression(x, z);
-            for (int i = 0; i < detections.size(); i++) {
-                DetectionData detection = detections.get(i);
-                detection.setZ(linearRegression.predict(detection.getX()));
+            if (!x.isEmpty() && !z.isEmpty()) {
+                double[] xArr = new double[x.size()];
+                double[] zArr = new double[z.size()];
+
+                for (int i = 0; i < x.size(); i++) {
+                    xArr[i] = x.get(i);
+                    zArr[i] = z.get(i);
+                }
+
+                LinearRegression linearRegression = new LinearRegression(xArr, zArr);
+                for (int i = 0; i < detections.size(); i++) {
+                    DetectionData detection = detections.get(i);
+                    detection.setZ(linearRegression.predict(detection.getX()));
+                }
             }
         }
     }

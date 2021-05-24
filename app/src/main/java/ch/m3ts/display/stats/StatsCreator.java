@@ -7,6 +7,7 @@ import java.util.Map;
 
 import ch.m3ts.display.stats.processing.StatsProcessing;
 import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.tracker.ZPositionCalc;
 import cz.fmo.Lib;
 import cz.fmo.data.Track;
 
@@ -17,6 +18,7 @@ public class StatsCreator {
     private List<GameStats> games = new ArrayList<>();
     private String formattedMatchStart;
     private Map<Side, String> playerNames = new HashMap<>();
+    private ZPositionCalc zCalc;
 
     private StatsCreator() {
     }
@@ -26,6 +28,10 @@ public class StatsCreator {
             StatsCreator.instance = new StatsCreator();
         }
         return StatsCreator.instance;
+    }
+
+    public void setZCalc(ZPositionCalc zCalc) {
+        this.zCalc = zCalc;
     }
 
     public void addTableCorners(int tableCornerLeft, int tableCornerRight) {
@@ -46,7 +52,7 @@ public class StatsCreator {
             detections = new ArrayList<>();
         }
         PointData point = new PointData(decision, trackDataList, winner, scoreLeft, scoreRight, ballSide, striker, server, duration);
-        StatsProcessing.recalculateVelocity(trackDataList, tableCorners);
+        StatsProcessing.recalculateVelocity(trackDataList, this.zCalc);
         point.setFastestStrikes();  // important to call this AFTER velocity has been recalculated
         if (points.isEmpty() && !games.isEmpty() && scoreLeft + scoreRight > 1) {
             GameStats lastGame = games.get(games.size() - 1);
