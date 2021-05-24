@@ -7,7 +7,6 @@ import java.util.Locale;
 import ch.m3ts.eventbus.Event;
 import ch.m3ts.eventbus.EventBus;
 import ch.m3ts.eventbus.TTEventBus;
-import ch.m3ts.eventbus.data.eventdetector.BallBounceData;
 import ch.m3ts.eventbus.data.eventdetector.BallTrackData;
 import ch.m3ts.eventbus.data.todisplay.ToDisplayData;
 import ch.m3ts.tabletennis.Table;
@@ -98,9 +97,7 @@ public class BenchmarkHandler extends ReplayHandler implements ReplayDetectionCa
             ToDisplayData toDisplayData = (ToDisplayData) data;
             toDisplayData.call(this);
         } else if (data instanceof BallTrackData) {
-            //((BallTrackData) data).call(this);
-        } else if (data instanceof BallBounceData) {
-            //((BallBounceData) data).call(this);
+            ((BallTrackData) data).call(this);
         }
     }
 
@@ -112,6 +109,7 @@ public class BenchmarkHandler extends ReplayHandler implements ReplayDetectionCa
 
     public void onClipEnded() {
         if (this.countOnScoreEventsPerClip == 0) {
+            this.countOnScoreEventsPerClip = 1;
             match.getReferee().onPointAddition(whoShouldScore);
             Log.d(String.format(NO_JUDGEMENT_LOG_TEXT, clipId));
         }
