@@ -36,7 +36,7 @@ public class HeatMapHolder {
         bouncePaint.setColor(paintColor);
         bouncePaint.setAlpha(20);
         int height = container.getHeight();
-        float canvasWidth = container.getWidth() * 0.6f;
+        float canvasWidth = container.getWidth() * 0.5f;
         zPosVisualizer = new ZPosVisualizer(bouncePaint, tablePaint, (float) container.getWidth() / 2 - canvasWidth / 2, height * 0.01f, canvasWidth);
         zPosVisualizer.drawTableBirdView(canvas);
     }
