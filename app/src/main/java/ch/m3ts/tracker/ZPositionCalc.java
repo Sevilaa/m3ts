@@ -17,6 +17,7 @@ public class ZPositionCalc {
     private static final double TABLE_TENNIS_BALL_DIAMETER_MM = 40; // normed, see https://www.sport-thieme.ch/Tischtennisb%C3%A4lle#:~:text=Ein%20klassischer%20Tischtennisball%20hat%20einen,Zelluloid%20und%20ist%20innen%20hohl.
     private static final int ACCURACY = 500;
     private TreeSet<RadiusToZPosObj> radiusToZPosObjTreeSet;
+    private TreeSet<ZPosMmToProportion> proportionTreeSet;
     private final double horizontalViewAngle;
     private final double videoWidthMM;
     private final double videoWidthBackEdgeMM;
@@ -51,26 +52,28 @@ public class ZPositionCalc {
         ballRadiusFrontEdgePx = (pxPerMMFrontEdge * TABLE_TENNIS_BALL_DIAMETER_MM) / 2;
         ballRadiusBackEdgePx = (pxPerMMBackEdge * TABLE_TENNIS_BALL_DIAMETER_MM) / 2;
         Log.d("Ball radius between: " + ballRadiusFrontEdgePx + "px and " + ballRadiusBackEdgePx + "px");
-        fillRadiusToZPosTree();
+        fillRadiusToZPosTree(videoWidthPixel);
     }
 
     public double getMmPerPixelFrontEdge() {
         return mmPerPixelFrontEdge;
     }
 
-    private void fillRadiusToZPosTree() {
+    private void fillRadiusToZPosTree(int videoWidthPx) {
         this.radiusToZPosObjTreeSet = new TreeSet<>();
+        this.proportionTreeSet = new TreeSet<>();
         double step = (TABLE_TENNIS_TABLE_WIDTH_MM + MAX_OFFSET_MM * 2) / (double) ACCURACY;
         double closestLine = this.distanceTrackerToTableFrontEdgeMM - MAX_OFFSET_MM;
         for (int i = 0; i < ACCURACY; i++) {
             double b = closestLine + i * step;
             double a = (Math.tan(Math.toRadians(this.horizontalViewAngle)) * b) * 2.0;
-            double mmPerPixel = mmPerPixelFrontEdge * (a / this.videoWidthMM);       // should scale linearly
-            double pxPerMM = Math.pow(mmPerPixel, -1.0);
+            double mmPerPxX = a / videoWidthPx;
+            double pxPerMM = Math.pow(mmPerPxX, -1.0);
             double ballRadiusPx = (pxPerMM * TABLE_TENNIS_BALL_DIAMETER_MM) / 2.0;
+            double mmPerPxY = (TABLE_TENNIS_BALL_DIAMETER_MM / 2) / ballRadiusPx;
             double zPosMm = b - this.distanceTrackerToTableFrontEdgeMM;
-            double zPosPx = zPosMm * pxPerMM;
-            radiusToZPosObjTreeSet.add(new RadiusToZPosObj(ballRadiusPx, zPosMm, zPosPx, pxPerMM));
+            radiusToZPosObjTreeSet.add(new RadiusToZPosObj(ballRadiusPx, zPosMm));
+            proportionTreeSet.add(new ZPosMmToProportion(zPosMm, mmPerPxX, mmPerPxY));
             if (i == 0) {
                 Log.d("Ball has following radius on closest line: " + ballRadiusPx + "px (with zPos being: " + zPosMm + "mm)");
                 Log.d("Closest line is: " + (distanceTrackerToTableFrontEdgeMM - b) + "mm behind Front Edge of Table");
@@ -87,7 +90,7 @@ public class ZPositionCalc {
     }
 
     public double findZPosOfBallMm(double ballRadiusPx) {
-        RadiusToZPosObj obj = radiusToZPosObjTreeSet.higher(new RadiusToZPosObj(ballRadiusPx, 0, 0, 0));
+        RadiusToZPosObj obj = radiusToZPosObjTreeSet.higher(new RadiusToZPosObj(ballRadiusPx, 0));
         if (obj == null) {
             if (ballRadiusPx > ballRadiusFrontEdgePx) {
                 obj = radiusToZPosObjTreeSet.last();
@@ -95,7 +98,20 @@ public class ZPositionCalc {
                 obj = radiusToZPosObjTreeSet.first();
             }
         }
-        return obj.zPosMm + MAX_OFFSET_MM;
+        return obj.zPosMm;
+    }
+
+    public ZPosMmToProportion findProportionOfZPos(double zPosRel) {
+        double zPosMm = zPosRelToMm(zPosRel);
+        ZPosMmToProportion proportion = proportionTreeSet.lower(new ZPosMmToProportion(zPosMm, 0, 0));
+        if (proportion == null) {
+            if (zPosRel >= 0.5) {
+                proportion = proportionTreeSet.last();
+            } else {
+                proportion = proportionTreeSet.first();
+            }
+        }
+        return proportion;
     }
 
     /**
@@ -112,6 +128,10 @@ public class ZPositionCalc {
         return findZPosOfBallMm(ballRadiusPx) / (TABLE_TENNIS_TABLE_WIDTH_MM + 2 * MAX_OFFSET_MM);
     }
 
+    public double zPosRelToMm(double zPosRel) {
+        return zPosRel * (TABLE_TENNIS_TABLE_WIDTH_MM + 2 * MAX_OFFSET_MM);
+    }
+
     public double[] getTableDistanceMM() {
         return new double[]{distanceTrackerToTableFrontEdgeMM, distanceTrackerToTableBackEdgeMM};
     }
@@ -119,20 +139,42 @@ public class ZPositionCalc {
     private class RadiusToZPosObj implements Comparable {
         private final float radius;
         private final double zPosMm;
-        private final double zPosPx;
-        private final double pxlToMM;
 
-        RadiusToZPosObj(double radius, double zPosMm, double zPosPx, double pxlToMM) {
+        RadiusToZPosObj(double radius, double zPosMm) {
             this.radius = (float) radius;
             this.zPosMm = zPosMm;
-            this.zPosPx = zPosPx;
-            this.pxlToMM = pxlToMM;
         }
 
         @Override
         public int compareTo(@NonNull Object o) {
             RadiusToZPosObj other = (RadiusToZPosObj) o;
             return (int) Math.signum(this.radius - other.radius);
+        }
+    }
+
+    public class ZPosMmToProportion implements Comparable {
+        private final double zPosMm;
+        private final double pX;
+        private final double pY;
+
+        public ZPosMmToProportion(double zPosMm, double pX, double pY) {
+            this.zPosMm = zPosMm;
+            this.pX = pX;
+            this.pY = pY;
+        }
+
+        public double getpX() {
+            return pX;
+        }
+
+        public double getpY() {
+            return pY;
+        }
+
+        @Override
+        public int compareTo(@NonNull Object o) {
+            ZPosMmToProportion other = (ZPosMmToProportion) o;
+            return Double.compare(this.zPosMm, other.zPosMm);
         }
     }
 }

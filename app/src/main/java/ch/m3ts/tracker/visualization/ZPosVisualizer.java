@@ -60,7 +60,7 @@ public class ZPosVisualizer {
     }
 
     public void drawZPos(Canvas canvas, Lib.Detection detection, int leftCornerX, int rightCornerX) {
-        if (detection.centerX >= leftCornerX && detection.centerX <= rightCornerX && detection.centerZ <= 1.0 && detection.centerZ >= 0.0) {
+        if (detection.centerX >= leftCornerX && detection.centerX <= rightCornerX && detection.centerZ < 1.0 && detection.centerZ > 0.0) {
             float ratio = (float) detection.centerX / (Math.abs(rightCornerX - leftCornerX));
             float x = originX + widthPx * ratio;
             float y = Math.round(originY + heightFullPx - (float) detection.centerZ * heightFullPx);

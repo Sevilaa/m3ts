@@ -403,11 +403,7 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
         this.state = State.WAIT_FOR_SERVE;
         this.currentBallSide = getServer();
         this.currentStriker = Side.getOpposite(getServer());
-        if (this.isUsingReadyToServeGesture) {
-            TTEventBus.getInstance().dispatch(new TTEvent<>(new ReadyToServeData(getServer())));
-        }
         this.duration.reset();
-        TTEventBus.getInstance().register(this);
     }
 
     public void deactivateReadyToServeGesture() {
@@ -417,7 +413,6 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
     private void pause() {
         this.state = State.PAUSE;
         cancelTimers();
-        TTEventBus.getInstance().unregister(this);
     }
 
     private void cancelTimers() {
@@ -491,6 +486,9 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
     @Override
     public void onGestureDetected() {
         resume();
+        if (this.isUsingReadyToServeGesture) {
+            TTEventBus.getInstance().dispatch(new TTEvent<>(new ReadyToServeData(getServer())));
+        }
     }
 
     @Override

@@ -5,22 +5,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ch.m3ts.display.stats.data.DetectionData;
-import ch.m3ts.display.stats.data.GameData;
-import ch.m3ts.display.stats.data.MatchData;
-import ch.m3ts.display.stats.data.PointData;
-import ch.m3ts.display.stats.data.TrackData;
+import ch.m3ts.display.stats.processing.StatsProcessing;
 import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.tracker.ZPositionCalc;
 import cz.fmo.Lib;
 import cz.fmo.data.Track;
 
 public class StatsCreator {
+    private final Map<Side, Integer> tableCorners = new HashMap<>();
     private static StatsCreator instance;
     private List<PointData> points = new ArrayList<>();
-    private List<GameData> games = new ArrayList<>();
+    private List<GameStats> games = new ArrayList<>();
     private String formattedMatchStart;
     private Map<Side, String> playerNames = new HashMap<>();
-    private Map<Side, Integer> tableCorners = new HashMap<>();
+    private ZPositionCalc zCalc;
 
     private StatsCreator() {
     }
@@ -32,6 +30,10 @@ public class StatsCreator {
         return StatsCreator.instance;
     }
 
+    public void setZCalc(ZPositionCalc zCalc) {
+        this.zCalc = zCalc;
+    }
+
     public void addTableCorners(int tableCornerLeft, int tableCornerRight) {
         this.tableCorners.put(Side.LEFT, tableCornerLeft);
         this.tableCorners.put(Side.RIGHT, tableCornerRight);
@@ -39,21 +41,23 @@ public class StatsCreator {
 
     public void addPoint(String decision, Side winner, int scoreLeft, int scoreRight, int strikes, Side ballSide, Side striker, Side server, int duration, List<Track> tracks) {
         List<DetectionData> detections = new ArrayList<>();
-        List<TrackData> trackData = new ArrayList<>();
+        List<TrackData> trackDataList = new ArrayList<>();
         for (Track track : tracks) {
             Lib.Detection latest = track.getLatest();
             while (latest != null) {
                 detections.add(new DetectionData(latest.centerX, latest.centerY, latest.centerZ, latest.velocity, latest.isBounce, (int) latest.directionX));
                 latest = latest.predecessor;
             }
-            trackData.add(new TrackData(detections, track.getAvgVelocity(), track.getStriker()));
+            trackDataList.add(new TrackData(detections, track.getAvgVelocity(), track.getStriker()));
             detections = new ArrayList<>();
         }
-        PointData point = new PointData(decision, trackData, winner, scoreLeft, scoreRight, ballSide, striker, server, duration);
+        PointData point = new PointData(decision, trackDataList, winner, scoreLeft, scoreRight, ballSide, striker, server, duration);
+        StatsProcessing.recalculateVelocity(trackDataList, this.zCalc);
+        point.setFastestStrikes();  // important to call this AFTER velocity has been recalculated
         if (points.isEmpty() && !games.isEmpty() && scoreLeft + scoreRight > 1) {
-            GameData lastGame = games.get(games.size() - 1);
+            GameStats lastGame = games.get(games.size() - 1);
             lastGame.getPoints().add(point);
-            games.set(games.size() - 1, new GameData(lastGame.getPoints()));
+            games.set(games.size() - 1, new GameStats(lastGame.getPoints()));
         } else points.add(point);
     }
 
@@ -68,7 +72,7 @@ public class StatsCreator {
 
     public void addGame() {
         if (!this.points.isEmpty()) {
-            GameData stats = new GameData(this.points);
+            GameStats stats = new GameStats(this.points);
             this.games.add(stats);
             this.points = new ArrayList<>();
         }
@@ -82,7 +86,7 @@ public class StatsCreator {
         this.games.remove(this.games.size() - 1);
     }
 
-    public MatchData createStats() {
-        return new MatchData(games, playerNames.get(Side.LEFT), playerNames.get(Side.RIGHT), formattedMatchStart, tableCorners);
+    public MatchStats createStats() {
+        return new MatchStats(games, playerNames.get(Side.LEFT), playerNames.get(Side.RIGHT), formattedMatchStart, tableCorners);
     }
 }
