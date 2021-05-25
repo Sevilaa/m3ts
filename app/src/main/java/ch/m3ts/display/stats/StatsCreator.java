@@ -5,6 +5,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ch.m3ts.display.stats.data.DetectionData;
+import ch.m3ts.display.stats.data.GameData;
+import ch.m3ts.display.stats.data.MatchData;
+import ch.m3ts.display.stats.data.PointData;
+import ch.m3ts.display.stats.data.TrackData;
 import ch.m3ts.display.stats.processing.StatsProcessing;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tracker.ZPositionCalc;
@@ -15,7 +20,7 @@ public class StatsCreator {
     private final Map<Side, Integer> tableCorners = new HashMap<>();
     private static StatsCreator instance;
     private List<PointData> points = new ArrayList<>();
-    private List<GameStats> games = new ArrayList<>();
+    private List<GameData> games = new ArrayList<>();
     private String formattedMatchStart;
     private Map<Side, String> playerNames = new HashMap<>();
     private ZPositionCalc zCalc;
@@ -55,9 +60,9 @@ public class StatsCreator {
         StatsProcessing.recalculateVelocity(trackDataList, this.zCalc);
         point.setFastestStrikes();  // important to call this AFTER velocity has been recalculated
         if (points.isEmpty() && !games.isEmpty() && scoreLeft + scoreRight > 1) {
-            GameStats lastGame = games.get(games.size() - 1);
+            GameData lastGame = games.get(games.size() - 1);
             lastGame.getPoints().add(point);
-            games.set(games.size() - 1, new GameStats(lastGame.getPoints()));
+            games.set(games.size() - 1, new GameData(lastGame.getPoints()));
         } else points.add(point);
     }
 
@@ -72,7 +77,7 @@ public class StatsCreator {
 
     public void addGame() {
         if (!this.points.isEmpty()) {
-            GameStats stats = new GameStats(this.points);
+            GameData stats = new GameData(this.points);
             this.games.add(stats);
             this.points = new ArrayList<>();
         }
@@ -86,7 +91,7 @@ public class StatsCreator {
         this.games.remove(this.games.size() - 1);
     }
 
-    public MatchStats createStats() {
-        return new MatchStats(games, playerNames.get(Side.LEFT), playerNames.get(Side.RIGHT), formattedMatchStart, tableCorners);
+    public MatchData createStats() {
+        return new MatchData(games, playerNames.get(Side.LEFT), playerNames.get(Side.RIGHT), formattedMatchStart, tableCorners);
     }
 }
