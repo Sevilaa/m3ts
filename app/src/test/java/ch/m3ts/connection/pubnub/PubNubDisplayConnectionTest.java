@@ -26,11 +26,11 @@ import ch.m3ts.display.MatchStatusListener;
 import ch.m3ts.eventbus.Event;
 import ch.m3ts.eventbus.Subscribable;
 import ch.m3ts.eventbus.TTEventBus;
-import ch.m3ts.eventbus.data.StatusUpdateData;
-import ch.m3ts.eventbus.data.todisplay.ToDisplayData;
-import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.eventbus.event.StatusUpdateData;
+import ch.m3ts.eventbus.event.todisplay.ToDisplayData;
 import ch.m3ts.tabletennis.match.DisplayUpdateListener;
 import ch.m3ts.tabletennis.match.MatchType;
+import ch.m3ts.util.Side;
 
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.fail;

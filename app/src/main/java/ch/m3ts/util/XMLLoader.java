@@ -6,9 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import ch.m3ts.tabletennis.Table;
-import ch.m3ts.tabletennis.helper.Side;
-
 public class XMLLoader {
     private XMLLoader() {
     }

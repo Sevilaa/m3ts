@@ -1,6 +1,6 @@
 package ch.m3ts.tabletennis.match;
 
-import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.util.Side;
 
 /**
  * Represents the status of a match.

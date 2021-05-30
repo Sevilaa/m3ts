@@ -6,7 +6,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
-import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.util.Side;
 
 /**
  * Custom SwipeListener View which implements calls events on vertical and horizontal swipes.

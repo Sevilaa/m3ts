@@ -1,8 +1,8 @@
 package ch.m3ts.connection;
 
-import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.MatchStatusCallback;
 import ch.m3ts.tracker.init.InitTrackerCallback;
+import ch.m3ts.util.Side;
 
 public interface TrackerConnection {
     void setTrackerPubNubCallback(MatchStatusCallback callback);

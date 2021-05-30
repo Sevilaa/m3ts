@@ -1,6 +1,6 @@
 package ch.m3ts.display;
 
-import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.util.Side;
 
 /**
  * Provides methods which let the display device request the current match status from the tracker

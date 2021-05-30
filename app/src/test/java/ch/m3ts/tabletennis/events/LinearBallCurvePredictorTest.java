@@ -5,7 +5,9 @@ import android.graphics.Point;
 import org.junit.Before;
 import org.junit.Test;
 
-import ch.m3ts.tabletennis.Table;
+import ch.m3ts.detection.BallCurvePredictor;
+import ch.m3ts.detection.LinearBallCurvePredictor;
+import ch.m3ts.util.Table;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

@@ -2,9 +2,9 @@ package helper;
 
 import java.util.Random;
 
-import ch.m3ts.tabletennis.helper.DirectionX;
-import ch.m3ts.tabletennis.helper.DirectionY;
-import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.util.DirectionX;
+import ch.m3ts.util.DirectionY;
+import ch.m3ts.util.Side;
 import cz.fmo.Lib;
 
 /**

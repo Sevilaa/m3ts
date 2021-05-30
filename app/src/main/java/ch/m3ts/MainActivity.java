@@ -13,9 +13,9 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.audio.DebugImplAudioRecorderCallback;
 import com.google.audio.core.Recorder;
 
+import ch.m3ts.detection.audio.AudioBounceDetectionDebug;
 import ch.m3ts.display.MatchActivity;
 import ch.m3ts.tracker.init.InitTrackerActivity;
 import ch.m3ts.tutorial.TutorialActivity;
@@ -89,7 +89,7 @@ public class MainActivity extends Activity {
         animationDrawable.setEnterFadeDuration(2000);
         animationDrawable.setExitFadeDuration(4000);
         animationDrawable.start();
-        this.audioRecorder = new Recorder(new DebugImplAudioRecorderCallback(
+        this.audioRecorder = new Recorder(new AudioBounceDetectionDebug(
                 (TextView) findViewById(R.id.txtPlayMovieFrequency),
                 (TextView) findViewById(R.id.txtAudioBounce)
         ));

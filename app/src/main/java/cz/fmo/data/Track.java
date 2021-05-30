@@ -1,6 +1,6 @@
 package cz.fmo.data;
 
-import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.util.Side;
 import cz.fmo.Lib;
 import cz.fmo.util.Color;
 import cz.fmo.util.Config;

@@ -5,7 +5,7 @@ import org.junit.Test;
 
 import java.util.Random;
 
-import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.util.Side;
 
 import static org.junit.Assert.assertEquals;
 

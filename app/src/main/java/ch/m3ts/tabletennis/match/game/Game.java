@@ -1,14 +1,14 @@
 package ch.m3ts.tabletennis.match.game;
 
-import ch.m3ts.display.stats.StatsCreator;
+import ch.m3ts.display.statistic.StatsCreator;
 import ch.m3ts.eventbus.EventBus;
 import ch.m3ts.eventbus.TTEvent;
 import ch.m3ts.eventbus.TTEventBus;
-import ch.m3ts.eventbus.data.game.GameWinData;
-import ch.m3ts.eventbus.data.game.GameWinResetData;
-import ch.m3ts.eventbus.data.todisplay.ScoreData;
-import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.eventbus.event.game.GameWinData;
+import ch.m3ts.eventbus.event.game.GameWinResetData;
+import ch.m3ts.eventbus.event.todisplay.ScoreData;
 import ch.m3ts.tabletennis.match.ServeRules;
+import ch.m3ts.util.Side;
 
 /**
  * Represents a game inside of a table tennis match.

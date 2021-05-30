@@ -100,7 +100,9 @@
                 android:textAppearance="@android:style/TextAppearance.Material.Medium"
                 android:tint="@android:color/white" />
 
-            <include layout="@layout/debug_info" />
+            <include
+                layout="@layout/debug_info"
+                android:visibility="invisible" />
 
             <Button
                 android:id="@+id/mainHowToPlay"

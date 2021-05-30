@@ -3,8 +3,8 @@ package ch.m3ts.tracker.visualization;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 
-import ch.m3ts.display.stats.data.DetectionData;
-import ch.m3ts.tracker.ZPositionCalc;
+import ch.m3ts.detection.ZPositionCalc;
+import ch.m3ts.display.statistic.data.DetectionData;
 import cz.fmo.Lib;
 
 public class ZPosVisualizer {

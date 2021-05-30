@@ -33,7 +33,7 @@
             android:screenOrientation="landscape"
             android:configChanges="orientation|screenSize" />
         <activity
-            android:name="ch.m3ts.display.stats.StatsActivity"
+            android:name="ch.m3ts.display.statistic.StatsActivity"
             android:label="@string/app_name"
             android:screenOrientation="landscape"
             android:configChanges="orientation|screenSize" />

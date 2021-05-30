@@ -3,7 +3,7 @@ package ch.m3ts.tracker.visualization.replay.benchmark;
 import java.security.InvalidParameterException;
 import java.util.Locale;
 
-import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.util.Side;
 
 public class BenchmarkClipManager {
     private static final String SCORE_DIVIDING_SYMBOL = "_";

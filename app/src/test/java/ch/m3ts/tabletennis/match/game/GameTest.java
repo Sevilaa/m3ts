@@ -7,12 +7,12 @@ import org.junit.Test;
 import ch.m3ts.eventbus.Event;
 import ch.m3ts.eventbus.Subscribable;
 import ch.m3ts.eventbus.TTEventBus;
-import ch.m3ts.eventbus.data.game.GameEventData;
-import ch.m3ts.eventbus.data.todisplay.ToDisplayData;
-import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.eventbus.event.game.GameEventData;
+import ch.m3ts.eventbus.event.todisplay.ToDisplayData;
 import ch.m3ts.tabletennis.match.DisplayUpdateListener;
 import ch.m3ts.tabletennis.match.GameListener;
 import ch.m3ts.tabletennis.match.ServeRules;
+import ch.m3ts.util.Side;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;

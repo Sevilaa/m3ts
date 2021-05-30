@@ -9,8 +9,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 
 import ch.m3ts.FragmentWithReplaceCallback;
-import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tabletennis.match.MatchType;
+import ch.m3ts.util.Side;
 import cz.fmo.R;
 
 /**

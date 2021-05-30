@@ -22,7 +22,7 @@ import ch.m3ts.connection.pubnub.PubNubFactory;
 import ch.m3ts.eventbus.EventBus;
 import ch.m3ts.eventbus.TTEvent;
 import ch.m3ts.eventbus.TTEventBus;
-import ch.m3ts.eventbus.data.RestartMatchData;
+import ch.m3ts.eventbus.event.RestartMatchData;
 import ch.m3ts.util.Log;
 import ch.m3ts.util.QuitAlertDialogHelper;
 import cz.fmo.R;

@@ -5,7 +5,6 @@ import org.junit.Test;
 import java.util.List;
 import java.util.Random;
 
-import ch.m3ts.tabletennis.helper.Side;
 import cz.fmo.Lib;
 import cz.fmo.data.Track;
 import cz.fmo.data.TrackSet;

@@ -3,20 +3,20 @@ package ch.m3ts.tabletennis.match;
 import java.util.EnumMap;
 import java.util.Map;
 
-import ch.m3ts.display.stats.StatsCreator;
+import ch.m3ts.display.statistic.StatsCreator;
 import ch.m3ts.eventbus.Event;
 import ch.m3ts.eventbus.Subscribable;
 import ch.m3ts.eventbus.TTEvent;
 import ch.m3ts.eventbus.TTEventBus;
-import ch.m3ts.eventbus.data.StatusUpdateData;
-import ch.m3ts.eventbus.data.game.GameEventData;
-import ch.m3ts.eventbus.data.scoremanipulation.PointDeduction;
-import ch.m3ts.eventbus.data.todisplay.MatchEndedData;
-import ch.m3ts.eventbus.data.todisplay.ToDisplayGameWinData;
-import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.eventbus.event.StatusUpdateData;
+import ch.m3ts.eventbus.event.game.GameEventData;
+import ch.m3ts.eventbus.event.scoremanipulation.PointDeduction;
+import ch.m3ts.eventbus.event.todisplay.MatchEndedData;
+import ch.m3ts.eventbus.event.todisplay.ToDisplayGameWinData;
 import ch.m3ts.tabletennis.match.game.Game;
 import ch.m3ts.tabletennis.match.game.GameType;
 import ch.m3ts.tabletennis.match.referee.Referee;
+import ch.m3ts.util.Side;
 
 
 /**

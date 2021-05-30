@@ -13,8 +13,8 @@ import java.util.UUID;
 import ch.m3ts.connection.ConnectionEvent;
 import ch.m3ts.connection.ImplTrackerConnection;
 import ch.m3ts.eventbus.TTEventBus;
-import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.util.Log;
+import ch.m3ts.util.Side;
 
 public class PubNubTrackerConnection extends ImplTrackerConnection {
     private static final String JSON_SEND_EXCEPTION_MESSAGE = "Unable to send JSON to channel ";
