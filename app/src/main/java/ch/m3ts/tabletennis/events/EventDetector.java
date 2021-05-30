@@ -51,6 +51,7 @@ import cz.fmo.util.Config;
 public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Callback {
     private static final double PERCENTAGE_OF_NEARLY_OUT_OF_FRAME = 0.07;
     private static final int MILLISECONDS_TILL_TIMEOUT = 1500;
+    private static final int AUDIO_BOUNCE_THRESHOLD_MS = 30;
     private final Object mLock = new Object();
     private final TrackSet trackSet;
     private final int[] nearlyOutOfFrameThresholds;
@@ -107,7 +108,8 @@ public class EventDetector implements Lib.Callback, ImplAudioRecorderCallback.Ca
     @Override
     public void onAudioBounceDetected() {
         if (currentTrack != null &&
-                TimeUnit.MILLISECONDS.convert(System.nanoTime() - currentTrack.getLastDetectionTime(), TimeUnit.NANOSECONDS) < 30) {
+                TimeUnit.MILLISECONDS.convert(System.nanoTime() - currentTrack.getLastDetectionTime(), TimeUnit.NANOSECONDS)
+                        < AUDIO_BOUNCE_THRESHOLD_MS) {
             Side ballBouncedOnSide = table.getHorizontalSideOfDetection(previousCenterX);
             eventBus.dispatch(new TTEvent<>(new BallBounceAudioData(ballBouncedOnSide)));
         }

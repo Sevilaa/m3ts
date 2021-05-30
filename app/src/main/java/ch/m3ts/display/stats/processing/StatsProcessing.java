@@ -1,5 +1,6 @@
 package ch.m3ts.display.stats.processing;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -12,6 +13,7 @@ import ch.m3ts.display.stats.data.DetectionData;
 import ch.m3ts.display.stats.data.TrackData;
 import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tracker.ZPositionCalc;
+import ch.m3ts.util.Log;
 import edu.princeton.cs.algs4.LinearRegression;
 
 public class StatsProcessing {
@@ -31,40 +33,38 @@ public class StatsProcessing {
         for (TrackData trackData : trackDataList) {
             DetectionData lastDetection = trackData.getDetections().get(0);
             DetectionData firstDetection = trackData.getDetections().get(trackData.getDetections().size() - 1);
-            if (lastDetection == firstDetection || trackData.getDetections().size() == 1) {
+            if (lastDetection == firstDetection || trackData.getDetections().size() == 1 || calc == null) {
                 trackData.setAverageVelocity(0);
             } else {
-                if (calc != null) {
-                    ZPositionCalc.ZPosMmToProportion p1 = calc.findProportionOfZPos(firstDetection.getZ());
-                    ZPositionCalc.ZPosMmToProportion p2 = calc.findProportionOfZPos(lastDetection.getZ());
-                    double dx = Math.abs(lastDetection.getX() * p2.getpX() - firstDetection.getX() * p1.getpX());
-                    double dy = Math.abs(lastDetection.getY() * p2.getpY() - firstDetection.getY() * p1.getpY());
-                    double dz = Math.abs(lastDetection.getZ() - firstDetection.getZ()) * (ZPositionCalc.TABLE_TENNIS_TABLE_WIDTH_MM
-                            + 2 * ZPositionCalc.MAX_OFFSET_MM);
-                    double distanceInMm = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2) + Math.pow(dz, 2));
-                    double distanceInM = distanceInMm / 1000.0;
-                    double dTimeInS = (1 / FRAME_RATE) * (trackData.getDetections().size() - 1);
-                    float velocityMPerS = (float) (distanceInM / dTimeInS);
-                    float velocityKmPerH = velocityMPerS * 3.6f;
-                    double[] xArr = new double[trackData.getDetections().size()];
-                    double[] yArr = new double[trackData.getDetections().size()];
-                    double[] zArr = new double[trackData.getDetections().size()];
-                    for (int i = 0; i < trackData.getDetections().size(); i++) {
-                        DetectionData d = trackData.getDetections().get(i);
-                        ZPositionCalc.ZPosMmToProportion p = calc.findProportionOfZPos(d.getZ());
-                        xArr[i] = d.getX() * p.getpX();
-                        yArr[i] = d.getY() * p.getpY();
-                        zArr[i] = calc.zPosRelToMm(d.getZ());
-                    }
-                    trackData.setAverageVelocity(velocityKmPerH);
-                    /*Log.d("Calculating Velocity of track: \nxArr: " + Arrays.toString(xArr) +
-                            "\nyArr: "+Arrays.toString(yArr) + "\nzArr: " + Arrays.toString(zArr) +
-                            "\nx1: "+firstDetection.getX()*p1.getpX()+"mm x2: "+lastDetection.getX()*p2.getpX()+"mm\n"+
-                            "y1: "+firstDetection.getY()*p1.getpY()+"mm y2: "+lastDetection.getY()*p2.getpY()+"mm\n"+
-                            "z1: "+firstDetection.getZ()+" z2: "+lastDetection.getZ()+"\n"+
-                            "velocity: "+velocityKmPerH+"km/h"
-                    );*/
+                ZPositionCalc.ZPosMmToProportion p1 = calc.findProportionOfZPos(firstDetection.getZ());
+                ZPositionCalc.ZPosMmToProportion p2 = calc.findProportionOfZPos(lastDetection.getZ());
+                double dx = Math.abs(lastDetection.getX() * p2.getpX() - firstDetection.getX() * p1.getpX());
+                double dy = Math.abs(lastDetection.getY() * p2.getpX() - firstDetection.getY() * p1.getpX());
+                double dz = Math.abs(lastDetection.getZ() - firstDetection.getZ()) * (ZPositionCalc.TABLE_TENNIS_TABLE_WIDTH_MM
+                        + 2 * ZPositionCalc.MAX_OFFSET_MM);
+                double distanceInMm = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2) + Math.pow(dz, 2));
+                double distanceInM = distanceInMm / 1000.0;
+                double dTimeInS = (1 / FRAME_RATE) * (trackData.getDetections().size() - 1);
+                float velocityMPerS = (float) (distanceInM / dTimeInS);
+                float velocityKmPerH = velocityMPerS * 3.6f;
+                double[] xArr = new double[trackData.getDetections().size()];
+                double[] yArr = new double[trackData.getDetections().size()];
+                double[] zArr = new double[trackData.getDetections().size()];
+                for (int i = 0; i < trackData.getDetections().size(); i++) {
+                    DetectionData d = trackData.getDetections().get(i);
+                    ZPositionCalc.ZPosMmToProportion p = calc.findProportionOfZPos(d.getZ());
+                    xArr[i] = d.getX() * p.getpX();
+                    yArr[i] = d.getY() * p.getpX();
+                    zArr[i] = calc.zPosRelToMm(d.getZ());
                 }
+                trackData.setAverageVelocity(velocityKmPerH);
+                Log.d("Calculating Velocity of track: \nxArr: " + Arrays.toString(xArr) +
+                        "\nyArr: " + Arrays.toString(yArr) + "\nzArr: " + Arrays.toString(zArr) +
+                        "\nx1: " + firstDetection.getX() * p1.getpX() + "mm x2: " + lastDetection.getX() * p2.getpX() + "mm\n" +
+                        "y1: " + firstDetection.getY() * p1.getpX() + "mm y2: " + lastDetection.getY() * p2.getpX() + "mm\n" +
+                        "z1: " + firstDetection.getZ() + " z2: " + lastDetection.getZ() + "\n" +
+                        "velocity: " + velocityKmPerH + "km/h"
+                );
             }
         }
     }

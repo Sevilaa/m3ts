@@ -15,7 +15,6 @@ import com.google.audio.calculators.AudioCalculator;
 public class ImplAudioRecorderCallback implements com.google.audio.core.Callback {
     private static final int MAX_FREQUENCY = 13000;
     private static final int MIN_FREQUENCY = 8000;
-    private static final int MIN_DECIBEL = -20;
     private static final int TIME_BETWEEN_TWO_BOUNCES_MS = 500;
     private final AudioCalculator audioCalculator;
     private final Handler handler;
@@ -39,7 +38,7 @@ public class ImplAudioRecorderCallback implements com.google.audio.core.Callback
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    if ((frequency > MIN_FREQUENCY) && (frequency < MAX_FREQUENCY) && decibel > MIN_DECIBEL) {
+                    if ((frequency > MIN_FREQUENCY) && (frequency < MAX_FREQUENCY)) {
                         callback.onAudioBounceDetected();
                         timestampLastDetectedBounce = System.currentTimeMillis();
                     }

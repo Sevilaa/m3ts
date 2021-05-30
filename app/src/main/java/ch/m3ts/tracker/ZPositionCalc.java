@@ -70,10 +70,9 @@ public class ZPositionCalc {
             double mmPerPxX = a / videoWidthPx;
             double pxPerMM = Math.pow(mmPerPxX, -1.0);
             double ballRadiusPx = (pxPerMM * TABLE_TENNIS_BALL_DIAMETER_MM) / 2.0;
-            double mmPerPxY = (TABLE_TENNIS_BALL_DIAMETER_MM / 2) / ballRadiusPx;
-            double zPosMm = b - this.distanceTrackerToTableFrontEdgeMM;
+            double zPosMm = i * step;
             radiusToZPosObjTreeSet.add(new RadiusToZPosObj(ballRadiusPx, zPosMm));
-            proportionTreeSet.add(new ZPosMmToProportion(zPosMm, mmPerPxX, mmPerPxY));
+            proportionTreeSet.add(new ZPosMmToProportion(zPosMm, mmPerPxX));
             if (i == 0) {
                 Log.d("Ball has following radius on closest line: " + ballRadiusPx + "px (with zPos being: " + zPosMm + "mm)");
                 Log.d("Closest line is: " + (distanceTrackerToTableFrontEdgeMM - b) + "mm behind Front Edge of Table");
@@ -103,7 +102,7 @@ public class ZPositionCalc {
 
     public ZPosMmToProportion findProportionOfZPos(double zPosRel) {
         double zPosMm = zPosRelToMm(zPosRel);
-        ZPosMmToProportion proportion = proportionTreeSet.lower(new ZPosMmToProportion(zPosMm, 0, 0));
+        ZPosMmToProportion proportion = proportionTreeSet.lower(new ZPosMmToProportion(zPosMm, 0));
         if (proportion == null) {
             if (zPosRel >= 0.5) {
                 proportion = proportionTreeSet.last();
@@ -155,20 +154,14 @@ public class ZPositionCalc {
     public class ZPosMmToProportion implements Comparable {
         private final double zPosMm;
         private final double pX;
-        private final double pY;
 
-        public ZPosMmToProportion(double zPosMm, double pX, double pY) {
+        public ZPosMmToProportion(double zPosMm, double pX) {
             this.zPosMm = zPosMm;
             this.pX = pX;
-            this.pY = pY;
         }
 
         public double getpX() {
             return pX;
-        }
-
-        public double getpY() {
-            return pY;
         }
 
         @Override

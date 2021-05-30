@@ -11,7 +11,7 @@ import java.util.Arrays;
  * (frequencies where a bounce of a table tennis ball will spike)
  */
 public class FrequencyCalculator {
-    private static final double RELEVANT_FREQ_MAX = 11100.0;
+    private static final double RELEVANT_FREQ_MAX = 11000.0;
     private static final double RELEVANT_FREQ_MIN = 9500.0;
     private static final double MIN_DB = -75;
     private RealDoubleFFT spectrumAmpFFT;
