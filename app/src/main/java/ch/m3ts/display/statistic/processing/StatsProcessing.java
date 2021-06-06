@@ -185,8 +185,8 @@ public class StatsProcessing {
                 }
             }
             trackData.setDetections(detectionDataList);
-            Log.d(Arrays.toString(xArr.toArray()) + ";" +
-                    Arrays.toString(yArr.toArray()) + ";" + Arrays.toString(zArr.toArray()) + ";\n"
+            Log.d("x = " + Arrays.toString(xArr.toArray()) + ";y = " +
+                    Arrays.toString(yArr.toArray()) + ";z = " + Arrays.toString(zArr.toArray()) + ";\n"
             );
         }
     }
