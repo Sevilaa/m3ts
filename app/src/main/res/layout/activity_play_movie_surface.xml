@@ -26,12 +26,8 @@
             android:layout_alignTop="@id/play_stop_button"
             android:layout_toEndOf="@id/play_stop_button" />
 
-        <include
-            layout="@layout/debug_info"
-            android:visibility="invisible" />
+        <include layout="@layout/debug_info" />
 
-        <include
-            layout="@layout/debug_score_layout"
-            android:visibility="invisible" />
+        <include layout="@layout/debug_score_layout" />
     </RelativeLayout>
 </merge>
