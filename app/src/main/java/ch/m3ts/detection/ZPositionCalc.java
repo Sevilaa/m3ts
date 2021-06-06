@@ -19,21 +19,17 @@ public class ZPositionCalc {
     private TreeSet<RadiusToZPosObj> radiusToZPosObjTreeSet;
     private TreeSet<ZPosMmToProportion> proportionTreeSet;
     private final double horizontalViewAngle;
-    private final double videoWidthMM;
-    private final double videoWidthBackEdgeMM;
+    private final double videoWidthPx;
     private final double distanceTrackerToTableFrontEdgeMM;
     private final double distanceTrackerToTableBackEdgeMM;
     private final double ballRadiusFrontEdgePx;
-    private final double ballRadiusBackEdgePx;
-    private final double pxPerMMFrontEdge;
-    private final double pxPerMMBackEdge;
     private final double mmPerPixelFrontEdge;
-    private final double mmPerPixelBackEdge;
 
     public ZPositionCalc(double horizontalViewAngle, int tableLengthPixel, int videoWidthPixel) {
+        this.videoWidthPx = videoWidthPixel;
         this.mmPerPixelFrontEdge = TABLE_TENNIS_TABLE_LENGTH_MM / tableLengthPixel;
-        this.pxPerMMFrontEdge = Math.pow(this.mmPerPixelFrontEdge, -1.0);           // inverse
-        this.videoWidthMM = this.mmPerPixelFrontEdge * videoWidthPixel;
+        double pxPerMMFrontEdge = Math.pow(this.mmPerPixelFrontEdge, -1.0);           // inverse
+        double videoWidthMM = this.mmPerPixelFrontEdge * videoWidthPixel;
         this.horizontalViewAngle = horizontalViewAngle / 2.0;
         double a = videoWidthMM / 2.0;
         double c = a / Math.sin(Math.toRadians(this.horizontalViewAngle));
@@ -43,14 +39,14 @@ public class ZPositionCalc {
         Log.d("Distance to table front: " + distanceTrackerToTableFrontEdgeMM + "mm");
         Log.d("Distance to table back: " + distanceTrackerToTableBackEdgeMM + "mm");
 
-        this.videoWidthBackEdgeMM = (Math.tan(Math.toRadians(this.horizontalViewAngle)) * distanceTrackerToTableBackEdgeMM) * 2;
+        double videoWidthBackEdgeMM = (Math.tan(Math.toRadians(this.horizontalViewAngle)) * distanceTrackerToTableBackEdgeMM) * 2;
         Log.d("Width Front Side: " + videoWidthMM + "mm");
         Log.d("Width Back Edge: " + videoWidthBackEdgeMM + "mm");
 
-        this.mmPerPixelBackEdge = this.mmPerPixelFrontEdge * (this.videoWidthBackEdgeMM / this.videoWidthMM);       // should scale linearly
-        this.pxPerMMBackEdge = Math.pow(this.mmPerPixelBackEdge, -1.0);
+        double mmPerPixelBackEdge = this.mmPerPixelFrontEdge * (videoWidthBackEdgeMM / videoWidthMM);       // should scale linearly
+        double pxPerMMBackEdge = Math.pow(mmPerPixelBackEdge, -1.0);
         ballRadiusFrontEdgePx = (pxPerMMFrontEdge * TABLE_TENNIS_BALL_DIAMETER_MM) / 2;
-        ballRadiusBackEdgePx = (pxPerMMBackEdge * TABLE_TENNIS_BALL_DIAMETER_MM) / 2;
+        double ballRadiusBackEdgePx = (pxPerMMBackEdge * TABLE_TENNIS_BALL_DIAMETER_MM) / 2;
         Log.d("Ball radius between: " + ballRadiusFrontEdgePx + "px and " + ballRadiusBackEdgePx + "px");
         fillRadiusToZPosTree(videoWidthPixel);
     }
@@ -135,6 +131,10 @@ public class ZPositionCalc {
         return new double[]{distanceTrackerToTableFrontEdgeMM, distanceTrackerToTableBackEdgeMM};
     }
 
+    public double getVideoWidthPx() {
+        return videoWidthPx;
+    }
+
     private class RadiusToZPosObj implements Comparable {
         private final float radius;
         private final double zPosMm;
@@ -153,15 +153,15 @@ public class ZPositionCalc {
 
     public class ZPosMmToProportion implements Comparable {
         private final double zPosMm;
-        private final double pX;
+        private final double proportion;
 
-        public ZPosMmToProportion(double zPosMm, double pX) {
+        public ZPosMmToProportion(double zPosMm, double proportion) {
             this.zPosMm = zPosMm;
-            this.pX = pX;
+            this.proportion = proportion;
         }
 
-        public double getpX() {
-            return pX;
+        public double getProportion() {
+            return proportion;
         }
 
         @Override

@@ -3,8 +3,8 @@ package ch.m3ts.display.statistic.data;
 import java.io.Serializable;
 
 public class DetectionData implements Serializable {
-    private final int x;
-    private final int y;
+    private int y;
+    private int x;
     private double z;
     private final int directionX;
     private final float velocity;
@@ -17,6 +17,14 @@ public class DetectionData implements Serializable {
         this.velocity = velocity;
         this.wasBounce = wasBounce;
         this.directionX = directionX;
+    }
+
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    public void setY(int y) {
+        this.y = y;
     }
 
     public int getX() {

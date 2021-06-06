@@ -57,6 +57,7 @@ public class StatsCreator {
             detections = new ArrayList<>();
         }
         PointData point = new PointData(decision, trackDataList, winner, scoreLeft, scoreRight, ballSide, striker, server, duration);
+        StatsProcessing.calculatePositionsInMm(trackDataList, this.zCalc);
         StatsProcessing.recalculateVelocity(trackDataList, this.zCalc);
         point.setFastestStrikes();  // important to call this AFTER velocity has been recalculated
         if (points.isEmpty() && !games.isEmpty() && scoreLeft + scoreRight > 1) {

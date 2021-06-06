@@ -6,7 +6,7 @@ import java.util.List;
 import ch.m3ts.util.Side;
 
 public class TrackData implements Serializable {
-    private final List<DetectionData> detections;
+    private List<DetectionData> detections;
     private final Side striker;
     private float averageVelocity;
 
@@ -30,5 +30,9 @@ public class TrackData implements Serializable {
 
     public List<DetectionData> getDetections() {
         return detections;
+    }
+
+    public void setDetections(List<DetectionData> detections) {
+        this.detections = detections;
     }
 }

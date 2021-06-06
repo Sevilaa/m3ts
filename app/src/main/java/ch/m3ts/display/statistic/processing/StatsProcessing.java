@@ -31,15 +31,14 @@ public class StatsProcessing {
      */
     public static void recalculateVelocity(List<TrackData> trackDataList, ZPositionCalc calc) {
         for (TrackData trackData : trackDataList) {
+            if (trackData.getDetections().isEmpty()) continue;
             DetectionData lastDetection = trackData.getDetections().get(0);
             DetectionData firstDetection = trackData.getDetections().get(trackData.getDetections().size() - 1);
             if (lastDetection == firstDetection || trackData.getDetections().size() == 1 || calc == null) {
                 trackData.setAverageVelocity(0);
             } else {
-                ZPositionCalc.ZPosMmToProportion p1 = calc.findProportionOfZPos(firstDetection.getZ());
-                ZPositionCalc.ZPosMmToProportion p2 = calc.findProportionOfZPos(lastDetection.getZ());
-                double dx = Math.abs(lastDetection.getX() * p2.getpX() - firstDetection.getX() * p1.getpX());
-                double dy = Math.abs(lastDetection.getY() * p2.getpX() - firstDetection.getY() * p1.getpX());
+                double dx = Math.abs(lastDetection.getX() - firstDetection.getX());
+                double dy = Math.abs(lastDetection.getY() - firstDetection.getY());
                 double dz = Math.abs(lastDetection.getZ() - firstDetection.getZ()) * (ZPositionCalc.TABLE_TENNIS_TABLE_WIDTH_MM
                         + 2 * ZPositionCalc.MAX_OFFSET_MM);
                 double distanceInMm = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2) + Math.pow(dz, 2));
@@ -47,24 +46,7 @@ public class StatsProcessing {
                 double dTimeInS = (1 / FRAME_RATE) * (trackData.getDetections().size() - 1);
                 float velocityMPerS = (float) (distanceInM / dTimeInS);
                 float velocityKmPerH = velocityMPerS * 3.6f;
-                double[] xArr = new double[trackData.getDetections().size()];
-                double[] yArr = new double[trackData.getDetections().size()];
-                double[] zArr = new double[trackData.getDetections().size()];
-                for (int i = 0; i < trackData.getDetections().size(); i++) {
-                    DetectionData d = trackData.getDetections().get(i);
-                    ZPositionCalc.ZPosMmToProportion p = calc.findProportionOfZPos(d.getZ());
-                    xArr[i] = d.getX() * p.getpX();
-                    yArr[i] = d.getY() * p.getpX();
-                    zArr[i] = calc.zPosRelToMm(d.getZ());
-                }
                 trackData.setAverageVelocity(velocityKmPerH);
-                Log.d("Calculating Velocity of track: \nxArr: " + Arrays.toString(xArr) +
-                        "\nyArr: " + Arrays.toString(yArr) + "\nzArr: " + Arrays.toString(zArr) +
-                        "\nx1: " + firstDetection.getX() * p1.getpX() + "mm x2: " + lastDetection.getX() * p2.getpX() + "mm\n" +
-                        "y1: " + firstDetection.getY() * p1.getpX() + "mm y2: " + lastDetection.getY() * p2.getpX() + "mm\n" +
-                        "z1: " + firstDetection.getZ() + " z2: " + lastDetection.getZ() + "\n" +
-                        "velocity: " + velocityKmPerH + "km/h"
-                );
             }
         }
     }
@@ -175,5 +157,37 @@ public class StatsProcessing {
             strikes.put(track.getStriker(), strikes.get(track.getStriker()) + 1);
         }
         return strikes;
+    }
+
+    public static void calculatePositionsInMm(List<TrackData> trackDataList, ZPositionCalc calc) {
+        Log.d("x[mm];y[mm];z[mm];");
+        for (TrackData trackData : trackDataList) {
+            List<Double> xArr = new LinkedList();
+            List<Double> yArr = new LinkedList();
+            List<Double> zArr = new LinkedList();
+            List<DetectionData> detectionDataList = new LinkedList<>();
+            double videoWidthPx = calc.getVideoWidthPx();
+            for (int i = 0; i < trackData.getDetections().size(); i++) {
+                DetectionData d = trackData.getDetections().get(i);
+                ZPositionCalc.ZPosMmToProportion p = calc.findProportionOfZPos(d.getZ());
+                double wmm = videoWidthPx * p.getProportion();
+                double xmm = d.getX() * p.getProportion();
+                double ymm = d.getY() * p.getProportion();
+                double edgeLocLeft = wmm / 2 - ZPositionCalc.TABLE_TENNIS_TABLE_LENGTH_MM / 2.0;
+                xmm = xmm - edgeLocLeft;
+                if (xmm > 0 && xmm <= ZPositionCalc.TABLE_TENNIS_TABLE_LENGTH_MM) {
+                    xArr.add(xmm);
+                    yArr.add(ymm);
+                    zArr.add(calc.zPosRelToMm(d.getZ()));
+                    d.setX((int) xmm);
+                    d.setY((int) ymm);
+                    detectionDataList.add(d);
+                }
+            }
+            trackData.setDetections(detectionDataList);
+            Log.d(Arrays.toString(xArr.toArray()) + ";" +
+                    Arrays.toString(yArr.toArray()) + ";" + Arrays.toString(zArr.toArray()) + ";\n"
+            );
+        }
     }
 }

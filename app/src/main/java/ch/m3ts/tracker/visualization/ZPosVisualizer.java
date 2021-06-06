@@ -68,10 +68,11 @@ public class ZPosVisualizer {
         }
     }
 
-    public void drawZPos(Canvas canvas, DetectionData detectionData, int leftCornerX, int rightCornerX) {
-        Lib.Detection detection = new Lib.Detection();
-        detection.centerX = detectionData.getX();
-        detection.centerZ = detectionData.getZ();
-        drawZPos(canvas, detection, leftCornerX, rightCornerX);
+    public void drawZPos(Canvas canvas, DetectionData detectionData) {
+        // DetectionData is already filtered, no need to check if the detection is on table
+        float ratio = (float) (detectionData.getX() / ZPositionCalc.TABLE_TENNIS_TABLE_LENGTH_MM);
+        float x = originX + widthPx * ratio;
+        float y = Math.round(originY + heightFullPx - (float) detectionData.getZ() * heightFullPx);
+        canvas.drawCircle(x, y, 20, detectionPaint);
     }
 }
