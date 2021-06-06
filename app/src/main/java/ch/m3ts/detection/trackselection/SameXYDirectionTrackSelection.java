@@ -9,7 +9,8 @@ public class SameXYDirectionTrackSelection implements TrackSelectionStrategy {
     @Override
     public Track selectTrack(List<Track> tracks, int previousDirectionX, int previousDirectionY, int previousCenterX, int previousCenterY) {
         Track selectedTrack = null;
-        for (Track t : tracks) {
+        for (int i = tracks.size() - 1; i >= 0; i--) {
+            Track t = tracks.get(i);
             Lib.Detection d = t.getLatest();
             if (d.directionX == previousDirectionX && d.directionY == previousDirectionY && t.hasCrossedTable()) {
                 selectedTrack = t;
