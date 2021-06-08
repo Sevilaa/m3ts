@@ -34,7 +34,7 @@ public class PointData implements Serializable {
         this.duration = duration;
         this.isCorrection = refereeDecision.contains("deduction");
         StatsProcessing.putTogetherTracksOfSameStrikes(tracks);
-        StatsProcessing.averageZPositions(tracks);
+        //StatsProcessing.averageZPositions(tracks);
         this.strikes = StatsProcessing.countAmountOfStrikesOfBothSides(this.tracks);
     }
 
