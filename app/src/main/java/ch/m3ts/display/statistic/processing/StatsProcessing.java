@@ -90,42 +90,6 @@ public class StatsProcessing {
     }
 
     /**
-     * Averages the Z-Position of all tracks / detection using linear regression.
-     *
-     * @param tracks List of all tracks (f.e. of a point)
-     */
-    public static void averageZPositions(List<TrackData> tracks) {
-        for (TrackData track : tracks) {
-            List<DetectionData> detections = track.getDetections();
-            List<Double> x = new LinkedList<>();
-            List<Double> z = new LinkedList<>();
-
-            for (int i = 0; i < detections.size(); i++) {
-                if (detections.get(i).getZ() < OUTLIER_IGNORE_THRESHOLD) {
-                    x.add((double) detections.get(i).getX());
-                    z.add(detections.get(i).getZ());
-                }
-            }
-
-            if (!x.isEmpty() && !z.isEmpty()) {
-                double[] xArr = new double[x.size()];
-                double[] zArr = new double[z.size()];
-
-                for (int i = 0; i < x.size(); i++) {
-                    xArr[i] = x.get(i);
-                    zArr[i] = z.get(i);
-                }
-
-                LinearRegression linearRegression = new LinearRegression(xArr, zArr);
-                for (int i = 0; i < detections.size(); i++) {
-                    DetectionData detection = detections.get(i);
-                    detection.setZ(linearRegression.predict(detection.getX()));
-                }
-            }
-        }
-    }
-
-    /**
      * Finds the fastest strike/track of both players (Side.LEFT & Side.RIGHT).
      *
      * @param tracks list of all tracks (f.e. of a point)
