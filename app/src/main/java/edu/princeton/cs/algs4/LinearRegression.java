@@ -40,7 +40,7 @@ public class LinearRegression {
      */
     public LinearRegression(double[] x, double[] y) {
         if (x.length != y.length || x.length == 0) {
-            throw new IllegalArgumentException("array lengths are not equal");
+            throw new IllegalArgumentException("array lengths are not equal or have zero length!\nx.length: " + x.length + " y.length: " + y.length);
         }
         int n = x.length;
 

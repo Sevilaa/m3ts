@@ -9,11 +9,11 @@ import ch.m3ts.eventbus.EventBus;
 import ch.m3ts.eventbus.Subscribable;
 import ch.m3ts.eventbus.TTEvent;
 import ch.m3ts.eventbus.TTEventBus;
-import ch.m3ts.eventbus.data.game.GameWinData;
-import ch.m3ts.eventbus.data.game.GameWinResetData;
-import ch.m3ts.eventbus.data.todisplay.ToDisplayData;
-import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.eventbus.event.game.GameWinData;
+import ch.m3ts.eventbus.event.game.GameWinResetData;
+import ch.m3ts.eventbus.event.todisplay.ToDisplayData;
 import ch.m3ts.tabletennis.match.game.GameType;
+import ch.m3ts.util.Side;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -110,6 +110,7 @@ public class MatchTest {
         assertEquals(0, status.getWinsRight());
         assertEquals(0, status.getScoreRight());
         assertEquals(10, status.getScoreLeft());
+        TTEventBus.getInstance().unregister(match);
     }
 
     @Test

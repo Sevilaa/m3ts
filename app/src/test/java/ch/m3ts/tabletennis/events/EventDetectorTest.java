@@ -4,13 +4,15 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import ch.m3ts.detection.EventDetectionListener;
+import ch.m3ts.detection.EventDetector;
+import ch.m3ts.detection.ZPositionCalc;
 import ch.m3ts.eventbus.Event;
 import ch.m3ts.eventbus.Subscribable;
 import ch.m3ts.eventbus.TTEventBus;
-import ch.m3ts.eventbus.data.eventdetector.EventDetectorEventData;
-import ch.m3ts.tabletennis.Table;
-import ch.m3ts.tabletennis.helper.Side;
-import ch.m3ts.tracker.ZPositionCalc;
+import ch.m3ts.eventbus.event.ball.EventDetectorEventData;
+import ch.m3ts.util.Side;
+import ch.m3ts.util.Table;
 import cz.fmo.Lib;
 import cz.fmo.data.Track;
 import cz.fmo.data.TrackSet;
@@ -70,6 +72,7 @@ public class EventDetectorTest {
         when(mockConfig.getObjectRadius()).thenReturn(10f);
         when(mockCalc.getMmPerPixelFrontEdge()).thenReturn(99999.9);
         when(mockCalc.isBallZPositionOnTable(anyDouble())).thenReturn(true);
+        when(mockCalc.getVideoWidthPx()).thenReturn(1280.0);
         stubListener = new StubListener(mockCallback);
         TTEventBus.getInstance().register(stubListener);
     }

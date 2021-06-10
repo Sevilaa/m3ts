@@ -2,6 +2,7 @@
     "http://java.sun.com/dtd/properties.dtd">
 <properties>
     <comment>table location (2 corners)</comment>
+    <entry key="servingSide">RIGHT</entry>
     <entry key="c1_x">55</entry>
     <entry key="c1_y">547</entry>
     <entry key="c2_x">1215</entry>

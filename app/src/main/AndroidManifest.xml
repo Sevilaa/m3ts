@@ -30,17 +30,17 @@
         <activity
             android:name="ch.m3ts.display.MatchWonActivity"
             android:label="@string/app_name"
-            android:screenOrientation="unspecified"
+            android:screenOrientation="landscape"
             android:configChanges="orientation|screenSize" />
         <activity
-            android:name="ch.m3ts.display.stats.StatsActivity"
+            android:name="ch.m3ts.display.statistic.StatsActivity"
             android:label="@string/app_name"
             android:screenOrientation="landscape"
             android:configChanges="orientation|screenSize" />
         <activity
             android:name="ch.m3ts.tutorial.TutorialActivity"
             android:label="@string/app_name"
-            android:screenOrientation="unspecified"
+            android:screenOrientation="landscape"
             android:configChanges="orientation|screenSize" />
         <activity
             android:name="ch.m3ts.tracker.init.InitTrackerActivity"

@@ -5,7 +5,7 @@ import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.util.Side;
 
 /**
  * Helper class of Game.

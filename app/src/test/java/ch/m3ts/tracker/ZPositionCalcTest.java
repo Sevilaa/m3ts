@@ -3,6 +3,8 @@ package ch.m3ts.tracker;
 import org.junit.Before;
 import org.junit.Test;
 
+import ch.m3ts.detection.ZPositionCalc;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

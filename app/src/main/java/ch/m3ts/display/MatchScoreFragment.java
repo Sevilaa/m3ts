@@ -3,6 +3,8 @@ package ch.m3ts.display;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Fragment;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.MediaPlayer;
@@ -27,14 +29,14 @@ import ch.m3ts.eventbus.Event;
 import ch.m3ts.eventbus.Subscribable;
 import ch.m3ts.eventbus.TTEvent;
 import ch.m3ts.eventbus.TTEventBus;
-import ch.m3ts.eventbus.data.StatusUpdateData;
-import ch.m3ts.eventbus.data.scoremanipulation.PauseMatch;
-import ch.m3ts.eventbus.data.scoremanipulation.PointAddition;
-import ch.m3ts.eventbus.data.scoremanipulation.PointDeduction;
-import ch.m3ts.eventbus.data.scoremanipulation.ResumeMatch;
-import ch.m3ts.eventbus.data.todisplay.ToDisplayData;
-import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.eventbus.event.StatusUpdateData;
+import ch.m3ts.eventbus.event.scoremanipulation.PauseMatch;
+import ch.m3ts.eventbus.event.scoremanipulation.PointAddition;
+import ch.m3ts.eventbus.event.scoremanipulation.PointDeduction;
+import ch.m3ts.eventbus.event.scoremanipulation.ResumeMatch;
+import ch.m3ts.eventbus.event.todisplay.ToDisplayData;
 import ch.m3ts.tabletennis.match.DisplayUpdateListener;
+import ch.m3ts.util.Side;
 import cz.fmo.R;
 import cz.fmo.util.Config;
 
@@ -43,6 +45,8 @@ import cz.fmo.util.Config;
  * Displays f.e. the current score, current amount of games won by each sides, the current servers.
  */
 public class MatchScoreFragment extends EventBusSubscribedFragment implements DisplayUpdateListener, Subscribable {
+    private static final String TAG_MATCH_SCORE = "MATCH_SCORE";
+    private static final String IS_MIRRORED_ARG_KEY = "mirrored";
     private final int MAX_SCORE = 11;
     private String ttsWin;
     private String ttsSide;
@@ -56,11 +60,32 @@ public class MatchScoreFragment extends EventBusSubscribedFragment implements Di
     private int scoreLeft;
     private int scoreRight;
     private AlertDialog matchEndDialog;
+    private boolean isMirrored;
+    private FragmentReplaceCallback callback;
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        // This makes sure that the container activity has implemented
+        // the callback interface. If not, it throws an exception
+        try {
+            callback = (FragmentReplaceCallback) context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString()
+                    + " must implement FragmentReplaceListener");
+        }
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View v = inflater.inflate(R.layout.fragment_match_score, container, false);
+        int layout = R.layout.fragment_match_score;
+        Bundle bundle = getArguments();
+        this.isMirrored = false;
+        if (bundle != null) this.isMirrored = bundle.getBoolean(IS_MIRRORED_ARG_KEY, false);
+        if (this.isMirrored) layout = R.layout.fragment_match_score_mirrored;
+        View v = inflater.inflate(layout, container, false);
         this.connection = ((MatchActivity) getActivity()).getConnection();
         initTTS();
         this.mediaPlayer = MediaPlayer.create(getContext(), R.raw.success);
@@ -90,7 +115,24 @@ public class MatchScoreFragment extends EventBusSubscribedFragment implements Di
             }
         });
         setOnSwipeListener(v);
+        setMirrorButtonListener(v);
         return v;
+    }
+
+    private void setMirrorButtonListener(View v) {
+        final ImageButton mirrorButton = v.findViewById(R.id.btnMirrorLayout);
+        mirrorButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                isMirrored = !isMirrored;
+                Fragment fragment = new MatchScoreFragment();
+                Bundle bundle = new Bundle();
+                bundle.putBoolean(IS_MIRRORED_ARG_KEY, isMirrored);
+                fragment.setArguments(bundle);
+                callback.replaceFragment(fragment, TAG_MATCH_SCORE);
+                connection.requestStatusUpdate();
+            }
+        });
     }
 
     @Override
@@ -253,7 +295,7 @@ public class MatchScoreFragment extends EventBusSubscribedFragment implements Di
     @SuppressLint("ClickableViewAccessibility")
     private void setOnSwipeListener(View v) {
         if (connection != null) {
-            v.setOnTouchListener(new OnSwipeListener(this.getContext()) {
+            v.setOnTouchListener(new OnSwipeListener(this.getContext(), this.isMirrored) {
                 @Override
                 public void onSwipeDown(Side swipeSide) {
                     TTEventBus.getInstance().dispatch(new TTEvent<>(new PointDeduction(swipeSide)));

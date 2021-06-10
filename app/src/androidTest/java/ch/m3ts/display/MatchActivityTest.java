@@ -27,7 +27,10 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.rule.GrantPermissionRule;
 import androidx.test.runner.AndroidJUnit4;
-import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.eventbus.TTEvent;
+import ch.m3ts.eventbus.TTEventBus;
+import ch.m3ts.eventbus.event.StatusUpdateData;
+import ch.m3ts.util.Side;
 import cz.fmo.R;
 import cz.fmo.util.Config;
 import helper.GrantPermission;
@@ -224,16 +227,24 @@ public class MatchActivityTest extends InstrumentationTestCase {
         assertEquals("0"+scoreRight, textView.getText());
 
         // invoke onWin and check if values match (need to separate onScore and onWin as onWin clears the score points)
-        getInstrumentation().runOnMainSync(new Runnable(){
-            public void run(){
+        getInstrumentation().runOnMainSync(new Runnable() {
+            public void run() {
                 matchScoreFragment.onWin(Side.LEFT, winsLeft);
                 matchScoreFragment.onWin(Side.RIGHT, winsRight);
             }
         });
         textView = matchActivity.findViewById(R.id.left_games);
-        assertEquals("0"+winsLeft, textView.getText());
+        assertEquals("0" + winsLeft, textView.getText());
         textView = matchActivity.findViewById(R.id.right_games);
-        assertEquals("0"+winsRight, textView.getText());
+        assertEquals("0" + winsRight, textView.getText());
+
+        // click on mirror-button
+        onView(withId(R.id.btnMirrorLayout)).perform(click());
+        TTEventBus.getInstance().dispatch(new TTEvent<>(new StatusUpdateData("hans", "peter", 3, 5, 1, 0, Side.RIGHT, 3)));
+        onView(withId(R.id.right_name)).check(matches(withText("peter")));
+        onView(withId(R.id.left_name)).check(matches(withText("hans")));
+        onView(withId(R.id.right_score)).check(matches(withText("05")));
+
         getInstrumentation().runOnMainSync(new Runnable() {
             public void run() {
                 matchScoreFragment.onMatchEnded(Side.LEFT.toString());

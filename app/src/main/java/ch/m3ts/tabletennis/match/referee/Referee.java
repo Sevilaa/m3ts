@@ -13,28 +13,28 @@ import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import ch.m3ts.display.stats.StatsCreator;
+import ch.m3ts.detection.EventDetectionListener;
+import ch.m3ts.detection.gesture.ReadyToServeCallback;
+import ch.m3ts.display.statistic.StatsCreator;
 import ch.m3ts.eventbus.Event;
 import ch.m3ts.eventbus.Subscribable;
 import ch.m3ts.eventbus.TTEvent;
 import ch.m3ts.eventbus.TTEventBus;
-import ch.m3ts.eventbus.data.GestureData;
-import ch.m3ts.eventbus.data.eventdetector.EventDetectorEventData;
-import ch.m3ts.eventbus.data.scoremanipulation.ScoreManipulationData;
-import ch.m3ts.eventbus.data.todisplay.InvalidServeData;
-import ch.m3ts.eventbus.data.todisplay.ReadyToServeData;
-import ch.m3ts.eventbus.data.todisplay.ScoreData;
-import ch.m3ts.tabletennis.events.EventDetectionListener;
-import ch.m3ts.tabletennis.events.gesture.ReadyToServeCallback;
-import ch.m3ts.tabletennis.helper.DirectionX;
-import ch.m3ts.tabletennis.helper.Duration;
-import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.eventbus.event.GestureData;
+import ch.m3ts.eventbus.event.ball.EventDetectorEventData;
+import ch.m3ts.eventbus.event.scoremanipulation.ScoreManipulationData;
+import ch.m3ts.eventbus.event.todisplay.InvalidServeData;
+import ch.m3ts.eventbus.event.todisplay.ReadyToServeData;
+import ch.m3ts.eventbus.event.todisplay.ScoreData;
 import ch.m3ts.tabletennis.match.game.Game;
 import ch.m3ts.tabletennis.match.game.GameCallback;
 import ch.m3ts.tabletennis.match.game.ScoreManipulationListener;
 import ch.m3ts.tabletennis.timeouts.OutOfFrameTimerTask;
 import ch.m3ts.util.CSVStringBuilder;
+import ch.m3ts.util.DirectionX;
+import ch.m3ts.util.Duration;
 import ch.m3ts.util.Log;
+import ch.m3ts.util.Side;
 import cz.fmo.Lib;
 import cz.fmo.data.Track;
 import cz.fmo.util.Config;
@@ -133,7 +133,8 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
         }
         int scoreLeft = this.currentGame.getScore(Side.LEFT);
         int scoreRight = this.currentGame.getScore(Side.RIGHT);
-        StatsCreator.getInstance().addPoint(lastDecision, lastPointWinner, scoreLeft, scoreRight, this.strikes, this.currentBallSide, this.currentStriker, lastServer, this.duration.getSeconds(), this.strikeLogs);
+        StatsCreator.getInstance().addPoint(lastDecision, lastPointWinner, scoreLeft, scoreRight,
+                this.currentBallSide, this.currentStriker, lastServer, this.duration.getSeconds(), this.strikeLogs);
         this.strikeLogs = new ArrayList<>();
     }
 
@@ -403,11 +404,7 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
         this.state = State.WAIT_FOR_SERVE;
         this.currentBallSide = getServer();
         this.currentStriker = Side.getOpposite(getServer());
-        if (this.isUsingReadyToServeGesture) {
-            TTEventBus.getInstance().dispatch(new TTEvent<>(new ReadyToServeData(getServer())));
-        }
         this.duration.reset();
-        TTEventBus.getInstance().register(this);
     }
 
     public void deactivateReadyToServeGesture() {
@@ -417,7 +414,6 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
     private void pause() {
         this.state = State.PAUSE;
         cancelTimers();
-        TTEventBus.getInstance().unregister(this);
     }
 
     private void cancelTimers() {
@@ -491,6 +487,9 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
     @Override
     public void onGestureDetected() {
         resume();
+        if (this.isUsingReadyToServeGesture) {
+            TTEventBus.getInstance().dispatch(new TTEvent<>(new ReadyToServeData(getServer())));
+        }
     }
 
     @Override

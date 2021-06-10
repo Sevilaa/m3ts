@@ -10,7 +10,7 @@ import org.mockito.Mockito;
 
 import java.util.List;
 
-import ch.m3ts.display.stats.DetectionData;
+import ch.m3ts.display.statistic.data.DetectionData;
 import cz.fmo.Lib;
 
 import static org.junit.Assert.assertEquals;
@@ -18,7 +18,6 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyFloat;
-import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -98,14 +97,12 @@ public class ZPosVisualizerTest {
 
     @Test
     public void drawZPosOverloaded() {
-        int tableCornerLeftX = 10;
-        int tableCornerRightX = 100;
         zPosVisualizer = Mockito.spy(zPosVisualizer);
         DetectionData detectionData = new DetectionData(15, 20, .8, 66, false, 1);
-        zPosVisualizer.drawZPos(canvas, detectionData, tableCornerLeftX, tableCornerRightX);
+        zPosVisualizer.drawZPos(canvas, detectionData);
 
         // verify that the same drawZPos method gets called when using detectionData
-        verify(zPosVisualizer, times(1)).drawZPos((Canvas) any(), (Lib.Detection) any(), anyInt(), anyInt());
+        verify(zPosVisualizer, times(1)).drawZPos((Canvas) any(), (DetectionData) any());
         verify(canvas, times(1)).drawCircle(anyFloat(), anyFloat(), anyFloat(), (Paint) any());
     }
 
@@ -115,16 +112,16 @@ public class ZPosVisualizerTest {
         d1.centerZ = .5;
         Lib.Detection d2 = new Lib.Detection();
         d2.centerX = rightCornerX - 1;
-        d2.centerZ = .9;
+        d2.centerZ = .8;
         Lib.Detection d3 = new Lib.Detection();
         d3.centerX = (int) Math.round(rightCornerX * .5);
-        d3.centerZ = .01;
+        d3.centerZ = .2;
         Lib.Detection d4 = new Lib.Detection();
         d4.centerX = rightCornerX;
-        d4.centerZ = 1;
+        d4.centerZ = .9;
         Lib.Detection d5 = new Lib.Detection();
         d5.centerX = leftCornerX;
-        d5.centerZ = 0;
+        d5.centerZ = .1;
 
         return new Lib.Detection[]{
                 d1, d2, d3, d4, d5

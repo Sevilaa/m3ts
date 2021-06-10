@@ -3,7 +3,6 @@ package cz.fmo.data;
 import android.util.SparseArray;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -14,7 +13,7 @@ import cz.fmo.util.Config;
  * Latest detected tracks that are meant to be kept on screen to allow inspection by the user.
  */
 public class TrackSet {
-    private static final int FRAMES_UNTIL_OLD_TRACK_REMOVAL = 2;
+    private static final float FRAMES_UNTIL_OLD_TRACK_REMOVAL = 1f;
     private final Object mLock = new Object();
     private final ArrayList<Track> mTracks = new ArrayList<>();
     private Config mConfig = null;

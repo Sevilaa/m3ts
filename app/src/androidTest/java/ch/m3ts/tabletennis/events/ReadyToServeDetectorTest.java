@@ -16,10 +16,10 @@ import androidx.test.filters.LargeTest;
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.runner.AndroidJUnit4;
 import ch.m3ts.MainActivity;
-import ch.m3ts.tabletennis.Table;
-import ch.m3ts.tabletennis.events.gesture.ReadyToServeCallback;
-import ch.m3ts.tabletennis.events.gesture.ReadyToServeDetector;
-import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.detection.gesture.ReadyToServeCallback;
+import ch.m3ts.detection.gesture.ReadyToServeDetector;
+import ch.m3ts.util.Side;
+import ch.m3ts.util.Table;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

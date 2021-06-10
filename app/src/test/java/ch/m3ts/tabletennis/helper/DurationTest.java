@@ -5,6 +5,8 @@ import org.junit.Test;
 
 import java.util.Random;
 
+import ch.m3ts.util.Duration;
+
 import static org.junit.Assert.assertEquals;
 
 public class DurationTest {

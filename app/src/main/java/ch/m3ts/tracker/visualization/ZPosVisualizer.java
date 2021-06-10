@@ -3,8 +3,8 @@ package ch.m3ts.tracker.visualization;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 
-import ch.m3ts.display.stats.DetectionData;
-import ch.m3ts.tracker.ZPositionCalc;
+import ch.m3ts.detection.ZPositionCalc;
+import ch.m3ts.display.statistic.data.DetectionData;
 import cz.fmo.Lib;
 
 public class ZPosVisualizer {
@@ -60,7 +60,7 @@ public class ZPosVisualizer {
     }
 
     public void drawZPos(Canvas canvas, Lib.Detection detection, int leftCornerX, int rightCornerX) {
-        if (detection.centerX >= leftCornerX && detection.centerX <= rightCornerX && detection.centerZ <= 1.0 && detection.centerZ >= 0.0) {
+        if (detection.centerX >= leftCornerX && detection.centerX <= rightCornerX && detection.centerZ < 1.0 && detection.centerZ > 0.0) {
             float ratio = (float) detection.centerX / (Math.abs(rightCornerX - leftCornerX));
             float x = originX + widthPx * ratio;
             float y = Math.round(originY + heightFullPx - (float) detection.centerZ * heightFullPx);
@@ -68,10 +68,11 @@ public class ZPosVisualizer {
         }
     }
 
-    public void drawZPos(Canvas canvas, DetectionData detectionData, int leftCornerX, int rightCornerX) {
-        Lib.Detection detection = new Lib.Detection();
-        detection.centerX = detectionData.getX();
-        detection.centerZ = detectionData.getZ();
-        drawZPos(canvas, detection, leftCornerX, rightCornerX);
+    public void drawZPos(Canvas canvas, DetectionData detectionData) {
+        // DetectionData is already filtered, no need to check if the detection is on table
+        float ratio = (float) (detectionData.getX() / ZPositionCalc.TABLE_TENNIS_TABLE_LENGTH_MM);
+        float x = originX + widthPx * ratio;
+        float y = Math.round(originY + heightFullPx - (float) detectionData.getZ() * heightFullPx);
+        canvas.drawCircle(x, y, 20, detectionPaint);
     }
 }

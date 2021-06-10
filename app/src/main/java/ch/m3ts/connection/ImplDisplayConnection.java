@@ -14,25 +14,25 @@ import java.io.ObjectInputStream;
 import ch.m3ts.connection.pubnub.ByteToBase64;
 import ch.m3ts.connection.pubnub.JSONInfo;
 import ch.m3ts.display.DisplayConnectCallback;
-import ch.m3ts.display.stats.MatchStats;
+import ch.m3ts.display.statistic.data.MatchData;
 import ch.m3ts.eventbus.Event;
 import ch.m3ts.eventbus.EventBus;
 import ch.m3ts.eventbus.Subscribable;
 import ch.m3ts.eventbus.TTEvent;
 import ch.m3ts.eventbus.TTEventBus;
-import ch.m3ts.eventbus.data.RequestStatsData;
-import ch.m3ts.eventbus.data.RestartMatchData;
-import ch.m3ts.eventbus.data.StatsData;
-import ch.m3ts.eventbus.data.StatusUpdateData;
-import ch.m3ts.eventbus.data.scoremanipulation.ScoreManipulationData;
-import ch.m3ts.eventbus.data.todisplay.InvalidServeData;
-import ch.m3ts.eventbus.data.todisplay.MatchEndedData;
-import ch.m3ts.eventbus.data.todisplay.ReadyToServeData;
-import ch.m3ts.eventbus.data.todisplay.ScoreData;
-import ch.m3ts.eventbus.data.todisplay.ToDisplayGameWinData;
-import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.eventbus.event.RequestStatsData;
+import ch.m3ts.eventbus.event.RestartMatchData;
+import ch.m3ts.eventbus.event.StatsData;
+import ch.m3ts.eventbus.event.StatusUpdateData;
+import ch.m3ts.eventbus.event.scoremanipulation.ScoreManipulationData;
+import ch.m3ts.eventbus.event.todisplay.InvalidServeData;
+import ch.m3ts.eventbus.event.todisplay.MatchEndedData;
+import ch.m3ts.eventbus.event.todisplay.ReadyToServeData;
+import ch.m3ts.eventbus.event.todisplay.ScoreData;
+import ch.m3ts.eventbus.event.todisplay.ToDisplayGameWinData;
 import ch.m3ts.tabletennis.match.game.ScoreManipulationListener;
 import ch.m3ts.util.Log;
+import ch.m3ts.util.Side;
 
 public abstract class ImplDisplayConnection extends Callback implements ScoreManipulationListener, DisplayConnection, Subscribable {
     protected DisplayConnectCallback displayConnectCallback;
@@ -188,7 +188,7 @@ public abstract class ImplDisplayConnection extends Callback implements ScoreMan
                     byte[] b = android.util.Base64.decode(this.encodedMultipartComplete, android.util.Base64.DEFAULT);
                     ByteArrayInputStream bi = new ByteArrayInputStream(b);
                     ObjectInputStream si = new ObjectInputStream(bi);
-                    MatchStats stats = (MatchStats) si.readObject();
+                    MatchData stats = (MatchData) si.readObject();
                     TTEventBus.getInstance().dispatch(new TTEvent<>(new StatsData(stats)));
                 } catch (Exception e) {
                     Log.d("Failed to serialize Stats:" + e.getMessage());

@@ -2,7 +2,6 @@ package ch.m3ts.util;
 
 import java.util.List;
 
-import ch.m3ts.tabletennis.helper.Side;
 import cz.fmo.Lib;
 import cz.fmo.data.Track;
 

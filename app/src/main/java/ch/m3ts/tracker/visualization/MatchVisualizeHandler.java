@@ -12,7 +12,6 @@ import android.util.DisplayMetrics;
 import android.view.SurfaceHolder;
 import android.widget.TextView;
 
-import com.google.audio.ImplAudioRecorderCallback;
 import com.google.audio.core.Recorder;
 
 import org.opencv.android.OpenCVLoader;
@@ -22,23 +21,23 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Timer;
 
+import ch.m3ts.detection.EventDetectionListener;
+import ch.m3ts.detection.EventDetector;
+import ch.m3ts.detection.ZPositionCalc;
+import ch.m3ts.detection.audio.AudioBounceDetection;
+import ch.m3ts.detection.gesture.ReadyToServeDetector;
 import ch.m3ts.display.OnSwipeListener;
-import ch.m3ts.display.stats.StatsCreator;
+import ch.m3ts.display.statistic.StatsCreator;
 import ch.m3ts.eventbus.Event;
 import ch.m3ts.eventbus.EventBus;
 import ch.m3ts.eventbus.Subscribable;
 import ch.m3ts.eventbus.TTEvent;
 import ch.m3ts.eventbus.TTEventBus;
-import ch.m3ts.eventbus.data.GestureData;
-import ch.m3ts.eventbus.data.eventdetector.EventDetectorEventData;
-import ch.m3ts.eventbus.data.scoremanipulation.PointAddition;
-import ch.m3ts.eventbus.data.scoremanipulation.PointDeduction;
-import ch.m3ts.eventbus.data.todisplay.ToDisplayData;
-import ch.m3ts.tabletennis.Table;
-import ch.m3ts.tabletennis.events.EventDetectionListener;
-import ch.m3ts.tabletennis.events.EventDetector;
-import ch.m3ts.tabletennis.events.gesture.ReadyToServeDetector;
-import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.eventbus.event.GestureData;
+import ch.m3ts.eventbus.event.ball.EventDetectorEventData;
+import ch.m3ts.eventbus.event.scoremanipulation.PointAddition;
+import ch.m3ts.eventbus.event.scoremanipulation.PointDeduction;
+import ch.m3ts.eventbus.event.todisplay.ToDisplayData;
 import ch.m3ts.tabletennis.match.DisplayUpdateListener;
 import ch.m3ts.tabletennis.match.Match;
 import ch.m3ts.tabletennis.match.MatchSettings;
@@ -46,8 +45,9 @@ import ch.m3ts.tabletennis.match.MatchType;
 import ch.m3ts.tabletennis.match.Player;
 import ch.m3ts.tabletennis.match.ServeRules;
 import ch.m3ts.tabletennis.match.game.GameType;
-import ch.m3ts.tracker.ZPositionCalc;
 import ch.m3ts.util.Log;
+import ch.m3ts.util.Side;
+import ch.m3ts.util.Table;
 import cz.fmo.Lib;
 import cz.fmo.R;
 import cz.fmo.data.Track;
@@ -141,9 +141,9 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     @Override
     public void onBounce(Lib.Detection detection, Side ballBouncedOnSide) {
         latestBounce = detection;
-        /*final MatchVisualizeActivity activity = mActivity.get();
+        final MatchVisualizeActivity activity = mActivity.get();
         final TextView mBounceCountText = activity.getmBounceCountText();
-        newBounceCount = Integer.parseInt(mBounceCountText.getText().toString()) + 1;*/
+        newBounceCount = Integer.parseInt(mBounceCountText.getText().toString()) + 1;
     }
 
     @Override
@@ -291,9 +291,10 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         this.videoScaling = new VideoScaling(srcWidth, srcHeight);
         this.config = config;
         ZPositionCalc calc = new ZPositionCalc(viewingAngle, table.getWidth(), srcWidth);
+        StatsCreator.getInstance().setZCalc(calc);
         this.eventDetector = new EventDetector(config, srcWidth, srcHeight, tracks, this.table, calc);
         if (useAudio)
-            this.audioRecorder = new Recorder(new ImplAudioRecorderCallback(this.eventDetector));
+            this.audioRecorder = new Recorder(new AudioBounceDetection(this.eventDetector));
         this.match.getReferee().initState();
         StatsCreator.getInstance().addTableCorners(table.getCornerDownLeft().x, table.getCornerDownRight().x);
     }
@@ -485,7 +486,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         if (match != null) {
             mActivity.get().runOnUiThread(new Runnable() {
                 public void run() {
-                    mActivity.get().getmSurfaceView().setOnTouchListener(new OnSwipeListener(mActivity.get()) {
+                    mActivity.get().getmSurfaceView().setOnTouchListener(new OnSwipeListener(mActivity.get(), false) {
                         @Override
                         public void onSwipeDown(Side swipeSide) {
                             TTEventBus.getInstance().dispatch(new TTEvent<>(new PointDeduction(swipeSide)));

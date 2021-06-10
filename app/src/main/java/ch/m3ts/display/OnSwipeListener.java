@@ -6,7 +6,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
-import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.util.Side;
 
 /**
  * Custom SwipeListener View which implements calls events on vertical and horizontal swipes.
@@ -14,9 +14,11 @@ import ch.m3ts.tabletennis.helper.Side;
  */
 public class OnSwipeListener implements View.OnTouchListener {
     private final GestureDetector gestureDetector;
+    private final boolean mirrored;
 
-    public OnSwipeListener(Context context) {
+    public OnSwipeListener(Context context, boolean mirrored) {
         gestureDetector = new GestureDetector(context, new GestureListener());
+        this.mirrored = mirrored;
     }
 
     public void onSwipeLeft() {
@@ -67,6 +69,7 @@ public class OnSwipeListener implements View.OnTouchListener {
                 if (e1.getX() < displayWidth / 2) {
                     swipeSide = Side.LEFT;
                 }
+                if (mirrored) swipeSide = Side.getOpposite(swipeSide);
                 if (distanceY > 0) {
                     onSwipeDown(swipeSide);
                 } else {

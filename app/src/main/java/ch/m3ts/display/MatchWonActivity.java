@@ -12,7 +12,7 @@ import android.widget.TextView;
 import java.util.Locale;
 
 import ch.m3ts.MainActivity;
-import ch.m3ts.display.stats.StatsActivity;
+import ch.m3ts.display.statistic.StatsActivity;
 import cz.fmo.R;
 import cz.fmo.util.Config;
 

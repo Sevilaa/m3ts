@@ -168,4 +168,22 @@
         android:padding="8dp"
         android:src="@android:drawable/ic_media_pause"
         tools:src="@android:drawable/ic_media_pause" />
+
+    <ImageButton
+        android:id="@+id/btnMirrorLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/radius_background"
+        android:backgroundTint="@color/primary_dark"
+        android:contentDescription="Mirror Layout"
+        android:elevation="8dp"
+        android:padding="8dp"
+        android:src="@drawable/swap"
+        tools:src="@drawable/swap" />
 </RelativeLayout>

@@ -14,25 +14,25 @@ import java.io.ObjectOutputStream;
 import ch.m3ts.connection.pubnub.ByteToBase64;
 import ch.m3ts.connection.pubnub.CameraBytesConversions;
 import ch.m3ts.connection.pubnub.JSONInfo;
-import ch.m3ts.display.stats.MatchStats;
-import ch.m3ts.display.stats.StatsCreator;
+import ch.m3ts.display.statistic.StatsCreator;
+import ch.m3ts.display.statistic.data.MatchData;
 import ch.m3ts.eventbus.Event;
 import ch.m3ts.eventbus.Subscribable;
 import ch.m3ts.eventbus.TTEvent;
 import ch.m3ts.eventbus.TTEventBus;
-import ch.m3ts.eventbus.data.RestartMatchData;
-import ch.m3ts.eventbus.data.StatusUpdateData;
-import ch.m3ts.eventbus.data.scoremanipulation.PauseMatch;
-import ch.m3ts.eventbus.data.scoremanipulation.PointAddition;
-import ch.m3ts.eventbus.data.scoremanipulation.PointDeduction;
-import ch.m3ts.eventbus.data.scoremanipulation.ResumeMatch;
-import ch.m3ts.eventbus.data.todisplay.ToDisplayData;
-import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.eventbus.event.RestartMatchData;
+import ch.m3ts.eventbus.event.StatusUpdateData;
+import ch.m3ts.eventbus.event.scoremanipulation.PauseMatch;
+import ch.m3ts.eventbus.event.scoremanipulation.PointAddition;
+import ch.m3ts.eventbus.event.scoremanipulation.PointDeduction;
+import ch.m3ts.eventbus.event.scoremanipulation.ResumeMatch;
+import ch.m3ts.eventbus.event.todisplay.ToDisplayData;
 import ch.m3ts.tabletennis.match.DisplayUpdateListener;
 import ch.m3ts.tabletennis.match.MatchStatus;
 import ch.m3ts.tabletennis.match.MatchStatusCallback;
 import ch.m3ts.tracker.init.InitTrackerCallback;
 import ch.m3ts.util.Log;
+import ch.m3ts.util.Side;
 
 public abstract class ImplTrackerConnection extends Callback implements TrackerConnection, DisplayUpdateListener, Subscribable {
     protected static final int MAX_SIZE = 10000;
@@ -121,7 +121,7 @@ public abstract class ImplTrackerConnection extends Callback implements TrackerC
         try {
             ByteArrayOutputStream bo = new ByteArrayOutputStream();
             ObjectOutputStream so = new ObjectOutputStream(bo);
-            MatchStats stats = StatsCreator.getInstance().createStats();
+            MatchData stats = StatsCreator.getInstance().createStats();
             so.writeObject(stats);
             so.flush();
             String encodedStats = android.util.Base64.encodeToString(bo.toByteArray(), Base64.DEFAULT);

@@ -28,6 +28,6 @@
 
         <include layout="@layout/debug_info" />
 
-    <include layout="@layout/debug_score_layout" />
+        <include layout="@layout/debug_score_layout" />
     </RelativeLayout>
 </merge>

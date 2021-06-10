@@ -30,12 +30,12 @@ import android.widget.Toast;
 
 import java.io.IOException;
 
-import ch.m3ts.tabletennis.Table;
-import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.tracker.visualization.MatchVisualizeActivity;
 import ch.m3ts.tracker.visualization.replay.lib.SpeedControlCallback;
 import ch.m3ts.tracker.visualization.replay.lib.VideoPlayer;
 import ch.m3ts.util.Log;
+import ch.m3ts.util.Side;
+import ch.m3ts.util.Table;
 import ch.m3ts.util.XMLLoader;
 import cz.fmo.R;
 import cz.fmo.graphics.EGL;

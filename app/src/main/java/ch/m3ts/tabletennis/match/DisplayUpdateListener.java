@@ -1,6 +1,6 @@
 package ch.m3ts.tabletennis.match;
 
-import ch.m3ts.tabletennis.helper.Side;
+import ch.m3ts.util.Side;
 
 /**
  * Provides methods on which a Table Tennis Scoreboard needs to be refreshed on.

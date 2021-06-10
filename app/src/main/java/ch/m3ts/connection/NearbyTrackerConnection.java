@@ -23,8 +23,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import ch.m3ts.connection.pubnub.JSONInfo;
-import ch.m3ts.tabletennis.helper.Side;
 import ch.m3ts.util.Log;
+import ch.m3ts.util.Side;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
