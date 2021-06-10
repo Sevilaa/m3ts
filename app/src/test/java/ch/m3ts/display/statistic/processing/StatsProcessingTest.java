@@ -13,7 +13,6 @@ import ch.m3ts.util.DirectionX;
 import ch.m3ts.util.Side;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 
 public class StatsProcessingTest {
     List<TrackData> trackDataList;
@@ -47,32 +46,16 @@ public class StatsProcessingTest {
 
     @Test
     public void putTogetherTracksOfSameStrikes() {
+        trackDataList.get(0).getDetections().add(new DetectionData(9, 10, 1, 100f, false, DirectionX.RIGHT));
+        trackDataList.get(1).getDetections().add(new DetectionData(19, 10, 1, 100f, false, DirectionX.RIGHT));
+        trackDataList.get(2).getDetections().add(new DetectionData(29, 10, 1, 100f, false, DirectionX.RIGHT));
+        trackDataList.get(3).getDetections().add(new DetectionData(26, 10, 1, 100f, false, DirectionX.LEFT));
+        trackDataList.get(4).getDetections().add(new DetectionData(16, 10, 1, 100f, false, DirectionX.LEFT));
         StatsProcessing.putTogetherTracksOfSameStrikes(trackDataList);
         assertEquals(2, trackDataList.size());
         // try again, no change expected
         StatsProcessing.putTogetherTracksOfSameStrikes(trackDataList);
         assertEquals(2, trackDataList.size());
-    }
-
-    @Test
-    public void averageZPositions() {
-        trackDataList = new LinkedList<>();
-        detectionDataArr = new DetectionData[]{
-                new DetectionData(10, 10, 1, 100f, false, DirectionX.RIGHT),
-                new DetectionData(20, 10, 2, 200f, false, DirectionX.RIGHT),
-                new DetectionData(30, 10, 5, 300f, false, DirectionX.RIGHT),
-        };
-        List<DetectionData> detectionDataList = new LinkedList<>();
-        detectionDataList.add(detectionDataArr[0]);
-        detectionDataList.add(detectionDataArr[1]);
-        detectionDataList.add(detectionDataArr[2]);
-        List<TrackData> trackDataList = new LinkedList<>();
-        trackDataList.add(new TrackData(detectionDataList, 100f, Side.LEFT));
-        StatsProcessing.averageZPositions(trackDataList);
-        assertNotEquals(1.0, trackDataList.get(0).getDetections().get(0).getZ());
-        assertNotEquals(2.0, trackDataList.get(0).getDetections().get(1).getZ());
-        assertNotEquals(5.0, trackDataList.get(0).getDetections().get(2).getZ());
-        assertEquals(3, trackDataList.get(0).getDetections().size());
     }
 
     @Test

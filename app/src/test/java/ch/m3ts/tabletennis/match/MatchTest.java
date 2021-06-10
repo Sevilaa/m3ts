@@ -110,6 +110,7 @@ public class MatchTest {
         assertEquals(0, status.getWinsRight());
         assertEquals(0, status.getScoreRight());
         assertEquals(10, status.getScoreLeft());
+        TTEventBus.getInstance().unregister(match);
     }
 
     @Test

@@ -1,6 +1,5 @@
 package ch.m3ts.display.statistic.processing;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -12,7 +11,6 @@ import java.util.Map;
 import ch.m3ts.detection.ZPositionCalc;
 import ch.m3ts.display.statistic.data.DetectionData;
 import ch.m3ts.display.statistic.data.TrackData;
-import ch.m3ts.util.Log;
 import ch.m3ts.util.Side;
 import edu.princeton.cs.algs4.LinearRegression;
 
@@ -124,44 +122,47 @@ public class StatsProcessing {
     }
 
     public static void calculatePositionsInMm(List<TrackData> trackDataList, ZPositionCalc calc) {
-        Log.d("x[mm];y[mm];z[mm];");
         for (TrackData trackData : trackDataList) {
             List<Double> xPositions = new LinkedList();
-            List<Double> yArr = new LinkedList();
             List<Double> zPositions = new LinkedList();
             List<DetectionData> detectionDataList = new LinkedList<>();
-            double videoWidthPx = calc.getVideoWidthPx();
-            for (int i = 0; i < trackData.getDetections().size(); i++) {
-                DetectionData d = trackData.getDetections().get(i);
-                ZPositionCalc.ZPosMmToProportion p = calc.findProportionOfZPos(d.getZ());
-                double wmm = videoWidthPx * p.getProportion();
-                double xmm = d.getX() * p.getProportion();
-                double ymm = d.getY() * p.getProportion();
-                double edgeLocLeft = wmm / 2 - ZPositionCalc.TABLE_TENNIS_TABLE_LENGTH_MM / 2.0;
-                xmm = xmm - edgeLocLeft;
-                if (xmm > 0 && xmm <= ZPositionCalc.TABLE_TENNIS_TABLE_LENGTH_MM) {
-                    xPositions.add(xmm);
-                    yArr.add(ymm);
-                    zPositions.add(calc.zPosRelToMm(d.getZ()));
-                    d.setX((int) xmm);
-                    d.setY((int) ymm);
-                    detectionDataList.add(d);
+            if (calc != null) {
+                double videoWidthPx = calc.getVideoWidthPx();
+                for (int i = 0; i < trackData.getDetections().size(); i++) {
+                    DetectionData d = trackData.getDetections().get(i);
+                    ZPositionCalc.ZPosMmToProportion p = calc.findProportionOfZPos(d.getZ());
+                    double wmm = videoWidthPx * p.getProportion();
+                    double xmm = d.getX() * p.getProportion();
+                    double ymm = d.getY() * p.getProportion();
+                    double edgeLocLeft = wmm / 2 - ZPositionCalc.TABLE_TENNIS_TABLE_LENGTH_MM / 2.0;
+                    xmm = xmm - edgeLocLeft;
+                    if (xmm > 0 && xmm <= ZPositionCalc.TABLE_TENNIS_TABLE_LENGTH_MM) {
+                        xPositions.add(xmm);
+                        zPositions.add(calc.zPosRelToMm(d.getZ()));
+                        d.setX((int) xmm);
+                        d.setY((int) ymm);
+                        detectionDataList.add(d);
+                    }
                 }
+                smoothXAndZPositions(xPositions, zPositions);
+                for (int i = 0; i < detectionDataList.size(); i++) {
+                    DetectionData d = detectionDataList.get(i);
+                    if (d.getX() == xPositions.get(i)) {
+                        d.setZ(zPositions.get(i));
+                    }
+                }
+                trackData.setDetections(detectionDataList);
             }
-            smoothXAndZPositions(xPositions, zPositions);
-            trackData.setDetections(detectionDataList);
-            Log.d("x = " + Arrays.toString(xPositions.toArray()) + ";y = " +
-                    Arrays.toString(yArr.toArray()) + ";z = " + Arrays.toString(zPositions.toArray()) + ";\n"
-            );
         }
     }
 
     private static void smoothXAndZPositions(List<Double> xPositions, List<Double> zPositions) {
         if (!xPositions.isEmpty() && !zPositions.isEmpty()) {
             LinearRegression linearRegression = calcLinRegFromLists(xPositions, zPositions);
-
-            for (int i = 0; i < xPositions.size(); i++) {
-                zPositions.set(i, Math.min(linearRegression.predict(xPositions.get(i)), ZPositionCalc.TABLE_TENNIS_TABLE_WIDTH_MM + 2 * ZPositionCalc.MAX_OFFSET_MM));
+            if (linearRegression != null) {
+                for (int i = 0; i < xPositions.size(); i++) {
+                    zPositions.set(i, Math.min(linearRegression.predict(xPositions.get(i)), ZPositionCalc.TABLE_TENNIS_TABLE_WIDTH_MM + 2 * ZPositionCalc.MAX_OFFSET_MM));
+                }
             }
         }
     }
@@ -184,7 +185,10 @@ public class StatsProcessing {
             x[i] = xCopy.get(i);
             z[i] = zCopy.get(i);
         }
-
-        return new LinearRegression(x, z);
+        if (xCopy.isEmpty()) {
+            return null;
+        } else {
+            return new LinearRegression(x, z);
+        }
     }
 }

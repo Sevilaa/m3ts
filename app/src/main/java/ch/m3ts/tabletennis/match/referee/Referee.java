@@ -133,7 +133,8 @@ public class Referee implements EventDetectionListener, ScoreManipulationListene
         }
         int scoreLeft = this.currentGame.getScore(Side.LEFT);
         int scoreRight = this.currentGame.getScore(Side.RIGHT);
-        StatsCreator.getInstance().addPoint(lastDecision, lastPointWinner, scoreLeft, scoreRight, this.strikes, this.currentBallSide, this.currentStriker, lastServer, this.duration.getSeconds(), this.strikeLogs);
+        StatsCreator.getInstance().addPoint(lastDecision, lastPointWinner, scoreLeft, scoreRight,
+                this.currentBallSide, this.currentStriker, lastServer, this.duration.getSeconds(), this.strikeLogs);
         this.strikeLogs = new ArrayList<>();
     }
 

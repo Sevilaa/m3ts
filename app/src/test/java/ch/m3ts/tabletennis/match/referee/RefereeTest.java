@@ -330,6 +330,7 @@ public class RefereeTest {
         referee.onPause();
         referee.onResume();
         assertSame(State.WAIT_FOR_SERVE, referee.getState());
+        TTEventBus.getInstance().unregister(subscribable);
     }
 
     @After

@@ -44,7 +44,7 @@ public class StatsCreator {
         this.tableCorners.put(Side.RIGHT, tableCornerRight);
     }
 
-    public void addPoint(String decision, Side winner, int scoreLeft, int scoreRight, int strikes, Side ballSide, Side striker, Side server, int duration, List<Track> tracks) {
+    public void addPoint(String decision, Side winner, int scoreLeft, int scoreRight, Side ballSide, Side striker, Side server, int duration, List<Track> tracks) {
         List<DetectionData> detections = new ArrayList<>();
         List<TrackData> trackDataList = new ArrayList<>();
         for (Track track : tracks) {

@@ -72,6 +72,7 @@ public class EventDetectorTest {
         when(mockConfig.getObjectRadius()).thenReturn(10f);
         when(mockCalc.getMmPerPixelFrontEdge()).thenReturn(99999.9);
         when(mockCalc.isBallZPositionOnTable(anyDouble())).thenReturn(true);
+        when(mockCalc.getVideoWidthPx()).thenReturn(1280.0);
         stubListener = new StubListener(mockCallback);
         TTEventBus.getInstance().register(stubListener);
     }
