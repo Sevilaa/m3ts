@@ -100,8 +100,7 @@ public abstract class ImplDisplayConnection extends Callback implements ScoreMan
         this.displayConnectCallback = displayConnectCallback;
     }
 
-    protected void handleMessage(JSONObject json) {
-        try {
+    protected void handleMessage(JSONObject json) {        try {
             String event = json.getString(JSONInfo.EVENT_PROPERTY);
             EventBus eventBus = TTEventBus.getInstance();
             if (event != null) {

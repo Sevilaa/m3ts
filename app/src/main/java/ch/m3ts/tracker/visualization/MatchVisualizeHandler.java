@@ -84,7 +84,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     private int newBounceCount;
     private boolean waitingForGesture = false;
     private Recorder audioRecorder;
-    private ZPosVisualizer zPosVisualizer;
+    private final ZPosVisualizer zPosVisualizer;
     private boolean hasEnded = false;
 
     public MatchVisualizeHandler(@NonNull MatchVisualizeActivity activity) {
@@ -164,21 +164,18 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
         if (activity == null) {
             return;
         }
-        activity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (activity.ismSurfaceHolderReady()) {
-                    SurfaceHolder surfaceHolder = activity.getmSurfaceTrack().getHolder();
-                    Canvas canvas = surfaceHolder.lockCanvas();
-                    if (canvas == null) {
-                        return;
-                    }
-                    initVideoScaling(canvas);
-                    drawDebugInfo(canvas, track);
-                    surfaceHolder.unlockCanvasAndPost(canvas);
+        activity.runOnUiThread(() -> {
+            if (activity.ismSurfaceHolderReady()) {
+                SurfaceHolder surfaceHolder = activity.getmSurfaceTrack().getHolder();
+                Canvas canvas = surfaceHolder.lockCanvas();
+                if (canvas == null) {
+                    return;
                 }
-                updateTextViews(track);
+                initVideoScaling(canvas);
+                drawDebugInfo(canvas, track);
+                surfaceHolder.unlockCanvasAndPost(canvas);
             }
+            updateTextViews(track);
         });
     }
 
@@ -473,32 +470,23 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
             return;
         }
         final TextView txtView = activity.findViewById(id);
-        activity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                txtView.setText(text);
-            }
-        });
+        activity.runOnUiThread(() -> txtView.setText(text));
     }
 
     @SuppressLint("ClickableViewAccessibility")
     private void setOnSwipeListener() {
         if (match != null) {
-            mActivity.get().runOnUiThread(new Runnable() {
-                public void run() {
-                    mActivity.get().getmSurfaceView().setOnTouchListener(new OnSwipeListener(mActivity.get(), false) {
-                        @Override
-                        public void onSwipeDown(Side swipeSide) {
-                            TTEventBus.getInstance().dispatch(new TTEvent<>(new PointDeduction(swipeSide)));
-                        }
-
-                        @Override
-                        public void onSwipeUp(Side swipeSide) {
-                            TTEventBus.getInstance().dispatch(new TTEvent<>(new PointAddition(swipeSide)));
-                        }
-                    });
+            mActivity.get().runOnUiThread(() -> mActivity.get().getmSurfaceView().setOnTouchListener(new OnSwipeListener(mActivity.get(), false) {
+                @Override
+                public void onSwipeDown(Side swipeSide) {
+                    TTEventBus.getInstance().dispatch(new TTEvent<>(new PointDeduction(swipeSide)));
                 }
-            });
+
+                @Override
+                public void onSwipeUp(Side swipeSide) {
+                    TTEventBus.getInstance().dispatch(new TTEvent<>(new PointAddition(swipeSide)));
+                }
+            }));
         }
     }
 }

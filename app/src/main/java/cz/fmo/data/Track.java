@@ -17,8 +17,8 @@ public class Track {
     private Lib.Detection mLatest;
     private float mLatestDx = 0;
     private float mLatestDy = 0;
-    private Color.HSV mColorHSV = new Color.HSV();
-    private Color.RGBA mColorRGBA = new Color.RGBA();
+    private final Color.HSV mColorHSV = new Color.HSV();
+    private final Color.RGBA mColorRGBA = new Color.RGBA();
     private long mLastDetectionTime;
     private float mMaxVelocity;
     private float mAvgVelocity;

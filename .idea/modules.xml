@@ -4,7 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/Appprogrammierung.m3ts.iml" filepath="$PROJECT_DIR$/.idea/modules/Appprogrammierung.m3ts.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/Appprogrammierung.m3ts.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/Appprogrammierung.m3ts.app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/m3ts.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/m3ts.app.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/OpenCV-android-sdk/sdk/sdk.m3ts.opencv_final.iml" filepath="$PROJECT_DIR$/.idea/modules/OpenCV-android-sdk/sdk/sdk.m3ts.opencv_final.iml" />
     </modules>
   </component>
