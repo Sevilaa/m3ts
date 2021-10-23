@@ -1,12 +1,13 @@
 package ch.m3ts.detection;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
+import ch.m3ts.connection.TrackerConnection;
 import ch.m3ts.detection.audio.AudioBounceDetection;
 import ch.m3ts.detection.timeouts.TimeoutTimerTask;
 import ch.m3ts.detection.trackselection.ChooseNewestTrackSelection;
@@ -70,6 +71,7 @@ public class EventDetector implements Lib.Callback, AudioBounceDetection.Callbac
     private final TrackSelectionStrategy trackSelectionStrategy;
     private boolean checkForBallMovingIntoNet;
     private boolean checkForSideChange;
+    private TrackerConnection connection;
 
     public EventDetector(Config config, int srcWidth, int srcHeight, TrackSet trackSet, @NonNull Table table, ZPositionCalc calc) {
         this.eventBus = TTEventBus.getInstance();
@@ -91,6 +93,10 @@ public class EventDetector implements Lib.Callback, AudioBounceDetection.Callbac
         this.checkForSideChange = true;
         this.trackSelectionStrategy = new ChooseNewestTrackSelection();
         trackSet.setConfig(config);
+    }
+
+    public void setConnection(TrackerConnection connection){
+        this.connection = connection;
     }
 
     @Override
@@ -191,6 +197,9 @@ public class EventDetector implements Lib.Callback, AudioBounceDetection.Callbac
         // save current selected Track
         if (selectedTrack != null) {
             currentTrack = selectedTrack;
+            if(connection != null) {
+                connection.sendTrack(currentTrack);
+            }
         }
         return selectedTrack;
     }

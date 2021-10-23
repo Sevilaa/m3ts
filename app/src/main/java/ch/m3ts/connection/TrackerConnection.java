@@ -3,6 +3,7 @@ package ch.m3ts.connection;
 import ch.m3ts.tabletennis.match.MatchStatusCallback;
 import ch.m3ts.tracker.init.InitTrackerCallback;
 import ch.m3ts.util.Side;
+import cz.fmo.data.Track;
 
 public interface TrackerConnection {
     void setTrackerPubNubCallback(MatchStatusCallback callback);
@@ -10,4 +11,6 @@ public interface TrackerConnection {
     void setInitTrackerCallback(InitTrackerCallback initTrackerCallback);
 
     void sendStatusUpdate(String playerNameLeft, String playerNameRight, int scoreLeft, int scoreRight, int winsLeft, int winsRight, Side nextServer, int gamesNeededToWin);
+
+    void sendTrack(Track track);
 }

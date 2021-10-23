@@ -1,10 +1,13 @@
 package ch.m3ts.connection.pubnub;
 
+import android.graphics.Color;
+
 import com.pubnub.api.Callback;
 import com.pubnub.api.Pubnub;
 import com.pubnub.api.PubnubError;
 import com.pubnub.api.PubnubException;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -15,6 +18,8 @@ import ch.m3ts.connection.ImplTrackerConnection;
 import ch.m3ts.eventbus.TTEventBus;
 import ch.m3ts.util.Log;
 import ch.m3ts.util.Side;
+import cz.fmo.Lib;
+import cz.fmo.data.Track;
 
 public class PubNubTrackerConnection extends ImplTrackerConnection {
     private static final String JSON_SEND_EXCEPTION_MESSAGE = "Unable to send JSON to channel ";
@@ -97,5 +102,30 @@ public class PubNubTrackerConnection extends ImplTrackerConnection {
         } catch (JSONException ex) {
             Log.d(JSON_SEND_EXCEPTION_MESSAGE + this.roomID + "\n" + ex.getMessage());
         }
+    }
+
+    @Override
+    public void sendTrack(Track track) {
+        Lib.Detection latest = track.getLatest();
+        JSONObject json = new JSONObject();
+        JSONArray array = new JSONArray();
+        while (latest != null){
+            int color = Color.rgb(Math.round(track.getColor().rgba[0]), Math.round(track.getColor().rgba[1]), Math.round(track.getColor().rgba[2]));
+            try {
+                array.put(latest.centerX);
+                array.put(latest.centerY);
+                array.put(latest.centerZ);
+                array.put(color);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            latest = latest.predecessor;
+        }
+        try {
+            json.put("Track", array);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        sendData(json);
     }
 }

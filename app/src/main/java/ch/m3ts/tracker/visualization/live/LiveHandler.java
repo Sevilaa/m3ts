@@ -1,8 +1,9 @@
 package ch.m3ts.tracker.visualization.live;
 
-import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
 
 import com.google.android.gms.nearby.connection.PayloadCallback;
 
@@ -31,6 +32,7 @@ import ch.m3ts.tracker.visualization.MatchVisualizeHandler;
 import ch.m3ts.util.Log;
 import ch.m3ts.util.OpenCVHelper;
 import ch.m3ts.util.Side;
+import ch.m3ts.util.Table;
 import cz.fmo.Lib;
 import cz.fmo.R;
 import cz.fmo.camera.CameraThread;
@@ -52,6 +54,7 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
     public LiveHandler(@NonNull MatchVisualizeActivity activity, String matchID) {
         super(activity);
         this.doDrawDebugInfo = new Config(activity).isUseDebug();
+
         this.mLiveActivity = new WeakReference<>((LiveActivity) activity);
         TextView displayConnectedText = (TextView) activity.findViewById(R.id.display_connected_status);
         try {
@@ -125,6 +128,12 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
     }
 
     @Override
+    public void init(Config config, int srcWidth, int srcHeight, Table table, double viewingAngle) {
+        super.init(config, srcWidth, srcHeight, table, viewingAngle);
+        eventDetector.setConnection(connection);
+    }
+
+    @Override
     public void onStrikeFound(Track track) {
         if(doDrawDebugInfo) {
             super.onStrikeFound(track);
@@ -134,7 +143,7 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
     @Override
     public void onSideChange(final Side side) {
         // use the referees current striker (might be different then side in parameter!)
-        if(doDrawDebugInfo) {
+        if (doDrawDebugInfo) {
             super.onSideChange(side);
         }
     }

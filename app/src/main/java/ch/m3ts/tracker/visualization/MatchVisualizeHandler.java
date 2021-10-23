@@ -7,10 +7,11 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
-import android.support.annotation.NonNull;
 import android.util.DisplayMetrics;
 import android.view.SurfaceHolder;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
 
 import com.google.audio.core.Recorder;
 
@@ -69,7 +70,7 @@ public class MatchVisualizeHandler extends android.os.Handler implements EventDe
     private final TrackSet tracks;
     protected Match match;
     protected MatchSettings matchSettings;
-    private EventDetector eventDetector;
+    protected EventDetector eventDetector;
     private ReadyToServeDetector serveDetector;
     private Paint tablePaint;
     private Paint outOfFramePaint;

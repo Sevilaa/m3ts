@@ -1,7 +1,10 @@
 package ch.m3ts.connection;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import android.content.Context;
-import android.support.annotation.NonNull;
+
+import androidx.annotation.NonNull;
 
 import com.google.android.gms.nearby.Nearby;
 import com.google.android.gms.nearby.connection.ConnectionInfo;
@@ -25,8 +28,7 @@ import org.json.JSONObject;
 import ch.m3ts.connection.pubnub.JSONInfo;
 import ch.m3ts.util.Log;
 import ch.m3ts.util.Side;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
+import cz.fmo.data.Track;
 
 public class NearbyTrackerConnection extends ImplTrackerConnection {
     private static final NearbyTrackerConnection instance = new NearbyTrackerConnection();
@@ -60,18 +62,12 @@ public class NearbyTrackerConnection extends ImplTrackerConnection {
                 new DiscoveryOptions.Builder().setStrategy(Strategy.P2P_POINT_TO_POINT).build();
         connection.startDiscovery(ConnectionHelper.SERVICE_ID, endpointDiscoveryCallback, discoveryOptions)
                 .addOnSuccessListener(
-                        new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void unused) {
-                                // We're discovering!
-                            }
+                        unused -> {
+                            // We're discovering!
                         })
                 .addOnFailureListener(
-                        new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                // We're unable to start discovering.
-                            }
+                        e -> {
+                            // We're unable to start discovering.
                         });
     }
 
@@ -101,20 +97,14 @@ public class NearbyTrackerConnection extends ImplTrackerConnection {
                 advertiserEndpointID = s;
                 connection.requestConnection(ID, advertiserEndpointID, connectionLifecycleCallback)
                         .addOnSuccessListener(
-                                new OnSuccessListener<Void>() {
-                                    @Override
-                                    public void onSuccess(Void unused) {
-                                        // We successfully requested a connection. Now both sides
-                                        // must accept before the connection is established.
-                                    }
+                                unused -> {
+                                    // We successfully requested a connection. Now both sides
+                                    // must accept before the connection is established.
                                 })
                         .addOnFailureListener(
-                                new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(@NonNull Exception e) {
-                                        // Nearby Connections failed to request the connection.
-                                        Log.d(e.getMessage() + "");
-                                    }
+                                e -> {
+                                    // Nearby Connections failed to request the connection.
+                                    Log.d(e.getMessage() + "");
                                 });
             }
 
@@ -187,5 +177,10 @@ public class NearbyTrackerConnection extends ImplTrackerConnection {
             doContinue = false;
         }
         createPart(json, encodedData, index + 1, numberOfPackages, doContinue);
+    }
+
+    @Override
+    public void sendTrack(Track track) {
+        //Only needed with Hololens where PubNub is used
     }
 }
