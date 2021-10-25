@@ -106,6 +106,9 @@ public class PubNubTrackerConnection extends ImplTrackerConnection {
 
     @Override
     public void sendTrack(Track track) {
+        if(track == null){
+            return;
+        }
         Lib.Detection latest = track.getLatest();
         JSONObject json = new JSONObject();
         JSONArray array = new JSONArray();
