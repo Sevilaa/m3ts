@@ -102,6 +102,7 @@ public abstract class ImplTrackerConnection extends Callback implements TrackerC
 
     @Override
     public void onScore(Side side, int score, Side nextServer, Side lastServer) {
+        Log.d("Sending in ImplTrackerConnection.java");
         send(ConnectionEvent.SCORE, side.toString(), score, null, nextServer);
         try {
             JSONObject json = new JSONObject();

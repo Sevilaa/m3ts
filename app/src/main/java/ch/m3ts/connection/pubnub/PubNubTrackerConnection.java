@@ -90,6 +90,8 @@ public class PubNubTrackerConnection extends ImplTrackerConnection {
     }
 
     protected void send(String event, String side, Integer score, Integer wins, Side nextServer) {
+        Log.d("Sending nearby auxiliary data!");
+
         try {
             JSONObject json = new JSONObject();
             json.put(JSONInfo.SIDE_PROPERTY, side);
@@ -106,7 +108,9 @@ public class PubNubTrackerConnection extends ImplTrackerConnection {
 
     @Override
     public void sendTrack(Track track) {
+        Log.d("Sending Track!!");
         if(track == null){
+            Log.d("Track is null!");
             return;
         }
         Lib.Detection latest = track.getLatest();
@@ -121,14 +125,17 @@ public class PubNubTrackerConnection extends ImplTrackerConnection {
                 array.put(color);
             } catch (JSONException e) {
                 e.printStackTrace();
+                Log.d("Failed to put coordinates into JSON File!");
             }
             latest = latest.predecessor;
         }
         try {
             json.put("Track", array);
         } catch (JSONException e) {
+            Log.d("Failed to assemble Track JSON File!");
             e.printStackTrace();
         }
+        Log.d("Length of JSON File: "+json.length() + "################################################################################");
         sendData(json);
     }
 }

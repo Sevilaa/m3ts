@@ -8,6 +8,7 @@ import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 import ch.m3ts.connection.TrackerConnection;
+import ch.m3ts.connection.udpClient;
 import ch.m3ts.detection.audio.AudioBounceDetection;
 import ch.m3ts.detection.timeouts.TimeoutTimerTask;
 import ch.m3ts.detection.trackselection.ChooseNewestTrackSelection;
@@ -26,6 +27,7 @@ import ch.m3ts.eventbus.event.ball.StrikerSideChangeData;
 import ch.m3ts.eventbus.event.ball.TableSideChangeData;
 import ch.m3ts.util.DirectionX;
 import ch.m3ts.util.DirectionY;
+import ch.m3ts.util.Log;
 import ch.m3ts.util.Side;
 import ch.m3ts.util.Table;
 import cz.fmo.Lib;
@@ -72,6 +74,7 @@ public class EventDetector implements Lib.Callback, AudioBounceDetection.Callbac
     private boolean checkForBallMovingIntoNet;
     private boolean checkForSideChange;
     private TrackerConnection connection;
+    private udpClient UDPClient;
 
     public EventDetector(Config config, int srcWidth, int srcHeight, TrackSet trackSet, @NonNull Table table, ZPositionCalc calc) {
         this.eventBus = TTEventBus.getInstance();
@@ -93,6 +96,7 @@ public class EventDetector implements Lib.Callback, AudioBounceDetection.Callbac
         this.checkForSideChange = true;
         this.trackSelectionStrategy = new ChooseNewestTrackSelection();
         trackSet.setConfig(config);
+        UDPClient = new udpClient("192.168.1.250");
     }
 
     public void setConnection(TrackerConnection connection){
@@ -199,6 +203,8 @@ public class EventDetector implements Lib.Callback, AudioBounceDetection.Callbac
             currentTrack = selectedTrack;
             if(connection != null) {
                 connection.sendTrack(currentTrack);
+                //UDPClient.sendUDPPacket("Sending current Track!");
+                //Log.d("Sending current Track!");
             }
         }
         return selectedTrack;

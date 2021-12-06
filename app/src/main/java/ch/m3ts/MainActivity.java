@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -117,7 +118,10 @@ public class MainActivity extends Activity {
         Intent intent = new Intent(this, MatchActivity.class);
         Bundle bundle = new Bundle();
         bundle.putBoolean("isRestartedMatch", false);
+        String hololensIP = ((EditText)findViewById(R.id.hololensIPText)).toString();
+        bundle.putString("hololensIP",hololensIP);
         intent.putExtras(bundle);
+        //intent.putExtra("hololensIP",hololensIP);
         startActivity(intent);
     }
 

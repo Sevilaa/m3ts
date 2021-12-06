@@ -79,6 +79,17 @@
                     android:text="@string/mainDisplayBtnLabel"
                     android:textColor="#fff"
                     android:textSize="18sp"/>
+
+                <EditText
+                    android:id="@+id/hololensIPText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:ems="10"
+                    android:inputType="textPersonName"
+                    android:text="HoloLens IP address"
+                    tools:visibility="visible" />
             </GridLayout>
 
             <ImageButton

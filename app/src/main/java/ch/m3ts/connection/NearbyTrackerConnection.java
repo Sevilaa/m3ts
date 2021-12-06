@@ -41,6 +41,7 @@ public class NearbyTrackerConnection extends ImplTrackerConnection {
     private ConnectionCallback connectionCallback;
     private String advertiserEndpointID = "";
     private String endpointName = "";
+    private udpClient UDPClient;
 
     private NearbyTrackerConnection() {
     }
@@ -50,6 +51,7 @@ public class NearbyTrackerConnection extends ImplTrackerConnection {
     }
 
     public void init(Context context) {
+        this.UDPClient = new udpClient("192.168.1.250");
         this.connection = Nearby.getConnectionsClient(context.getApplicationContext());
         initCallbacks();
     }
@@ -149,13 +151,17 @@ public class NearbyTrackerConnection extends ImplTrackerConnection {
 
 
     protected void send(String event, String side, Integer score, Integer wins, Side nextServer) {
+        Log.d("Sending in NearbyTrackerConnection.java");
         try {
             JSONObject json = new JSONObject();
             json.put(JSONInfo.SIDE_PROPERTY, side);
             json.put(JSONInfo.SCORE_PROPERTY, score);
             json.put(JSONInfo.WINS_PROPERTY, wins);
             json.put(JSONInfo.EVENT_PROPERTY, event);
+            Log.d("Sending UDP");
+            UDPClient.sendString("Event happened!");
             json.put(JSONInfo.NEXT_SERVER_PROPERTY, nextServer);
+            //UDPClient.sendData(json);
             sendData(json);
         } catch (JSONException ex) {
             Log.d(JSON_SEND_EXCEPTION_MESSAGE + this.advertiserEndpointID + "\n" + ex.getMessage());
