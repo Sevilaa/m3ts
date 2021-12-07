@@ -7,8 +7,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
-import ch.m3ts.connection.TrackerConnection;
-import ch.m3ts.connection.udpClient;
+import ch.m3ts.connection.UDPClient;
 import ch.m3ts.detection.audio.AudioBounceDetection;
 import ch.m3ts.detection.timeouts.TimeoutTimerTask;
 import ch.m3ts.detection.trackselection.ChooseNewestTrackSelection;
@@ -27,7 +26,6 @@ import ch.m3ts.eventbus.event.ball.StrikerSideChangeData;
 import ch.m3ts.eventbus.event.ball.TableSideChangeData;
 import ch.m3ts.util.DirectionX;
 import ch.m3ts.util.DirectionY;
-import ch.m3ts.util.Log;
 import ch.m3ts.util.Side;
 import ch.m3ts.util.Table;
 import cz.fmo.Lib;
@@ -73,8 +71,7 @@ public class EventDetector implements Lib.Callback, AudioBounceDetection.Callbac
     private final TrackSelectionStrategy trackSelectionStrategy;
     private boolean checkForBallMovingIntoNet;
     private boolean checkForSideChange;
-    private TrackerConnection connection;
-    private udpClient UDPClient;
+    private UDPClient udpClient;
 
     public EventDetector(Config config, int srcWidth, int srcHeight, TrackSet trackSet, @NonNull Table table, ZPositionCalc calc) {
         this.eventBus = TTEventBus.getInstance();
@@ -96,11 +93,10 @@ public class EventDetector implements Lib.Callback, AudioBounceDetection.Callbac
         this.checkForSideChange = true;
         this.trackSelectionStrategy = new ChooseNewestTrackSelection();
         trackSet.setConfig(config);
-        UDPClient = new udpClient("192.168.1.250");
     }
 
-    public void setConnection(TrackerConnection connection){
-        this.connection = connection;
+    public void setUDPClient(UDPClient udpClient){
+        this.udpClient = udpClient;
     }
 
     @Override
@@ -201,8 +197,8 @@ public class EventDetector implements Lib.Callback, AudioBounceDetection.Callbac
         // save current selected Track
         if (selectedTrack != null) {
             currentTrack = selectedTrack;
-            if(connection != null) {
-                connection.sendTrack(currentTrack);
+            if(udpClient != null) {
+                //udpClient.sendTrack(currentTrack);
                 //UDPClient.sendUDPPacket("Sending current Track!");
                 //Log.d("Sending current Track!");
             }

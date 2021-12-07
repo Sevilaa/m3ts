@@ -1,5 +1,7 @@
 package ch.m3ts.tracker.visualization.live;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.view.View;
 import android.widget.TextView;
 
@@ -11,11 +13,13 @@ import java.lang.ref.WeakReference;
 import java.util.Date;
 import java.util.Timer;
 
+import ch.m3ts.MainActivity;
 import ch.m3ts.connection.ConnectionCallback;
 import ch.m3ts.connection.ConnectionHelper;
 import ch.m3ts.connection.ImplTrackerConnection;
 import ch.m3ts.connection.NearbyTrackerConnection;
 import ch.m3ts.connection.TrackerConnection;
+import ch.m3ts.connection.UDPClient;
 import ch.m3ts.connection.pubnub.PubNubFactory;
 import ch.m3ts.eventbus.Event;
 import ch.m3ts.eventbus.TTEventBus;
@@ -50,18 +54,22 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
     private final boolean doDrawDebugInfo;
     private final WeakReference<LiveActivity> mLiveActivity;
     private TrackerConnection connection;
+    private final UDPClient udpClient;
 
     public LiveHandler(@NonNull MatchVisualizeActivity activity, String matchID) {
         super(activity);
         this.doDrawDebugInfo = new Config(activity).isUseDebug();
-
+        SharedPreferences sharedPref = activity.getSharedPreferences(MainActivity.PREFERENCES_FILE_NAME, Context.MODE_PRIVATE);
+        String hololensIP = sharedPref.getString(MainActivity.IP_PREFERENCE_KEY, null);
+        this.udpClient = new UDPClient(hololensIP);
         this.mLiveActivity = new WeakReference<>((LiveActivity) activity);
-        TextView displayConnectedText = (TextView) activity.findViewById(R.id.display_connected_status);
+        TextView displayConnectedText = activity.findViewById(R.id.display_connected_status);
         try {
             if (new Config(mLiveActivity.get()).isUsingPubnub()) {
                 this.connection = PubNubFactory.createTrackerPubNub(activity.getApplicationContext(), matchID);
             } else {
                 this.connection = NearbyTrackerConnection.getInstance();
+                ((NearbyTrackerConnection)connection).setUdpClient(udpClient);
                 ((NearbyTrackerConnection) this.connection).setConnectionCallback(this);
             }
             TTEventBus.getInstance().register((ImplTrackerConnection) this.connection);
@@ -130,7 +138,7 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
     @Override
     public void init(Config config, int srcWidth, int srcHeight, Table table, double viewingAngle) {
         super.init(config, srcWidth, srcHeight, table, viewingAngle);
-        eventDetector.setConnection(connection);
+        eventDetector.setUDPClient(udpClient);
     }
 
     @Override

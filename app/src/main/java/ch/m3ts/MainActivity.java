@@ -2,7 +2,9 @@ package ch.m3ts;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
@@ -11,7 +13,6 @@ import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.audio.core.Recorder;
@@ -38,6 +39,11 @@ public class MainActivity extends Activity {
             Manifest.permission.ACCESS_COARSE_LOCATION,
             Manifest.permission.ACCESS_FINE_LOCATION};
     private Recorder audioRecorder;
+
+    private EditText hololensIP;
+
+    public static final String IP_PREFERENCE_KEY = "hololensIP";
+    public static final String PREFERENCES_FILE_NAME = "hololensSettings";
 
     private boolean areAllPermissionsGranted() {
         boolean hasPermission = true;
@@ -90,9 +96,13 @@ public class MainActivity extends Activity {
         animationDrawable.setEnterFadeDuration(2000);
         animationDrawable.setExitFadeDuration(4000);
         animationDrawable.start();
+        hololensIP = findViewById(R.id.hololensIPText);
+        SharedPreferences sharedPref = getSharedPreferences(PREFERENCES_FILE_NAME, Context.MODE_PRIVATE);
+        String ip = sharedPref.getString(IP_PREFERENCE_KEY, "");
+        hololensIP.setText(ip);
         this.audioRecorder = new Recorder(new AudioBounceDetectionDebug(
-                (TextView) findViewById(R.id.txtPlayMovieFrequency),
-                (TextView) findViewById(R.id.txtAudioBounce)
+                findViewById(R.id.txtPlayMovieFrequency),
+                findViewById(R.id.txtAudioBounce)
         ));
     }
 
@@ -118,15 +128,16 @@ public class MainActivity extends Activity {
         Intent intent = new Intent(this, MatchActivity.class);
         Bundle bundle = new Bundle();
         bundle.putBoolean("isRestartedMatch", false);
-        String hololensIP = ((EditText)findViewById(R.id.hololensIPText)).toString();
-        bundle.putString("hololensIP",hololensIP);
         intent.putExtras(bundle);
-        //intent.putExtra("hololensIP",hololensIP);
         startActivity(intent);
     }
 
     @SuppressWarnings("squid:S1172")
     public void onUseAsTracker(View toggle) {
+        SharedPreferences sharedPref = getSharedPreferences(PREFERENCES_FILE_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(IP_PREFERENCE_KEY, hololensIP.getText().toString());
+        editor.apply();
         startActivity(new Intent(this, InitTrackerActivity.class));
     }
 

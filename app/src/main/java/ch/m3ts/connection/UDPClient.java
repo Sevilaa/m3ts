@@ -1,73 +1,61 @@
 package ch.m3ts.connection;
 
-//To be deleted
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import android.os.Build;
-import android.support.annotation.NonNull;
+import android.widget.Toast;
 
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.Date;
-
-//Keep
-import java.net.InetAddress;
-import java.text.SimpleDateFormat;
-import java.util.Iterator;
-import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import ch.m3ts.util.Log;
 
-public class udpClient {
+public class UDPClient {
     private Integer Port = 2000;
     private InetAddress ipAddress;
     private DatagramSocket socket;
     private DatagramPacket packet;
     private ConcurrentLinkedQueue<byte[]> sendQueue;
     private boolean sendFlag;
-    public udpClient(String ip){
+    public UDPClient(String ip){
         sendFlag = true;
         try {
             ipAddress = InetAddress.getByName(ip);
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
-        sendQueue = new ConcurrentLinkedQueue<byte[]>();
+        sendQueue = new ConcurrentLinkedQueue<>();
         startSendThread();
     }
 
     private void startSendThread(){
-        Thread sendThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    socket = new DatagramSocket();
-                } catch (SocketException e) {
-                    e.printStackTrace();
-                }
-                while(sendFlag){
-                    if(!sendQueue.isEmpty()){
-                        Log.d("Sending Udp Package in Thread to address "+ipAddress+":"+Port);
-                        byte[] sendBuffer = sendQueue.remove();
-                        //sendBuffer = "Its Kind of working".getBytes();
-                        packet = new DatagramPacket(sendBuffer, sendBuffer.length, ipAddress, Port);
-                        for(int i=0; i<5; i++) {
-                            try {
-                                socket.send(packet);
-                                Log.d("Sending from Socket!");
-                            } catch (IOException e) {
-                                Log.d("Can't Send Data somehow!");
-                                Log.d(e.toString());
-                                e.printStackTrace();
-                            }
+        Thread sendThread = new Thread(() -> {
+            try {
+                socket = new DatagramSocket();
+            } catch (SocketException e) {
+                e.printStackTrace();
+            }
+            while(sendFlag){
+                if(!sendQueue.isEmpty()){
+                    Log.d("Sending Udp Package in Thread to address "+ipAddress+":"+Port);
+                    byte[] sendBuffer = sendQueue.remove();
+                    //sendBuffer = "Its Kind of working".getBytes();
+                    packet = new DatagramPacket(sendBuffer, sendBuffer.length, ipAddress, Port);
+                    for(int i=0; i<5; i++) {
+                        try {
+                            socket.send(packet);
+                            Log.d("Sending from Socket!");
+                        } catch (IOException e) {
+                            Log.d("Can't Send Data somehow!");
+                            Log.d(e.toString());
+                            e.printStackTrace();
                         }
                     }
                 }
@@ -100,6 +88,4 @@ public class udpClient {
         byte[] sendBuffer = string.getBytes(StandardCharsets.US_ASCII);
         sendQueue.add(sendBuffer);
     }
-
-
 }

@@ -19,8 +19,6 @@ import com.google.android.gms.nearby.connection.Payload;
 import com.google.android.gms.nearby.connection.PayloadCallback;
 import com.google.android.gms.nearby.connection.PayloadTransferUpdate;
 import com.google.android.gms.nearby.connection.Strategy;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -41,7 +39,7 @@ public class NearbyTrackerConnection extends ImplTrackerConnection {
     private ConnectionCallback connectionCallback;
     private String advertiserEndpointID = "";
     private String endpointName = "";
-    private udpClient UDPClient;
+    private UDPClient udpClient;
 
     private NearbyTrackerConnection() {
     }
@@ -51,9 +49,12 @@ public class NearbyTrackerConnection extends ImplTrackerConnection {
     }
 
     public void init(Context context) {
-        this.UDPClient = new udpClient("192.168.1.250");
         this.connection = Nearby.getConnectionsClient(context.getApplicationContext());
         initCallbacks();
+    }
+
+    public void setUdpClient(UDPClient udpClient){
+        this.udpClient = udpClient;
     }
 
     public void startDiscovery() {
@@ -159,9 +160,9 @@ public class NearbyTrackerConnection extends ImplTrackerConnection {
             json.put(JSONInfo.WINS_PROPERTY, wins);
             json.put(JSONInfo.EVENT_PROPERTY, event);
             Log.d("Sending UDP");
-            UDPClient.sendString("Event happened!");
+            udpClient.sendString("Event happened!");
             json.put(JSONInfo.NEXT_SERVER_PROPERTY, nextServer);
-            //UDPClient.sendData(json);
+            udpClient.sendData(json);
             sendData(json);
         } catch (JSONException ex) {
             Log.d(JSON_SEND_EXCEPTION_MESSAGE + this.advertiserEndpointID + "\n" + ex.getMessage());

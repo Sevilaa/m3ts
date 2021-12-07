@@ -17,9 +17,9 @@ import java.util.Random;
 
 import ch.m3ts.connection.DisplayConnection;
 import ch.m3ts.connection.NearbyDisplayConnection;
+import ch.m3ts.connection.UDPClient;
 import ch.m3ts.connection.pubnub.PubNubDisplayConnection;
 import ch.m3ts.connection.pubnub.PubNubFactory;
-import ch.m3ts.connection.udpClient;
 import ch.m3ts.eventbus.EventBus;
 import ch.m3ts.eventbus.TTEvent;
 import ch.m3ts.eventbus.TTEventBus;
@@ -40,7 +40,6 @@ public class MatchActivity extends FragmentActivity implements FragmentReplaceCa
     private final Random random = new SecureRandom();
     private AlertDialog alertDialog;
     private NearbyDisplayConnection nearbyDisplayConnection;
-    private udpClient UDPClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,9 +54,6 @@ public class MatchActivity extends FragmentActivity implements FragmentReplaceCa
 
         Bundle bundle = getIntent().getExtras();
         boolean isRestartedMatch = bundle.getBoolean("isRestartedMatch");
-
-        String ipAddress = bundle.getString("ipAddress");
-        UDPClient = new udpClient(ipAddress);
 
         Fragment nextFragment = new MatchSettingsFragment();
         if (isRestartedMatch) {
