@@ -11,6 +11,4 @@ public interface TrackerConnection {
     void setInitTrackerCallback(InitTrackerCallback initTrackerCallback);
 
     void sendStatusUpdate(String playerNameLeft, String playerNameRight, int scoreLeft, int scoreRight, int winsLeft, int winsRight, Side nextServer, int gamesNeededToWin);
-
-    void sendTrack(Track track);
 }

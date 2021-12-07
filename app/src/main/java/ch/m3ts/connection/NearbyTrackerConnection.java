@@ -185,9 +185,4 @@ public class NearbyTrackerConnection extends ImplTrackerConnection {
         }
         createPart(json, encodedData, index + 1, numberOfPackages, doContinue);
     }
-
-    @Override
-    public void sendTrack(Track track) {
-        //Only needed with Hololens where PubNub is used
-    }
 }

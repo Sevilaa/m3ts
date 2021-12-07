@@ -1,13 +1,10 @@
 package ch.m3ts.connection.pubnub;
 
-import android.graphics.Color;
-
 import com.pubnub.api.Callback;
 import com.pubnub.api.Pubnub;
 import com.pubnub.api.PubnubError;
 import com.pubnub.api.PubnubException;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -18,8 +15,6 @@ import ch.m3ts.connection.ImplTrackerConnection;
 import ch.m3ts.eventbus.TTEventBus;
 import ch.m3ts.util.Log;
 import ch.m3ts.util.Side;
-import cz.fmo.Lib;
-import cz.fmo.data.Track;
 
 public class PubNubTrackerConnection extends ImplTrackerConnection {
     private static final String JSON_SEND_EXCEPTION_MESSAGE = "Unable to send JSON to channel ";
@@ -106,7 +101,7 @@ public class PubNubTrackerConnection extends ImplTrackerConnection {
         }
     }
 
-    @Override
+    /*@Override
     public void sendTrack(Track track) {
         Log.d("Sending Track!!");
         if(track == null){
@@ -137,5 +132,5 @@ public class PubNubTrackerConnection extends ImplTrackerConnection {
         }
         Log.d("Length of JSON File: "+json.length() + "################################################################################");
         sendData(json);
-    }
+    }*/
 }
