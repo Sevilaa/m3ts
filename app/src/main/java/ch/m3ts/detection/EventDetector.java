@@ -198,7 +198,7 @@ public class EventDetector implements Lib.Callback, AudioBounceDetection.Callbac
         if (selectedTrack != null) {
             currentTrack = selectedTrack;
             if(udpClient != null) {
-                //udpClient.sendTrack(currentTrack);
+                udpClient.sendTrack(currentTrack);
                 //UDPClient.sendUDPPacket("Sending current Track!");
                 //Log.d("Sending current Track!");
             }

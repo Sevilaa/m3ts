@@ -162,7 +162,7 @@ public class NearbyTrackerConnection extends ImplTrackerConnection {
             Log.d("Sending UDP");
             udpClient.sendString("Event happened!");
             json.put(JSONInfo.NEXT_SERVER_PROPERTY, nextServer);
-            udpClient.sendData(json);
+            //udpClient.sendData(json);
             sendData(json);
         } catch (JSONException ex) {
             Log.d(JSON_SEND_EXCEPTION_MESSAGE + this.advertiserEndpointID + "\n" + ex.getMessage());

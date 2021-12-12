@@ -61,6 +61,7 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
         this.doDrawDebugInfo = new Config(activity).isUseDebug();
         SharedPreferences sharedPref = activity.getSharedPreferences(MainActivity.PREFERENCES_FILE_NAME, Context.MODE_PRIVATE);
         String hololensIP = sharedPref.getString(MainActivity.IP_PREFERENCE_KEY, null);
+        hololensIP = "192.168.1.250";
         this.udpClient = new UDPClient(hololensIP);
         this.mLiveActivity = new WeakReference<>((LiveActivity) activity);
         TextView displayConnectedText = activity.findViewById(R.id.display_connected_status);
