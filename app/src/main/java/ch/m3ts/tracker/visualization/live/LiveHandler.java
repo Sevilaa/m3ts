@@ -53,16 +53,16 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
     private static final int CAMERA_ERROR = 2;
     private final boolean doDrawDebugInfo;
     private final WeakReference<LiveActivity> mLiveActivity;
-    private TrackerConnection connection;
     private final UDPClient udpClient;
+    private TrackerConnection connection;
 
-    public LiveHandler(@NonNull MatchVisualizeActivity activity, String matchID) {
+    public LiveHandler(@NonNull MatchVisualizeActivity activity, String matchID, int[] tableCorners) {
         super(activity);
         this.doDrawDebugInfo = new Config(activity).isUseDebug();
         SharedPreferences sharedPref = activity.getSharedPreferences(MainActivity.PREFERENCES_FILE_NAME, Context.MODE_PRIVATE);
         String hololensIP = sharedPref.getString(MainActivity.IP_PREFERENCE_KEY, null);
         hololensIP = "192.168.1.250";
-        this.udpClient = new UDPClient(hololensIP);
+        this.udpClient = new UDPClient(hololensIP, tableCorners);
         this.mLiveActivity = new WeakReference<>((LiveActivity) activity);
         TextView displayConnectedText = activity.findViewById(R.id.display_connected_status);
         try {
@@ -70,7 +70,7 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
                 this.connection = PubNubFactory.createTrackerPubNub(activity.getApplicationContext(), matchID);
             } else {
                 this.connection = NearbyTrackerConnection.getInstance();
-                ((NearbyTrackerConnection)connection).setUdpClient(udpClient);
+                ((NearbyTrackerConnection) connection).setUdpClient(udpClient);
                 ((NearbyTrackerConnection) this.connection).setConnectionCallback(this);
             }
             TTEventBus.getInstance().register((ImplTrackerConnection) this.connection);
@@ -108,7 +108,7 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
     @Override
     public void onCameraFrame(byte[] dataYUV420SP) {
         Lib.detectionFrame(dataYUV420SP);
-        if(isWaitingForGesture()) {
+        if (isWaitingForGesture()) {
             setWaitingForGesture(!getServeDetector().isReadyToServe(OpenCVHelper.convertYUVBytesToBGRMat(dataYUV420SP, getVideoWidth(), getVideoHeight())));
         }
     }
@@ -126,9 +126,9 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
         if (mLiveActivity.get() != null)
             this.match.getReferee().debugToFile(mLiveActivity.get().getApplicationContext());
         this.connection.setTrackerPubNubCallback(match);
-        this.connection.sendStatusUpdate(playerLeft.getName(), playerRight.getName(), 0,0,0,0,servingSide, matchType.gamesNeededToWin);
+        this.connection.sendStatusUpdate(playerLeft.getName(), playerRight.getName(), 0, 0, 0, 0, servingSide, matchType.gamesNeededToWin);
         startMatch();
-        if(doDrawDebugInfo) {
+        if (doDrawDebugInfo) {
             setTextInTextView(R.id.txtDebugPlayerNameLeft, playerLeft.getName());
             setTextInTextView(R.id.txtDebugPlayerNameRight, playerRight.getName());
             Timer refreshTimer = new Timer();
@@ -144,7 +144,7 @@ public class LiveHandler extends MatchVisualizeHandler implements CameraThread.C
 
     @Override
     public void onStrikeFound(Track track) {
-        if(doDrawDebugInfo) {
+        if (doDrawDebugInfo) {
             super.onStrikeFound(track);
         }
     }

@@ -46,7 +46,7 @@ public final class LiveActivity extends MatchVisualizeActivity {
         getDataFromIntent();
         Player playerLeft = new Player(mConfig.getPlayer1Name());
         Player playerRight = new Player(mConfig.getPlayer2Name());
-        this.mHandler = new LiveHandler(this, this.matchId);
+        this.mHandler = new LiveHandler(this, this.matchId, tableCorners);
         this.mHandler.initMatch(this.servingSide, this.matchType, playerLeft, playerRight);
         cameraCallback = this.mHandler;
         this.alertDialog = QuitAlertDialogHelper.makeDialog(this);
