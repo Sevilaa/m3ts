@@ -5,7 +5,7 @@ package ch.m3ts.connection.pubnub;
  */
 public final class JSONInfo {
     public static final String ROLE_PROPERTY = "role";
-    public static final String EVENT_PROPERTY = "event";
+    public static final String EVENT_PROPERTY = "eventType";
     public static final String SIDE_PROPERTY = "side";
     public static final String WINS_PROPERTY = "wins";
     public static final String TYPE_PROPERTY = "type";

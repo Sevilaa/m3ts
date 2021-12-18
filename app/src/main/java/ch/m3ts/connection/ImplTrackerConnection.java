@@ -40,6 +40,7 @@ public abstract class ImplTrackerConnection extends Callback implements TrackerC
     private static final String JSON_SEND_EXCEPTION_MESSAGE = "Unable to send JSON to endpoint ";
     protected MatchStatusCallback callback;
     protected InitTrackerCallback initTrackerCallback;
+    protected UDPClient udpClient;
 
     protected abstract void send(String event, String side, Integer score, Integer wins, Side nextServer);
 
@@ -112,6 +113,7 @@ public abstract class ImplTrackerConnection extends Callback implements TrackerC
             json.put(JSONInfo.EVENT_PROPERTY, ConnectionEvent.SCORE);
             json.put(JSONInfo.NEXT_SERVER_PROPERTY, nextServer);
             json.put(JSONInfo.ROLE_PROPERTY, ROLE);
+            udpClient.sendEvent(json);
             sendData(json);
         } catch (JSONException ex) {
             Log.d(JSON_SEND_EXCEPTION_MESSAGE + ex.getMessage());

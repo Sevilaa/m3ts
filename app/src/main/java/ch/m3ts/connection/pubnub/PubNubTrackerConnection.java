@@ -86,7 +86,9 @@ public class PubNubTrackerConnection extends ImplTrackerConnection {
 
     protected void send(String event, String side, Integer score, Integer wins, Side nextServer) {
         Log.d("Sending nearby auxiliary data!");
-
+        if(side!=null){
+            Log.d("Side: "+ side);
+        }
         try {
             JSONObject json = new JSONObject();
             json.put(JSONInfo.SIDE_PROPERTY, side);

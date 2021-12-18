@@ -28,6 +28,7 @@ public class UDPClient {
     private DatagramPacket packet;
     private ConcurrentLinkedQueue<byte[]> sendQueue;
     private boolean sendFlag;
+    private byte[] stringHeader = {(byte) 0xfc};
     private byte[] trackHeader = {(byte) 0xfd};
     private byte[] eventHeader = {(byte) 0xfe};
     private float scale;
@@ -95,15 +96,6 @@ public class UDPClient {
         sendThread.start();
     }
 
-    public void sendString(String data) {
-        Log.d("sendString method");
-        //SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-        //String content = sdf.format(new Date());
-        //content = "[" + Build.MODEL + "]" + content;
-        byte[] sendBuffer = data.getBytes();
-        sendBuffer = joinByteArray(eventHeader, sendBuffer);
-        sendQueue.add(sendBuffer);
-    }
 
     public byte[] encodeTrack(Track track) {
         Log.d("Enocding Track");
@@ -141,12 +133,12 @@ public class UDPClient {
         return sendBuffer;
     }
 
-    private int x(int centerX) {
+    private int x(float centerX) {
         return Math.round((centerX + translateX) * scale);
     }
 
-    private int y(int centerY) {
-        return Math.round((centerY + translateY) * scale);
+    private int y(float centerY) {
+        return -Math.round((centerY + translateY) * scale);
     }
 
     public void sendTrack(Track track) {
@@ -159,15 +151,17 @@ public class UDPClient {
         sendQueue.add(sendBuffer);
     }
 
-    public void sendData(JSONObject json) {
+    public void sendEvent(JSONObject json) {
         Log.d("Sending auxilliary data");
-        byte[] sendBuffer = json.toString().getBytes(UTF_8);
-        packet = new DatagramPacket(sendBuffer, sendBuffer.length, ipAddress, Port);
-    }
-
-    public void sendStringData(String string) {
-        Log.d("Sending auxilliary data");
-        byte[] sendBuffer = string.getBytes(StandardCharsets.US_ASCII);
+        byte[] sendBuffer = json.toString().getBytes();
+        sendBuffer = joinByteArray(eventHeader, sendBuffer);
         sendQueue.add(sendBuffer);
     }
+    public void sendString(String data) {
+        Log.d("sendString method");
+        byte[] sendBuffer = data.getBytes();
+        sendBuffer = joinByteArray(stringHeader, sendBuffer);
+        sendQueue.add(sendBuffer);
+    }
+
 }
