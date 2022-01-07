@@ -1,6 +1,7 @@
 # Mobile Table Tennis Tracking System (M3TS) adapted for usage with HoloLens
-ETH MR Lab course project AS2021: Augmented Table Tennis Game
+ETH MR Lab course project AS2021: Augmented Table Tennis Game  
 This repository contains the adapted Android Project associated with the project. 
+
 Authors: Tianxu An, Pascal Chang, Matthias Koenig, Severin Laasch
 
 ## Goal
