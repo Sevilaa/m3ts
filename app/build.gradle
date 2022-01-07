@@ -10,14 +10,13 @@ tasks.withType(Test) {
 }
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion "29.0.2"
+    compileSdkVersion 29
     ndkVersion "16.1.4479499"
 
     defaultConfig {
         applicationId "cz.fmo"
         minSdkVersion 23
-        targetSdkVersion 26
+        targetSdkVersion 29
         versionCode 1
         versionName "1.0"
 

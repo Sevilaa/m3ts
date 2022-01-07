@@ -1,4 +1,7 @@
 # Mobile Table Tennis Tracking System (M3TS) adapted for usage with HoloLens
+ETH MR Lab course project AS2021: Augmented Table Tennis Game
+This repository contains the adapted Android Project associated with the project. 
+Authors: Tianxu An, Pascal Chang, Matthias Koenig, Severin Laasch
 
 ## Goal
 This project's goal is to develop a system which automatically keeps track of a ping pong match (like a "virtual referee").
@@ -18,9 +21,8 @@ Checkout this demo on youtube for a first impression of the system (w/o HoloLens
 https://www.youtube.com/watch?v=QaV0DVbXExA
 
 ## Get it running
-To get the app running, simply clone this repo and open it in Android Studio.
-After Android Studio installed all dependencies via Gradle, you should be good to go for using the app.
-Or just use the uploaded .apk file
+The Android .apk file can be found [here](app/release/app-release.apk).
+The HoloLens application is available [here](https://github.com/pchangmaths0327/MRTableTennis-HoloLens).
 
 ## Architecture
 Brief description of the architecture to assist further development.
