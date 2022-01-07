@@ -1,7 +1,5 @@
 package ch.m3ts.connection;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import android.graphics.Color;
 
 import org.json.JSONException;
@@ -14,7 +12,6 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import ch.m3ts.util.Log;
@@ -22,15 +19,15 @@ import cz.fmo.Lib;
 import cz.fmo.data.Track;
 
 public class UDPClient {
-    private Integer Port = 2000;
+    private static final int Port = 2000;
     private InetAddress ipAddress;
     private DatagramSocket socket;
     private DatagramPacket packet;
-    private ConcurrentLinkedQueue<byte[]> sendQueue;
+    private final ConcurrentLinkedQueue<byte[]> sendQueue;
     private boolean sendFlag;
-    private byte[] stringHeader = {(byte) 0xfc};
-    private byte[] trackHeader = {(byte) 0xfd};
-    private byte[] eventHeader = {(byte) 0xfe};
+    private static final byte[] stringHeader = {(byte) 0xfc};
+    private static final byte[] trackHeader = {(byte) 0xfd};
+    private static final byte[] eventHeader = {(byte) 0xfe};
     private float scale;
     private float translateX;
     private float translateY;
@@ -155,12 +152,6 @@ public class UDPClient {
         Log.d("Sending auxilliary data");
         byte[] sendBuffer = json.toString().getBytes();
         sendBuffer = joinByteArray(eventHeader, sendBuffer);
-        sendQueue.add(sendBuffer);
-    }
-    public void sendString(String data) {
-        Log.d("sendString method");
-        byte[] sendBuffer = data.getBytes();
-        sendBuffer = joinByteArray(stringHeader, sendBuffer);
         sendQueue.add(sendBuffer);
     }
 

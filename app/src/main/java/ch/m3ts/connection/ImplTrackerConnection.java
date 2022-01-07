@@ -113,7 +113,9 @@ public abstract class ImplTrackerConnection extends Callback implements TrackerC
             json.put(JSONInfo.EVENT_PROPERTY, ConnectionEvent.SCORE);
             json.put(JSONInfo.NEXT_SERVER_PROPERTY, nextServer);
             json.put(JSONInfo.ROLE_PROPERTY, ROLE);
-            udpClient.sendEvent(json);
+            if(udpClient != null) {
+                udpClient.sendEvent(json);
+            }
             sendData(json);
         } catch (JSONException ex) {
             Log.d(JSON_SEND_EXCEPTION_MESSAGE + ex.getMessage());

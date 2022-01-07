@@ -26,7 +26,6 @@ import org.json.JSONObject;
 import ch.m3ts.connection.pubnub.JSONInfo;
 import ch.m3ts.util.Log;
 import ch.m3ts.util.Side;
-import cz.fmo.data.Track;
 
 public class NearbyTrackerConnection extends ImplTrackerConnection {
     private static final NearbyTrackerConnection instance = new NearbyTrackerConnection();
