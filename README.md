@@ -23,8 +23,3 @@ https://www.youtube.com/watch?v=QaV0DVbXExA
 ## Get it running
 The Android .apk file can be found [here](app/release/app-release.apk).
 The HoloLens application is available [here](https://github.com/pchangmaths0327/MRTableTennis-HoloLens).
-
-## Architecture
-Brief description of the architecture to assist further development.
-### Object Detection / Tracking
-Is done using the [FMO (Fast Moving Object) Android implementation](https://github.com/hrabalik/fmo-android). Basically a JNI which gets called each time the library finds detections.
